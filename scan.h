@@ -1,7 +1,22 @@
 #pragma once
+#include <string>
 
-#include<bits/stdc++.h>
-using namespace std;
+union TokenVal{
+    std::string val_str;
+    int num;
+    TokenVal(){val_str.clear();}
+    ~TokenVal(){val_str.clear();}
+};
+
+typedef struct
+{//二元组记录token
+    TokenVal val;
+    int type;
+    void show_token();
+    void get_token();
+}TokenRec;
+
+
 typedef enum{
     // 标识符(除保留字), 注释信息, 常量
     Ident = 300, Comment, IntConst, 
@@ -14,20 +29,3 @@ typedef enum{
     // 文件结束, 错误
     ENDF, ERROR
 } TokenType;
-
-
-class OriFile
-{
-    public:
-    static char getBuff;
-    string path;
-    OriFile(){getBuff=0;path.clear();};
-    OriFile(string _path)
-    {
-        getBuff=0;
-        path=_path;
-        freopen(path.c_str(),"r",stdin);
-    } 
-    ~OriFile(){fclose(stdin);}
-    static char getOneChar();
-};
