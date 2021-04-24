@@ -1,5 +1,6 @@
 #include"global.h"
 #include"scan.h"
+#include <map>
 
 // static FILE* targetFile;
 static int currChar = ' ';
@@ -42,15 +43,35 @@ std::string opC_lq  = "<=";//
 char opC_bg         = '>';//
 std::string opC_bq  = ">=";//
 
+std::map<int, std::string> typetable = {
+{Ident, "Idengt"}, {Comment, "Comment"}, {IntConst, "IntConst"}, 
+{INT, "RSWord"}, {VOID, "RSWord"}, {IF, "RSWord"}, {ELSE, "RSWord"}, {WHILE, "RSWord"}, {BREAK, "RSWord"}, {CONTINUE, "RSWord"}, {RETURN, "RSWord"},
+{SEMI, "Symble"}, {COMM, "Symble"}, {RDBRAL, "Symble"}, {RDBRAR, "Symble"}, {SQBRAL, "Symble"}, {SQBRAR, "Symble"}, {BRAL, "Symble"}, {BRAR, "Symble"}, {ASSIGN, "Symble"},
+{ADD, "Operator"}, {SUB, "Operator"}, {DIV, "Operator"}, {MUL, "Operator"}, {MOD, "Operator"}, {EQ, "Operator"}, {NEQ, "Operator"}, {OR, "Operator"}, {AND, "Operator"}, {NOT, "Operator"}, {LT, "Operator"}, {LQ, "Operator"}, {BG, "Operator"}, {BQ, "Operator"},
+{ENDF, "EndOfFile"}, {ERROR, "ERROR"}};
+
 void TokenRec::show_token()
 {
-    std::cout << "<" << type << ", ";
+    std::cout << "<" << typetable[type] << ", ";
     if(val.isNum_f)
     {
         std::cout << val.num << ">" << '\n';
     }
     else
         std::cout << val.val_str << ">" << '\n';
+}
+
+bool isalphaor_(int c)
+{
+    if(isalpha(c) || c == '_')
+        return true;
+    else false;
+}
+bool isalnumor_(int c)
+{
+    if(isalnum(c) || c == '_')
+        return true;
+    else return false;
 }
 
 
@@ -63,11 +84,11 @@ void TokenRec::get_token()
         currChar = fgetc(targetFile);
         
     // 匹配标识符Ident 和 可能出现的保留字
-    if(isalpha(currChar))
+    if(isalphaor_(currChar) || currChar == '_')
     {
         val.val_str = currChar;
-        while (isalnum(currChar = fgetc(targetFile)))
-        {// true if currChar [0-9a-zA-Z]
+        while (isalnumor_(currChar = fgetc(targetFile)))
+        {// true if currChar [_0-9a-zA-Z]
             val.val_str += currChar;
         }
 

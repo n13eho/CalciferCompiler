@@ -22,7 +22,7 @@ typedef enum{
     // 保留字
     INT, VOID, IF, ELSE, WHILE, BREAK, CONTINUE, RETURN, 
     // 非运算符号 (         )    [         ]     {      }     =
-    SEMI, COMM, RDBRAL,RDBRAR, SQBRAL, SQBRAR, BRAL, BRAR, ASSIGN,
+    SEMI, COMM, RDBRAL, RDBRAR, SQBRAL, SQBRAR, BRAL, BRAR, ASSIGN,
     // 运算符号              ==   !=  ||   &&   !   <   <=   >   >=
     ADD, SUB, DIV, MUL, MOD, EQ, NEQ, OR, AND, NOT, LT, LQ, BG, BQ,
     // 文件结束, 错误
