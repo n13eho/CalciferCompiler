@@ -24,9 +24,10 @@ int main(int argc, char *argv[])
     while(true)
     {
         currToken.get_token();
-        currToken.show_token();
         if(currToken.type == ENDF)
             break;
+        
+        currToken.show_token();
     }
 
 }

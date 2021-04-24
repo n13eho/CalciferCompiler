@@ -1,12 +1,11 @@
 #pragma once
 #include <string>
 
-union TokenVal{
+typedef struct{
+    bool isNum_f = false; //一个标记，false则表明它的值是string；true则为数字   union我搞不定
     std::string val_str;
     int num;
-    TokenVal(){val_str.clear();}
-    ~TokenVal(){val_str.clear();}
-};
+}TokenVal;
 
 typedef struct
 {//二元组记录token

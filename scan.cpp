@@ -45,7 +45,7 @@ std::string opC_bq  = ">=";//
 void TokenRec::show_token()
 {
     std::cout << "<" << type << ", ";
-    if(type == IntConst)
+    if(val.isNum_f)
     {
         std::cout << val.num << ">" << '\n';
     }
@@ -55,8 +55,9 @@ void TokenRec::show_token()
 
 
 void TokenRec::get_token()
-{
-
+{   
+    
+    val.isNum_f = false; // 都先默认其值为string类型的
     // 忽略空格
     while(isspace(currChar))
         currChar = fgetc(targetFile);
@@ -94,6 +95,7 @@ void TokenRec::get_token()
         }
         val.num = strtod(numStr.c_str(), 0);
         type = IntConst;
+        val.isNum_f = true;
         return;
     }
 
