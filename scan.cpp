@@ -15,6 +15,7 @@ std::string reW_while    = "while";
 std::string reW_break    = "break";
 std::string reW_continue = "continue";
 std::string reW_return   = "return";
+std::string reW_const   = "const";
 
 //非运算符号sign char
 char signC_semi   = ';';
@@ -100,6 +101,7 @@ void TokenRec::get_token()
         if(val.val_str == reW_break){type = BREAK; return;}// 这样写，很没有章法
         if(val.val_str == reW_continue){type = CONTINUE; return;}// 这样写，很没有章法
         if(val.val_str == reW_return){type = RETURN; return;}// 这样写，很没有章法
+        if(val.val_str == reW_const){type = CONST; return;}// 这样写，很没有章法
         //否则就不是保留字，是一个普通的Ident
         type = Ident;
         return;        

@@ -20,7 +20,7 @@ typedef enum{
     // 标识符(除保留字), 注释信息, 常量
     Ident = 300, Comment, IntConst, 
     // 保留字
-    INT, VOID, IF, ELSE, WHILE, BREAK, CONTINUE, RETURN, 
+    INT, VOID, IF, ELSE, WHILE, BREAK, CONTINUE, RETURN, CONST,
     // 非运算符号 (         )    [         ]     {      }     =
     SEMI, COMM, RDBRAL, RDBRAR, SQBRAL, SQBRAR, BRAL, BRAR, ASSIGN,
     // 运算符号              ==   !=  ||   &&   !   <   <=   >   >=
