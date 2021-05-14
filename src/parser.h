@@ -20,3 +20,4 @@ struct GrammaNode
     GrammaNode(int x, string y){type=x;str = y;son.clear(); }
 };
 int parser_main(TokenRec *Token, GrammaNode *TreeRoot);
+void show_tree(GrammaNode *TreeRoot,int tabcnt);

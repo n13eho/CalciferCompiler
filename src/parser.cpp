@@ -847,3 +847,14 @@ int parser_main(TokenRec *Token, GrammaNode *TreeRoot)
     }
     return retcode;
 }
+void show_tree(GrammaNode * TreeRoot,int tabcnt)
+{
+    printf("type: %d\n",TreeRoot->type);
+    for(int i=0;i<TreeRoot->son.size();i++)
+    {
+        for(int i=1;i<=tabcnt;i++)printf("  ");
+        printf("%d->",i);
+        show_tree(TreeRoot->son[i],tabcnt+3);
+        printf("\n");
+    }
+}
