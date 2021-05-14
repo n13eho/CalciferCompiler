@@ -4,6 +4,16 @@
 static int errorcnt = 0;
 //所有的函数,开始时,Token已经读了这个模块的第一个;结束时,Token已经读了下一个模块的第一个.
 
+
+std::map<int, std::string> typetablep = {
+{Ident, "Idengt"}, {IntConst, "IntConst"}, {IF, "if"}, {ELSE, "else"}, {WHILE, "while"}, {BREAK, "break"}, {CONTINUE, "continue"}, {RETURN, "return"},
+{ASSIGN, "Symble"},{ADD, "Operator"}, {SUB, "Operator"}, {DIV, "Operator"}, {MUL, "Operator"}, {MOD, "Operator"}, {EQ, "Operator"},
+{NEQ, "Operator"}, {OR, "Operator"}, {AND, "Operator"}, {NOT, "Operator"}, {LT, "Operator"}, {LQ, "Operator"}, 
+{BG, "Operator"}, {BQ, "Operator"},{RT,"root"},{CUN,"cmpUnit"},{FDV,"void function"},{FDI,"int function"},
+{CD, "constdf"},{VD,"vardf"},{IV,"initVar"},{FFP,"FuncFParam"},{FFPs,"FuncFParams"},{B,"Block"},{BI,"BlockItem"},{S,"stmt"},
+{LV,"lv"},{UE,"UnaryExp"},{FRPs,"FunRParams"},{ME,"MulExp"},{AE,"AddExp"},{RE,"RelExp"},{LAE,"LogiAndExp"},{LOE,"LogicOrExp"}
+};
+
 int CompUnitNode(TokenRec *Token, GrammaNode *SubTreeRoot)
 {
     int retcode;
@@ -29,7 +39,7 @@ int CompUnitNode(TokenRec *Token, GrammaNode *SubTreeRoot)
                     break;
                 }
                 else
-                    ErrorCatch("error");
+                    ErrorCatch("Excepted ;");
             }
         }
     }
@@ -61,7 +71,7 @@ int CompUnitNode(TokenRec *Token, GrammaNode *SubTreeRoot)
             {
                 while (1)
                 {
-                    GrammaNode *newSon = new GrammaNode();
+                    GrammaNode * newSon = new GrammaNode();
                     *newSon = *newSub;
                     retcode = VarDef(Token, newSon);
                     if (retcode >= 0)
@@ -111,7 +121,7 @@ int FuncDefV(TokenRec *Token, GrammaNode *SubTreeRoot)
             Token->get_token();
             if (Token->type != RDBRAR)
             {
-                GrammaNode *newSon = new GrammaNode();
+                GrammaNode * newSon = new GrammaNode();
                 retcode = FuncFParams(Token, newSon);
                 if (retcode >= 0)
                 {
@@ -124,7 +134,7 @@ int FuncDefV(TokenRec *Token, GrammaNode *SubTreeRoot)
                 }
             }
             Token->get_token();
-            GrammaNode *newSon = new GrammaNode();
+            GrammaNode * newSon = new GrammaNode();
             retcode = Block(Token, newSon);
             if (retcode >= 0)
             {
@@ -142,6 +152,7 @@ int FuncDefV(TokenRec *Token, GrammaNode *SubTreeRoot)
         ErrorCatch("error");
         return -1;
     }
+    return retcode;
 }
 int FuncDefI(TokenRec *Token, GrammaNode *SubTreeRoot)
 {
@@ -149,7 +160,7 @@ int FuncDefI(TokenRec *Token, GrammaNode *SubTreeRoot)
     SubTreeRoot->type = FDI;
     if (Token->type != RDBRAR)
     {
-        GrammaNode *newSon = new GrammaNode();
+        GrammaNode * newSon = new GrammaNode();
         retcode = FuncFParams(Token, newSon);
         if (retcode >= 0)
         {
@@ -157,7 +168,7 @@ int FuncDefI(TokenRec *Token, GrammaNode *SubTreeRoot)
         }
     }
     Token->get_token();
-    GrammaNode *newSon = new GrammaNode();
+    GrammaNode* newSon = new GrammaNode();
     retcode = Block(Token, newSon);
     if (retcode >= 0)
     {
@@ -176,20 +187,20 @@ int ConstDef(TokenRec *Token, GrammaNode *SubTreeRoot)
             if (Token->type == SQBRAL)
             {
                 Token->get_token();
-                GrammaNode *newSon = new GrammaNode();
+                GrammaNode * newSon = new GrammaNode();
                 if ((retcode = AddExp(Token, newSon)) >= 0)
                 {
                     SubTreeRoot->son.push_back(newSon);
                 }
                 if (Token->type != SQBRAR)
                 {
-                    ErrorCatch("error");
+                    ErrorCatch("Excepted ]");
                     return -1;
                 }
             }
             else
             {
-                ErrorCatch("error");
+                ErrorCatch("Excepted [");
                 return -1;
             }
         }
@@ -290,7 +301,7 @@ int FuncFParams(TokenRec *Token, GrammaNode *SubTreeRoot)
             Token->get_token();
             continue;
         }
-        GrammaNode *newSon = new GrammaNode();
+        newSon = new GrammaNode();
         if ((retcode = FuncFParam(Token, newSon)) >= 0)
         {
             SubTreeRoot->son.push_back(newSon);
@@ -377,6 +388,7 @@ int Block(TokenRec *Token, GrammaNode *SubTreeRoot)
 }
 int BlockItem(TokenRec *Token, GrammaNode *SubTreeRoot)
 {
+    GrammaNode* newSon;
     int retcode = 0;
     SubTreeRoot->type = BI;
     if (Token->type == INT)
@@ -390,7 +402,7 @@ int BlockItem(TokenRec *Token, GrammaNode *SubTreeRoot)
             }
             if (Token->type == Ident)
             {
-                GrammaNode *newSon = new GrammaNode();
+                newSon = new GrammaNode();
                 newSon->son.push_back(new GrammaNode(Ident, Token->val.val_str));
                 if (retcode = VarDef(Token, newSon) >= 0)
                 {
@@ -414,7 +426,7 @@ int BlockItem(TokenRec *Token, GrammaNode *SubTreeRoot)
                 Token->get_token();
                 continue;
             }
-            GrammaNode *newSon = new GrammaNode();
+            newSon = new GrammaNode();
             if (retcode = ConstDef(Token, newSon) >= 0)
             {
                 SubTreeRoot->son.push_back(newSon);
@@ -423,7 +435,7 @@ int BlockItem(TokenRec *Token, GrammaNode *SubTreeRoot)
     }
     else
     {
-        GrammaNode *newSon = new GrammaNode();
+        newSon = new GrammaNode();
         if (retcode = Stmt(Token, newSon) >= 0)
         {
             SubTreeRoot->son.push_back(newSon);
@@ -433,6 +445,7 @@ int BlockItem(TokenRec *Token, GrammaNode *SubTreeRoot)
 }
 int Stmt(TokenRec *Token, GrammaNode *SubTreeRoot)
 {
+    GrammaNode* newSon;
     int retcode = 0;
     SubTreeRoot->type = S;
     if (Token->type == IF)
@@ -442,7 +455,7 @@ int Stmt(TokenRec *Token, GrammaNode *SubTreeRoot)
         if (Token->type == RDBRAL)
         {
             Token->get_token();
-            GrammaNode *newSon = new GrammaNode();
+            newSon = new GrammaNode();
             if (retcode = LOrExp(Token, newSon))
             {
                 SubTreeRoot->son.push_back(newSon);
@@ -452,7 +465,7 @@ int Stmt(TokenRec *Token, GrammaNode *SubTreeRoot)
                 ErrorCatch("error");
             }
             Token->get_token();
-            GrammaNode *newSon = new GrammaNode();
+            newSon = new GrammaNode();
             if (retcode = Stmt(Token, newSon))
             {
                 SubTreeRoot->son.push_back(newSon);
@@ -461,7 +474,7 @@ int Stmt(TokenRec *Token, GrammaNode *SubTreeRoot)
             {
                 SubTreeRoot->son.push_back(new GrammaNode(ELSE));
                 Token->get_token();
-                GrammaNode *newSon = new GrammaNode();
+                newSon = new GrammaNode();
                 if (retcode = Stmt(Token, newSon))
                 {
                     SubTreeRoot->son.push_back(newSon);
@@ -480,7 +493,7 @@ int Stmt(TokenRec *Token, GrammaNode *SubTreeRoot)
         if (Token->type == RDBRAL)
         {
             Token->get_token();
-            GrammaNode *newSon = new GrammaNode();
+            newSon = new GrammaNode();
             if (retcode = LOrExp(Token, newSon))
             {
                 SubTreeRoot->son.push_back(newSon);
@@ -490,7 +503,7 @@ int Stmt(TokenRec *Token, GrammaNode *SubTreeRoot)
                 ErrorCatch("error");
             }
             Token->get_token();
-            GrammaNode *newSon = new GrammaNode();
+            newSon = new GrammaNode();
             if (retcode = Stmt(Token, newSon))
             {
                 SubTreeRoot->son.push_back(newSon);
@@ -518,7 +531,7 @@ int Stmt(TokenRec *Token, GrammaNode *SubTreeRoot)
     }
     else if (Token->type == BRAL)
     {
-        GrammaNode *newSon = new GrammaNode();
+        newSon = new GrammaNode();
         if (retcode = Block(Token, newSon) >= 0)
         {
             SubTreeRoot->son.push_back(newSon);
@@ -532,7 +545,7 @@ int Stmt(TokenRec *Token, GrammaNode *SubTreeRoot)
     else
     {
         GrammaNode *newMul = new GrammaNode();
-        GrammaNode *newSon = new GrammaNode();
+        newSon = new GrammaNode();
         if (retcode = MulExp(Token, newMul) >= 0)
         {
             newSon->son.push_back(newMul);
@@ -556,7 +569,7 @@ int Stmt(TokenRec *Token, GrammaNode *SubTreeRoot)
             {
                 SubTreeRoot->son.push_back(new GrammaNode(ASSIGN));
                 Token->get_token();
-                GrammaNode *newSon = new GrammaNode();
+                newSon = new GrammaNode();
                 if (retcode = AddExp(Token, newSon) >= 0)
                 {
                     SubTreeRoot->son.push_back(newSon);
@@ -577,6 +590,7 @@ int Stmt(TokenRec *Token, GrammaNode *SubTreeRoot)
 }
 int LVal(TokenRec *Token, GrammaNode *SubTreeRoot)
 {
+    GrammaNode* newSon;
     int retcode = 0;
     SubTreeRoot->type = UE;
     for (; Token->type != ASSIGN; Token->get_token())
@@ -584,7 +598,7 @@ int LVal(TokenRec *Token, GrammaNode *SubTreeRoot)
         if (Token->type == SQBRAL)
         {
             Token->get_token();
-            GrammaNode *newSon = new GrammaNode();
+            newSon = new GrammaNode();
             if (retcode = AddExp(Token, newSon) >= 0)
             {
                 SubTreeRoot->son.push_back(newSon);
@@ -605,6 +619,7 @@ int LVal(TokenRec *Token, GrammaNode *SubTreeRoot)
 }
 int UnaryExp(TokenRec *Token, GrammaNode *SubTreeRoot)
 {
+    GrammaNode* newSon;
     int retcode = 0;
     SubTreeRoot->type = UE;
     switch (Token->type)
@@ -621,7 +636,7 @@ int UnaryExp(TokenRec *Token, GrammaNode *SubTreeRoot)
             if (Token->type != RDBRAR)
             {
                 Token->get_token();
-                GrammaNode *newSon = new GrammaNode();
+                newSon = new GrammaNode();
                 if (retcode = FuncRParams(Token, newSon))
                 {
                     SubTreeRoot->son.push_back(newSon);
@@ -631,13 +646,13 @@ int UnaryExp(TokenRec *Token, GrammaNode *SubTreeRoot)
         }
         else
         {
-            ErrorCatch("error");
+            ErrorCatch("Excepted (");
             retcode = -1;
         }
         break;
     case ADD:
         Token->get_token();
-        GrammaNode *newSon = new GrammaNode();
+        newSon = new GrammaNode();
         if (retcode = UnaryExp(Token, newSon))
         {
             SubTreeRoot->son.push_back(newSon);
@@ -645,7 +660,7 @@ int UnaryExp(TokenRec *Token, GrammaNode *SubTreeRoot)
         break;
     case SUB:
         Token->get_token();
-        GrammaNode *newSon = new GrammaNode();
+        newSon = new GrammaNode();
         if (retcode = UnaryExp(Token, newSon))
         {
             SubTreeRoot->son.push_back(newSon);
@@ -653,7 +668,7 @@ int UnaryExp(TokenRec *Token, GrammaNode *SubTreeRoot)
         break;
     case NOT:
         Token->get_token();
-        GrammaNode *newSon = new GrammaNode();
+        newSon = new GrammaNode();
         if (retcode = UnaryExp(Token, newSon))
         {
             SubTreeRoot->son.push_back(newSon);
@@ -668,9 +683,10 @@ int UnaryExp(TokenRec *Token, GrammaNode *SubTreeRoot)
 }
 int FuncRParams(TokenRec *Token, GrammaNode *SubTreeRoot)
 {
+    GrammaNode* newSon;
     int retcode = 0;
     SubTreeRoot->type = FRPs;
-    GrammaNode *newSon = new GrammaNode();
+    newSon = new GrammaNode();
     if (retcode = AddExp(Token, newSon) >= 0)
     {
         SubTreeRoot->son.push_back(newSon);
@@ -678,7 +694,7 @@ int FuncRParams(TokenRec *Token, GrammaNode *SubTreeRoot)
     for (; Token->type == COMM;)
     {
         Token->get_token();
-        GrammaNode *newSon = new GrammaNode();
+        newSon = new GrammaNode();
         if (retcode = AddExp(Token, newSon) >= 0)
         {
             SubTreeRoot->son.push_back(newSon);
@@ -688,21 +704,23 @@ int FuncRParams(TokenRec *Token, GrammaNode *SubTreeRoot)
 }
 int MulExp(TokenRec *Token, GrammaNode *SubTreeRoot)
 {
+    GrammaNode* newSon;
     int retcode = 0;
     SubTreeRoot->type = ME;
-    GrammaNode *newSon = new GrammaNode();
+    newSon = new GrammaNode();
     if (retcode = UnaryExp(Token, newSon) >= 0)
     {
         SubTreeRoot->son.push_back(newSon);
+        return retcode;
     }
     if (Token->type < DIV || Token->type > MOD)
     {
-        ErrorCatch("error");
+        ErrorCatch("Excepted * / %.....but get"+Token->val.val_str);
         return -1;
     }
     SubTreeRoot->son.push_back(new GrammaNode(Token->type));
     Token->get_token();
-    GrammaNode *newSon = new GrammaNode();
+    newSon = new GrammaNode();
     if (retcode = MulExp(Token, newSon) >= 0)
     {
         SubTreeRoot->son.push_back(newSon);
@@ -711,21 +729,23 @@ int MulExp(TokenRec *Token, GrammaNode *SubTreeRoot)
 }
 int AddExp(TokenRec *Token, GrammaNode *SubTreeRoot)
 {
+    GrammaNode* newSon;
     int retcode = 0;
     SubTreeRoot->type = AE;
-    GrammaNode *newSon = new GrammaNode();
+    newSon = new GrammaNode();
     if (retcode = MulExp(Token, newSon) >= 0)
     {
         SubTreeRoot->son.push_back(newSon);
+        return retcode;
     }
     if (Token->type != ADD && Token->type != SUB)
     {
-        ErrorCatch("error");
+        ErrorCatch("Excepted +/-");
         return -1;
     }
     SubTreeRoot->son.push_back(new GrammaNode(Token->type));
     Token->get_token();
-    GrammaNode *newSon = new GrammaNode();
+    newSon = new GrammaNode();
     if (retcode = AddExp(Token, newSon) >= 0)
     {
         SubTreeRoot->son.push_back(newSon);
@@ -734,12 +754,14 @@ int AddExp(TokenRec *Token, GrammaNode *SubTreeRoot)
 }
 int RelExp(TokenRec *Token, GrammaNode *SubTreeRoot)
 {
+    GrammaNode* newSon;
     int retcode = 0;
     SubTreeRoot->type = RE;
-    GrammaNode *newSon = new GrammaNode();
+    newSon = new GrammaNode();
     if (retcode = AddExp(Token, newSon) >= 0)
     {
         SubTreeRoot->son.push_back(newSon);
+        return retcode;
     }
     if (Token->type < LT || Token->type > BQ)
     {
@@ -748,7 +770,7 @@ int RelExp(TokenRec *Token, GrammaNode *SubTreeRoot)
     }
     SubTreeRoot->son.push_back(new GrammaNode(Token->type));
     Token->get_token();
-    GrammaNode *newSon = new GrammaNode();
+    newSon = new GrammaNode();
     if (retcode = RelExp(Token, newSon) >= 0)
     {
         SubTreeRoot->son.push_back(newSon);
@@ -757,12 +779,14 @@ int RelExp(TokenRec *Token, GrammaNode *SubTreeRoot)
 }
 int EqExp(TokenRec *Token, GrammaNode *SubTreeRoot)
 {
+    GrammaNode* newSon;
     int retcode = 0;
     SubTreeRoot->type = EE;
-    GrammaNode *newSon = new GrammaNode();
+    newSon = new GrammaNode();
     if (retcode = RelExp(Token, newSon) >= 0)
     {
         SubTreeRoot->son.push_back(newSon);
+        return retcode;
     }
     if (Token->type != EQ && Token->type != NEQ)
     {
@@ -771,7 +795,7 @@ int EqExp(TokenRec *Token, GrammaNode *SubTreeRoot)
     }
     SubTreeRoot->son.push_back(new GrammaNode(Token->type));
     Token->get_token();
-    GrammaNode *newSon = new GrammaNode();
+    newSon = new GrammaNode();
     if (retcode = EqExp(Token, newSon) >= 0)
     {
         SubTreeRoot->son.push_back(newSon);
@@ -780,12 +804,14 @@ int EqExp(TokenRec *Token, GrammaNode *SubTreeRoot)
 }
 int LAndExp(TokenRec *Token, GrammaNode *SubTreeRoot)
 {
+    GrammaNode* newSon;
     int retcode = 0;
     SubTreeRoot->type = LAE;
-    GrammaNode *newSon = new GrammaNode();
+    newSon = new GrammaNode();
     if (retcode = EqExp(Token, newSon) >= 0)
     {
         SubTreeRoot->son.push_back(newSon);
+        return retcode;
     }
     if (Token->type != AND)
     {
@@ -794,7 +820,7 @@ int LAndExp(TokenRec *Token, GrammaNode *SubTreeRoot)
     }
     SubTreeRoot->son.push_back(new GrammaNode(Token->type));
     Token->get_token();
-    GrammaNode *newSon = new GrammaNode();
+    newSon = new GrammaNode();
     if (retcode = LAndExp(Token, newSon) >= 0)
     {
         SubTreeRoot->son.push_back(newSon);
@@ -803,12 +829,14 @@ int LAndExp(TokenRec *Token, GrammaNode *SubTreeRoot)
 }
 int LOrExp(TokenRec *Token, GrammaNode *SubTreeRoot)
 {
+    GrammaNode* newSon;
     int retcode = 0;
     SubTreeRoot->type = LOE;
-    GrammaNode *newSon = new GrammaNode();
+    newSon = new GrammaNode();
     if (retcode = EqExp(Token, newSon) >= 0)
     {
         SubTreeRoot->son.push_back(newSon);
+        return retcode;
     }
     if (Token->type != OR)
     {
@@ -817,7 +845,7 @@ int LOrExp(TokenRec *Token, GrammaNode *SubTreeRoot)
     }
     SubTreeRoot->son.push_back(new GrammaNode(Token->type));
     Token->get_token();
-    GrammaNode *newSon = new GrammaNode();
+    newSon = new GrammaNode();
     if (retcode = LOrExp(Token, newSon) >= 0)
     {
         SubTreeRoot->son.push_back(newSon);
@@ -829,13 +857,14 @@ void ErrorCatch(string s)
     errorcnt++;
     printf("Passer: Error No.%d ----", errorcnt);
     cout << errorcnt << "\n";
+    cout<<s<<'\n';
 }
 
 int parser_main(TokenRec *Token, GrammaNode *TreeRoot)
 {
-
-    Token->get_token();
     int retcode;
+    TreeRoot->type = RT;
+    Token->get_token();
     while (Token->type != ENDF)
     {
         GrammaNode *newSon = new GrammaNode();
@@ -847,14 +876,14 @@ int parser_main(TokenRec *Token, GrammaNode *TreeRoot)
     }
     return retcode;
 }
-void show_tree(GrammaNode * TreeRoot,int tabcnt)
+void show_tree(GrammaNode * TreeRoot, int tabcnt)
 {
-    printf("type: %d\n",TreeRoot->type);
+    printf("type: ");
+    cout<<typetablep[TreeRoot->type]<<endl;
     for(int i=0;i<TreeRoot->son.size();i++)
     {
         for(int i=1;i<=tabcnt;i++)printf("  ");
         printf("%d->",i);
         show_tree(TreeRoot->son[i],tabcnt+3);
-        printf("\n");
     }
 }
