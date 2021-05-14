@@ -19,4 +19,4 @@ struct GrammaNode
     GrammaNode(int x, int y){type=x;num = y;son.clear(); }
     GrammaNode(int x, string y){type=x;str = y;son.clear(); }
 };
-int passer_main(TokenRec *Token, GrammaNode *TreeRoot);
+int parser_main(TokenRec *Token, GrammaNode *TreeRoot);

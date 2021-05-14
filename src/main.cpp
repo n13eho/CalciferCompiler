@@ -1,7 +1,7 @@
 // #include<bits/stdc++.h>
 #include "scan.h"
 #include"global.h"
-#include"passer.h"
+#include"parser.h"
 
 // using namespace std;
 TokenRec * currToken; //实例化一个TokenRec对象 

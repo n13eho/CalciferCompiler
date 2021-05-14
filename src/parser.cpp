@@ -1,4 +1,4 @@
-#include "passer.h"
+#include "parser.h"
 #include "scan.h"
 #include <bits/stdc++.h>
 static int errorcnt = 0;
@@ -831,7 +831,7 @@ void ErrorCatch(string s)
     cout << errorcnt << "\n";
 }
 
-int passer_main(TokenRec *Token, GrammaNode *TreeRoot)
+int parser_main(TokenRec *Token, GrammaNode *TreeRoot)
 {
 
     Token->get_token();
