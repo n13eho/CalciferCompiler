@@ -1,12 +1,13 @@
 Root            -> {CompUnitNode} $^+$          //一个或多个
 CompUnitNode    -> **const int** ConstDef {,ConstDef} **;**
-                -> **void** FuncDedV
-                -> **int Ident** VarDef {,VarDef} **;**
+                -> **void** FuncDefV
+                -> **int Ident** VarDef {**, Ident**VarDef} **;**
                 -> **int Idnet (** FuncDefI
 FuncDefV        -> **Ident (** [FuncParams] **)** Block
 FuncDefI        -> [FuncParams] **)** Block
-ConstDef        -> **Ident**{**[** AddExp **]**} **=** InitVal
-VarDef          -> [**[** AddExp **]**] **;**
+ConstDef        -> **Ident**{**[** AddExp **]**} **=** InitVal      //const_flag = 1 
+VarDef          -> {**[** AddExp **]**}                   //const_flag = 1
+                -> {**[** AddExp **]**} **=** InitVal     //const_flag = 1
 InitVal         -> AddExp
                 -> **{** [ InitVal { **,** InitVal } ] **}**
 FuncFParams     -> FuncFParam { **,** FuncFParam }
@@ -15,15 +16,15 @@ Block           -> **{** {BlockItem} **}**
 BlockItem       -> Stmt
                 -> **const int** ConstDef {,ConstDef} **;**
                 -> **int Ident** VarDef {,VarDef} **;**
-Stmt            -> Lval **=** AddExp **;**
-                -> [AddExp] **;**
+Stmt            -> MulExp LVal **=** AddExp **;**//必须是MulExp--UnaryExp--Ident
+                -> [MulExp (**+**|**-**) AddExp] **;**
                 -> Block **;** 
                 -> **if (** LOrExp **)** Stmt [ **else** Stmt]
                 -> **while (** LOrExp **)** Stmt
                 -> **break;**
                 -> **continue;**
                 -> **return** [AddExp] **;**
-LVal            -> **Ident** { **[** AddExp **]**}
+LVal            -> { **[** AddExp **]**} 
 UnaryExp        -> **IntConst**
                 -> **Ident(** [FuncRPararms] **)**
                 -> **+** UnaryExp
@@ -49,3 +50,5 @@ LAndExp         -> EqExp
                 -> EqExp **&&** LAndExp
 LOrExp         -> EqExp
                 -> EqExp **||** LOrExp
+
+`-+3`OK?

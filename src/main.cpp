@@ -1,10 +1,13 @@
 // #include<bits/stdc++.h>
 #include "scan.h"
 #include"global.h"
+#include"passer.h"
 
 // using namespace std;
-
+TokenRec * currToken; //实例化一个TokenRec对象 
+GrammaNode* tree;
 FILE* targetFile;
+
 
 int main(int argc, char *argv[])
 {
@@ -20,14 +23,13 @@ int main(int argc, char *argv[])
     
     //开始做语法分析；但由于只先写了词法分析，故就先只写个get_token()的调用
     
-    TokenRec currToken; //实例化一个TokenRec对象 
-    while(true)
-    {
-        currToken.get_token();
-        if(currToken.type == ENDF)
-            break;
+    // while(true)
+    // {
+    //     currToken.get_token();
+    //     if(currToken.type == ENDF)
+    //         break;
         
-        currToken.show_token();
-    }
-
+    //     currToken.show_token();
+    // }
+    passer_main(currToken, tree);
 }
