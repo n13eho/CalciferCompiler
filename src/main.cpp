@@ -21,5 +21,7 @@ int main(int argc, char *argv[])
     // string arg1(argv[1]); // convert argv[1] to string
     targetFile = fopen(std::string(argv[1]).c_str(), "r");
     parser_main(currToken, tree);
+    freopen("ans.txt","w",stdout);
     show_tree(tree,1);
+    fclose(stdout);
 }

@@ -1,0 +1,14 @@
+type: root
+  0->type: cmpUnit
+        0->type: constdf
+              0->type: initVar
+                    0->type: AddExp
+                          0->type: MulExp
+                                0->type: UnaryExp
+                                      0->type: IntConst
+        1->type: constdf
+              0->type: initVar
+                    0->type: AddExp
+                          0->type: MulExp
+                                0->type: UnaryExp
+                                      0->type: IntConst
