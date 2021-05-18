@@ -1,11 +1,5 @@
-int main(){
-    int a=07;
-    while(a>0){
-        if(a>5){
-            a=a-0X8;
-            continue;
-        }/*
-        return a;*/
-    }//this is a comment
-    return a;
+int 099dd09(){
+    int a=021;
+    a = 019;  
+    a==019;  
 }
