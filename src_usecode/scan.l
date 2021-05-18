@@ -9,10 +9,11 @@ enter  \n
 zb     \t
 
 /*数值常量*/
+octalConst 0[0-7]+
 decimalConst [1-9]{digit}*
-octalConst 0[0-7]*
 hexadecimalConst 0[xX][0-9a-fA-F]+
-IntConst {octalConst}|{hexadecimalConst}|{decimalConst}
+
+/*IntConst {octalConst}|{hexadecimalConst}|{decimalConst}|{zeroo}*/
 /*Ident,标识符*/
 Ident [_a-zA-Z][_a-zA-Z0-9]*
 /*注释？在这里处理吗*/
@@ -62,9 +63,12 @@ Comment {Comment1}|{Comment2}
 "return" {printf("%s: RSWord_RETURN\n",yytext);}
 "main" {printf("%s: RSWord_MAIN\n",yytext);}
  
-{IntConst} {printf("%s: IntConst\n",yytext);}
-{Ident}    {printf("%s: Ident\n",yytext);}
 
+{octalConst}    {printf("%s: IntConst_octalConst\n",yytext);}
+{decimalConst} {printf("%s: IntConst_decimalConst\n",yytext);}
+{hexadecimalConst} {printf("%s: IntConst_hexadecimalConst\n",yytext);}
+
+{Ident} {printf("%s: Ident\n",yytext);}
 %%
 
 int main()
