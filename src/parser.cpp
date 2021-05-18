@@ -233,7 +233,6 @@ int VarDef(TokenRec *Token, GrammaNode *SubTreeRoot)
             {
                 SubTreeRoot->son.push_back(newSon);
             }
-            Token->get_token();
             if (Token->type != SQBRAR)
             {
                 ErrorCatch("error");
@@ -249,7 +248,6 @@ int VarDef(TokenRec *Token, GrammaNode *SubTreeRoot)
         {
             SubTreeRoot->son.push_back(newSon);
         }
-        Token->get_token();
         if (Token->type != SEMI && Token->type != COMM)
         {
             ErrorCatch("error");
