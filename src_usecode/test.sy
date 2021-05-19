@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 //int main(){
 //    int _a=0x7;
 //    while(a>0){
@@ -20,3 +21,6 @@ starttime();
 
 void type(int a[])
 {}
+=======
+08
+>>>>>>> 1b5315bc73208bad9456c91dce0636357667258c

@@ -510,6 +510,7 @@ int yy_flex_debug = 0;
 char *yytext;
 #line 1 "scan.l"
 #line 2 "scan.l"
+<<<<<<< HEAD:src_usecode/lex.yy.cpp
 #include <stdio.h>
 #include <string>
 #include <typeinfo>
@@ -522,6 +523,15 @@ char *yytext;
 /*Ident,标识符*/
 /*注释？在这里处理吗*/
 #line 525 "lex.yy.c"
+=======
+#include <stdio.h>
+#line 515 "lex.yy.c"
+/*数值常量*/
+/*IntConst {octalConst}|{hexadecimalConst}|{decimalConst}|{zeroo}*/
+/*Ident,标识符*/
+/*注释？在这里处理吗*/
+#line 520 "lex.yy.c"
+>>>>>>> 1b5315bc73208bad9456c91dce0636357667258c:src_usecode/lex.yy.c
 
 #define INITIAL 0
 
@@ -738,9 +748,15 @@ YY_DECL
 		}
 
 	{
+<<<<<<< HEAD:src_usecode/lex.yy.cpp
 #line 30 "scan.l"
 
 #line 744 "lex.yy.c"
+=======
+#line 24 "scan.l"
+
+#line 739 "lex.yy.c"
+>>>>>>> 1b5315bc73208bad9456c91dce0636357667258c:src_usecode/lex.yy.c
 
 	while ( /*CONSTCOND*/1 )		/* loops until end-of-file is reached */
 		{
@@ -799,6 +815,7 @@ do_action:	/* This label is used only to access EOF actions. */
 
 case 1:
 YY_RULE_SETUP
+<<<<<<< HEAD:src_usecode/lex.yy.cpp
 #line 31 "scan.l"
 {return ZERO;}
 	YY_BREAK
@@ -806,10 +823,20 @@ case 2:
 YY_RULE_SETUP
 #line 33 "scan.l"
 {}//{printf("%s: space\n",yytext);}
+=======
+#line 25 "scan.l"
+{printf("%s: ZERO\n",yytext);}
+	YY_BREAK
+case 2:
+YY_RULE_SETUP
+#line 27 "scan.l"
+{}//{printf("%s: space\n",yytext);}
+>>>>>>> 1b5315bc73208bad9456c91dce0636357667258c:src_usecode/lex.yy.c
 	YY_BREAK
 case 3:
 /* rule 3 can match eol */
 YY_RULE_SETUP
+<<<<<<< HEAD:src_usecode/lex.yy.cpp
 #line 34 "scan.l"
 {}//{printf("%s: enter\n",yytext);}
 	YY_BREAK
@@ -817,10 +844,20 @@ case 4:
 YY_RULE_SETUP
 #line 35 "scan.l"
 {}//{printf("%s: zb\n",yytext);}
+=======
+#line 28 "scan.l"
+{}//{printf("%s: enter\n",yytext);}
+	YY_BREAK
+case 4:
+YY_RULE_SETUP
+#line 29 "scan.l"
+{}//{printf("%s: zb\n",yytext);}
+>>>>>>> 1b5315bc73208bad9456c91dce0636357667258c:src_usecode/lex.yy.c
 	YY_BREAK
 case 5:
 /* rule 5 can match eol */
 YY_RULE_SETUP
+<<<<<<< HEAD:src_usecode/lex.yy.cpp
 #line 36 "scan.l"
 {}
 	YY_BREAK
@@ -1016,6 +1053,202 @@ YY_RULE_SETUP
 ECHO;
 	YY_BREAK
 #line 1019 "lex.yy.c"
+=======
+#line 30 "scan.l"
+{printf("%s: Comment\n",yytext);}
+	YY_BREAK
+case 6:
+YY_RULE_SETUP
+#line 32 "scan.l"
+{printf("%s: SEMI\n",yytext);}
+	YY_BREAK
+case 7:
+YY_RULE_SETUP
+#line 33 "scan.l"
+{printf("%s: COMM\n",yytext);}
+	YY_BREAK
+case 8:
+YY_RULE_SETUP
+#line 34 "scan.l"
+{printf("%s: RDBRAL\n",yytext);}
+	YY_BREAK
+case 9:
+YY_RULE_SETUP
+#line 35 "scan.l"
+{printf("%s: RDBRAR\n",yytext);}
+	YY_BREAK
+case 10:
+YY_RULE_SETUP
+#line 36 "scan.l"
+{printf("%s: SQBRAL\n",yytext);}
+	YY_BREAK
+case 11:
+YY_RULE_SETUP
+#line 37 "scan.l"
+{printf("%s: SQBRAR\n",yytext);}
+	YY_BREAK
+case 12:
+YY_RULE_SETUP
+#line 38 "scan.l"
+{printf("%s: BRAL\n",yytext);}
+	YY_BREAK
+case 13:
+YY_RULE_SETUP
+#line 39 "scan.l"
+{printf("%s: BRAR\n",yytext);}
+	YY_BREAK
+case 14:
+YY_RULE_SETUP
+#line 40 "scan.l"
+{printf("%s: ASSIGN\n",yytext);}
+	YY_BREAK
+case 15:
+YY_RULE_SETUP
+#line 42 "scan.l"
+{printf("%s: ADD\n",yytext);}
+	YY_BREAK
+case 16:
+YY_RULE_SETUP
+#line 43 "scan.l"
+{printf("%s: SUB\n",yytext);}
+	YY_BREAK
+case 17:
+YY_RULE_SETUP
+#line 44 "scan.l"
+{printf("%s: DIV\n",yytext);}
+	YY_BREAK
+case 18:
+YY_RULE_SETUP
+#line 45 "scan.l"
+{printf("%s: MUL\n",yytext);}
+	YY_BREAK
+case 19:
+YY_RULE_SETUP
+#line 46 "scan.l"
+{printf("%s: MOD\n",yytext);}
+	YY_BREAK
+case 20:
+YY_RULE_SETUP
+#line 47 "scan.l"
+{printf("%s: EQ\n",yytext);}
+	YY_BREAK
+case 21:
+YY_RULE_SETUP
+#line 48 "scan.l"
+{printf("%s: NOT\n",yytext);}
+	YY_BREAK
+case 22:
+YY_RULE_SETUP
+#line 49 "scan.l"
+{printf("%s: NEQ\n",yytext);}
+	YY_BREAK
+case 23:
+YY_RULE_SETUP
+#line 50 "scan.l"
+{printf("%s: OR\n",yytext);}
+	YY_BREAK
+case 24:
+YY_RULE_SETUP
+#line 51 "scan.l"
+{printf("%s: AND\n",yytext);}
+	YY_BREAK
+case 25:
+YY_RULE_SETUP
+#line 52 "scan.l"
+{printf("%s: LT\n",yytext);}
+	YY_BREAK
+case 26:
+YY_RULE_SETUP
+#line 53 "scan.l"
+{printf("%s: BG\n",yytext);}
+	YY_BREAK
+case 27:
+YY_RULE_SETUP
+#line 54 "scan.l"
+{printf("%s: LQ\n",yytext);}
+	YY_BREAK
+case 28:
+YY_RULE_SETUP
+#line 55 "scan.l"
+{printf("%s: BQ\n",yytext);}
+	YY_BREAK
+case 29:
+YY_RULE_SETUP
+#line 57 "scan.l"
+{printf("%s: RSWord_CONST\n",yytext);}
+	YY_BREAK
+case 30:
+YY_RULE_SETUP
+#line 58 "scan.l"
+{printf("%s: RSWord_INT\n",yytext);}
+	YY_BREAK
+case 31:
+YY_RULE_SETUP
+#line 59 "scan.l"
+{printf("%s: RSWord_VOID\n",yytext);}
+	YY_BREAK
+case 32:
+YY_RULE_SETUP
+#line 60 "scan.l"
+{printf("%s: RSWord_IF\n",yytext);}
+	YY_BREAK
+case 33:
+YY_RULE_SETUP
+#line 61 "scan.l"
+{printf("%s: RSWord_ELSE\n",yytext);}
+	YY_BREAK
+case 34:
+YY_RULE_SETUP
+#line 62 "scan.l"
+{printf("%s: RSWord_WHILE\n",yytext);}
+	YY_BREAK
+case 35:
+YY_RULE_SETUP
+#line 63 "scan.l"
+{printf("%s: RSWord_BREAK\n",yytext);}
+	YY_BREAK
+case 36:
+YY_RULE_SETUP
+#line 64 "scan.l"
+{printf("%s: RSWord_CONTINUE\n",yytext);}
+	YY_BREAK
+case 37:
+YY_RULE_SETUP
+#line 65 "scan.l"
+{printf("%s: RSWord_RETURN\n",yytext);}
+	YY_BREAK
+case 38:
+YY_RULE_SETUP
+#line 66 "scan.l"
+{printf("%s: RSWord_MAIN\n",yytext);}
+	YY_BREAK
+case 39:
+YY_RULE_SETUP
+#line 69 "scan.l"
+{printf("%s: IntConst_octalConst\n",yytext);}
+	YY_BREAK
+case 40:
+YY_RULE_SETUP
+#line 70 "scan.l"
+{printf("%s: IntConst_decimalConst\n",yytext);}
+	YY_BREAK
+case 41:
+YY_RULE_SETUP
+#line 71 "scan.l"
+{printf("%s: IntConst_hexadecimalConst\n",yytext);}
+	YY_BREAK
+case 42:
+YY_RULE_SETUP
+#line 73 "scan.l"
+{printf("%s: Ident\n",yytext);}
+	YY_BREAK
+case 43:
+YY_RULE_SETUP
+#line 74 "scan.l"
+ECHO;
+	YY_BREAK
+#line 1013 "lex.yy.c"
+>>>>>>> 1b5315bc73208bad9456c91dce0636357667258c:src_usecode/lex.yy.c
 case YY_STATE_EOF(INITIAL):
 	yyterminate();
 
@@ -2020,7 +2253,11 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
+<<<<<<< HEAD:src_usecode/lex.yy.cpp
 #line 85 "scan.l"
+=======
+#line 74 "scan.l"
+>>>>>>> 1b5315bc73208bad9456c91dce0636357667258c:src_usecode/lex.yy.c
 
 
 
