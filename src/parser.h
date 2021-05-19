@@ -4,7 +4,7 @@ using namespace std;
 
 typedef enum{
     RT=400,CUN, FDV, FDI, CD, VD, IV, FFPs, FFP, B, BI, S, LV, UE,
-    FRPs, ME, AE, RE, EE, LAE, LOE 
+    FRPs, ME, AE, RE, EE, LAE, LOE, PE
 } GrammaType;
 
 
@@ -39,6 +39,7 @@ int RelExp(TokenRec *Token,GrammaNode *SubTreeRoot);
 int EqExp(TokenRec *Token,GrammaNode *SubTreeRoot);
 int LAndExp(TokenRec *Token, GrammaNode *SubTreeRoot);
 int LOrExp(TokenRec *Token,GrammaNode *SubTreeRoot);
+int PrimaryExp(TokenRec *Token,GrammaNode *SubTreeRoot);
 void ErrorCatch(string s);
 int parser_main(TokenRec *Token, GrammaNode *TreeRoot);
 void show_tree(GrammaNode *TreeRoot,int tabcnt);

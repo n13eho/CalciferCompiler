@@ -559,10 +559,6 @@ int Stmt(TokenRec *Token, GrammaNode *SubTreeRoot)
         }
         else
         {
-            if (retcode = LVal(Token, newSon) >= 0)
-            {
-                SubTreeRoot->son.push_back(newSon);
-            }
             if (Token->type == ASSIGN)
             {
                 SubTreeRoot->son.push_back(new GrammaNode(ASSIGN));
@@ -591,23 +587,24 @@ int LVal(TokenRec *Token, GrammaNode *SubTreeRoot)
     GrammaNode* newSon;
     int retcode = 0;
     SubTreeRoot->type = UE;
-    for (; Token->type != ASSIGN; Token->get_token())
+    if(Token->type == Ident)
     {
-        if (Token->type == SQBRAL)
+        SubTreeRoot->son.push_back(new GrammaNode(Ident, Token->val.val_str));
+        Token->get_token();
+    }
+    else {
+        ErrorCatch("expected LVal");
+        return -1;
+    }
+    for (; Token->type == SQBRAL; Token->get_token())
+    {
+        Token->get_token();
+        newSon = new GrammaNode();
+        if (retcode = AddExp(Token, newSon) >= 0)
         {
-            Token->get_token();
-            newSon = new GrammaNode();
-            if (retcode = AddExp(Token, newSon) >= 0)
-            {
-                SubTreeRoot->son.push_back(newSon);
-            }
-            if (Token->type != SQBRAR)
-            {
-                ErrorCatch("error");
-                return -1;
-            }
+            SubTreeRoot->son.push_back(newSon);
         }
-        else
+        if (Token->type != SQBRAR)
         {
             ErrorCatch("error");
             return -1;
@@ -622,10 +619,6 @@ int UnaryExp(TokenRec *Token, GrammaNode *SubTreeRoot)
     SubTreeRoot->type = UE;
     switch (Token->type)
     {
-    case IntConst:
-        SubTreeRoot->son.push_back(new GrammaNode(IntConst, Token->val.num));
-        Token->get_token();
-        break;
     case Ident:
         Token->get_token();
         if (Token->type == RDBRAL)
@@ -673,9 +666,37 @@ int UnaryExp(TokenRec *Token, GrammaNode *SubTreeRoot)
         }
         break;
     default:
-        ErrorCatch("error");
-        retcode = -1;
+        GrammaNode* newSon = new GrammaNode();
+        if(retcode=PrimaryExp(Token,newSon)>=0){
+            SubTreeRoot->son.push_back(newSon);
+        }
         break;
+    }
+    return retcode;
+}
+int PrimaryExp(TokenRec *Token,GrammaNode *SubTreeRoot)
+{
+    int retcode =0 ;
+    SubTreeRoot->type = PE;
+    if(Token->type == RDBRAL)
+    {
+        Token->get_token();
+        GrammaNode * newSon = new GrammaNode();
+        if(retcode=AddExp(Token,newSon)>=0){
+            SubTreeRoot->son.push_back(newSon);
+        }
+        if(Token->type!=RDBRAR)return -1;
+    }
+    else if(Token->type = IntConst)
+    {
+        SubTreeRoot->son.push_back(new GrammaNode(IntConst,Token->val.num));
+    }
+    else 
+    {
+        GrammaNode * newSon = new GrammaNode();
+        if(retcode=LVal(Token,newSon)>=0){
+            SubTreeRoot->son.push_back(newSon);
+        }
     }
     return retcode;
 }
