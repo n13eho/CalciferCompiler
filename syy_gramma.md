@@ -16,7 +16,7 @@ Block           -> **{** {BlockItem} **}**
 BlockItem       -> Stmt
                 -> **const int** ConstDef {,ConstDef} **;**
                 -> **int Ident** VarDef {,VarDef} **;**
-Stmt            -> MulExp  **=** AddExp **;**//必须是MulExp--UnaryExp--primaryExp--LVal
+Stmt            -> MulExp  **=** AddExp **;**//MulExp必须是MulExp--UnaryExp--primaryExp--LVal
                 -> [MulExp (**+**|**-**) AddExp] **;**
                 -> Block **;** 
                 -> **if (** LOrExp **)** Stmt [ **else** Stmt]

@@ -182,6 +182,7 @@ int ConstDef(TokenRec *Token, GrammaNode *SubTreeRoot)
     SubTreeRoot->type = CD;
     if (Token->type == Ident)
     {
+        SubTreeRoot->son.push_back(new GrammaNode(Ident,Token->val.val_str));
         for (Token->get_token(); Token->type != ASSIGN; Token->get_token())
         {
             if (Token->type == SQBRAL)
@@ -204,6 +205,7 @@ int ConstDef(TokenRec *Token, GrammaNode *SubTreeRoot)
                 return -1;
             }
         }
+        SubTreeRoot->son.push_back(new GrammaNode(ASSIGN,Token->val.val_str));
         Token->get_token();
         GrammaNode *newSon = new GrammaNode();
         retcode = InitVal(Token, newSon);

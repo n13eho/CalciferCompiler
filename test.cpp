@@ -8,8 +8,7 @@ struct node
 
 int main()
 {
-    node *var = new node();
-    cout<<var<<endl;
-    var = new node();
-    cout<<var;
+    char * test1="aaaaaa";
+    string s=test1;
+    cout<<s;
 }
