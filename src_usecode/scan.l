@@ -22,6 +22,8 @@ Comment2 \/\*([^\*^\/]*|[\*^\/*]*|[^\**\/]*)*\*\/
 Comment {Comment1}|{Comment2}
 
 %%
+0+ {printf("%s: ZERO\n",yytext);}
+
 {space} {}//{printf("%s: space\n",yytext);}
 {enter} {}//{printf("%s: enter\n",yytext);}
 {zb}    {}//{printf("%s: zb\n",yytext);}

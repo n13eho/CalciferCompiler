@@ -1,5 +1,26 @@
-int 099dd09(){
-    int a=021;
-    a = 019;  
-    a==019;  
-}
+<<<<<<< HEAD
+//int main(){
+//    int _a=0x7;
+//    while(a>0){
+//        if(a>5){
+//            a=a-0X8;
+//            continue;
+//        }/*
+//        return a;*/
+//    }//this is a comment
+//    return a;
+//}
+
+starttime();
+    i = 0;
+    while (i < 1000) {
+        conv1d(n, A, B, C);
+        conv1d(n, B, C, A);
+        i = i + 1;
+    }
+
+void type(int a[])
+{}
+=======
+08
+>>>>>>> 1b5315bc73208bad9456c91dce0636357667258c

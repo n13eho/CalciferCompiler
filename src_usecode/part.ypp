@@ -1,0 +1,174 @@
+
+%{
+	#include <stdlib.h>
+	#include <stdio.h>
+	#include <iostream>
+	#include "sysy_node.hpp"
+	#include "sysy_node.cpp"
+	extern int yylex();
+	void yyerror(char const *s);
+%}
+
+%union{
+        struct GrammaNode *no;
+}
+
+
+%type <no> ASSIGN SEMI COMM RDBRAL RDBRAR SQBRAL SQBRAR BRAL BRAR ADD SUB DIV MUL MOD EQ NOT NEQ OR AND LT BG LQ BQ ZERO INT CONST IntConst_D IntConst_O IntConst_H VOID IF ELSE WHILE BREAK CONTINUE RETURN MAIN Ident
+%type <no> Decl ConstDecl ConstDefs ConstDef ConstInitVal ConstInitVals ConstExps ConstExp Exp LVal Exps PrimaryExp UnaryExp UnaryOp FuncRParamse FuncRParams MulExp AddExp IntConst
+
+%token ASSIGN SEMI COMM RDBRAL RDBRAR SQBRAL SQBRAR BRAL BRAR
+%token ADD SUB DIV MUL MOD EQ NOT NEQ OR AND LT BG LQ BQ
+%token ZERO INT CONST IntConst_D IntConst_O IntConst_H VOID IF ELSE WHILE BREAK CONTINUE RETURN MAIN
+%token Ident 
+
+%left MUL
+%left ADD
+%left SUB
+%left DIV
+%left MOD
+%left NOT
+
+%%
+
+program:LVal
+;
+
+lines:Decl
+     |lines Decl
+;
+
+Decl:
+    ConstDecl {$$=new GrammaNode(Decl_,"Decl_");$$->son.push_back($1);}
+
+;
+
+//常数声明
+ConstDecl:
+CONST INT ConstDefs  SEMI {$$=new GrammaNode(ConstDecl_,"ConstDecl_");$$->son.push_back($1);$$->son.push_back($2);$$->son.push_back($3);$$->son.push_back($4);}
+;
+
+//常数定义
+ConstDefs:
+		ConstDef 					{$$=new GrammaNode(ConstDefs_,"ConstDefs_");$$->son.push_back($1);}
+	 	|ConstDefs COMM ConstDef	{$$ = new GrammaNode(ConstDefs_,"ConstDefs_"); $$->son.push_back($1);$$->son.push_back($2);$$->son.push_back($3);}		
+;
+
+//常数定义
+ConstDef:
+Ident ConstExps  ASSIGN ConstInitVal {$$ = new GrammaNode(ConstDef_,"ConstDef_"); $$->son.push_back($1);$$->son.push_back($2);$$->son.push_back($3);$$->son.push_back($4);}
+;
+
+ConstInitVal:
+	ConstExp						{$$ = new GrammaNode(ConstInitVal_,"ConstInitVal_"); $$->son.push_back($1);}
+	    |BRAL BRAR							{$$ = new GrammaNode(ConstInitVal_,"ConstInitVal_"); $$->son.push_back($1);$$->son.push_back($2);}
+	    |BRAL ConstInitVals BRAR			{$$ = new GrammaNode(ConstInitVal_,"ConstInitVal_"); $$->son.push_back($1);$$->son.push_back($2);$$->son.push_back($3);}
+;
+
+ConstInitVals:
+	ConstInitVal					{$$ = new GrammaNode(ConstInitVals_,"ConstInitVals_"); $$->son.push_back($1);}
+	    |ConstInitVals COMM ConstInitVal	{$$ = new GrammaNode(ConstInitVals_,"ConstInitVals_"); $$->son.push_back($1);$$->son.push_back($2);$$->son.push_back($3);}
+;
+
+
+//常数定义中数组[]
+ConstExps:
+	 	|ConstExps SQBRAL ConstExp SQBRAR	{$$ = new GrammaNode(ConstExps_,"ConstExps_"); $$->son.push_back($1);$$->son.push_back($2);$$->son.push_back($3);$$->son.push_back($4);}
+;
+
+//常量表达式
+ConstExp:
+	AddExp 				{$$ = new GrammaNode(ConstExp_,"ConstExp_"); $$->son.push_back($1);}
+;
+
+//表达式
+Exp:
+	AddExp 						{$$ = new GrammaNode(Exp_,"Exp_"); $$->son.push_back($1);}
+;
+
+//左值表达式
+LVal:
+	Ident Exps					{$$ = new GrammaNode(LVal_,"LVal_"); $$->son.push_back($1);$$->son.push_back($2);show_node($$);}
+    |Ident 						{$$ = new GrammaNode(LVal_,"LVal_"); $$->son.push_back($1);show_node($$);printf("LAal->Ident\n");}
+;
+
+//数组表达式
+Exps:
+	SQBRAL Exp SQBRAR			{$$ = new GrammaNode(Exps_,"Exps_"); $$->son.push_back($1);$$->son.push_back($2);$$->son.push_back($3);}
+    |Exps SQBRAL Exp SQBRAR		{$$ = new GrammaNode(Exps_,"Exps_"); $$->son.push_back($1);$$->son.push_back($2);$$->son.push_back($3);$$->son.push_back($4);}
+;
+
+//基本表达式
+PrimaryExp:
+	RDBRAL Exp RDBRAR	{$$ = new GrammaNode(PrimaryExp_,"PrimaryExp"); $$->son.push_back($1);$$->son.push_back($2);$$->son.push_back($3);show_node($$);}
+	  |LVal						{$$ = new GrammaNode(PrimaryExp_,"PrimaryExp"); $$->son.push_back($1);show_node($$);}
+	  |IntConst					{$$ = new GrammaNode(PrimaryExp_,"PrimaryExp"); $$->son.push_back($1);show_node($$);}
+;
+
+//一元表达式
+UnaryExp:
+	PrimaryExp						{$$ = new GrammaNode(UnaryExp_,"UnaryExp_"); $$->son.push_back($1);}
+	|Ident RDBRAL FuncRParamse RDBRAR	{$$ = new GrammaNode(UnaryExp_,"UnaryExp_"); $$->son.push_back($1);$$->son.push_back($2);$$->son.push_back($3);$$->son.push_back($4);}
+	|UnaryOp UnaryExp					{$$ = new GrammaNode(UnaryExp_,"UnaryExp_"); $$->son.push_back($1);$$->son.push_back($2);}
+;
+
+//单目运算符
+UnaryOp:
+		ADD				{$$ = new GrammaNode(UnaryOp_,"UnaryOp_"); $$->son.push_back($1);}
+       |SUB				{$$ = new GrammaNode(UnaryOp_,"UnaryOp_"); $$->son.push_back($1);}
+       |NOT				{$$ = new GrammaNode(UnaryOp_,"UnaryOp_"); $$->son.push_back($1);}
+;
+
+//函数实参表
+FuncRParamse:
+	    |FuncRParams	   {$$ = new GrammaNode(FuncRParamse_,"FuncRParamse_"); $$->son.push_back($1);}
+;
+
+//实参
+FuncRParams:
+		Exp				{$$ = new GrammaNode(FuncRParams_,"FuncRParams_"); $$->son.push_back($1);}
+	   |FuncRParams COMM Exp{$$ = new GrammaNode(FuncRParams_,"FuncRParams_"); $$->son.push_back($1);$$->son.push_back($2);$$->son.push_back($3);}	   
+;
+
+//乘除模表达式
+MulExp:
+		UnaryExp				{$$ = new GrammaNode(MulExp_,"MulExp_"); $$->son.push_back($1);}
+      |MulExp MUL UnaryExp	{$$ = new GrammaNode(MulExp_,"MulExp_"); $$->son.push_back($1);$$->son.push_back($2);$$->son.push_back($3);}
+      |MulExp DIV UnaryExp	{$$ = new GrammaNode(MulExp_,"MulExp_"); $$->son.push_back($1);$$->son.push_back($2);$$->son.push_back($3);}
+      |MulExp MOD UnaryExp	{$$ = new GrammaNode(MulExp_,"MulExp_"); $$->son.push_back($1);$$->son.push_back($2);$$->son.push_back($3);}
+;
+
+//加减表达式
+AddExp:
+	MulExp				{$$ = new GrammaNode(AddExp_,"AddExp"); $$->son.push_back($1);}
+      |AddExp ADD MulExp	{$$ = new GrammaNode(AddExp_,"AddExp"); $$->son.push_back($1);$$->son.push_back($2);$$->son.push_back($3);}
+      |AddExp SUB MulExp	{$$ = new GrammaNode(AddExp_,"AddExp"); $$->son.push_back($1);$$->son.push_back($2);$$->son.push_back($3);}
+;
+
+//ok
+IntConst:
+	IntConst_D	{$$ = new GrammaNode(IntConst_,"IntConst"); $$->son.push_back($1);}
+	  |IntConst_O	{$$ = new GrammaNode(IntConst_,"IntConst"); $$->son.push_back($1);}
+	  |IntConst_H	{$$ = new GrammaNode(IntConst_,"IntConst"); $$->son.push_back($1);}
+	  |ZERO			{$$ = new GrammaNode(IntConst_,"IntConst"); $$->son.push_back($1);}
+;
+
+
+
+
+
+%%
+main(void)
+{
+yyparse();
+return 0;
+}
+
+void yyerror(char const *s)
+{
+printf("%s\n",s);
+return;
+}
+
+
+
