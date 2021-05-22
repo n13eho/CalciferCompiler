@@ -508,9 +508,8 @@ int yy_flex_debug = 0;
 #define YY_MORE_ADJ 0
 #define YY_RESTORE_YY_MORE_OFFSET
 char *yytext;
-#line 1 "scan.l"
-#line 2 "scan.l"
-<<<<<<< HEAD:src_usecode/lex.yy.cpp
+#line 1 "scan_pro.l"
+#line 2 "scan_pro.l"
 #include <stdio.h>
 #include <string>
 #include <typeinfo>
@@ -523,15 +522,6 @@ char *yytext;
 /*Ident,标识符*/
 /*注释？在这里处理吗*/
 #line 525 "lex.yy.c"
-=======
-#include <stdio.h>
-#line 515 "lex.yy.c"
-/*数值常量*/
-/*IntConst {octalConst}|{hexadecimalConst}|{decimalConst}|{zeroo}*/
-/*Ident,标识符*/
-/*注释？在这里处理吗*/
-#line 520 "lex.yy.c"
->>>>>>> 1b5315bc73208bad9456c91dce0636357667258c:src_usecode/lex.yy.c
 
 #define INITIAL 0
 
@@ -748,15 +738,9 @@ YY_DECL
 		}
 
 	{
-<<<<<<< HEAD:src_usecode/lex.yy.cpp
-#line 30 "scan.l"
+#line 30 "scan_pro.l"
 
 #line 744 "lex.yy.c"
-=======
-#line 24 "scan.l"
-
-#line 739 "lex.yy.c"
->>>>>>> 1b5315bc73208bad9456c91dce0636357667258c:src_usecode/lex.yy.c
 
 	while ( /*CONSTCOND*/1 )		/* loops until end-of-file is reached */
 		{
@@ -815,440 +799,223 @@ do_action:	/* This label is used only to access EOF actions. */
 
 case 1:
 YY_RULE_SETUP
-<<<<<<< HEAD:src_usecode/lex.yy.cpp
-#line 31 "scan.l"
+#line 31 "scan_pro.l"
 {return ZERO;}
 	YY_BREAK
 case 2:
 YY_RULE_SETUP
-#line 33 "scan.l"
+#line 33 "scan_pro.l"
 {}//{printf("%s: space\n",yytext);}
-=======
-#line 25 "scan.l"
-{printf("%s: ZERO\n",yytext);}
-	YY_BREAK
-case 2:
-YY_RULE_SETUP
-#line 27 "scan.l"
-{}//{printf("%s: space\n",yytext);}
->>>>>>> 1b5315bc73208bad9456c91dce0636357667258c:src_usecode/lex.yy.c
 	YY_BREAK
 case 3:
 /* rule 3 can match eol */
 YY_RULE_SETUP
-<<<<<<< HEAD:src_usecode/lex.yy.cpp
-#line 34 "scan.l"
+#line 34 "scan_pro.l"
 {}//{printf("%s: enter\n",yytext);}
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 35 "scan.l"
+#line 35 "scan_pro.l"
 {}//{printf("%s: zb\n",yytext);}
-=======
-#line 28 "scan.l"
-{}//{printf("%s: enter\n",yytext);}
-	YY_BREAK
-case 4:
-YY_RULE_SETUP
-#line 29 "scan.l"
-{}//{printf("%s: zb\n",yytext);}
->>>>>>> 1b5315bc73208bad9456c91dce0636357667258c:src_usecode/lex.yy.c
 	YY_BREAK
 case 5:
 /* rule 5 can match eol */
 YY_RULE_SETUP
-<<<<<<< HEAD:src_usecode/lex.yy.cpp
-#line 36 "scan.l"
+#line 36 "scan_pro.l"
 {}
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 38 "scan.l"
+#line 38 "scan_pro.l"
 {                yylval.no = new GrammaNode(SEMI_,yytext);return SEMI;}
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 39 "scan.l"
+#line 39 "scan_pro.l"
 {yylval.no = new GrammaNode(COMM_,yytext);return COMM;}
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 40 "scan.l"
+#line 40 "scan_pro.l"
 {yylval.no = new GrammaNode(RDBRAL_,yytext);return RDBRAL;}
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 41 "scan.l"
+#line 41 "scan_pro.l"
 {yylval.no = new GrammaNode(RDBRAR_,yytext);return RDBRAR;}
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 42 "scan.l"
+#line 42 "scan_pro.l"
 {yylval.no = new GrammaNode(SQBRAL_,yytext);return SQBRAL;}
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 43 "scan.l"
+#line 43 "scan_pro.l"
 {yylval.no = new GrammaNode(SQBRAR_,yytext);return SQBRAR;}
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 44 "scan.l"
+#line 44 "scan_pro.l"
 {yylval.no = new GrammaNode(BRAL_,yytext);return BRAL;}
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 45 "scan.l"
+#line 45 "scan_pro.l"
 {yylval.no = new GrammaNode(BRAR_,yytext);return BRAR;}
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 46 "scan.l"
+#line 46 "scan_pro.l"
 {yylval.no = new GrammaNode(ASSIGN_,yytext);return ASSIGN;}
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 49 "scan.l"
+#line 49 "scan_pro.l"
 {yylval.no = new GrammaNode(ADD_,yytext);return ADD;}
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
-#line 50 "scan.l"
+#line 50 "scan_pro.l"
 {yylval.no = new GrammaNode(SUB_,yytext);return SUB;}
 	YY_BREAK
 case 17:
 YY_RULE_SETUP
-#line 51 "scan.l"
+#line 51 "scan_pro.l"
 {yylval.no = new GrammaNode(DIV_,yytext);return DIV;}
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
-#line 52 "scan.l"
+#line 52 "scan_pro.l"
 {yylval.no = new GrammaNode(MUL_,yytext);return MUL;}
 	YY_BREAK
 case 19:
 YY_RULE_SETUP
-#line 53 "scan.l"
+#line 53 "scan_pro.l"
 {yylval.no = new GrammaNode(MOD_,yytext);return MOD;}
 	YY_BREAK
 case 20:
 YY_RULE_SETUP
-#line 54 "scan.l"
+#line 54 "scan_pro.l"
 {yylval.no = new GrammaNode(EQ_,yytext);return EQ;}
 	YY_BREAK
 case 21:
 YY_RULE_SETUP
-#line 55 "scan.l"
+#line 55 "scan_pro.l"
 {yylval.no = new GrammaNode(NOT_,yytext);return NOT;}
 	YY_BREAK
 case 22:
 YY_RULE_SETUP
-#line 56 "scan.l"
+#line 56 "scan_pro.l"
 {yylval.no = new GrammaNode(NEQ_,yytext);return NEQ;}
 	YY_BREAK
 case 23:
 YY_RULE_SETUP
-#line 57 "scan.l"
+#line 57 "scan_pro.l"
 {yylval.no = new GrammaNode(OR_,yytext);return OR;}
 	YY_BREAK
 case 24:
 YY_RULE_SETUP
-#line 58 "scan.l"
+#line 58 "scan_pro.l"
 {yylval.no = new GrammaNode(AND_,yytext);return AND;}
 	YY_BREAK
 case 25:
 YY_RULE_SETUP
-#line 59 "scan.l"
+#line 59 "scan_pro.l"
 {yylval.no = new GrammaNode(LT_,yytext);return LT;}
 	YY_BREAK
 case 26:
 YY_RULE_SETUP
-#line 60 "scan.l"
+#line 60 "scan_pro.l"
 {yylval.no = new GrammaNode(BG_,yytext);return BG;}
 	YY_BREAK
 case 27:
 YY_RULE_SETUP
-#line 61 "scan.l"
+#line 61 "scan_pro.l"
 {yylval.no = new GrammaNode(LQ_,yytext);return LQ;}
 	YY_BREAK
 case 28:
 YY_RULE_SETUP
-#line 62 "scan.l"
+#line 62 "scan_pro.l"
 {yylval.no = new GrammaNode(BQ_,yytext);return BQ;}
 	YY_BREAK
 case 29:
 YY_RULE_SETUP
-#line 65 "scan.l"
+#line 65 "scan_pro.l"
 {printf("%s: RSWord_CONST\n",yytext);
                 yylval.no = new GrammaNode(CONST_,yytext);return CONST;}
 	YY_BREAK
 case 30:
 YY_RULE_SETUP
-#line 67 "scan.l"
+#line 67 "scan_pro.l"
 { yylval.no = new GrammaNode(INT_,yytext);return INT;}
 	YY_BREAK
 case 31:
 YY_RULE_SETUP
-#line 68 "scan.l"
+#line 68 "scan_pro.l"
 { yylval.no = new GrammaNode(VOID_,yytext);return VOID;}
 	YY_BREAK
 case 32:
 YY_RULE_SETUP
-#line 69 "scan.l"
+#line 69 "scan_pro.l"
 {  yylval.no = new GrammaNode(IF_,yytext);return IF;}
 	YY_BREAK
 case 33:
 YY_RULE_SETUP
-#line 70 "scan.l"
+#line 70 "scan_pro.l"
 {  yylval.no = new GrammaNode(ELSE_,yytext);return ELSE;}
 	YY_BREAK
 case 34:
 YY_RULE_SETUP
-#line 71 "scan.l"
+#line 71 "scan_pro.l"
 { yylval.no = new GrammaNode(WHILE_,yytext);return WHILE;}
 	YY_BREAK
 case 35:
 YY_RULE_SETUP
-#line 72 "scan.l"
+#line 72 "scan_pro.l"
 {yylval.no = new GrammaNode(BREAK_,yytext);return BREAK;}
 	YY_BREAK
 case 36:
 YY_RULE_SETUP
-#line 73 "scan.l"
+#line 73 "scan_pro.l"
 {yylval.no = new GrammaNode(CONTINUE_,yytext);return CONTINUE;}
 	YY_BREAK
 case 37:
 YY_RULE_SETUP
-#line 74 "scan.l"
+#line 74 "scan_pro.l"
 {yylval.no = new GrammaNode(RETURN_,yytext);return RETURN;}
 	YY_BREAK
 case 38:
 YY_RULE_SETUP
-#line 75 "scan.l"
+#line 75 "scan_pro.l"
 {yylval.no = new GrammaNode(MAIN_,yytext);return MAIN;}
 	YY_BREAK
 case 39:
 YY_RULE_SETUP
-#line 78 "scan.l"
+#line 78 "scan_pro.l"
 {yylval.no = new GrammaNode(IntConst_O_,yytext);return IntConst_O;}
 	YY_BREAK
 case 40:
 YY_RULE_SETUP
-#line 79 "scan.l"
+#line 79 "scan_pro.l"
 {yylval.no = new GrammaNode(IntConst_D_,yytext);return IntConst_D;}
 	YY_BREAK
 case 41:
 YY_RULE_SETUP
-#line 80 "scan.l"
+#line 80 "scan_pro.l"
 {yylval.no = new GrammaNode(IntConst_H_,yytext);return IntConst_H;}
 	YY_BREAK
 case 42:
 YY_RULE_SETUP
-#line 82 "scan.l"
+#line 82 "scan_pro.l"
 {yylval.no = new GrammaNode(Ident_,yytext);return Ident;}
 	YY_BREAK
 case 43:
 YY_RULE_SETUP
-#line 85 "scan.l"
+#line 85 "scan_pro.l"
 ECHO;
 	YY_BREAK
 #line 1019 "lex.yy.c"
-=======
-#line 30 "scan.l"
-{printf("%s: Comment\n",yytext);}
-	YY_BREAK
-case 6:
-YY_RULE_SETUP
-#line 32 "scan.l"
-{printf("%s: SEMI\n",yytext);}
-	YY_BREAK
-case 7:
-YY_RULE_SETUP
-#line 33 "scan.l"
-{printf("%s: COMM\n",yytext);}
-	YY_BREAK
-case 8:
-YY_RULE_SETUP
-#line 34 "scan.l"
-{printf("%s: RDBRAL\n",yytext);}
-	YY_BREAK
-case 9:
-YY_RULE_SETUP
-#line 35 "scan.l"
-{printf("%s: RDBRAR\n",yytext);}
-	YY_BREAK
-case 10:
-YY_RULE_SETUP
-#line 36 "scan.l"
-{printf("%s: SQBRAL\n",yytext);}
-	YY_BREAK
-case 11:
-YY_RULE_SETUP
-#line 37 "scan.l"
-{printf("%s: SQBRAR\n",yytext);}
-	YY_BREAK
-case 12:
-YY_RULE_SETUP
-#line 38 "scan.l"
-{printf("%s: BRAL\n",yytext);}
-	YY_BREAK
-case 13:
-YY_RULE_SETUP
-#line 39 "scan.l"
-{printf("%s: BRAR\n",yytext);}
-	YY_BREAK
-case 14:
-YY_RULE_SETUP
-#line 40 "scan.l"
-{printf("%s: ASSIGN\n",yytext);}
-	YY_BREAK
-case 15:
-YY_RULE_SETUP
-#line 42 "scan.l"
-{printf("%s: ADD\n",yytext);}
-	YY_BREAK
-case 16:
-YY_RULE_SETUP
-#line 43 "scan.l"
-{printf("%s: SUB\n",yytext);}
-	YY_BREAK
-case 17:
-YY_RULE_SETUP
-#line 44 "scan.l"
-{printf("%s: DIV\n",yytext);}
-	YY_BREAK
-case 18:
-YY_RULE_SETUP
-#line 45 "scan.l"
-{printf("%s: MUL\n",yytext);}
-	YY_BREAK
-case 19:
-YY_RULE_SETUP
-#line 46 "scan.l"
-{printf("%s: MOD\n",yytext);}
-	YY_BREAK
-case 20:
-YY_RULE_SETUP
-#line 47 "scan.l"
-{printf("%s: EQ\n",yytext);}
-	YY_BREAK
-case 21:
-YY_RULE_SETUP
-#line 48 "scan.l"
-{printf("%s: NOT\n",yytext);}
-	YY_BREAK
-case 22:
-YY_RULE_SETUP
-#line 49 "scan.l"
-{printf("%s: NEQ\n",yytext);}
-	YY_BREAK
-case 23:
-YY_RULE_SETUP
-#line 50 "scan.l"
-{printf("%s: OR\n",yytext);}
-	YY_BREAK
-case 24:
-YY_RULE_SETUP
-#line 51 "scan.l"
-{printf("%s: AND\n",yytext);}
-	YY_BREAK
-case 25:
-YY_RULE_SETUP
-#line 52 "scan.l"
-{printf("%s: LT\n",yytext);}
-	YY_BREAK
-case 26:
-YY_RULE_SETUP
-#line 53 "scan.l"
-{printf("%s: BG\n",yytext);}
-	YY_BREAK
-case 27:
-YY_RULE_SETUP
-#line 54 "scan.l"
-{printf("%s: LQ\n",yytext);}
-	YY_BREAK
-case 28:
-YY_RULE_SETUP
-#line 55 "scan.l"
-{printf("%s: BQ\n",yytext);}
-	YY_BREAK
-case 29:
-YY_RULE_SETUP
-#line 57 "scan.l"
-{printf("%s: RSWord_CONST\n",yytext);}
-	YY_BREAK
-case 30:
-YY_RULE_SETUP
-#line 58 "scan.l"
-{printf("%s: RSWord_INT\n",yytext);}
-	YY_BREAK
-case 31:
-YY_RULE_SETUP
-#line 59 "scan.l"
-{printf("%s: RSWord_VOID\n",yytext);}
-	YY_BREAK
-case 32:
-YY_RULE_SETUP
-#line 60 "scan.l"
-{printf("%s: RSWord_IF\n",yytext);}
-	YY_BREAK
-case 33:
-YY_RULE_SETUP
-#line 61 "scan.l"
-{printf("%s: RSWord_ELSE\n",yytext);}
-	YY_BREAK
-case 34:
-YY_RULE_SETUP
-#line 62 "scan.l"
-{printf("%s: RSWord_WHILE\n",yytext);}
-	YY_BREAK
-case 35:
-YY_RULE_SETUP
-#line 63 "scan.l"
-{printf("%s: RSWord_BREAK\n",yytext);}
-	YY_BREAK
-case 36:
-YY_RULE_SETUP
-#line 64 "scan.l"
-{printf("%s: RSWord_CONTINUE\n",yytext);}
-	YY_BREAK
-case 37:
-YY_RULE_SETUP
-#line 65 "scan.l"
-{printf("%s: RSWord_RETURN\n",yytext);}
-	YY_BREAK
-case 38:
-YY_RULE_SETUP
-#line 66 "scan.l"
-{printf("%s: RSWord_MAIN\n",yytext);}
-	YY_BREAK
-case 39:
-YY_RULE_SETUP
-#line 69 "scan.l"
-{printf("%s: IntConst_octalConst\n",yytext);}
-	YY_BREAK
-case 40:
-YY_RULE_SETUP
-#line 70 "scan.l"
-{printf("%s: IntConst_decimalConst\n",yytext);}
-	YY_BREAK
-case 41:
-YY_RULE_SETUP
-#line 71 "scan.l"
-{printf("%s: IntConst_hexadecimalConst\n",yytext);}
-	YY_BREAK
-case 42:
-YY_RULE_SETUP
-#line 73 "scan.l"
-{printf("%s: Ident\n",yytext);}
-	YY_BREAK
-case 43:
-YY_RULE_SETUP
-#line 74 "scan.l"
-ECHO;
-	YY_BREAK
-#line 1013 "lex.yy.c"
->>>>>>> 1b5315bc73208bad9456c91dce0636357667258c:src_usecode/lex.yy.c
 case YY_STATE_EOF(INITIAL):
 	yyterminate();
 
@@ -2253,11 +2020,7 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-<<<<<<< HEAD:src_usecode/lex.yy.cpp
-#line 85 "scan.l"
-=======
-#line 74 "scan.l"
->>>>>>> 1b5315bc73208bad9456c91dce0636357667258c:src_usecode/lex.yy.c
+#line 85 "scan_pro.l"
 
 
 
