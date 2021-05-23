@@ -16,11 +16,13 @@
 
 %type <no> ASSIGN SEMI COMM RDBRAL RDBRAR SQBRAL SQBRAR BRAL BRAR ADD SUB DIV MUL MOD EQ NOT NEQ OR AND LT BG LQ BQ ZERO INT CONST IntConst_D IntConst_O IntConst_H VOID IF ELSE WHILE BREAK CONTINUE RETURN MAIN Ident
 %type <no> Decl ConstDecl ConstDefs ConstDef ConstInitVal ConstInitVals ConstExps ConstExp Exp LVal Exps PrimaryExp UnaryExp UnaryOp FuncRParamse FuncRParams MulExp AddExp IntConst
+%type <no> CompUnit VarDecl VarDefs VarDef InitVal InitVals FuncDef FuncType FuncFParams FuncFParam Block BlockItems BlockItem Stmt Cond RelExp EqExp LAndExp LOrExp
 
 %token ASSIGN SEMI COMM RDBRAL RDBRAR SQBRAL SQBRAR BRAL BRAR
 %token ADD SUB DIV MUL MOD EQ NOT NEQ OR AND LT BG LQ BQ
 %token ZERO INT CONST IntConst_D IntConst_O IntConst_H VOID IF ELSE WHILE BREAK CONTINUE RETURN MAIN
 %token Ident 
+
 
 %left MUL
 %left ADD
@@ -31,21 +33,21 @@
 
 %%
 
-program:LVal
-;
-
-lines:Decl
-     |lines Decl
+CompUnit:
+	Decl				{$$=new GrammaNode(CompUnit_,"CompUnit");$$->son.push_back($1);}
+	|FuncDef			{$$=new GrammaNode(CompUnit_,"CompUnit");$$->son.push_back($1);}
+	|CompUnit Decl		{$$=new GrammaNode(CompUnit_,"CompUnit");$$->son.push_back($1);$$->son.push_back($2);}
+	|CompUnit FuncDef	{$$=new GrammaNode(CompUnit_,"CompUnit");$$->son.push_back($1);$$->son.push_back($2);}
 ;
 
 Decl:
     ConstDecl {$$=new GrammaNode(Decl_,"Decl_");$$->son.push_back($1);}
-
+	|VarDecl  {$$=new GrammaNode(Decl_,"Decl_");$$->son.push_back($1);}
 ;
 
 //常数声明
 ConstDecl:
-CONST INT ConstDefs  SEMI {$$=new GrammaNode(ConstDecl_,"ConstDecl_");$$->son.push_back($1);$$->son.push_back($2);$$->son.push_back($3);$$->son.push_back($4);}
+	CONST INT ConstDefs  SEMI {$$=new GrammaNode(ConstDecl_,"ConstDecl_");$$->son.push_back($1);$$->son.push_back($2);$$->son.push_back($3);$$->son.push_back($4);}
 ;
 
 //常数定义
@@ -61,19 +63,96 @@ Ident ConstExps  ASSIGN ConstInitVal {$$ = new GrammaNode(ConstDef_,"ConstDef_")
 
 ConstInitVal:
 	ConstExp						{$$ = new GrammaNode(ConstInitVal_,"ConstInitVal_"); $$->son.push_back($1);}
-	    |BRAL BRAR							{$$ = new GrammaNode(ConstInitVal_,"ConstInitVal_"); $$->son.push_back($1);$$->son.push_back($2);}
-	    |BRAL ConstInitVals BRAR			{$$ = new GrammaNode(ConstInitVal_,"ConstInitVal_"); $$->son.push_back($1);$$->son.push_back($2);$$->son.push_back($3);}
+	|BRAL BRAR							{$$ = new GrammaNode(ConstInitVal_,"ConstInitVal_"); $$->son.push_back($1);$$->son.push_back($2);}
+	|BRAL ConstInitVals BRAR			{$$ = new GrammaNode(ConstInitVal_,"ConstInitVal_"); $$->son.push_back($1);$$->son.push_back($2);$$->son.push_back($3);}
 ;
 
 ConstInitVals:
 	ConstInitVal					{$$ = new GrammaNode(ConstInitVals_,"ConstInitVals_"); $$->son.push_back($1);}
-	    |ConstInitVals COMM ConstInitVal	{$$ = new GrammaNode(ConstInitVals_,"ConstInitVals_"); $$->son.push_back($1);$$->son.push_back($2);$$->son.push_back($3);}
+	|ConstInitVals COMM ConstInitVal	{$$ = new GrammaNode(ConstInitVals_,"ConstInitVals_"); $$->son.push_back($1);$$->son.push_back($2);$$->son.push_back($3);}
+;
+
+VarDecl:
+	INT VarDefs SEMI				{$$ = new GrammaNode(VarDecl_,"VarDecl"); $$->son.push_back($1);$$->son.push_back($2);$$->son.push_back($3);}
+;
+
+VarDefs:
+	VarDef							{$$ = new GrammaNode(VarDefs_,"VarDefs"); $$->son.push_back($1);}
+	|VarDefs COMM VarDef			{$$ = new GrammaNode(VarDefs_,"VarDefs"); $$->son.push_back($1);$$->son.push_back($2);$$->son.push_back($3);}
+;	
+
+VarDef:
+	Ident ConstExps ASSIGN InitVal	{$$ = new GrammaNode(VarDef_,"VarDef"); $$->son.push_back($1);$$->son.push_back($2);$$->son.push_back($3);$$->son.push_back($4);}
+	|Ident ConstExps				{$$ = new GrammaNode(VarDef_,"VarDef"); $$->son.push_back($1);$$->son.push_back($2);}
+;
+
+InitVal:
+	Exp								{$$ = new GrammaNode(InitVal_,"InitVal"); $$->son.push_back($1);}
+	|BRAL BRAR						{$$ = new GrammaNode(InitVal_,"InitVal"); $$->son.push_back($1);$$->son.push_back($2);}
+	|BRAL InitVals BRAR				{$$ = new GrammaNode(InitVal_,"InitVal"); $$->son.push_back($1);$$->son.push_back($2);$$->son.push_back($3);}
+;
+
+InitVals:
+	InitVal							{$$ = new GrammaNode(InitVals_,"InitVals"); $$->son.push_back($1);}
+	|InitVals COMM InitVal			{$$ = new GrammaNode(InitVals_,"InitVals"); $$->son.push_back($1);$$->son.push_back($2);$$->son.push_back($3);}
+;
+
+FuncDef:
+	FuncType Ident SQBRAL SQBRAR Block			{$$ = new GrammaNode(FuncDef_,"FuncDef"); $$->son.push_back($1);$$->son.push_back($2);$$->son.push_back($3);$$->son.push_back($4);$$->son.push_back($5);}
+	|FuncType Ident SQBRAL FuncFParams SQBRAR Block {$$ = new GrammaNode(FuncDef_,"FuncDef"); $$->son.push_back($1);$$->son.push_back($2);$$->son.push_back($3);$$->son.push_back($4);$$->son.push_back($5);$$->son.push_back($6);}
+;
+
+FuncType:
+	VOID							{$$ = new GrammaNode(FuncType_,"FuncType"); $$->son.push_back($1);}
+	|INT							{$$ = new GrammaNode(FuncType_,"FuncType"); $$->son.push_back($1);}
+;
+
+FuncFParams:
+	FuncFParam							{$$ = new GrammaNode(FuncFParams_,"FuncFParams"); $$->son.push_back($1);}
+	|FuncFParams COMM FuncFParam		{$$ = new GrammaNode(FuncFParams_,"FuncFParams"); $$->son.push_back($1);$$->son.push_back($2);$$->son.push_back($3);}
+;
+
+FuncFParam:
+	INT Ident							{$$ = new GrammaNode(FuncFParam_,"FuncFParam"); $$->son.push_back($1);$$->son.push_back($2);}
+	|INT Ident SQBRAL SQBRAR Exps		{$$ = new GrammaNode(FuncFParam_,"FuncFParam"); $$->son.push_back($1);$$->son.push_back($2);$$->son.push_back($3);$$->son.push_back($4);$$->son.push_back($5);}
+	|INT Ident SQBRAL SQBRAR 			{$$ = new GrammaNode(FuncFParam_,"FuncFParam"); $$->son.push_back($1);$$->son.push_back($2);$$->son.push_back($3);$$->son.push_back($4);}
+;
+
+Block:
+	BRAL BlockItems BRAR				{$$ = new GrammaNode(Block_,"Block"); $$->son.push_back($1);$$->son.push_back($2);$$->son.push_back($3);}
+;
+
+BlockItems:
+	|BlockItems BlockItem				{$$ = new GrammaNode(BlockItems_,"BlockItems"); $$->son.push_back($1);}
+;
+
+BlockItem:
+	Decl								{$$ = new GrammaNode(BlockItem_,"BlockItem"); $$->son.push_back($1);}
+	|Stmt								{$$ = new GrammaNode(BlockItem_,"BlockItem"); $$->son.push_back($1);}
 ;
 
 
+Stmt:
+	LVal ASSIGN Exp SEMI				{$$ = new GrammaNode(Stmt_,"Stmt"); $$->son.push_back($1);$$->son.push_back($2);$$->son.push_back($3);$$->son.push_back($4);}
+	|SEMI								{$$ = new GrammaNode(Stmt_,"Stmt"); $$->son.push_back($1);}
+	|Exp SEMI							{$$ = new GrammaNode(Stmt_,"Stmt"); $$->son.push_back($1);$$->son.push_back($2);}
+	|Block								{$$ = new GrammaNode(Stmt_,"Stmt"); $$->son.push_back($1);}
+	|IF RDBRAL Cond RDBRAR Stmt			{$$ = new GrammaNode(Stmt_,"Stmt"); $$->son.push_back($1);$$->son.push_back($2);$$->son.push_back($3);$$->son.push_back($4);$$->son.push_back($5);}
+	|IF RDBRAL Cond RDBRAR Stmt ELSE Stmt {$$ = new GrammaNode(Stmt_,"Stmt"); $$->son.push_back($1);$$->son.push_back($2);$$->son.push_back($3);$$->son.push_back($4);$$->son.push_back($5);$$->son.push_back($6);$$->son.push_back($7);}
+	|WHILE RDBRAL Cond RDBRAR Stmt		{$$ = new GrammaNode(Stmt_,"Stmt"); $$->son.push_back($1);$$->son.push_back($2);$$->son.push_back($3);$$->son.push_back($4);$$->son.push_back($5);}
+	|BREAK SEMI							{$$ = new GrammaNode(Stmt_,"Stmt"); $$->son.push_back($1);$$->son.push_back($2);}
+	|CONTINUE SEMI						{$$ = new GrammaNode(Stmt_,"Stmt"); $$->son.push_back($1);$$->son.push_back($2);}
+	|RETURN SEMI						{$$ = new GrammaNode(Stmt_,"Stmt"); $$->son.push_back($1);$$->son.push_back($2);}
+	|RETURN Exp SEMI					{$$ = new GrammaNode(Stmt_,"Stmt"); $$->son.push_back($1);$$->son.push_back($2);$$->son.push_back($3);}
+;
+
+Cond:
+	LOrExp		{$$ = new GrammaNode(Cond_,"Cond"); $$->son.push_back($1);}
+;
+
 //常数定义中数组[]
 ConstExps:
-	 	|ConstExps SQBRAL ConstExp SQBRAR	{$$ = new GrammaNode(ConstExps_,"ConstExps_"); $$->son.push_back($1);$$->son.push_back($2);$$->son.push_back($3);$$->son.push_back($4);}
+	 	|ConstExps SQBRAL ConstExp SQBRAR	{$$ = new GrammaNode(ConstExps_,"ConstExps"); $$->son.push_back($1);$$->son.push_back($2);$$->son.push_back($3);$$->son.push_back($4);}
 ;
 
 //常量表达式
@@ -88,8 +167,8 @@ Exp:
 
 //左值表达式
 LVal:
-	Ident Exps					{$$ = new GrammaNode(LVal_,"LVal_"); $$->son.push_back($1);$$->son.push_back($2);show_node($$);}
-    |Ident 						{$$ = new GrammaNode(LVal_,"LVal_"); $$->son.push_back($1);show_node($$);printf("LAal->Ident\n");}
+	Ident Exps					{$$ = new GrammaNode(LVal_,"LVal_"); $$->son.push_back($1);$$->son.push_back($2);}
+    |Ident 						{$$ = new GrammaNode(LVal_,"LVal_"); $$->son.push_back($1);printf("LAal->Ident\n");}
 ;
 
 //数组表达式
@@ -100,9 +179,9 @@ Exps:
 
 //基本表达式
 PrimaryExp:
-	RDBRAL Exp RDBRAR	{$$ = new GrammaNode(PrimaryExp_,"PrimaryExp"); $$->son.push_back($1);$$->son.push_back($2);$$->son.push_back($3);show_node($$);}
-	  |LVal						{$$ = new GrammaNode(PrimaryExp_,"PrimaryExp"); $$->son.push_back($1);show_node($$);}
-	  |IntConst					{$$ = new GrammaNode(PrimaryExp_,"PrimaryExp"); $$->son.push_back($1);show_node($$);}
+	RDBRAL Exp RDBRAR	{$$ = new GrammaNode(PrimaryExp_,"PrimaryExp"); $$->son.push_back($1);$$->son.push_back($2);$$->son.push_back($3);}
+	  |LVal						{$$ = new GrammaNode(PrimaryExp_,"PrimaryExp"); $$->son.push_back($1);}
+	  |IntConst					{$$ = new GrammaNode(PrimaryExp_,"PrimaryExp"); $$->son.push_back($1);}
 ;
 
 //一元表达式
@@ -126,7 +205,7 @@ FuncRParamse:
 
 //实参
 FuncRParams:
-		Exp				{$$ = new GrammaNode(FuncRParams_,"FuncRParams_"); $$->son.push_back($1);}
+		Exp					{$$ = new GrammaNode(FuncRParams_,"FuncRParams_"); $$->son.push_back($1);}
 	   |FuncRParams COMM Exp{$$ = new GrammaNode(FuncRParams_,"FuncRParams_"); $$->son.push_back($1);$$->son.push_back($2);$$->son.push_back($3);}	   
 ;
 
@@ -144,6 +223,31 @@ AddExp:
       |AddExp ADD MulExp	{$$ = new GrammaNode(AddExp_,"AddExp"); $$->son.push_back($1);$$->son.push_back($2);$$->son.push_back($3);}
       |AddExp SUB MulExp	{$$ = new GrammaNode(AddExp_,"AddExp"); $$->son.push_back($1);$$->son.push_back($2);$$->son.push_back($3);}
 ;
+
+RelExp:
+	AddExp				{$$ = new GrammaNode(RelExp_,"RelExp"); $$->son.push_back($1);}
+	|RelExp LT AddExp	{$$ = new GrammaNode(RelExp_,"RelExp"); $$->son.push_back($1);$$->son.push_back($2);$$->son.push_back($3);}
+	|RelExp BG AddExp	{$$ = new GrammaNode(RelExp_,"RelExp"); $$->son.push_back($1);$$->son.push_back($2);$$->son.push_back($3);}
+	|RelExp LQ AddExp	{$$ = new GrammaNode(RelExp_,"RelExp"); $$->son.push_back($1);$$->son.push_back($2);$$->son.push_back($3);}
+	|RelExp BQ AddExp	{$$ = new GrammaNode(RelExp_,"RelExp"); $$->son.push_back($1);$$->son.push_back($2);$$->son.push_back($3);}
+;
+
+EqExp:					
+	RelExp				{$$ = new GrammaNode(EqExp_,"EqExp"); $$->son.push_back($1);}
+	|EqExp EQ RelExp	{$$ = new GrammaNode(EqExp_,"EqExp"); $$->son.push_back($1);$$->son.push_back($2);$$->son.push_back($3);}
+	|EqExp NEQ RelExp	{$$ = new GrammaNode(EqExp_,"EqExp"); $$->son.push_back($1);$$->son.push_back($2);$$->son.push_back($3);}
+;
+
+LAndExp:
+	EqExp				{$$ = new GrammaNode(LAndExp_,"LAndExp"); $$->son.push_back($1);}
+	|LAndExp AND EqExp	{$$ = new GrammaNode(LAndExp_,"LAndExp"); $$->son.push_back($1);$$->son.push_back($2);$$->son.push_back($3);}
+;
+
+LOrExp:
+	LAndExp				{$$ = new GrammaNode(LOrExp_,"LOrExp"); $$->son.push_back($1);}
+	|LOrExp OR LAndExp	{$$ = new GrammaNode(LOrExp_,"LOrExp"); $$->son.push_back($1);$$->son.push_back($2);$$->son.push_back($3);}
+;
+
 
 //ok
 IntConst:

@@ -16,11 +16,14 @@ typedef enum{
 } TokenType;
 
 typedef enum{
-    RT=400,Decl_,
+    RT=400,Decl_,CompUnit_,
     ConstDecl_,ConstDef_,ConstDefs_,ConstInitVal_,ConstInitVals_,
     UnaryExp_,UnaryOp_,PrimaryExp_,MulExp_,AddExp_,Exp_,Exps_,LVal_,
-    IntConst_,ConstExp_,ConstExps_,
-    FuncRParams_,FuncRParamse_
+    IntConst_,ConstExp_,ConstExps_,FuncType_,FuncDef_,
+    InitVals_,InitVal_,VarDef_,VarDefs_,VarDecl_,
+    FuncRParams_,FuncRParamse_,FuncFParam_,FuncFParams_,
+    LOrExp_,LAndExp_,EqExp_,RelExp_,Cond_,Stmt_,BlockItems_,
+    BlockItem_,Block_,
 } GrammaType;
 
 struct position_t{
