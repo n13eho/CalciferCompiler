@@ -98,8 +98,10 @@ InitVals:
 ;
 
 FuncDef:
-	FuncType Ident SQBRAL SQBRAR Block			{$$ = new GrammaNode(FuncDef_,"FuncDef"); $$->son.push_back($1);$$->son.push_back($2);$$->son.push_back($3);$$->son.push_back($4);$$->son.push_back($5);}
-	|FuncType Ident SQBRAL FuncFParams SQBRAR Block {$$ = new GrammaNode(FuncDef_,"FuncDef"); $$->son.push_back($1);$$->son.push_back($2);$$->son.push_back($3);$$->son.push_back($4);$$->son.push_back($5);$$->son.push_back($6);}
+	INT Ident RDBRAL RDBRAR Block			{$$ = new GrammaNode(FuncDef_,"FuncDef"); $$->son.push_back($1);$$->son.push_back($2);$$->son.push_back($3);$$->son.push_back($4);$$->son.push_back($5);}
+	|VOID Ident RDBRAL RDBRAR Block			{$$ = new GrammaNode(FuncDef_,"FuncDef"); $$->son.push_back($1);$$->son.push_back($2);$$->son.push_back($3);$$->son.push_back($4);$$->son.push_back($5);}
+	|INT Ident RDBRAL FuncFParams RDBRAR Block {$$ = new GrammaNode(FuncDef_,"FuncDef"); $$->son.push_back($1);$$->son.push_back($2);$$->son.push_back($3);$$->son.push_back($4);$$->son.push_back($5);$$->son.push_back($6);}
+	|VOID Ident RDBRAL FuncFParams RDBRAR Block {$$ = new GrammaNode(FuncDef_,"FuncDef"); $$->son.push_back($1);$$->son.push_back($2);$$->son.push_back($3);$$->son.push_back($4);$$->son.push_back($5);$$->son.push_back($6);}
 ;
 
 FuncType:
@@ -118,12 +120,13 @@ FuncFParam:
 	|INT Ident SQBRAL SQBRAR 			{$$ = new GrammaNode(FuncFParam_,"FuncFParam"); $$->son.push_back($1);$$->son.push_back($2);$$->son.push_back($3);$$->son.push_back($4);}
 ;
 
-Block:
-	BRAL BlockItems BRAR				{$$ = new GrammaNode(Block_,"Block"); $$->son.push_back($1);$$->son.push_back($2);$$->son.push_back($3);}
+BlockItems:
+	BlockItems BlockItem				{$$ = new GrammaNode(BlockItems_,"BlockItems"); $$->son.push_back($1);}
 ;
 
-BlockItems:
-	|BlockItems BlockItem				{$$ = new GrammaNode(BlockItems_,"BlockItems"); $$->son.push_back($1);}
+Block:
+	BRAL BlockItems BRAR				{$$ = new GrammaNode(Block_,"Block"); $$->son.push_back($1);$$->son.push_back($2);$$->son.push_back($3);}
+	|BRAL BRAR							{$$ = new GrammaNode(Block_,"Block"); $$->son.push_back($1);$$->son.push_back($2);}
 ;
 
 BlockItem:
@@ -187,6 +190,7 @@ PrimaryExp:
 //一元表达式
 UnaryExp:
 	PrimaryExp						{$$ = new GrammaNode(UnaryExp_,"UnaryExp_"); $$->son.push_back($1);}
+	|Ident RDBRAL RDBRAR			{$$ = new GrammaNode(UnaryExp_,"UnaryExp_"); $$->son.push_back($1);$$->son.push_back($2);$$->son.push_back($3);}
 	|Ident RDBRAL FuncRParamse RDBRAR	{$$ = new GrammaNode(UnaryExp_,"UnaryExp_"); $$->son.push_back($1);$$->son.push_back($2);$$->son.push_back($3);$$->son.push_back($4);}
 	|UnaryOp UnaryExp					{$$ = new GrammaNode(UnaryExp_,"UnaryExp_"); $$->son.push_back($1);$$->son.push_back($2);}
 ;
@@ -200,7 +204,7 @@ UnaryOp:
 
 //函数实参表
 FuncRParamse:
-	    |FuncRParams	   {$$ = new GrammaNode(FuncRParamse_,"FuncRParamse_"); $$->son.push_back($1);}
+	    FuncRParams	   {$$ = new GrammaNode(FuncRParamse_,"FuncRParamse_"); $$->son.push_back($1);}
 ;
 
 //实参
