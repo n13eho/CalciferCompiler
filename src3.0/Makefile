@@ -1,7 +1,8 @@
 EXENAME = calcifer
 srcscan = scan_pro.l 
 srcpart = par.ypp
-objcpp = part.tab.cpp lex.yy.cpp $(wildcard ./sysy_node.cpp)
+manual  = $(wildcard ./*.cpp)
+objcpp = part.tab.cpp lex.yy.cpp $(manual)
 objdelete = part.tab.cpp lex.yy.cpp lex.yy.c 
 objo = $(patsubst %.cpp, %.o, $(objcpp))
 
