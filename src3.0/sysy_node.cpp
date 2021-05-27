@@ -1,7 +1,6 @@
 #include <iostream>
 #include <stdio.h>
-void search_node(GrammaNode* root)
-{}
+#include "sysy_node.hpp"
 
 void show_node(GrammaNode* root,int layer=0)
 {

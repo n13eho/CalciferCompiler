@@ -4,9 +4,10 @@
 	#include <stdio.h>
 	#include <iostream>
 	#include "sysy_node.hpp"
-	#include "sysy_node.cpp"
+	// #include "sysy_node.cpp"
 	extern int yylex();
 	void yyerror(char const *s);
+	
 %}
 
 %union{
@@ -266,7 +267,7 @@ IntConst:
 
 
 %%
-main(void)
+main()
 {
 yyparse();
 return 0;

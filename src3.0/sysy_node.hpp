@@ -1,6 +1,9 @@
 #include <iostream>
 #include <vector>
 #include <string>
+#pragma once
+// #ifndef _SYS_NODE_HPP_
+// #define _SYS_NODE_HPP_
 
 typedef enum{
     // 标识符(除保留字), 注释信息, 常量十进制，八进制，十六进制
@@ -44,11 +47,12 @@ struct GrammaNode
     //GrammaNode(int x, std::string y){std::cout<<y<<" ";type=x;str = y;son.clear();std::cout<<str<<std::endl;}
     GrammaNode(int x, std::string y){type=x;str = y;son.clear();}
 };
-
+// #endif
 // GrammaNode* Exp_Add_new(GrammaNode* a,GrammaNode* b);
 
 // GrammaNode* Exp_Sub_new(GrammaNode* a,GrammaNode* b);
-
 void search_node(GrammaNode* root);
 void show_node(GrammaNode* root,int layer);
+
+
 

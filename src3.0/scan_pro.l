@@ -2,8 +2,8 @@
 #include <stdio.h>
 #include <string>
 #include <typeinfo>
-#include "part.tab.hpp"
 #include "sysy_node.hpp"
+#include "part.tab.hpp"
 
 %}
 
