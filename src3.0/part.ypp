@@ -267,11 +267,6 @@ IntConst:
 
 
 %%
-main()
-{
-yyparse();
-return 0;
-}
 
 void yyerror(char const *s)
 {
