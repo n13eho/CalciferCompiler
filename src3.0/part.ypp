@@ -4,10 +4,8 @@
 	#include <stdio.h>
 	#include <iostream>
 	#include "sysy_node.hpp"
-	// #include "sysy_node.cpp"
 	extern int yylex();
 	void yyerror(char const *s);
-	
 %}
 
 %union{
@@ -35,10 +33,10 @@
 %%
 
 CompUnit:
-	Decl				{$$=new GrammaNode(CompUnit_,"CompUnit");$$->son.push_back($1);}
-	|FuncDef			{$$=new GrammaNode(CompUnit_,"CompUnit");$$->son.push_back($1);}
-	|CompUnit Decl		{$$=new GrammaNode(CompUnit_,"CompUnit");$$->son.push_back($1);$$->son.push_back($2);}
-	|CompUnit FuncDef	{$$=new GrammaNode(CompUnit_,"CompUnit");$$->son.push_back($1);$$->son.push_back($2);}
+	Decl				{Droot->son.push_back($1);}
+	|FuncDef			{Droot->son.push_back($1);}
+	|CompUnit Decl		{Droot->son.push_back($2);}
+	|CompUnit FuncDef	{Droot->son.push_back($2);}
 ;
 
 Decl:
@@ -54,12 +52,13 @@ ConstDecl:
 //常数定义
 ConstDefs:
 		ConstDef 					{$$=new GrammaNode(ConstDefs_,"ConstDefs_");$$->son.push_back($1);}
-	 	|ConstDefs COMM ConstDef	{$$ = new GrammaNode(ConstDefs_,"ConstDefs_"); $$->son.push_back($1);$$->son.push_back($2);$$->son.push_back($3);}		
+	 	|ConstDefs COMM ConstDef	{$1->son.push_back($3);}		
 ;
 
 //常数定义
 ConstDef:
 Ident ConstExps  ASSIGN ConstInitVal {$$ = new GrammaNode(ConstDef_,"ConstDef_"); $$->son.push_back($1);$$->son.push_back($2);$$->son.push_back($3);$$->son.push_back($4);}
+|Ident ASSIGN ConstInitVal {$$ = new GrammaNode(ConstDef_,"ConstDef_"); $$->son.push_back($1);$$->son.push_back($2);$$->son.push_back($3);}
 ;
 
 ConstInitVal:
@@ -70,21 +69,23 @@ ConstInitVal:
 
 ConstInitVals:
 	ConstInitVal					{$$ = new GrammaNode(ConstInitVals_,"ConstInitVals_"); $$->son.push_back($1);}
-	|ConstInitVals COMM ConstInitVal	{$$ = new GrammaNode(ConstInitVals_,"ConstInitVals_"); $$->son.push_back($1);$$->son.push_back($2);$$->son.push_back($3);}
+	|ConstInitVals COMM ConstInitVal	{$1->son.push_back($3);}
 ;
 
 VarDecl:
-	INT VarDefs SEMI				{$$ = new GrammaNode(VarDecl_,"VarDecl"); $$->son.push_back($1);$$->son.push_back($2);$$->son.push_back($3);}
+	INT VarDefs SEMI				{$$ = new GrammaNode(VarDecl_,"VarDecl"); $$->son.push_back($1);$$->son.push_back($2);}
 ;
 
 VarDefs:
 	VarDef							{$$ = new GrammaNode(VarDefs_,"VarDefs"); $$->son.push_back($1);}
-	|VarDefs COMM VarDef			{$$ = new GrammaNode(VarDefs_,"VarDefs"); $$->son.push_back($1);$$->son.push_back($2);$$->son.push_back($3);}
+	|VarDefs COMM VarDef			{$1->son.push_back($3);}
 ;	
 
 VarDef:
-	Ident ConstExps ASSIGN InitVal	{$$ = new GrammaNode(VarDef_,"VarDef"); $$->son.push_back($1);$$->son.push_back($2);$$->son.push_back($3);$$->son.push_back($4);}
+	Ident ConstExps ASSIGN InitVal	{$$ = news GrammaNode(VarDef_,"VarDef"); $$->son.push_back($1);$$->son.push_back($2);$$->son.push_back($3);$$->son.push_back($4);}
 	|Ident ConstExps				{$$ = new GrammaNode(VarDef_,"VarDef"); $$->son.push_back($1);$$->son.push_back($2);}
+	|Ident 				{$$ = new GrammaNode(VarDef_,"VarDef"); $$->son.push_back($1);}
+	|Ident ASSIGN InitVal	{$$ = new GrammaNode(VarDef_,"VarDef"); $$->son.push_back($1);$$->son.push_back($2);$$->son.push_back($3);}
 ;
 
 InitVal:
@@ -122,7 +123,8 @@ FuncFParam:
 ;
 
 BlockItems:
-	BlockItems BlockItem				{$$ = new GrammaNode(BlockItems_,"BlockItems"); $$->son.push_back($1);}
+	BlockItem							{$$ = new GrammaNode(BlockItems_,"BlockItems"); $$->son.push_back($1);}
+	|BlockItems BlockItem				{$1->son.push_back($2);}	
 ;
 
 Block:
@@ -156,7 +158,7 @@ Cond:
 
 //常数定义中数组[]
 ConstExps:
-	 	|ConstExps SQBRAL ConstExp SQBRAR	{$$ = new GrammaNode(ConstExps_,"ConstExps"); $$->son.push_back($1);$$->son.push_back($2);$$->son.push_back($3);$$->son.push_back($4);}
+	 	ConstExps SQBRAL ConstExp SQBRAR	{$$ = new GrammaNode(ConstExps_,"ConstExps"); $$->son.push_back($1);$$->son.push_back($2);$$->son.push_back($3);$$->son.push_back($4);}
 ;
 
 //常量表达式
@@ -211,7 +213,7 @@ FuncRParamse:
 //实参
 FuncRParams:
 		Exp					{$$ = new GrammaNode(FuncRParams_,"FuncRParams_"); $$->son.push_back($1);}
-	   |FuncRParams COMM Exp{$$ = new GrammaNode(FuncRParams_,"FuncRParams_"); $$->son.push_back($1);$$->son.push_back($2);$$->son.push_back($3);}	   
+	   |FuncRParams COMM Exp{$1->son.push_back($3);}	   
 ;
 
 //乘除模表达式

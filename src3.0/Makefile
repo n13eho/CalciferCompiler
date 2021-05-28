@@ -13,7 +13,7 @@ $(objo) : $(objcpp)
 	g++ $< -c -o  $@
 
 clean:
-	rm -rf $(objdelete) $(objo) $(EXENAME) part.tab.hpp
+	rm -rf $(objdelete) $(objo) $(EXENAME)
 
 part.tab.cpp: part.ypp
 	bison -d part.ypp

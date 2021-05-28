@@ -1,2 +1,6 @@
 int x;
-int x;
+int y;
+void func(int x, int y){
+    x=10;
+    y=100;
+}
