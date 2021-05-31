@@ -94,7 +94,7 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 11 "part.ypp"
+#line 12 "part.ypp"
 
         struct GrammaNode *no;
 

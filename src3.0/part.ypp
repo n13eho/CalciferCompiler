@@ -6,6 +6,7 @@
 	#include "sysy_node.hpp"
 	extern int yylex();
 	void yyerror(char const *s);
+	using namespace std;
 %}
 
 %union{
@@ -40,40 +41,30 @@ CompUnit:
 ;
 
 Decl:
-    ConstDecl {$$=new GrammaNode(Decl_,"Decl_");$$->son.push_back($1);}
-	|VarDecl  {$$=new GrammaNode(Decl_,"Decl_");$$->son.push_back($1);}
+    ConstDecl {$$=$1;}
+	|VarDecl  {$$=$1;}
 ;
 
 //常数声明
 ConstDecl:
-	CONST INT ConstDefs  SEMI {$$=new GrammaNode(ConstDecl_,"ConstDecl_");$$->son.push_back($1);$$->son.push_back($2);$$->son.push_back($3);$$->son.push_back($4);}
+	CONST INT ConstDefs SEMI {$$=$3;}
 ;
 
 //常数定义
 ConstDefs:
-		ConstDef 					{$$=new GrammaNode(ConstDefs_,"ConstDefs_");$$->son.push_back($1);}
-	 	|ConstDefs COMM ConstDef	{$1->son.push_back($3);}		
+	ConstDef 					{$$=new GrammaNode(ConstDefs_,"ConstDefs_");$$->son.push_back($1);}
+	|ConstDefs COMM ConstDef	{$1->son.push_back($3);}		
 ;
 
 //常数定义
 ConstDef:
-Ident ConstExps  ASSIGN ConstInitVal {$$ = new GrammaNode(ConstDef_,"ConstDef_"); $$->son.push_back($1);$$->son.push_back($2);$$->son.push_back($3);$$->son.push_back($4);}
-|Ident ASSIGN ConstInitVal {$$ = new GrammaNode(ConstDef_,"ConstDef_"); $$->son.push_back($1);$$->son.push_back($2);$$->son.push_back($3);}
+	Ident SQBRAL ConstExps SQBRAR ASSIGN InitVal {$$ = new GrammaNode(ConstDef_,"ConstDef_"); $$->son.push_back($1);$$->son.push_back($3);$$->son.push_back($6);}
+	|Ident ASSIGN InitVal {$$ = new GrammaNode(ConstDef_,"ConstDef_"); $$->son.push_back($1);$$->son.push_back($3);}
 ;
 
-ConstInitVal:
-	ConstExp						{$$ = new GrammaNode(ConstInitVal_,"ConstInitVal_"); $$->son.push_back($1);}
-	|BRAL BRAR							{$$ = new GrammaNode(ConstInitVal_,"ConstInitVal_"); $$->son.push_back($1);$$->son.push_back($2);}
-	|BRAL ConstInitVals BRAR			{$$ = new GrammaNode(ConstInitVal_,"ConstInitVal_"); $$->son.push_back($1);$$->son.push_back($2);$$->son.push_back($3);}
-;
-
-ConstInitVals:
-	ConstInitVal					{$$ = new GrammaNode(ConstInitVals_,"ConstInitVals_"); $$->son.push_back($1);}
-	|ConstInitVals COMM ConstInitVal	{$1->son.push_back($3);}
-;
 
 VarDecl:
-	INT VarDefs SEMI				{$$ = new GrammaNode(VarDecl_,"VarDecl"); $$->son.push_back($1);$$->son.push_back($2);}
+	INT VarDefs SEMI				{$$=$2;}
 ;
 
 VarDefs:
@@ -82,21 +73,21 @@ VarDefs:
 ;	
 
 VarDef:
-	Ident ConstExps ASSIGN InitVal	{$$ = news GrammaNode(VarDef_,"VarDef"); $$->son.push_back($1);$$->son.push_back($2);$$->son.push_back($3);$$->son.push_back($4);}
-	|Ident ConstExps				{$$ = new GrammaNode(VarDef_,"VarDef"); $$->son.push_back($1);$$->son.push_back($2);}
+	Ident SQBRAL ConstExps SQBRAR ASSIGN InitVal	{$$ = new GrammaNode(VarDef_,"VarDef"); $$->son.push_back($1);$$->son.push_back($3);$$->son.push_back($6);}
+	|Ident SQBRAL ConstExps	SQBRAR			{$$ = new GrammaNode(VarDef_,"VarDef"); $$->son.push_back($1);$$->son.push_back($3);}
 	|Ident 				{$$ = new GrammaNode(VarDef_,"VarDef"); $$->son.push_back($1);}
 	|Ident ASSIGN InitVal	{$$ = new GrammaNode(VarDef_,"VarDef"); $$->son.push_back($1);$$->son.push_back($2);$$->son.push_back($3);}
 ;
 
 InitVal:
-	Exp								{$$ = new GrammaNode(InitVal_,"InitVal"); $$->son.push_back($1);}
-	|BRAL BRAR						{$$ = new GrammaNode(InitVal_,"InitVal"); $$->son.push_back($1);$$->son.push_back($2);}
-	|BRAL InitVals BRAR				{$$ = new GrammaNode(InitVal_,"InitVal"); $$->son.push_back($1);$$->son.push_back($2);$$->son.push_back($3);}
+	Exp								{$$ = new GrammaNode(InitVal_,"InitVal_EXP"); $$->son.push_back($1);}
+	|BRAL BRAR						{$$ = new GrammaNode(InitVal_,"InitVal_NULL");}
+	|BRAL InitVals BRAR				{$$ = new GrammaNode(InitVal_,"InitVal"); $$->son.push_back($2);}
 ;
 
 InitVals:
 	InitVal							{$$ = new GrammaNode(InitVals_,"InitVals"); $$->son.push_back($1);}
-	|InitVals COMM InitVal			{$$ = new GrammaNode(InitVals_,"InitVals"); $$->son.push_back($1);$$->son.push_back($2);$$->son.push_back($3);}
+	|InitVals COMM InitVal			{$1->son.push_back($3);}
 ;
 
 FuncDef:
@@ -104,11 +95,6 @@ FuncDef:
 	|VOID Ident RDBRAL RDBRAR Block			{$$ = new GrammaNode(FuncDef_,"FuncDef"); $$->son.push_back($1);$$->son.push_back($2);$$->son.push_back($3);$$->son.push_back($4);$$->son.push_back($5);}
 	|INT Ident RDBRAL FuncFParams RDBRAR Block {$$ = new GrammaNode(FuncDef_,"FuncDef"); $$->son.push_back($1);$$->son.push_back($2);$$->son.push_back($3);$$->son.push_back($4);$$->son.push_back($5);$$->son.push_back($6);}
 	|VOID Ident RDBRAL FuncFParams RDBRAR Block {$$ = new GrammaNode(FuncDef_,"FuncDef"); $$->son.push_back($1);$$->son.push_back($2);$$->son.push_back($3);$$->son.push_back($4);$$->son.push_back($5);$$->son.push_back($6);}
-;
-
-FuncType:
-	VOID							{$$ = new GrammaNode(FuncType_,"FuncType"); $$->son.push_back($1);}
-	|INT							{$$ = new GrammaNode(FuncType_,"FuncType"); $$->son.push_back($1);}
 ;
 
 FuncFParams:
@@ -158,12 +144,8 @@ Cond:
 
 //常数定义中数组[]
 ConstExps:
-	 	ConstExps SQBRAL ConstExp SQBRAR	{$$ = new GrammaNode(ConstExps_,"ConstExps"); $$->son.push_back($1);$$->son.push_back($2);$$->son.push_back($3);$$->son.push_back($4);}
-;
-
-//常量表达式
-ConstExp:
-	AddExp 				{$$ = new GrammaNode(ConstExp_,"ConstExp_"); $$->son.push_back($1);}
+		Exp 							{$$ = new GrammaNode(ConstExps_,"ConstExps");$$->son.push_back($1); }
+	 	|ConstExps SQBRAR SQBRAL Exp 	{$1->son.push_back($4);}
 ;
 
 //表达式
@@ -174,7 +156,7 @@ Exp:
 //左值表达式
 LVal:
 	Ident Exps					{$$ = new GrammaNode(LVal_,"LVal_"); $$->son.push_back($1);$$->son.push_back($2);}
-    |Ident 						{$$ = new GrammaNode(LVal_,"LVal_"); $$->son.push_back($1);printf("LAal->Ident\n");}
+    |Ident 						{$$ = new GrammaNode(LVal_,"LVal_"); $$->son.push_back($1);}
 ;
 
 //数组表达式

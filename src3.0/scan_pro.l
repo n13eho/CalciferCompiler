@@ -62,7 +62,7 @@ Comment {Comment1}|{Comment2}
 ">=" {yylval.no = new GrammaNode(BQ_,yytext);return BQ;}
 
 
-"const" {printf("%s: RSWord_CONST\n",yytext);
+"const" {
                 yylval.no = new GrammaNode(CONST_,yytext);return CONST;}
 "int" { yylval.no = new GrammaNode(INT_,yytext);return INT;}
 "void" { yylval.no = new GrammaNode(VOID_,yytext);return VOID;}
