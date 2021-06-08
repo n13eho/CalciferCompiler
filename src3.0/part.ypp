@@ -91,36 +91,36 @@ InitVals:
 ;
 
 FuncDef:
-	INT Ident RDBRAL RDBRAR Block			{$$ = new GrammaNode(FuncDef_,"FuncDef"); $$->son.push_back($1);$$->son.push_back($2);$$->son.push_back($3);$$->son.push_back($4);$$->son.push_back($5);}
-	|VOID Ident RDBRAL RDBRAR Block			{$$ = new GrammaNode(FuncDef_,"FuncDef"); $$->son.push_back($1);$$->son.push_back($2);$$->son.push_back($3);$$->son.push_back($4);$$->son.push_back($5);}
-	|INT Ident RDBRAL FuncFParams RDBRAR Block {$$ = new GrammaNode(FuncDef_,"FuncDef"); $$->son.push_back($1);$$->son.push_back($2);$$->son.push_back($3);$$->son.push_back($4);$$->son.push_back($5);$$->son.push_back($6);}
-	|VOID Ident RDBRAL FuncFParams RDBRAR Block {$$ = new GrammaNode(FuncDef_,"FuncDef"); $$->son.push_back($1);$$->son.push_back($2);$$->son.push_back($3);$$->son.push_back($4);$$->son.push_back($5);$$->son.push_back($6);}
+	INT Ident RDBRAL RDBRAR Block			{$$ = new GrammaNode(FuncDef_,"FuncDef"); $$->son.push_back($1);$$->son.push_back($2);$$->son.push_back($5);}
+	|VOID Ident RDBRAL RDBRAR Block			{$$ = new GrammaNode(FuncDef_,"FuncDef"); $$->son.push_back($1);$$->son.push_back($2);$$->son.push_back($5);}
+	|INT Ident RDBRAL FuncFParams RDBRAR Block {$$ = new GrammaNode(FuncDef_,"FuncDef"); $$->son.push_back($1);$$->son.push_back($2);$$->son.push_back($4);$$->son.push_back($6);}
+	|VOID Ident RDBRAL FuncFParams RDBRAR Block {$$ = new GrammaNode(FuncDef_,"FuncDef"); $$->son.push_back($1);$$->son.push_back($2);$$->son.push_back($4);$$->son.push_back($6);}
 ;
 
 FuncFParams:
 	FuncFParam							{$$ = new GrammaNode(FuncFParams_,"FuncFParams"); $$->son.push_back($1);}
-	|FuncFParams COMM FuncFParam		{$$ = new GrammaNode(FuncFParams_,"FuncFParams"); $$->son.push_back($1);$$->son.push_back($2);$$->son.push_back($3);}
+	|FuncFParams COMM FuncFParam		{$1->son.push_back($3);}
 ;
 
 FuncFParam:
-	INT Ident							{$$ = new GrammaNode(FuncFParam_,"FuncFParam"); $$->son.push_back($1);$$->son.push_back($2);}
-	|INT Ident SQBRAL SQBRAR Exps		{$$ = new GrammaNode(FuncFParam_,"FuncFParam"); $$->son.push_back($1);$$->son.push_back($2);$$->son.push_back($3);$$->son.push_back($4);$$->son.push_back($5);}
-	|INT Ident SQBRAL SQBRAR 			{$$ = new GrammaNode(FuncFParam_,"FuncFParam"); $$->son.push_back($1);$$->son.push_back($2);$$->son.push_back($3);$$->son.push_back($4);}
+	INT Ident							{$$ = new GrammaNode(FuncFParam_,"FuncFParam"); $$->son.push_back($2);}
+	|INT Ident SQBRAL SQBRAR Exps		{$$ = new GrammaNode(FuncFParam_,"FuncFParam"); $$->son.push_back($2);$$->son.push_back($3);$$->son.push_back($4);$$->son.push_back($5);}
+	|INT Ident SQBRAL SQBRAR 			{$$ = new GrammaNode(FuncFParam_,"FuncFParam"); $$->son.push_back($2);$$->son.push_back($3);$$->son.push_back($4);}
 ;
 
 BlockItems:
-	BlockItem							{$$ = new GrammaNode(BlockItems_,"BlockItems"); $$->son.push_back($1);}
+	BlockItem							{$$ = new GrammaNode(Block_,"Block"); $$->son.push_back($1);}
 	|BlockItems BlockItem				{$1->son.push_back($2);}	
 ;
 
 Block:
-	BRAL BlockItems BRAR				{$$ = new GrammaNode(Block_,"Block"); $$->son.push_back($1);$$->son.push_back($2);$$->son.push_back($3);}
-	|BRAL BRAR							{$$ = new GrammaNode(Block_,"Block"); $$->son.push_back($1);$$->son.push_back($2);}
+	BRAL BlockItems BRAR				{$$=$2;}
+	|BRAL BRAR							{}
 ;
 
 BlockItem:
-	Decl								{$$ = new GrammaNode(BlockItem_,"BlockItem"); $$->son.push_back($1);}
-	|Stmt								{$$ = new GrammaNode(BlockItem_,"BlockItem"); $$->son.push_back($1);}
+	Decl								{$$=$1;}
+	|Stmt								{$$=$1;}
 ;
 
 
@@ -161,8 +161,8 @@ LVal:
 
 //数组表达式
 Exps:
-	SQBRAL Exp SQBRAR			{$$ = new GrammaNode(Exps_,"Exps_"); $$->son.push_back($1);$$->son.push_back($2);$$->son.push_back($3);}
-    |Exps SQBRAL Exp SQBRAR		{$$ = new GrammaNode(Exps_,"Exps_"); $$->son.push_back($1);$$->son.push_back($2);$$->son.push_back($3);$$->son.push_back($4);}
+	SQBRAL Exp SQBRAR			{$$ = new GrammaNode(Exps_,"Exps_"); $$->son.push_back($2);}
+    |Exps SQBRAL Exp SQBRAR		{$1->son.push_back($3);}
 ;
 
 //基本表达式
