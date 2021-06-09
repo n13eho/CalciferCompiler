@@ -72,9 +72,9 @@
 	#include <stdio.h>
 	#include <iostream>
 	#include "sysy_node.hpp"
-	#include "sysy_node.cpp"
 	extern int yylex();
 	void yyerror(char const *s);
+	using namespace std;
 
 #line 80 "part.tab.cpp"
 
@@ -107,7 +107,10 @@
 # define YYERROR_VERBOSE 0
 #endif
 
-
+/* Use api.header.include to #include this header
+   instead of duplicating it here.  */
+#ifndef YY_YY_PART_TAB_HPP_INCLUDED
+# define YY_YY_PART_TAB_HPP_INCLUDED
 /* Debug traces.  */
 #ifndef YYDEBUG
 # define YYDEBUG 0
@@ -170,7 +173,7 @@ union YYSTYPE
 
         struct GrammaNode *no;
 
-#line 174 "part.tab.cpp"
+#line 177 "part.tab.cpp"
 
 };
 typedef union YYSTYPE YYSTYPE;
@@ -183,7 +186,7 @@ extern YYSTYPE yylval;
 
 int yyparse (void);
 
-
+#endif /* !YY_YY_PART_TAB_HPP_INCLUDED  */
 
 
 
@@ -284,7 +287,7 @@ typedef int yytype_uint16;
 #define YYSIZEOF(X) YY_CAST (YYPTRDIFF_T, sizeof (X))
 
 /* Stored state numbers (used for stacks). */
-typedef yytype_int8 yy_state_t;
+typedef yytype_uint8 yy_state_t;
 
 /* State numbers in computations.  */
 typedef int yy_state_fast_t;
@@ -489,16 +492,16 @@ union yyalloc
 /* YYFINAL -- State number of the termination state.  */
 #define YYFINAL  14
 /* YYLAST -- Last index in YYTABLE.  */
-#define YYLAST   155
+#define YYLAST   272
 
 /* YYNTOKENS -- Number of terminals.  */
 #define YYNTOKENS  41
 /* YYNNTS -- Number of nonterminals.  */
-#define YYNNTS  30
+#define YYNNTS  34
 /* YYNRULES -- Number of rules.  */
-#define YYNRULES  68
+#define YYNRULES  93
 /* YYNSTATES -- Number of states.  */
-#define YYNSTATES  119
+#define YYNSTATES  173
 
 #define YYUNDEFTOK  2
 #define YYMAXUTOK   295
@@ -547,15 +550,18 @@ static const yytype_int8 yytranslate[] =
 
 #if YYDEBUG
   /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
-static const yytype_int16 yyrline[] =
+static const yytype_uint8 yyrline[] =
 {
        0,    37,    37,    38,    39,    40,    44,    45,    50,    55,
-      56,    61,    65,    66,    67,    71,    72,    76,    80,    81,
-      85,    86,    90,    91,    92,    96,    97,   101,   102,   103,
-     104,   113,   114,   118,   119,   120,   129,   157,   158,   163,
-     168,   173,   174,   179,   180,   185,   186,   187,   192,   193,
-     194,   195,   200,   201,   202,   207,   212,   213,   218,   219,
-     220,   221,   226,   227,   228,   258,   259,   260,   261
+      56,    61,    62,    67,    71,    72,    76,    77,    78,    79,
+      83,    84,    85,    89,    90,    94,    95,    96,    97,   101,
+     102,   106,   107,   108,   112,   113,   117,   118,   122,   123,
+     128,   129,   130,   131,   132,   133,   134,   135,   136,   137,
+     138,   142,   147,   148,   153,   158,   159,   164,   165,   170,
+     171,   172,   178,   179,   180,   181,   186,   187,   188,   198,
+     199,   204,   205,   206,   207,   212,   213,   214,   218,   219,
+     220,   221,   222,   226,   227,   228,   232,   233,   237,   238,
+     244,   245,   246,   247
 };
 #endif
 
@@ -570,10 +576,11 @@ static const char *const yytname[] =
   "INT", "CONST", "IntConst_D", "IntConst_O", "IntConst_H", "VOID", "IF",
   "ELSE", "WHILE", "BREAK", "CONTINUE", "RETURN", "MAIN", "Ident",
   "$accept", "CompUnit", "Decl", "ConstDecl", "ConstDefs", "ConstDef",
-  "ConstInitVal", "ConstInitVals", "VarDecl", "VarDefs", "VarDef",
-  "InitVal", "InitVals", "FuncDef", "FuncFParams", "FuncFParam", "Block",
-  "ConstExps", "ConstExp", "Exp", "LVal", "Exps", "PrimaryExp", "UnaryExp",
-  "UnaryOp", "FuncRParamse", "FuncRParams", "MulExp", "AddExp", "IntConst", YY_NULLPTR
+  "VarDecl", "VarDefs", "VarDef", "InitVal", "InitVals", "FuncDef",
+  "FuncFParams", "FuncFParam", "BlockItems", "Block", "BlockItem", "Stmt",
+  "Cond", "ConstExps", "Exp", "LVal", "Exps", "PrimaryExp", "UnaryExp",
+  "UnaryOp", "FuncRParams", "MulExp", "AddExp", "RelExp", "EqExp",
+  "LAndExp", "LOrExp", "IntConst", YY_NULLPTR
 };
 #endif
 
@@ -590,7 +597,7 @@ static const yytype_int16 yytoknum[] =
 };
 # endif
 
-#define YYPACT_NINF (-83)
+#define YYPACT_NINF (-140)
 
 #define yypact_value_is_default(Yyn) \
   ((Yyn) == YYPACT_NINF)
@@ -602,20 +609,26 @@ static const yytype_int16 yytoknum[] =
 
   /* YYPACT[STATE-NUM] -- Index in YYTABLE of the portion describing
      STATE-NUM.  */
-static const yytype_int8 yypact[] =
+static const yytype_int16 yypact[] =
 {
-      47,   -26,    -9,   -19,    20,   -83,   -83,   -83,   -83,    35,
-      25,   -83,    10,    51,   -83,   -83,   -83,    -2,    16,   -83,
-      43,   -83,    63,   -83,     6,    50,    53,    71,   -83,    59,
-     115,   -83,   -83,    58,   -83,    10,    50,    87,    91,   -83,
-      88,    77,    50,   115,    -3,   -83,   -83,   -83,   -83,   -83,
-     -83,   -83,    32,   -83,   -83,   -83,   -83,   -83,   115,    66,
-      74,   -83,    96,    74,    85,   -83,   -83,    50,   -83,    99,
-     -83,   -83,   102,   -83,   -83,     1,   100,   115,   109,   -83,
-     115,   115,   115,   115,   115,   -83,    33,   -83,   -83,   -83,
-     111,   -83,    59,   -83,   -83,   -83,   103,   117,   114,   115,
-     -83,   -83,   -83,    66,    66,   -83,   -83,    11,   109,   -83,
-     -83,   115,   -83,   123,    85,   -83,   -83,   -83,   -83
+     -11,   -17,    29,    39,    10,  -140,  -140,  -140,  -140,    16,
+     111,  -140,    42,    63,  -140,  -140,  -140,   202,    -2,   232,
+    -140,    55,    43,   118,  -140,     1,   232,   187,  -140,  -140,
+    -140,  -140,  -140,  -140,  -140,    79,  -140,  -140,  -140,  -140,
+    -140,   232,    83,   112,  -140,    98,    77,    96,  -140,    80,
+    -140,    49,  -140,   202,   232,  -140,    42,    98,    99,   122,
+    -140,  -140,     4,   217,   232,   134,  -140,   232,   232,   232,
+     232,   232,    37,  -140,   142,   103,    98,    51,  -140,   145,
+    -140,  -140,    98,  -140,   202,  -140,  -140,  -140,   100,   150,
+     232,  -140,  -140,  -140,    83,    83,  -140,  -140,    55,   154,
+     156,   147,   159,     0,  -140,   108,  -140,  -140,  -140,   160,
+     162,   157,  -140,  -140,   202,   232,    75,  -140,  -140,   232,
+    -140,  -140,   158,   232,   232,  -140,  -140,  -140,   164,  -140,
+    -140,  -140,   232,   163,  -140,  -140,   202,  -140,  -140,   168,
+     112,    69,    92,   149,   174,   170,  -140,   178,   134,  -140,
+     143,   232,   232,   232,   232,   232,   232,   232,   232,   143,
+    -140,   161,   112,   112,   112,   112,    69,    69,    92,   149,
+    -140,   143,  -140
 };
 
   /* YYDEFACT[STATE-NUM] -- Default reduction number in state STATE-NUM.
@@ -623,119 +636,163 @@ static const yytype_int8 yypact[] =
      means the default is an error.  */
 static const yytype_int8 yydefact[] =
 {
-       0,     0,     0,     0,     0,     2,     6,     7,     3,    37,
-       0,    18,     0,     0,     1,     4,     5,     0,    21,    17,
-       0,    37,     0,     9,     0,     0,     0,     0,    31,     0,
-       0,    37,    19,     0,     8,     0,     0,     0,     0,    27,
-      33,     0,     0,     0,     0,    52,    53,    54,    68,    65,
-      66,    67,    42,    20,    22,    46,    48,    58,     0,    62,
-      40,    47,     0,    39,     0,    10,    28,     0,    36,     0,
-      32,    29,     0,    23,    25,     0,     0,     0,    41,    51,
-       0,     0,     0,     0,     0,    38,     0,    11,    12,    30,
-      35,    45,     0,    24,    49,    56,     0,    55,     0,     0,
-      60,    59,    61,    63,    64,    13,    15,     0,    34,    26,
-      50,     0,    43,     0,     0,    14,    57,    44,    16
+       0,     0,     0,     0,     0,     2,     6,     7,     3,    18,
+       0,    14,     0,     0,     1,     4,     5,     0,     0,     0,
+      13,     0,     0,     0,     9,     0,     0,     0,    66,    67,
+      68,    93,    90,    91,    92,    56,    19,    20,    60,    62,
+      71,     0,    75,    54,    61,     0,     0,     0,    29,     0,
+      52,    18,    15,     0,     0,     8,     0,     0,     0,     0,
+      21,    23,     0,     0,     0,    55,    65,     0,     0,     0,
+       0,     0,     0,    25,    31,     0,     0,    17,    12,     0,
+      10,    26,     0,    59,     0,    22,    63,    69,     0,     0,
+       0,    73,    72,    74,    76,    77,    41,    37,     0,     0,
+       0,     0,     0,     0,    38,     0,    43,    34,    39,     0,
+      60,     0,    30,    27,     0,     0,     0,    28,    24,     0,
+      64,    57,     0,     0,     0,    47,    48,    49,     0,    36,
+      35,    42,     0,    33,    16,    53,     0,    70,    58,     0,
+      78,    83,    86,    88,    51,     0,    50,     0,    32,    11,
+       0,     0,     0,     0,     0,     0,     0,     0,     0,     0,
+      40,    44,    79,    80,    81,    82,    84,    85,    87,    89,
+      46,     0,    45
 };
 
   /* YYPGOTO[NTERM-NUM].  */
 static const yytype_int16 yypgoto[] =
 {
-     -83,   -83,   116,   -83,   -83,    89,   -82,   -83,   -83,   -83,
-     118,   -43,   -83,   130,   112,    94,   -25,   121,   107,   -41,
-     -83,    49,   -83,   -27,   -83,   -83,   -83,    17,   -30,   -83
+    -140,  -140,    76,  -140,  -140,   128,  -140,  -140,   175,   -26,
+    -140,   197,   177,   129,  -140,   -43,   101,  -139,    85,   153,
+     -19,   -69,    70,  -140,    -7,  -140,  -140,    57,    34,   -23,
+      53,    61,  -140,  -140
 };
 
   /* YYDEFGOTO[NTERM-NUM].  */
-static const yytype_int8 yydefgoto[] =
+static const yytype_int16 yydefgoto[] =
 {
-      -1,     4,     5,     6,    22,    23,    87,   107,     7,    10,
-      11,    53,    75,     8,    27,    28,    39,    18,    88,    54,
-      55,    78,    56,    57,    58,    96,    97,    59,    60,    61
+      -1,     4,   104,     6,    23,    24,     7,    10,    11,    36,
+      62,     8,    47,    48,   105,   106,   107,   108,   139,    49,
+      37,    38,    65,    39,    40,    41,    88,    42,    43,   141,
+     142,   143,   144,    44
 };
 
   /* YYTABLE[YYPACT[STATE-NUM]] -- What to do in state STATE-NUM.  If
      positive, shift that token.  If negative, reduce the rule whose
      number is the opposite.  If YYTABLE_NINF, syntax error.  */
-static const yytype_int8 yytable[] =
+static const yytype_uint8 yytable[] =
 {
-      63,    74,    72,    43,   106,    25,    92,    44,    73,    45,
-      46,    66,    93,    36,     9,    47,   114,    71,    12,    29,
-      14,    13,   115,    48,    30,    26,    49,    50,    51,    19,
-      20,    79,   118,    26,    63,    95,    98,    52,    76,    43,
-      77,    17,    89,    86,   105,    45,    46,     1,     2,   109,
-      21,    47,     3,   100,   101,   102,    63,    24,   113,    48,
-      38,    64,    49,    50,    51,    43,    30,    34,    35,    44,
-     116,    45,    46,    52,     1,     2,    41,    47,    42,     3,
-      80,    81,    82,    31,    63,    48,    83,    84,    49,    50,
-      51,    43,    41,    40,    67,    86,    69,    45,    46,    52,
-     103,   104,    68,    47,    26,    85,    43,    94,    90,    91,
-     110,    48,    45,    46,    49,    50,    51,    99,    47,    77,
-      15,    43,   111,   112,    65,    52,    48,    45,    46,    49,
-      50,    51,   117,    47,    16,    70,    37,    62,    32,   108,
-      52,    48,    33,     0,    49,    50,    51,     0,     0,     0,
-       0,     0,     0,     0,     0,    52
+      50,    61,    73,   110,   127,    45,    26,    59,    57,    84,
+      14,   161,    28,    29,    81,    85,     1,     2,    30,    17,
+     170,     3,    18,     9,    19,    46,    31,    78,    46,    32,
+      33,    34,   172,   113,    66,    50,   110,     1,     2,   117,
+      35,    96,     3,    26,    87,    89,    53,    72,    97,    28,
+      29,    54,    17,   109,   114,    30,    12,    19,   118,   115,
+      91,    92,    93,    31,    98,     2,    32,    33,    34,    25,
+      99,   122,   100,   101,   102,   103,     5,    35,   136,    13,
+      15,   110,    22,   115,   128,    63,   109,    64,   134,    77,
+     110,   151,   152,   153,   154,    51,   135,    67,    68,    69,
+     137,    75,   110,    76,    75,   119,    82,   120,    72,   155,
+     149,   156,    96,   147,    26,    20,    21,    74,    72,   129,
+      28,    29,    55,    56,    70,    71,    30,    94,    95,    83,
+      46,   109,   166,   167,    31,    98,     2,    32,    33,    34,
+     109,    99,    90,   100,   101,   102,   103,    96,    35,    26,
+     111,   125,   109,    72,   116,    28,    29,   140,   140,   121,
+     123,    30,   124,   126,   131,   132,   133,   138,   146,    31,
+     157,    64,    32,    33,    34,   150,    99,   159,   100,   101,
+     102,   103,   160,    35,    80,   162,   163,   164,   165,   140,
+     140,   140,   140,    26,   158,   171,    52,    27,    60,    28,
+      29,    16,    58,   148,   112,    30,   130,    79,    26,   145,
+     168,     0,    27,    31,    28,    29,    32,    33,    34,   169,
+      30,     0,     0,    26,    86,     0,     0,    35,    31,    28,
+      29,    32,    33,    34,     0,    30,     0,     0,    26,     0,
+       0,     0,    35,    31,    28,    29,    32,    33,    34,     0,
+      30,     0,     0,     0,     0,     0,     0,    35,    31,     0,
+       0,    32,    33,    34,     0,     0,     0,     0,     0,     0,
+       0,     0,    35
 };
 
-static const yytype_int8 yycheck[] =
+static const yytype_int16 yycheck[] =
 {
-      30,    44,    43,     6,    86,     7,     5,    10,    11,    12,
-      13,    36,    11,     7,    40,    18,     5,    42,    27,     3,
-       0,    40,    11,    26,     8,    27,    29,    30,    31,     4,
-       5,    58,   114,    27,    64,    76,    77,    40,     6,     6,
-       8,     6,    67,    10,    11,    12,    13,    27,    28,    92,
-      40,    18,    32,    80,    81,    82,    86,     6,    99,    26,
-      10,     3,    29,    30,    31,     6,     8,     4,     5,    10,
-     111,    12,    13,    40,    27,    28,     5,    18,     7,    32,
-      14,    15,    16,    40,   114,    26,    12,    13,    29,    30,
-      31,     6,     5,    40,     7,    10,     8,    12,    13,    40,
-      83,    84,    11,    18,    27,     9,     6,     7,     9,     7,
-       7,    26,    12,    13,    29,    30,    31,     8,    18,     8,
-       4,     6,     5,     9,    35,    40,    26,    12,    13,    29,
-      30,    31,     9,    18,     4,    41,    24,    30,    20,    90,
-      40,    26,    21,    -1,    29,    30,    31,    -1,    -1,    -1,
-      -1,    -1,    -1,    -1,    -1,    40
+      19,    27,    45,    72,     4,     7,     6,    26,     7,     5,
+       0,   150,    12,    13,    57,    11,    27,    28,    18,     3,
+     159,    32,     6,    40,     8,    27,    26,    53,    27,    29,
+      30,    31,   171,    76,    41,    54,   105,    27,    28,    82,
+      40,     4,    32,     6,    63,    64,     3,    10,    11,    12,
+      13,     8,     3,    72,     3,    18,    27,     8,    84,     8,
+      67,    68,    69,    26,    27,    28,    29,    30,    31,     6,
+      33,    90,    35,    36,    37,    38,     0,    40,     3,    40,
+       4,   150,    40,     8,   103,     6,   105,     8,   114,     9,
+     159,    22,    23,    24,    25,    40,   115,    14,    15,    16,
+     119,     5,   171,     7,     5,     5,     7,     7,    10,    17,
+     136,    19,     4,   132,     6,     4,     5,    40,    10,    11,
+      12,    13,     4,     5,    12,    13,    18,    70,    71,     7,
+      27,   150,   155,   156,    26,    27,    28,    29,    30,    31,
+     159,    33,     8,    35,    36,    37,    38,     4,    40,     6,
+       8,     4,   171,    10,     9,    12,    13,   123,   124,     9,
+       6,    18,     6,     4,     4,     3,     9,     9,     4,    26,
+      21,     8,    29,    30,    31,     7,    33,     7,    35,    36,
+      37,    38,     4,    40,    56,   151,   152,   153,   154,   155,
+     156,   157,   158,     6,    20,    34,    21,    10,    11,    12,
+      13,     4,    25,   133,    75,    18,   105,    54,     6,   124,
+     157,    -1,    10,    26,    12,    13,    29,    30,    31,   158,
+      18,    -1,    -1,     6,     7,    -1,    -1,    40,    26,    12,
+      13,    29,    30,    31,    -1,    18,    -1,    -1,     6,    -1,
+      -1,    -1,    40,    26,    12,    13,    29,    30,    31,    -1,
+      18,    -1,    -1,    -1,    -1,    -1,    -1,    40,    26,    -1,
+      -1,    29,    30,    31,    -1,    -1,    -1,    -1,    -1,    -1,
+      -1,    -1,    40
 };
 
   /* YYSTOS[STATE-NUM] -- The (internal number of the) accessing
      symbol of state STATE-NUM.  */
 static const yytype_int8 yystos[] =
 {
-       0,    27,    28,    32,    42,    43,    44,    49,    54,    40,
-      50,    51,    27,    40,     0,    43,    54,     6,    58,     4,
-       5,    40,    45,    46,     6,     7,    27,    55,    56,     3,
-       8,    40,    51,    58,     4,     5,     7,    55,    10,    57,
-      40,     5,     7,     6,    10,    12,    13,    18,    26,    29,
-      30,    31,    40,    52,    60,    61,    63,    64,    65,    68,
-      69,    70,    59,    69,     3,    46,    57,     7,    11,     8,
-      56,    57,    60,    11,    52,    53,     6,     8,    62,    64,
-      14,    15,    16,    12,    13,     9,    10,    47,    59,    57,
-       9,     7,     5,    11,     7,    60,    66,    67,    60,     8,
-      64,    64,    64,    68,    68,    11,    47,    48,    62,    52,
-       7,     5,     9,    60,     5,    11,    60,     9,    47
+       0,    27,    28,    32,    42,    43,    44,    47,    52,    40,
+      48,    49,    27,    40,     0,    43,    52,     3,     6,     8,
+       4,     5,    40,    45,    46,     6,     6,    10,    12,    13,
+      18,    26,    29,    30,    31,    40,    50,    61,    62,    64,
+      65,    66,    68,    69,    74,     7,    27,    53,    54,    60,
+      61,    40,    49,     3,     8,     4,     5,     7,    53,    61,
+      11,    50,    51,     6,     8,    63,    65,    14,    15,    16,
+      12,    13,    10,    56,    40,     5,     7,     9,    50,    60,
+      46,    56,     7,     7,     5,    11,     7,    61,    67,    61,
+       8,    65,    65,    65,    68,    68,     4,    11,    27,    33,
+      35,    36,    37,    38,    43,    55,    56,    57,    58,    61,
+      62,     8,    54,    56,     3,     8,     9,    56,    50,     5,
+       7,     9,    61,     6,     6,     4,     4,     4,    61,    11,
+      57,     4,     3,     9,    50,    61,     3,    61,     9,    59,
+      69,    70,    71,    72,    73,    59,     4,    61,    63,    50,
+       7,    22,    23,    24,    25,    17,    19,    21,    20,     7,
+       4,    58,    69,    69,    69,    69,    70,    70,    71,    72,
+      58,    34,    58
 };
 
   /* YYR1[YYN] -- Symbol number of symbol that rule YYN derives.  */
 static const yytype_int8 yyr1[] =
 {
        0,    41,    42,    42,    42,    42,    43,    43,    44,    45,
-      45,    46,    47,    47,    47,    48,    48,    49,    50,    50,
-      51,    51,    52,    52,    52,    53,    53,    54,    54,    54,
-      54,    55,    55,    56,    56,    56,    57,    58,    58,    59,
-      60,    61,    61,    62,    62,    63,    63,    63,    64,    64,
-      64,    64,    65,    65,    65,    66,    67,    67,    68,    68,
-      68,    68,    69,    69,    69,    70,    70,    70,    70
+      45,    46,    46,    47,    48,    48,    49,    49,    49,    49,
+      50,    50,    50,    51,    51,    52,    52,    52,    52,    53,
+      53,    54,    54,    54,    55,    55,    56,    56,    57,    57,
+      58,    58,    58,    58,    58,    58,    58,    58,    58,    58,
+      58,    59,    60,    60,    61,    62,    62,    63,    63,    64,
+      64,    64,    65,    65,    65,    65,    66,    66,    66,    67,
+      67,    68,    68,    68,    68,    69,    69,    69,    70,    70,
+      70,    70,    70,    71,    71,    71,    72,    72,    73,    73,
+      74,    74,    74,    74
 };
 
   /* YYR2[YYN] -- Number of symbols on the right hand side of rule YYN.  */
 static const yytype_int8 yyr2[] =
 {
        0,     2,     1,     1,     2,     2,     1,     1,     4,     1,
-       3,     4,     1,     2,     3,     1,     3,     3,     1,     3,
-       4,     2,     1,     2,     3,     1,     3,     5,     5,     6,
-       6,     1,     3,     2,     5,     4,     2,     0,     4,     1,
-       1,     2,     1,     3,     4,     3,     1,     1,     1,     3,
-       4,     2,     1,     1,     1,     1,     1,     3,     1,     3,
-       3,     3,     1,     3,     3,     1,     1,     1,     1
+       3,     6,     3,     3,     1,     3,     6,     4,     1,     3,
+       1,     2,     3,     1,     3,     5,     5,     6,     6,     1,
+       3,     2,     5,     4,     1,     2,     3,     2,     1,     1,
+       4,     1,     2,     1,     5,     7,     5,     2,     2,     2,
+       3,     1,     1,     4,     1,     2,     1,     3,     4,     3,
+       1,     1,     1,     3,     4,     2,     1,     1,     1,     1,
+       3,     1,     3,     3,     3,     1,     3,     3,     1,     3,
+       3,     3,     3,     1,     3,     3,     1,     3,     1,     3,
+       1,     1,     1,     1
 };
 
 
@@ -1432,402 +1489,558 @@ yyreduce:
     {
   case 2:
 #line 37 "part.ypp"
-                                        {(yyval.no)=new GrammaNode(CompUnit_,"CompUnit");(yyval.no)->son.push_back((yyvsp[0].no));}
-#line 1437 "part.tab.cpp"
+                                        {Droot->son.push_back((yyvsp[0].no));}
+#line 1494 "part.tab.cpp"
     break;
 
   case 3:
 #line 38 "part.ypp"
-                                        {(yyval.no)=new GrammaNode(CompUnit_,"CompUnit");(yyval.no)->son.push_back((yyvsp[0].no));}
-#line 1443 "part.tab.cpp"
+                                        {Droot->son.push_back((yyvsp[0].no));}
+#line 1500 "part.tab.cpp"
     break;
 
   case 4:
 #line 39 "part.ypp"
-                                {(yyval.no)=new GrammaNode(CompUnit_,"CompUnit");(yyval.no)->son.push_back((yyvsp[-1].no));(yyval.no)->son.push_back((yyvsp[0].no));}
-#line 1449 "part.tab.cpp"
+                                {Droot->son.push_back((yyvsp[0].no));}
+#line 1506 "part.tab.cpp"
     break;
 
   case 5:
 #line 40 "part.ypp"
-                                {(yyval.no)=new GrammaNode(CompUnit_,"CompUnit");(yyval.no)->son.push_back((yyvsp[-1].no));(yyval.no)->son.push_back((yyvsp[0].no));}
-#line 1455 "part.tab.cpp"
+                                {Droot->son.push_back((yyvsp[0].no));}
+#line 1512 "part.tab.cpp"
     break;
 
   case 6:
 #line 44 "part.ypp"
-              {(yyval.no)=new GrammaNode(Decl_,"Decl_");(yyval.no)->son.push_back((yyvsp[0].no));}
-#line 1461 "part.tab.cpp"
+              {(yyval.no)=(yyvsp[0].no);}
+#line 1518 "part.tab.cpp"
     break;
 
   case 7:
 #line 45 "part.ypp"
-                  {(yyval.no)=new GrammaNode(Decl_,"Decl_");(yyval.no)->son.push_back((yyvsp[0].no));}
-#line 1467 "part.tab.cpp"
+                  {(yyval.no)=(yyvsp[0].no);}
+#line 1524 "part.tab.cpp"
     break;
 
   case 8:
 #line 50 "part.ypp"
-                                  {(yyval.no)=new GrammaNode(ConstDecl_,"ConstDecl_");(yyval.no)->son.push_back((yyvsp[-3].no));(yyval.no)->son.push_back((yyvsp[-2].no));(yyval.no)->son.push_back((yyvsp[-1].no));(yyval.no)->son.push_back((yyvsp[0].no));}
-#line 1473 "part.tab.cpp"
+                                 {(yyval.no)=(yyvsp[-1].no);}
+#line 1530 "part.tab.cpp"
     break;
 
   case 9:
 #line 55 "part.ypp"
-                                                                {(yyval.no)=new GrammaNode(ConstDefs_,"ConstDefs_");(yyval.no)->son.push_back((yyvsp[0].no));}
-#line 1479 "part.tab.cpp"
+                                                        {(yyval.no)=new GrammaNode(ConstDefs_,"ConstDefs_");(yyval.no)->son.push_back((yyvsp[0].no));}
+#line 1536 "part.tab.cpp"
     break;
 
   case 10:
 #line 56 "part.ypp"
-                                                {(yyval.no) = new GrammaNode(ConstDefs_,"ConstDefs_"); (yyval.no)->son.push_back((yyvsp[-2].no));(yyval.no)->son.push_back((yyvsp[-1].no));(yyval.no)->son.push_back((yyvsp[0].no));}
-#line 1485 "part.tab.cpp"
+                                        {(yyvsp[-2].no)->son.push_back((yyvsp[0].no));}
+#line 1542 "part.tab.cpp"
     break;
 
   case 11:
 #line 61 "part.ypp"
-                                     {(yyval.no) = new GrammaNode(ConstDef_,"ConstDef_"); (yyval.no)->son.push_back((yyvsp[-3].no));(yyval.no)->son.push_back((yyvsp[-2].no));(yyval.no)->son.push_back((yyvsp[-1].no));(yyval.no)->son.push_back((yyvsp[0].no));}
-#line 1491 "part.tab.cpp"
+                                                     {(yyval.no) = new GrammaNode(ConstDef_,"ConstDef_"); (yyval.no)->son.push_back((yyvsp[-5].no));(yyval.no)->son.push_back((yyvsp[-3].no));(yyval.no)->son.push_back((yyvsp[0].no));}
+#line 1548 "part.tab.cpp"
     break;
 
   case 12:
-#line 65 "part.ypp"
-                                                                {(yyval.no) = new GrammaNode(ConstInitVal_,"ConstInitVal_"); (yyval.no)->son.push_back((yyvsp[0].no));}
-#line 1497 "part.tab.cpp"
+#line 62 "part.ypp"
+                              {(yyval.no) = new GrammaNode(ConstDef_,"ConstDef_"); (yyval.no)->son.push_back((yyvsp[-2].no));(yyval.no)->son.push_back((yyvsp[0].no));}
+#line 1554 "part.tab.cpp"
     break;
 
   case 13:
-#line 66 "part.ypp"
-                                                                        {(yyval.no) = new GrammaNode(ConstInitVal_,"ConstInitVal_"); (yyval.no)->son.push_back((yyvsp[-1].no));(yyval.no)->son.push_back((yyvsp[0].no));}
-#line 1503 "part.tab.cpp"
+#line 67 "part.ypp"
+                                                        {(yyval.no)=(yyvsp[-1].no);}
+#line 1560 "part.tab.cpp"
     break;
 
   case 14:
-#line 67 "part.ypp"
-                                                        {(yyval.no) = new GrammaNode(ConstInitVal_,"ConstInitVal_"); (yyval.no)->son.push_back((yyvsp[-2].no));(yyval.no)->son.push_back((yyvsp[-1].no));(yyval.no)->son.push_back((yyvsp[0].no));}
-#line 1509 "part.tab.cpp"
+#line 71 "part.ypp"
+                                                                {(yyval.no) = new GrammaNode(VarDefs_,"VarDefs"); (yyval.no)->son.push_back((yyvsp[0].no));}
+#line 1566 "part.tab.cpp"
     break;
 
   case 15:
-#line 71 "part.ypp"
-                                                        {(yyval.no) = new GrammaNode(ConstInitVals_,"ConstInitVals_"); (yyval.no)->son.push_back((yyvsp[0].no));}
-#line 1515 "part.tab.cpp"
+#line 72 "part.ypp"
+                                                {(yyvsp[-2].no)->son.push_back((yyvsp[0].no));}
+#line 1572 "part.tab.cpp"
     break;
 
   case 16:
-#line 72 "part.ypp"
-                                                {(yyval.no) = new GrammaNode(ConstInitVals_,"ConstInitVals_"); (yyval.no)->son.push_back((yyvsp[-2].no));(yyval.no)->son.push_back((yyvsp[-1].no));(yyval.no)->son.push_back((yyvsp[0].no));}
-#line 1521 "part.tab.cpp"
+#line 76 "part.ypp"
+                                                        {(yyval.no) = new GrammaNode(VarDef_,"VarDef"); (yyval.no)->son.push_back((yyvsp[-5].no));(yyval.no)->son.push_back((yyvsp[-3].no));(yyval.no)->son.push_back((yyvsp[0].no));}
+#line 1578 "part.tab.cpp"
     break;
 
   case 17:
-#line 76 "part.ypp"
-                                                        {(yyval.no) = new GrammaNode(VarDecl_,"VarDecl"); (yyval.no)->son.push_back((yyvsp[-2].no));(yyval.no)->son.push_back((yyvsp[-1].no));(yyval.no)->son.push_back((yyvsp[0].no));}
-#line 1527 "part.tab.cpp"
+#line 77 "part.ypp"
+                                                        {(yyval.no) = new GrammaNode(VarDef_,"VarDef"); (yyval.no)->son.push_back((yyvsp[-3].no));(yyval.no)->son.push_back((yyvsp[-1].no));}
+#line 1584 "part.tab.cpp"
     break;
 
   case 18:
-#line 80 "part.ypp"
-                                                                {(yyval.no) = new GrammaNode(VarDefs_,"VarDefs"); (yyval.no)->son.push_back((yyvsp[0].no));}
-#line 1533 "part.tab.cpp"
+#line 78 "part.ypp"
+                                        {(yyval.no) = new GrammaNode(VarDef_,"VarDef"); (yyval.no)->son.push_back((yyvsp[0].no));}
+#line 1590 "part.tab.cpp"
     break;
 
   case 19:
-#line 81 "part.ypp"
-                                                {(yyval.no) = new GrammaNode(VarDefs_,"VarDefs"); (yyval.no)->son.push_back((yyvsp[-2].no));(yyval.no)->son.push_back((yyvsp[-1].no));(yyval.no)->son.push_back((yyvsp[0].no));}
-#line 1539 "part.tab.cpp"
+#line 79 "part.ypp"
+                                {(yyval.no) = new GrammaNode(VarDef_,"VarDef"); (yyval.no)->son.push_back((yyvsp[-2].no));(yyval.no)->son.push_back((yyvsp[-1].no));(yyval.no)->son.push_back((yyvsp[0].no));}
+#line 1596 "part.tab.cpp"
     break;
 
   case 20:
-#line 85 "part.ypp"
-                                        {(yyval.no) = new GrammaNode(VarDef_,"VarDef"); (yyval.no)->son.push_back((yyvsp[-3].no));(yyval.no)->son.push_back((yyvsp[-2].no));(yyval.no)->son.push_back((yyvsp[-1].no));(yyval.no)->son.push_back((yyvsp[0].no));}
-#line 1545 "part.tab.cpp"
+#line 83 "part.ypp"
+                                                                        {(yyval.no) = new GrammaNode(InitVal_,"InitVal_EXP"); (yyval.no)->son.push_back((yyvsp[0].no));}
+#line 1602 "part.tab.cpp"
     break;
 
   case 21:
-#line 86 "part.ypp"
-                                                        {(yyval.no) = new GrammaNode(VarDef_,"VarDef"); (yyval.no)->son.push_back((yyvsp[-1].no));(yyval.no)->son.push_back((yyvsp[0].no));}
-#line 1551 "part.tab.cpp"
+#line 84 "part.ypp"
+                                                                {(yyval.no) = new GrammaNode(InitVal_,"InitVal_NULL");}
+#line 1608 "part.tab.cpp"
     break;
 
   case 22:
-#line 90 "part.ypp"
-                                                                        {(yyval.no) = new GrammaNode(InitVal_,"InitVal"); (yyval.no)->son.push_back((yyvsp[0].no));}
-#line 1557 "part.tab.cpp"
+#line 85 "part.ypp"
+                                                        {(yyval.no) = new GrammaNode(InitVal_,"InitVal"); (yyval.no)->son.push_back((yyvsp[-1].no));}
+#line 1614 "part.tab.cpp"
     break;
 
   case 23:
-#line 91 "part.ypp"
-                                                                {(yyval.no) = new GrammaNode(InitVal_,"InitVal"); (yyval.no)->son.push_back((yyvsp[-1].no));(yyval.no)->son.push_back((yyvsp[0].no));}
-#line 1563 "part.tab.cpp"
+#line 89 "part.ypp"
+                                                                {(yyval.no) = new GrammaNode(InitVals_,"InitVals"); (yyval.no)->son.push_back((yyvsp[0].no));}
+#line 1620 "part.tab.cpp"
     break;
 
   case 24:
-#line 92 "part.ypp"
-                                                        {(yyval.no) = new GrammaNode(InitVal_,"InitVal"); (yyval.no)->son.push_back((yyvsp[-2].no));(yyval.no)->son.push_back((yyvsp[-1].no));(yyval.no)->son.push_back((yyvsp[0].no));}
-#line 1569 "part.tab.cpp"
+#line 90 "part.ypp"
+                                                {(yyvsp[-2].no)->son.push_back((yyvsp[0].no));}
+#line 1626 "part.tab.cpp"
     break;
 
   case 25:
-#line 96 "part.ypp"
-                                                                {(yyval.no) = new GrammaNode(InitVals_,"InitVals"); (yyval.no)->son.push_back((yyvsp[0].no));}
-#line 1575 "part.tab.cpp"
+#line 94 "part.ypp"
+                                                        {(yyval.no) = new GrammaNode(FuncDef_,"FuncDef"); (yyval.no)->son.push_back((yyvsp[-4].no));(yyval.no)->son.push_back((yyvsp[-3].no));(yyval.no)->son.push_back((yyvsp[0].no));}
+#line 1632 "part.tab.cpp"
     break;
 
   case 26:
-#line 97 "part.ypp"
-                                                {(yyval.no) = new GrammaNode(InitVals_,"InitVals"); (yyval.no)->son.push_back((yyvsp[-2].no));(yyval.no)->son.push_back((yyvsp[-1].no));(yyval.no)->son.push_back((yyvsp[0].no));}
-#line 1581 "part.tab.cpp"
+#line 95 "part.ypp"
+                                                        {(yyval.no) = new GrammaNode(FuncDef_,"FuncDef"); (yyval.no)->son.push_back((yyvsp[-4].no));(yyval.no)->son.push_back((yyvsp[-3].no));(yyval.no)->son.push_back((yyvsp[0].no));}
+#line 1638 "part.tab.cpp"
     break;
 
   case 27:
-#line 101 "part.ypp"
-                                                        {(yyval.no) = new GrammaNode(FuncDef_,"FuncDef"); (yyval.no)->son.push_back((yyvsp[-4].no));(yyval.no)->son.push_back((yyvsp[-3].no));(yyval.no)->son.push_back((yyvsp[-2].no));(yyval.no)->son.push_back((yyvsp[-1].no));(yyval.no)->son.push_back((yyvsp[0].no));}
-#line 1587 "part.tab.cpp"
+#line 96 "part.ypp"
+                                                   {(yyval.no) = new GrammaNode(FuncDef_,"FuncDef"); (yyval.no)->son.push_back((yyvsp[-5].no));(yyval.no)->son.push_back((yyvsp[-4].no));(yyval.no)->son.push_back((yyvsp[-2].no));(yyval.no)->son.push_back((yyvsp[0].no));}
+#line 1644 "part.tab.cpp"
     break;
 
   case 28:
-#line 102 "part.ypp"
-                                                        {(yyval.no) = new GrammaNode(FuncDef_,"FuncDef"); (yyval.no)->son.push_back((yyvsp[-4].no));(yyval.no)->son.push_back((yyvsp[-3].no));(yyval.no)->son.push_back((yyvsp[-2].no));(yyval.no)->son.push_back((yyvsp[-1].no));(yyval.no)->son.push_back((yyvsp[0].no));}
-#line 1593 "part.tab.cpp"
+#line 97 "part.ypp"
+                                                    {(yyval.no) = new GrammaNode(FuncDef_,"FuncDef"); (yyval.no)->son.push_back((yyvsp[-5].no));(yyval.no)->son.push_back((yyvsp[-4].no));(yyval.no)->son.push_back((yyvsp[-2].no));(yyval.no)->son.push_back((yyvsp[0].no));}
+#line 1650 "part.tab.cpp"
     break;
 
   case 29:
-#line 103 "part.ypp"
-                                                   {(yyval.no) = new GrammaNode(FuncDef_,"FuncDef"); (yyval.no)->son.push_back((yyvsp[-5].no));(yyval.no)->son.push_back((yyvsp[-4].no));(yyval.no)->son.push_back((yyvsp[-3].no));(yyval.no)->son.push_back((yyvsp[-2].no));(yyval.no)->son.push_back((yyvsp[-1].no));(yyval.no)->son.push_back((yyvsp[0].no));}
-#line 1599 "part.tab.cpp"
+#line 101 "part.ypp"
+                                                                        {(yyval.no) = new GrammaNode(FuncFParams_,"FuncFParams"); (yyval.no)->son.push_back((yyvsp[0].no));}
+#line 1656 "part.tab.cpp"
     break;
 
   case 30:
-#line 104 "part.ypp"
-                                                    {(yyval.no) = new GrammaNode(FuncDef_,"FuncDef"); (yyval.no)->son.push_back((yyvsp[-5].no));(yyval.no)->son.push_back((yyvsp[-4].no));(yyval.no)->son.push_back((yyvsp[-3].no));(yyval.no)->son.push_back((yyvsp[-2].no));(yyval.no)->son.push_back((yyvsp[-1].no));(yyval.no)->son.push_back((yyvsp[0].no));}
-#line 1605 "part.tab.cpp"
+#line 102 "part.ypp"
+                                                {(yyvsp[-2].no)->son.push_back((yyvsp[0].no));}
+#line 1662 "part.tab.cpp"
     break;
 
   case 31:
-#line 113 "part.ypp"
-                                                                        {(yyval.no) = new GrammaNode(FuncFParams_,"FuncFParams"); (yyval.no)->son.push_back((yyvsp[0].no));}
-#line 1611 "part.tab.cpp"
+#line 106 "part.ypp"
+                                                                        {(yyval.no) = new GrammaNode(FuncFParam_,"FuncFParam"); (yyval.no)->son.push_back((yyvsp[0].no));}
+#line 1668 "part.tab.cpp"
     break;
 
   case 32:
-#line 114 "part.ypp"
-                                                {(yyval.no) = new GrammaNode(FuncFParams_,"FuncFParams"); (yyval.no)->son.push_back((yyvsp[-2].no));(yyval.no)->son.push_back((yyvsp[-1].no));(yyval.no)->son.push_back((yyvsp[0].no));}
-#line 1617 "part.tab.cpp"
+#line 107 "part.ypp"
+                                                {(yyval.no) = new GrammaNode(FuncFParam_,"FuncFParam"); (yyval.no)->son.push_back((yyvsp[-3].no));(yyval.no)->son.push_back((yyvsp[-2].no));(yyval.no)->son.push_back((yyvsp[-1].no));(yyval.no)->son.push_back((yyvsp[0].no));}
+#line 1674 "part.tab.cpp"
     break;
 
   case 33:
-#line 118 "part.ypp"
-                                                                        {(yyval.no) = new GrammaNode(FuncFParam_,"FuncFParam"); (yyval.no)->son.push_back((yyvsp[-1].no));(yyval.no)->son.push_back((yyvsp[0].no));}
-#line 1623 "part.tab.cpp"
+#line 108 "part.ypp"
+                                                        {(yyval.no) = new GrammaNode(FuncFParam_,"FuncFParam"); (yyval.no)->son.push_back((yyvsp[-2].no));(yyval.no)->son.push_back((yyvsp[-1].no));(yyval.no)->son.push_back((yyvsp[0].no));}
+#line 1680 "part.tab.cpp"
     break;
 
   case 34:
-#line 119 "part.ypp"
-                                                {(yyval.no) = new GrammaNode(FuncFParam_,"FuncFParam"); (yyval.no)->son.push_back((yyvsp[-4].no));(yyval.no)->son.push_back((yyvsp[-3].no));(yyval.no)->son.push_back((yyvsp[-2].no));(yyval.no)->son.push_back((yyvsp[-1].no));(yyval.no)->son.push_back((yyvsp[0].no));}
-#line 1629 "part.tab.cpp"
+#line 112 "part.ypp"
+                                                                        {(yyval.no) = new GrammaNode(Block_,"Block"); (yyval.no)->son.push_back((yyvsp[0].no));}
+#line 1686 "part.tab.cpp"
     break;
 
   case 35:
-#line 120 "part.ypp"
-                                                        {(yyval.no) = new GrammaNode(FuncFParam_,"FuncFParam"); (yyval.no)->son.push_back((yyvsp[-3].no));(yyval.no)->son.push_back((yyvsp[-2].no));(yyval.no)->son.push_back((yyvsp[-1].no));(yyval.no)->son.push_back((yyvsp[0].no));}
-#line 1635 "part.tab.cpp"
+#line 113 "part.ypp"
+                                                        {(yyvsp[-1].no)->son.push_back((yyvsp[0].no));}
+#line 1692 "part.tab.cpp"
     break;
 
   case 36:
-#line 129 "part.ypp"
-                                                                        {(yyval.no) = new GrammaNode(Block_,"Block"); (yyval.no)->son.push_back((yyvsp[-1].no));(yyval.no)->son.push_back((yyvsp[0].no));}
-#line 1641 "part.tab.cpp"
+#line 117 "part.ypp"
+                                                        {(yyval.no)=(yyvsp[-1].no);}
+#line 1698 "part.tab.cpp"
+    break;
+
+  case 37:
+#line 118 "part.ypp"
+                                                                        {}
+#line 1704 "part.tab.cpp"
     break;
 
   case 38:
-#line 158 "part.ypp"
-                                                        {(yyval.no) = new GrammaNode(ConstExps_,"ConstExps"); (yyval.no)->son.push_back((yyvsp[-3].no));(yyval.no)->son.push_back((yyvsp[-2].no));(yyval.no)->son.push_back((yyvsp[-1].no));(yyval.no)->son.push_back((yyvsp[0].no));}
-#line 1647 "part.tab.cpp"
+#line 122 "part.ypp"
+                                                                        {(yyval.no)=(yyvsp[0].no);}
+#line 1710 "part.tab.cpp"
     break;
 
   case 39:
-#line 163 "part.ypp"
-                                        {(yyval.no) = new GrammaNode(ConstExp_,"ConstExp_"); (yyval.no)->son.push_back((yyvsp[0].no));}
-#line 1653 "part.tab.cpp"
+#line 123 "part.ypp"
+                                                                        {(yyval.no)=(yyvsp[0].no);}
+#line 1716 "part.tab.cpp"
     break;
 
   case 40:
-#line 168 "part.ypp"
-                                                        {(yyval.no) = new GrammaNode(Exp_,"Exp_"); (yyval.no)->son.push_back((yyvsp[0].no));}
-#line 1659 "part.tab.cpp"
+#line 128 "part.ypp"
+                                                        {(yyval.no) = new GrammaNode(Stmt_Assign_,"Stmt_Assign"); (yyval.no)->son.push_back((yyvsp[-3].no));(yyval.no)->son.push_back((yyvsp[-1].no));}
+#line 1722 "part.tab.cpp"
     break;
 
   case 41:
-#line 173 "part.ypp"
-                                                        {(yyval.no) = new GrammaNode(LVal_,"LVal_"); (yyval.no)->son.push_back((yyvsp[-1].no));(yyval.no)->son.push_back((yyvsp[0].no));}
-#line 1665 "part.tab.cpp"
+#line 129 "part.ypp"
+                                                                        {}
+#line 1728 "part.tab.cpp"
     break;
 
   case 42:
-#line 174 "part.ypp"
-                                                        {(yyval.no) = new GrammaNode(LVal_,"LVal_"); (yyval.no)->son.push_back((yyvsp[0].no));printf("LAal->Ident\n");}
-#line 1671 "part.tab.cpp"
+#line 130 "part.ypp"
+                                                                        {(yyval.no) = new GrammaNode(Stmt_Exp_,"Stmt_Exp"); (yyval.no)->son.push_back((yyvsp[-1].no));}
+#line 1734 "part.tab.cpp"
     break;
 
   case 43:
-#line 179 "part.ypp"
-                                                {(yyval.no) = new GrammaNode(Exps_,"Exps_"); (yyval.no)->son.push_back((yyvsp[-2].no));(yyval.no)->son.push_back((yyvsp[-1].no));(yyval.no)->son.push_back((yyvsp[0].no));}
-#line 1677 "part.tab.cpp"
+#line 131 "part.ypp"
+                                                                        {(yyval.no)=(yyvsp[0].no);}
+#line 1740 "part.tab.cpp"
     break;
 
   case 44:
-#line 180 "part.ypp"
-                                        {(yyval.no) = new GrammaNode(Exps_,"Exps_"); (yyval.no)->son.push_back((yyvsp[-3].no));(yyval.no)->son.push_back((yyvsp[-2].no));(yyval.no)->son.push_back((yyvsp[-1].no));(yyval.no)->son.push_back((yyvsp[0].no));}
-#line 1683 "part.tab.cpp"
+#line 132 "part.ypp"
+                                                        {(yyval.no) = new GrammaNode(Stmt_If_,"Stmt_If");(yyval.no)->son.push_back((yyvsp[-2].no));(yyval.no)->son.push_back((yyvsp[0].no));}
+#line 1746 "part.tab.cpp"
     break;
 
   case 45:
-#line 185 "part.ypp"
-                                {(yyval.no) = new GrammaNode(PrimaryExp_,"PrimaryExp"); (yyval.no)->son.push_back((yyvsp[-2].no));(yyval.no)->son.push_back((yyvsp[-1].no));(yyval.no)->son.push_back((yyvsp[0].no));}
-#line 1689 "part.tab.cpp"
+#line 133 "part.ypp"
+                                              {(yyval.no) = new GrammaNode(Stmt_IfElse_,"Stmt_IfElse");(yyval.no)->son.push_back((yyvsp[-4].no));(yyval.no)->son.push_back((yyvsp[-2].no));(yyval.no)->son.push_back((yyvsp[0].no));}
+#line 1752 "part.tab.cpp"
     break;
 
   case 46:
-#line 186 "part.ypp"
-                                                        {(yyval.no) = new GrammaNode(PrimaryExp_,"PrimaryExp"); (yyval.no)->son.push_back((yyvsp[0].no));}
-#line 1695 "part.tab.cpp"
+#line 134 "part.ypp"
+                                                {(yyval.no) = new GrammaNode(Stmt_While_,"Stmt_While"); (yyval.no)->son.push_back((yyvsp[-2].no));(yyval.no)->son.push_back((yyvsp[0].no));}
+#line 1758 "part.tab.cpp"
     break;
 
   case 47:
-#line 187 "part.ypp"
-                                                        {(yyval.no) = new GrammaNode(PrimaryExp_,"PrimaryExp"); (yyval.no)->son.push_back((yyvsp[0].no));}
-#line 1701 "part.tab.cpp"
+#line 135 "part.ypp"
+                                                                        {(yyval.no)=(yyvsp[-1].no);}
+#line 1764 "part.tab.cpp"
     break;
 
   case 48:
-#line 192 "part.ypp"
-                                                                {(yyval.no) = new GrammaNode(UnaryExp_,"UnaryExp_"); (yyval.no)->son.push_back((yyvsp[0].no));}
-#line 1707 "part.tab.cpp"
+#line 136 "part.ypp"
+                                                                {(yyval.no)=(yyvsp[-1].no);}
+#line 1770 "part.tab.cpp"
     break;
 
   case 49:
-#line 193 "part.ypp"
-                                                {(yyval.no) = new GrammaNode(UnaryExp_,"UnaryExp_"); (yyval.no)->son.push_back((yyvsp[-2].no));(yyval.no)->son.push_back((yyvsp[-1].no));(yyval.no)->son.push_back((yyvsp[0].no));}
-#line 1713 "part.tab.cpp"
+#line 137 "part.ypp"
+                                                                {(yyval.no)=(yyvsp[-1].no);}
+#line 1776 "part.tab.cpp"
     break;
 
   case 50:
-#line 194 "part.ypp"
-                                                {(yyval.no) = new GrammaNode(UnaryExp_,"UnaryExp_"); (yyval.no)->son.push_back((yyvsp[-3].no));(yyval.no)->son.push_back((yyvsp[-2].no));(yyval.no)->son.push_back((yyvsp[-1].no));(yyval.no)->son.push_back((yyvsp[0].no));}
-#line 1719 "part.tab.cpp"
+#line 138 "part.ypp"
+                                                                {(yyval.no) = new GrammaNode(Stmt_Return_,"Stmt_Return"); (yyval.no)->son.push_back((yyvsp[-1].no));}
+#line 1782 "part.tab.cpp"
     break;
 
   case 51:
-#line 195 "part.ypp"
-                                                                {(yyval.no) = new GrammaNode(UnaryExp_,"UnaryExp_"); (yyval.no)->son.push_back((yyvsp[-1].no));(yyval.no)->son.push_back((yyvsp[0].no));}
-#line 1725 "part.tab.cpp"
+#line 142 "part.ypp"
+                        {(yyval.no) = new GrammaNode(Cond_,"Cond"); (yyval.no)->son.push_back((yyvsp[0].no));}
+#line 1788 "part.tab.cpp"
     break;
 
   case 52:
-#line 200 "part.ypp"
-                                                {(yyval.no) = new GrammaNode(UnaryOp_,"UnaryOp_"); (yyval.no)->son.push_back((yyvsp[0].no));}
-#line 1731 "part.tab.cpp"
+#line 147 "part.ypp"
+                                                                        {(yyval.no) = new GrammaNode(ConstExps_,"ConstExps");(yyval.no)->son.push_back((yyvsp[0].no)); }
+#line 1794 "part.tab.cpp"
     break;
 
   case 53:
-#line 201 "part.ypp"
-                                        {(yyval.no) = new GrammaNode(UnaryOp_,"UnaryOp_"); (yyval.no)->son.push_back((yyvsp[0].no));}
-#line 1737 "part.tab.cpp"
+#line 148 "part.ypp"
+                                                {(yyvsp[-3].no)->son.push_back((yyvsp[0].no));}
+#line 1800 "part.tab.cpp"
     break;
 
   case 54:
-#line 202 "part.ypp"
-                                        {(yyval.no) = new GrammaNode(UnaryOp_,"UnaryOp_"); (yyval.no)->son.push_back((yyvsp[0].no));}
-#line 1743 "part.tab.cpp"
+#line 153 "part.ypp"
+                                                        {(yyval.no) =(yyvsp[0].no);}
+#line 1806 "part.tab.cpp"
     break;
 
   case 55:
-#line 207 "part.ypp"
-                           {(yyval.no) = new GrammaNode(FuncRParamse_,"FuncRParamse_"); (yyval.no)->son.push_back((yyvsp[0].no));}
-#line 1749 "part.tab.cpp"
+#line 158 "part.ypp"
+                                                        {(yyval.no) = new GrammaNode(LVal_,"LVal_"); (yyval.no)->son.push_back((yyvsp[-1].no));(yyval.no)->son.push_back((yyvsp[0].no));}
+#line 1812 "part.tab.cpp"
     break;
 
   case 56:
-#line 212 "part.ypp"
-                                                        {(yyval.no) = new GrammaNode(FuncRParams_,"FuncRParams_"); (yyval.no)->son.push_back((yyvsp[0].no));}
-#line 1755 "part.tab.cpp"
+#line 159 "part.ypp"
+                                                        {(yyval.no) = new GrammaNode(LVal_,"LVal_"); (yyval.no)->son.push_back((yyvsp[0].no));}
+#line 1818 "part.tab.cpp"
     break;
 
   case 57:
-#line 213 "part.ypp"
-                                {(yyval.no) = new GrammaNode(FuncRParams_,"FuncRParams_"); (yyval.no)->son.push_back((yyvsp[-2].no));(yyval.no)->son.push_back((yyvsp[-1].no));(yyval.no)->son.push_back((yyvsp[0].no));}
-#line 1761 "part.tab.cpp"
+#line 164 "part.ypp"
+                                                {(yyval.no) = new GrammaNode(Exps_,"Exps_"); (yyval.no)->son.push_back((yyvsp[-1].no));}
+#line 1824 "part.tab.cpp"
     break;
 
   case 58:
-#line 218 "part.ypp"
-                                                        {(yyval.no) = new GrammaNode(MulExp_,"MulExp_"); (yyval.no)->son.push_back((yyvsp[0].no));}
-#line 1767 "part.tab.cpp"
+#line 165 "part.ypp"
+                                        {(yyvsp[-3].no)->son.push_back((yyvsp[-1].no));}
+#line 1830 "part.tab.cpp"
     break;
 
   case 59:
-#line 219 "part.ypp"
-                                {(yyval.no) = new GrammaNode(MulExp_,"MulExp_"); (yyval.no)->son.push_back((yyvsp[-2].no));(yyval.no)->son.push_back((yyvsp[-1].no));(yyval.no)->son.push_back((yyvsp[0].no));}
-#line 1773 "part.tab.cpp"
+#line 170 "part.ypp"
+                                                {(yyval.no)=(yyvsp[-1].no);}
+#line 1836 "part.tab.cpp"
     break;
 
   case 60:
-#line 220 "part.ypp"
-                                {(yyval.no) = new GrammaNode(MulExp_,"MulExp_"); (yyval.no)->son.push_back((yyvsp[-2].no));(yyval.no)->son.push_back((yyvsp[-1].no));(yyval.no)->son.push_back((yyvsp[0].no));}
-#line 1779 "part.tab.cpp"
+#line 171 "part.ypp"
+                                                        {(yyval.no)=(yyvsp[0].no);}
+#line 1842 "part.tab.cpp"
     break;
 
   case 61:
-#line 221 "part.ypp"
-                                {(yyval.no) = new GrammaNode(MulExp_,"MulExp_"); (yyval.no)->son.push_back((yyvsp[-2].no));(yyval.no)->son.push_back((yyvsp[-1].no));(yyval.no)->son.push_back((yyvsp[0].no));}
-#line 1785 "part.tab.cpp"
+#line 172 "part.ypp"
+                                                        {(yyval.no)=(yyvsp[0].no);}
+#line 1848 "part.tab.cpp"
     break;
 
   case 62:
-#line 226 "part.ypp"
-                                        {(yyval.no) = new GrammaNode(AddExp_,"AddExp"); (yyval.no)->son.push_back((yyvsp[0].no));}
-#line 1791 "part.tab.cpp"
+#line 178 "part.ypp"
+                                                                {(yyval.no) = new GrammaNode(UnaryExp_,"UnaryExp_"); (yyval.no)->son.push_back((yyvsp[0].no));}
+#line 1854 "part.tab.cpp"
     break;
 
   case 63:
-#line 227 "part.ypp"
-                                {(yyval.no) = new GrammaNode(AddExp_,"AddExp"); (yyval.no)->son.push_back((yyvsp[-2].no));(yyval.no)->son.push_back((yyvsp[-1].no));(yyval.no)->son.push_back((yyvsp[0].no));}
-#line 1797 "part.tab.cpp"
+#line 179 "part.ypp"
+                                                {(yyval.no) = new GrammaNode(UnaryExp_,"UnaryExp_"); (yyval.no)->son.push_back((yyvsp[-2].no));}
+#line 1860 "part.tab.cpp"
     break;
 
   case 64:
-#line 228 "part.ypp"
-                                {(yyval.no) = new GrammaNode(AddExp_,"AddExp"); (yyval.no)->son.push_back((yyvsp[-2].no));(yyval.no)->son.push_back((yyvsp[-1].no));(yyval.no)->son.push_back((yyvsp[0].no));}
-#line 1803 "part.tab.cpp"
+#line 180 "part.ypp"
+                                                {(yyval.no) = new GrammaNode(UnaryExp_,"UnaryExp_"); (yyval.no)->son.push_back((yyvsp[-3].no));(yyval.no)->son.push_back((yyvsp[-1].no));}
+#line 1866 "part.tab.cpp"
     break;
 
   case 65:
-#line 258 "part.ypp"
-                        {(yyval.no) = new GrammaNode(IntConst_,"IntConst"); (yyval.no)->son.push_back((yyvsp[0].no));}
-#line 1809 "part.tab.cpp"
+#line 181 "part.ypp"
+                                                                {(yyval.no) = new GrammaNode(UnaryExp_,"UnaryExp_"); (yyval.no)->son.push_back((yyvsp[-1].no));(yyval.no)->son.push_back((yyvsp[0].no));}
+#line 1872 "part.tab.cpp"
     break;
 
   case 66:
-#line 259 "part.ypp"
-                        {(yyval.no) = new GrammaNode(IntConst_,"IntConst"); (yyval.no)->son.push_back((yyvsp[0].no));}
-#line 1815 "part.tab.cpp"
+#line 186 "part.ypp"
+                                                {(yyval.no)=(yyvsp[0].no);}
+#line 1878 "part.tab.cpp"
     break;
 
   case 67:
-#line 260 "part.ypp"
-                        {(yyval.no) = new GrammaNode(IntConst_,"IntConst"); (yyval.no)->son.push_back((yyvsp[0].no));}
-#line 1821 "part.tab.cpp"
+#line 187 "part.ypp"
+                                        {(yyval.no)=(yyvsp[0].no);}
+#line 1884 "part.tab.cpp"
     break;
 
   case 68:
-#line 261 "part.ypp"
+#line 188 "part.ypp"
+                                        {(yyval.no)=(yyvsp[0].no);}
+#line 1890 "part.tab.cpp"
+    break;
+
+  case 69:
+#line 198 "part.ypp"
+                                                        {(yyval.no) = new GrammaNode(FuncRParams_,"FuncRParams_"); (yyval.no)->son.push_back((yyvsp[0].no));}
+#line 1896 "part.tab.cpp"
+    break;
+
+  case 70:
+#line 199 "part.ypp"
+                                {(yyvsp[-2].no)->son.push_back((yyvsp[0].no));}
+#line 1902 "part.tab.cpp"
+    break;
+
+  case 71:
+#line 204 "part.ypp"
+                                                        {(yyval.no) = new GrammaNode(MulExp_,"MulExp_"); (yyval.no)->son.push_back((yyvsp[0].no));}
+#line 1908 "part.tab.cpp"
+    break;
+
+  case 72:
+#line 205 "part.ypp"
+                                {(yyval.no) = new GrammaNode(MulExp_Mul_,"MulExp_Mul"); (yyval.no)->son.push_back((yyvsp[-2].no));(yyval.no)->son.push_back((yyvsp[0].no));}
+#line 1914 "part.tab.cpp"
+    break;
+
+  case 73:
+#line 206 "part.ypp"
+                                {(yyval.no) = new GrammaNode(MulExp_Div_,"MulExp_Div"); (yyval.no)->son.push_back((yyvsp[-2].no));(yyval.no)->son.push_back((yyvsp[0].no));}
+#line 1920 "part.tab.cpp"
+    break;
+
+  case 74:
+#line 207 "part.ypp"
+                                {(yyval.no) = new GrammaNode(MulExp_Mod_,"MulExp_Mod"); (yyval.no)->son.push_back((yyvsp[-2].no));(yyval.no)->son.push_back((yyvsp[0].no));}
+#line 1926 "part.tab.cpp"
+    break;
+
+  case 75:
+#line 212 "part.ypp"
+                                        {(yyval.no) = new GrammaNode(AddExp_,"AddExp"); (yyval.no)->son.push_back((yyvsp[0].no));}
+#line 1932 "part.tab.cpp"
+    break;
+
+  case 76:
+#line 213 "part.ypp"
+                                {(yyval.no) = new GrammaNode(AddExp_Add_,"AddExp_Add"); (yyval.no)->son.push_back((yyvsp[-2].no));(yyval.no)->son.push_back((yyvsp[0].no));}
+#line 1938 "part.tab.cpp"
+    break;
+
+  case 77:
+#line 214 "part.ypp"
+                                {(yyval.no) = new GrammaNode(AddExp_Sub_,"AddExp_Sub"); (yyval.no)->son.push_back((yyvsp[-2].no));(yyval.no)->son.push_back((yyvsp[0].no));}
+#line 1944 "part.tab.cpp"
+    break;
+
+  case 78:
+#line 218 "part.ypp"
+                                        {(yyval.no) = new GrammaNode(RelExp_,"RelExp"); (yyval.no)->son.push_back((yyvsp[0].no));}
+#line 1950 "part.tab.cpp"
+    break;
+
+  case 79:
+#line 219 "part.ypp"
+                                {(yyval.no) = new GrammaNode(RelExp_LT_,"RelExp_LT"); (yyval.no)->son.push_back((yyvsp[-2].no));(yyval.no)->son.push_back((yyvsp[0].no));}
+#line 1956 "part.tab.cpp"
+    break;
+
+  case 80:
+#line 220 "part.ypp"
+                                {(yyval.no) = new GrammaNode(RelExp_BG_,"RelExp_BG"); (yyval.no)->son.push_back((yyvsp[-2].no));(yyval.no)->son.push_back((yyvsp[0].no));}
+#line 1962 "part.tab.cpp"
+    break;
+
+  case 81:
+#line 221 "part.ypp"
+                                {(yyval.no) = new GrammaNode(RelExp_LQ_,"RelExp_LQ"); (yyval.no)->son.push_back((yyvsp[-2].no));(yyval.no)->son.push_back((yyvsp[0].no));}
+#line 1968 "part.tab.cpp"
+    break;
+
+  case 82:
+#line 222 "part.ypp"
+                                {(yyval.no) = new GrammaNode(RelExp_BQ_,"RelExp_BQ"); (yyval.no)->son.push_back((yyvsp[-2].no));(yyval.no)->son.push_back((yyvsp[0].no));}
+#line 1974 "part.tab.cpp"
+    break;
+
+  case 83:
+#line 226 "part.ypp"
+                                        {(yyval.no) = new GrammaNode(EqExp_,"EqExp"); (yyval.no)->son.push_back((yyvsp[0].no));}
+#line 1980 "part.tab.cpp"
+    break;
+
+  case 84:
+#line 227 "part.ypp"
+                                {(yyval.no) = new GrammaNode(EqExp_EQ_,"EqExp_EQ"); (yyval.no)->son.push_back((yyvsp[-2].no));(yyval.no)->son.push_back((yyvsp[0].no));}
+#line 1986 "part.tab.cpp"
+    break;
+
+  case 85:
+#line 228 "part.ypp"
+                                {(yyval.no) = new GrammaNode(EqExp_NEQ_,"EqExp_NEQ"); (yyval.no)->son.push_back((yyvsp[-2].no));(yyval.no)->son.push_back((yyvsp[0].no));}
+#line 1992 "part.tab.cpp"
+    break;
+
+  case 86:
+#line 232 "part.ypp"
+                                        {(yyval.no) = new GrammaNode(LAndExp_,"LAndExp"); (yyval.no)->son.push_back((yyvsp[0].no));}
+#line 1998 "part.tab.cpp"
+    break;
+
+  case 87:
+#line 233 "part.ypp"
+                                {(yyvsp[-2].no)->son.push_back((yyvsp[0].no));}
+#line 2004 "part.tab.cpp"
+    break;
+
+  case 88:
+#line 237 "part.ypp"
+                                        {(yyval.no) = new GrammaNode(LOrExp_,"LOrExp"); (yyval.no)->son.push_back((yyvsp[0].no));}
+#line 2010 "part.tab.cpp"
+    break;
+
+  case 89:
+#line 238 "part.ypp"
+                                {(yyvsp[-2].no)->son.push_back((yyvsp[0].no));}
+#line 2016 "part.tab.cpp"
+    break;
+
+  case 90:
+#line 244 "part.ypp"
+                        {(yyval.no) = new GrammaNode(IntConst_,"IntConst"); (yyval.no)->son.push_back((yyvsp[0].no));}
+#line 2022 "part.tab.cpp"
+    break;
+
+  case 91:
+#line 245 "part.ypp"
+                        {(yyval.no) = new GrammaNode(IntConst_,"IntConst"); (yyval.no)->son.push_back((yyvsp[0].no));}
+#line 2028 "part.tab.cpp"
+    break;
+
+  case 92:
+#line 246 "part.ypp"
+                        {(yyval.no) = new GrammaNode(IntConst_,"IntConst"); (yyval.no)->son.push_back((yyvsp[0].no));}
+#line 2034 "part.tab.cpp"
+    break;
+
+  case 93:
+#line 247 "part.ypp"
                                 {(yyval.no) = new GrammaNode(IntConst_,"IntConst"); (yyval.no)->son.push_back((yyvsp[0].no));}
-#line 1827 "part.tab.cpp"
+#line 2040 "part.tab.cpp"
     break;
 
 
-#line 1831 "part.tab.cpp"
+#line 2044 "part.tab.cpp"
 
       default: break;
     }
@@ -2059,13 +2272,8 @@ yyreturn:
 #endif
   return yyresult;
 }
-#line 268 "part.ypp"
+#line 254 "part.ypp"
 
-main(void)
-{
-yyparse();
-return 0;
-}
 
 void yyerror(char const *s)
 {

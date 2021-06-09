@@ -4,7 +4,7 @@
 
 using namespace std;
 extern FILE * yyin;
-extern GrammaNode * Droot = new GrammaNode(0,"ROOT");
+GrammaNode * Droot = new GrammaNode(0,"ROOT");
 
 int main()
 {

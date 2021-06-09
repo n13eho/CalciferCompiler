@@ -72,7 +72,7 @@ Comment {Comment1}|{Comment2}
 "break" {yylval.no = new GrammaNode(BREAK_,yytext);return BREAK;}
 "continue" {yylval.no = new GrammaNode(CONTINUE_,yytext);return CONTINUE;}
 "return" {yylval.no = new GrammaNode(RETURN_,yytext);return RETURN;}
-"main" {yylval.no = new GrammaNode(MAIN_,yytext);return MAIN;}
+
 
 
 {octalConst}    {yylval.no = new GrammaNode(IntConst_O_,yytext);return IntConst_O;}
