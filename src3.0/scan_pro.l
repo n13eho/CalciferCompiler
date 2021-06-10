@@ -28,7 +28,7 @@ Comment {Comment1}|{Comment2}
 
 
 %%
-0+ {return ZERO;}
+0+ {yylval.no = new GrammaNode(IntConst_D_,yytext);return ZERO;}
 
 {space} {}//{printf("%s: space\n",yytext);}
 {enter} {}//{printf("%s: enter\n",yytext);}

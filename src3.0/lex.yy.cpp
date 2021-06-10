@@ -796,7 +796,7 @@ do_action:	/* This label is used only to access EOF actions. */
 case 1:
 YY_RULE_SETUP
 #line 31 "scan_pro.l"
-{return ZERO;}
+{yylval.no = new GrammaNode(IntConst_D_,yytext);return ZERO;}
 	YY_BREAK
 case 2:
 YY_RULE_SETUP

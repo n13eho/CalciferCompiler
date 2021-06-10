@@ -155,8 +155,8 @@ Exp:
 
 //左值表达式
 LVal:
-	Ident Exps					{$$ = new GrammaNode(LVal_,"LVal_"); $$->son.push_back($1);$$->son.push_back($2);}
-    |Ident 						{$$ = new GrammaNode(LVal_,"LVal_"); $$->son.push_back($1);}
+	Ident Exps					{$$ = new GrammaNode(LVal_Array_,"LVal_"); $$->son.push_back($1);$$->son.push_back($2);}
+    |Ident 						{$$ = $1;}
 ;
 
 //数组表达式
@@ -175,9 +175,9 @@ PrimaryExp:
 //待测试
 //一元表达式
 UnaryExp:
-	PrimaryExp						{$$ = new GrammaNode(UnaryExp_,"UnaryExp_"); $$->son.push_back($1);}
-	|Ident RDBRAL RDBRAR			{$$ = new GrammaNode(UnaryExp_,"UnaryExp_"); $$->son.push_back($1);}
-	|Ident RDBRAL FuncRParams RDBRAR	{$$ = new GrammaNode(UnaryExp_,"UnaryExp_"); $$->son.push_back($1);$$->son.push_back($3);}
+	PrimaryExp						{$$ = $1;}
+	|Ident RDBRAL RDBRAR			{$$ = new GrammaNode(UnaryExp_func_,"UnaryExp_func_"); $$->son.push_back($1);}
+	|Ident RDBRAL FuncRParams RDBRAR	{$$ = new GrammaNode(UnaryExp_func_,"UnaryExp_func_"); $$->son.push_back($1);$$->son.push_back($3);}
 	|UnaryOp UnaryExp					{$$ = new GrammaNode(UnaryExp_,"UnaryExp_"); $$->son.push_back($1);$$->son.push_back($2);}
 ;
 
@@ -201,7 +201,7 @@ FuncRParams:
 
 //乘除模表达式
 MulExp:
-		UnaryExp				{$$ = new GrammaNode(MulExp_,"MulExp_"); $$->son.push_back($1);}
+		UnaryExp				{$$ = $1;}
       |MulExp MUL UnaryExp	{$$ = new GrammaNode(MulExp_Mul_,"MulExp_Mul"); $$->son.push_back($1);$$->son.push_back($3);}
       |MulExp DIV UnaryExp	{$$ = new GrammaNode(MulExp_Div_,"MulExp_Div"); $$->son.push_back($1);$$->son.push_back($3);}
       |MulExp MOD UnaryExp	{$$ = new GrammaNode(MulExp_Mod_,"MulExp_Mod"); $$->son.push_back($1);$$->son.push_back($3);}
@@ -209,13 +209,13 @@ MulExp:
 
 //加减表达式
 AddExp:
-	MulExp				{$$ = new GrammaNode(AddExp_,"AddExp"); $$->son.push_back($1);}
+	MulExp				{$$=$1;}
       |AddExp ADD MulExp	{$$ = new GrammaNode(AddExp_Add_,"AddExp_Add"); $$->son.push_back($1);$$->son.push_back($3);}
       |AddExp SUB MulExp	{$$ = new GrammaNode(AddExp_Sub_,"AddExp_Sub"); $$->son.push_back($1);$$->son.push_back($3);}
 ;
 
 RelExp:
-	AddExp				{$$ = new GrammaNode(RelExp_,"RelExp"); $$->son.push_back($1);}
+	AddExp				{$$ = $1;}
 	|RelExp LT AddExp	{$$ = new GrammaNode(RelExp_LT_,"RelExp_LT"); $$->son.push_back($1);$$->son.push_back($3);}
 	|RelExp BG AddExp	{$$ = new GrammaNode(RelExp_BG_,"RelExp_BG"); $$->son.push_back($1);$$->son.push_back($3);}
 	|RelExp LQ AddExp	{$$ = new GrammaNode(RelExp_LQ_,"RelExp_LQ"); $$->son.push_back($1);$$->son.push_back($3);}
@@ -223,7 +223,7 @@ RelExp:
 ;
 
 EqExp:					
-	RelExp				{$$ = new GrammaNode(EqExp_,"EqExp"); $$->son.push_back($1);}
+	RelExp				{$$ = $1;}
 	|EqExp EQ RelExp	{$$ = new GrammaNode(EqExp_EQ_,"EqExp_EQ"); $$->son.push_back($1);$$->son.push_back($3);}
 	|EqExp NEQ RelExp	{$$ = new GrammaNode(EqExp_NEQ_,"EqExp_NEQ"); $$->son.push_back($1);$$->son.push_back($3);}
 ;
@@ -241,10 +241,10 @@ LOrExp:
 
 //ok
 IntConst:
-	IntConst_D	{$$ = new GrammaNode(IntConst_,"IntConst"); $$->son.push_back($1);}
-	  |IntConst_O	{$$ = new GrammaNode(IntConst_,"IntConst"); $$->son.push_back($1);}
-	  |IntConst_H	{$$ = new GrammaNode(IntConst_,"IntConst"); $$->son.push_back($1);}
-	  |ZERO			{$$ = new GrammaNode(IntConst_,"IntConst"); $$->son.push_back($1);}
+	IntConst_D	{$$ = $1;}
+	  |IntConst_O	{$$ = $1;}
+	  |IntConst_H	{$$ = $1;}
+	  |ZERO			{$$ = $1;}
 ;
 
 
