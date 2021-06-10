@@ -1,5 +1,5 @@
+int a,b;
 int main()
 {
-    x=-a*(1+2);
-    hanshu();
+    int ans = a+b;
 }
