@@ -1,0 +1,25 @@
+->node string:ROOT	 son numbers:2
+   ->node string:VarDefs	 son numbers:2
+      ->node string:VarDef_single_	 son numbers:1
+         ->node string:a	 son numbers:0
+      ->node string:VarDef_single_	 son numbers:1
+         ->node string:b	 son numbers:0
+   ->node string:FuncDef_int_	 son numbers:2
+      ->node string:main	 son numbers:0
+      ->node string:Block	 son numbers:2
+         ->node string:VarDefs	 son numbers:1
+            ->node string:VarDef_single_init_	 son numbers:3
+               ->node string:ans	 son numbers:0
+               ->node string:=	 son numbers:0
+               ->node string:InitVal_EXP	 son numbers:1
+                  ->node string:AddExp_Add	 son numbers:2
+                     ->node string:a	 son numbers:0
+                     ->node string:b	 son numbers:0
+         ->node string:Stmt_Exp	 son numbers:1
+            ->node string:AddExp_Add	 son numbers:2
+               ->node string:UnaryExp_	 son numbers:2
+                  ->node string:+	 son numbers:0
+                  ->node string:a	 son numbers:0
+               ->node string:UnaryExp_	 son numbers:2
+                  ->node string:-	 son numbers:0
+                  ->node string:b	 son numbers:0
