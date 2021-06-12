@@ -1,5 +1,7 @@
-int a,b;
-int main()
+int a,b[1][2][3];
+const int x = 0x8;
+
+int main(int a)
 {
     int ans = a+b;
     (+a)+(-b);

@@ -1,11 +1,24 @@
-->node string:ROOT	 son numbers:2
+[31m[ERROR][0m Redeclared identifier: 'a' at [43;34m line [0m[43;34m4 [0m 
+->node string:ROOT	 son numbers:3
    ->node string:VarDefs	 son numbers:2
       ->node string:VarDef_single_	 son numbers:1
          ->node string:a	 son numbers:0
-      ->node string:VarDef_single_	 son numbers:1
+      ->node string:VarDef_array_	 son numbers:2
          ->node string:b	 son numbers:0
-   ->node string:FuncDef_int_	 son numbers:2
+         ->node string:ConstExps	 son numbers:3
+            ->node string:1	 son numbers:0
+            ->node string:2	 son numbers:0
+            ->node string:3	 son numbers:0
+   ->node string:ConstDefs_	 son numbers:1
+      ->node string:ConstDef_single_	 son numbers:2
+         ->node string:x	 son numbers:0
+         ->node string:InitVal_EXP	 son numbers:1
+            ->node string:0x8	 son numbers:0
+   ->node string:FuncDef_int_para_	 son numbers:3
       ->node string:main	 son numbers:0
+      ->node string:FuncFParams	 son numbers:1
+         ->node string:FuncFParam_single_	 son numbers:1
+            ->node string:a	 son numbers:0
       ->node string:Block	 son numbers:2
          ->node string:VarDefs	 son numbers:1
             ->node string:VarDef_single_init_	 son numbers:3

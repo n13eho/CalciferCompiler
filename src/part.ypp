@@ -3,10 +3,27 @@
 	#include <stdlib.h>
 	#include <stdio.h>
 	#include <iostream>
+	#include <string>
 	#include "sysy_node.hpp"
+	#include <map>
+
 	extern int yylex();
-	void yyerror(char const *s);
+	void yyerror(char const *message);
+	void IdentDeclareCheck(GrammaNode* deIdent);
+	GrammaNode* IdentDefineCheck(GrammaNode* deIdent);
+	int scopeCmp(std::string presScope, std::string varScope);
 	using namespace std;
+
+	//外部的lineno，行号信息
+	extern int lineno;
+
+	// multimap <标识符名称， 作用域> 变量名列表
+	extern multimap<string, string> idNameList;
+	// map <<标识符名称， 作用域>, 结点指针> 变量列表
+	extern map<pair<string, string>, GrammaNode*> idList;
+	
+	unsigned int top = 0;
+	string presentScope = "1";
 %}
 
 %union{
@@ -40,76 +57,135 @@ CompUnit:
 	|CompUnit FuncDef	{Droot->son.push_back($2);}
 ;
 
+//声明（常量声明 | 变量声明），在这里检查重复定义问题
 Decl:
     ConstDecl {$$=$1;}
 	|VarDecl  {$$=$1;}
 ;
 
-//常数声明
+
+
+
+//---------常量声明---------
 ConstDecl:
 	CONST INT ConstDefs SEMI {$$=$3;}
 ;
 
-//常数定义
 ConstDefs:
-	ConstDef 					{$$=new GrammaNode(ConstDefs_,"ConstDefs_");$$->son.push_back($1);}
+	ConstDef 					{$$=new GrammaNode(lineno, ConstDefs_,"ConstDefs_");$$->son.push_back($1);}
 	|ConstDefs COMM ConstDef	{$1->son.push_back($3);}		
 ;
 
-//常数定义
+
+//-----------常数定义---------
 ConstDef:
-	Ident SQBRAL ConstExps SQBRAR ASSIGN InitVal {$$ = new GrammaNode(ConstDef_array_,"ConstDef_array_"); $$->son.push_back($1);$$->son.push_back($3);$$->son.push_back($6);}
-	|Ident ASSIGN InitVal {$$ = new GrammaNode(ConstDef_single_,"ConstDef_single_"); $$->son.push_back($1);$$->son.push_back($3);}
+	Ident SQBRAL ConstExps SQBRAR ASSIGN InitVal {
+		$$ = new GrammaNode(lineno, ConstDef_array_,"ConstDef_array_");
+		$$->son.push_back($1);$$->son.push_back($3);$$->son.push_back($6);
+		IdentDeclareCheck($1);
+	}
+	|Ident ASSIGN InitVal {
+		$$ = new GrammaNode(lineno, ConstDef_single_,"ConstDef_single_");
+		$$->son.push_back($1);$$->son.push_back($3);
+		IdentDeclareCheck($1);
+	}
 ;
 
-
+//-----------变量声明---------
 VarDecl:
 	INT VarDefs SEMI				{$$=$2;}
 ;
 
 VarDefs:
-	VarDef							{$$ = new GrammaNode(VarDefs_,"VarDefs"); $$->son.push_back($1);}
+	VarDef							{$$ = new GrammaNode(lineno, VarDefs_,"VarDefs"); $$->son.push_back($1);}
 	|VarDefs COMM VarDef			{$1->son.push_back($3);}
 ;	
 
+//---------变量定义---------
 VarDef:
-	Ident SQBRAL ConstExps SQBRAR ASSIGN InitVal	{$$ = new GrammaNode(VarDef_array_init_,"VarDef_array_init_"); $$->son.push_back($1);$$->son.push_back($3);$$->son.push_back($6);}
-	|Ident SQBRAL ConstExps	SQBRAR			{$$ = new GrammaNode(VarDef_array_,"VarDef_array_"); $$->son.push_back($1);$$->son.push_back($3);}
-	|Ident 				{$$ = new GrammaNode(VarDef_single_,"VarDef_single_"); $$->son.push_back($1);}
-	|Ident ASSIGN InitVal	{$$ = new GrammaNode(VarDef_single_init_,"VarDef_single_init_"); $$->son.push_back($1);$$->son.push_back($2);$$->son.push_back($3);}
+	Ident SQBRAL ConstExps SQBRAR ASSIGN InitVal {
+		$$ = new GrammaNode(lineno, VarDef_array_init_,"VarDef_array_init_");
+		$$->son.push_back($1);$$->son.push_back($3);$$->son.push_back($6);
+		IdentDeclareCheck($1);
+	}
+	|Ident SQBRAL ConstExps	SQBRAR {
+		$$ = new GrammaNode(lineno, VarDef_array_,"VarDef_array_");
+		$$->son.push_back($1);$$->son.push_back($3);
+		IdentDeclareCheck($1);
+	}
+	|Ident {
+		$$ = new GrammaNode(lineno, VarDef_single_,"VarDef_single_");
+		$$->son.push_back($1);
+		IdentDeclareCheck($1);
+	}
+	|Ident ASSIGN InitVal {
+		$$ = new GrammaNode(lineno, VarDef_single_init_,"VarDef_single_init_");
+		$$->son.push_back($1);$$->son.push_back($2);$$->son.push_back($3);
+		IdentDeclareCheck($1);
+	}
 ;
 
 InitVal:
-	Exp								{$$ = new GrammaNode(InitVal_EXP,"InitVal_EXP"); $$->son.push_back($1);}
-	|BRAL BRAR						{$$ = new GrammaNode(InitVal_NULL,"InitVal_NULL");}
-	|BRAL InitVals BRAR				{$$ = new GrammaNode(InitVal_,"InitVal"); $$->son.push_back($2);}
+	Exp								{$$ = new GrammaNode(lineno, InitVal_EXP,"InitVal_EXP"); $$->son.push_back($1);}
+	|BRAL BRAR						{$$ = new GrammaNode(lineno, InitVal_NULL,"InitVal_NULL");}
+	|BRAL InitVals BRAR				{$$ = new GrammaNode(lineno, InitVal_,"InitVal"); $$->son.push_back($2);}
 ;
 
 InitVals:
-	InitVal							{$$ = new GrammaNode(InitVals_,"InitVals"); $$->son.push_back($1);}
+	InitVal							{$$ = new GrammaNode(lineno, InitVals_,"InitVals"); $$->son.push_back($1);}
 	|InitVals COMM InitVal			{$1->son.push_back($3);}
 ;
 
+//--------函数定义---------
 FuncDef:
-	INT Ident RDBRAL RDBRAR Block			{$$ = new GrammaNode(FuncDef_int_,"FuncDef_int_"); $$->son.push_back($2);$$->son.push_back($5);}
-	|VOID Ident RDBRAL RDBRAR Block			{$$ = new GrammaNode(FuncDef_void_,"FuncDef_void_"); $$->son.push_back($2);$$->son.push_back($5);}
-	|INT Ident RDBRAL FuncFParams RDBRAR Block {$$ = new GrammaNode(FuncDef_int_para_,"FuncDef_int_para_"); $$->son.push_back($2);$$->son.push_back($4);$$->son.push_back($6);}
-	|VOID Ident RDBRAL FuncFParams RDBRAR Block {$$ = new GrammaNode(FuncDef_void_para_,"FuncDef_void_para_"); $$->son.push_back($2);$$->son.push_back($4);$$->son.push_back($6);}
+	INT Ident RDBRAL RDBRAR Block {
+		$$ = new GrammaNode(lineno, FuncDef_int_,"FuncDef_int_");
+		$$->son.push_back($2);$$->son.push_back($5);
+		IdentDeclareCheck($2);
+	}
+	|VOID Ident RDBRAL RDBRAR Block	{
+		$$ = new GrammaNode(lineno, FuncDef_void_,"FuncDef_void_");
+		$$->son.push_back($2);$$->son.push_back($5);
+		IdentDeclareCheck($2);
+	}
+	|INT Ident RDBRAL FuncFParams RDBRAR Block {
+		$$ = new GrammaNode(lineno, FuncDef_int_para_,"FuncDef_int_para_");
+		$$->son.push_back($2);$$->son.push_back($4);$$->son.push_back($6);
+		IdentDeclareCheck($2);
+	}
+	|VOID Ident RDBRAL FuncFParams RDBRAR Block {
+		$$ = new GrammaNode(lineno, FuncDef_void_para_,"FuncDef_void_para_");
+		$$->son.push_back($2);$$->son.push_back($4);$$->son.push_back($6);
+		IdentDeclareCheck($2);
+	}
 ;
 
 FuncFParams:
-	FuncFParam							{$$ = new GrammaNode(FuncFParams_,"FuncFParams"); $$->son.push_back($1);}
+	FuncFParam							{$$ = new GrammaNode(lineno, FuncFParams_,"FuncFParams"); $$->son.push_back($1);}
 	|FuncFParams COMM FuncFParam		{$1->son.push_back($3);}
 ;
 
+//函数的参数定义（内含形参，因此也要对形参的ident做declaration check）
 FuncFParam:
-	INT Ident							{$$ = new GrammaNode(FuncFParam_single_,"FuncFParam_single_"); $$->son.push_back($2);}
-	|INT Ident SQBRAL SQBRAR Exps		{$$ = new GrammaNode(FuncFParam_array_,"FuncFParam_array_"); $$->son.push_back($2);$$->son.push_back($3);$$->son.push_back($4);$$->son.push_back($5);}
-	|INT Ident SQBRAL SQBRAR 			{$$ = new GrammaNode(FuncFParam_singleArray_,"FuncFParam_singleArray_"); $$->son.push_back($2);$$->son.push_back($3);$$->son.push_back($4);}
+	INT Ident {
+		$$ = new GrammaNode(lineno, FuncFParam_single_,"FuncFParam_single_");
+		$$->son.push_back($2);
+		IdentDeclareCheck($2);
+	}
+	|INT Ident SQBRAL SQBRAR Exps {
+		$$ = new GrammaNode(lineno, FuncFParam_array_,"FuncFParam_array_");
+		$$->son.push_back($2);$$->son.push_back($3);$$->son.push_back($4);$$->son.push_back($5);
+		IdentDeclareCheck($2);
+	}
+	|INT Ident SQBRAL SQBRAR {
+		$$ = new GrammaNode(lineno, FuncFParam_singleArray_,"FuncFParam_singleArray_");
+		$$->son.push_back($2);$$->son.push_back($3);$$->son.push_back($4);
+		IdentDeclareCheck($2);
+	}
 ;
 
 BlockItems:
-	BlockItem							{$$ = new GrammaNode(Block_,"Block"); $$->son.push_back($1);}
+	BlockItem							{$$ = new GrammaNode(lineno, Block_,"Block"); $$->son.push_back($1);}
 	|BlockItems BlockItem				{$1->son.push_back($2);}	
 ;
 
@@ -125,26 +201,26 @@ BlockItem:
 
 
 Stmt:
-	LVal ASSIGN Exp SEMI				{$$ = new GrammaNode(Stmt_Assign_,"Stmt_Assign"); $$->son.push_back($1);$$->son.push_back($3);}
+	LVal ASSIGN Exp SEMI				{$$ = new GrammaNode(lineno, Stmt_Assign_,"Stmt_Assign"); $$->son.push_back($1);$$->son.push_back($3);}
 	|SEMI								{}
-	|Exp SEMI							{$$ = new GrammaNode(Stmt_Exp_,"Stmt_Exp"); $$->son.push_back($1);}
+	|Exp SEMI							{$$ = new GrammaNode(lineno, Stmt_Exp_,"Stmt_Exp"); $$->son.push_back($1);}
 	|Block								{$$=$1;}
-	|IF RDBRAL Cond RDBRAR Stmt			{$$ = new GrammaNode(Stmt_If_,"Stmt_If");$$->son.push_back($3);$$->son.push_back($5);}
-	|IF RDBRAL Cond RDBRAR Stmt ELSE Stmt {$$ = new GrammaNode(Stmt_IfElse_,"Stmt_IfElse");$$->son.push_back($3);$$->son.push_back($5);$$->son.push_back($7);}
-	|WHILE RDBRAL Cond RDBRAR Stmt		{$$ = new GrammaNode(Stmt_While_,"Stmt_While"); $$->son.push_back($3);$$->son.push_back($5);}
+	|IF RDBRAL Cond RDBRAR Stmt			{$$ = new GrammaNode(lineno, Stmt_If_,"Stmt_If");$$->son.push_back($3);$$->son.push_back($5);}
+	|IF RDBRAL Cond RDBRAR Stmt ELSE Stmt {$$ = new GrammaNode(lineno, Stmt_IfElse_,"Stmt_IfElse");$$->son.push_back($3);$$->son.push_back($5);$$->son.push_back($7);}
+	|WHILE RDBRAL Cond RDBRAR Stmt		{$$ = new GrammaNode(lineno, Stmt_While_,"Stmt_While"); $$->son.push_back($3);$$->son.push_back($5);}
 	|BREAK SEMI							{$$=$1;}
 	|CONTINUE SEMI						{$$=$1;}
 	|RETURN SEMI						{$$=$1;}
-	|RETURN Exp SEMI					{$$ = new GrammaNode(Stmt_Return_,"Stmt_Return"); $$->son.push_back($2);}
+	|RETURN Exp SEMI					{$$ = new GrammaNode(lineno, Stmt_Return_,"Stmt_Return"); $$->son.push_back($2);}
 
 //可删
 Cond:
-	LOrExp		{$$ = new GrammaNode(Cond_,"Cond"); $$->son.push_back($1);}
+	LOrExp		{$$ = new GrammaNode(lineno, Cond_,"Cond"); $$->son.push_back($1);}
 ;
 
 //常数定义中数组[]
 ConstExps:
-		Exp 							{$$ = new GrammaNode(ConstExps_,"ConstExps");$$->son.push_back($1); }
+		Exp 							{$$ = new GrammaNode(lineno, ConstExps_,"ConstExps");$$->son.push_back($1); }
 	 	|ConstExps SQBRAR SQBRAL Exp 	{$1->son.push_back($4);}
 ;
 
@@ -154,14 +230,22 @@ Exp:
 ;
 
 //左值表达式
+//这里的Ident的follow一定是=，因此时ident的使用，检查重定义问题
 LVal:
-	Ident Exps					{$$ = new GrammaNode(LVal_Array_,"LVal_"); $$->son.push_back($1);$$->son.push_back($2);}
-    |Ident 						{$$ = $1;}
+	Ident Exps {
+		GrammaNode* n = IdentDefineCheck($1);
+		$$ = new GrammaNode(lineno, LVal_Array_,"LVal_");
+		$$->son.push_back(n);$$->son.push_back($2);
+	}
+    |Ident {
+		GrammaNode* n = IdentDefineCheck($1);
+		$$ = n;
+	}
 ;
 
 //数组表达式
 Exps:
-	SQBRAL Exp SQBRAR			{$$ = new GrammaNode(Exps_,"Exps_"); $$->son.push_back($2);}
+	SQBRAL Exp SQBRAR			{$$ = new GrammaNode(lineno, Exps_,"Exps_"); $$->son.push_back($2);}
     |Exps SQBRAL Exp SQBRAR		{$1->son.push_back($3);}
 ;
 
@@ -174,11 +258,20 @@ PrimaryExp:
 
 //待测试
 //一元表达式
+//这里出现的Ident也一定是经过声明之后的使用环节，需要进行 ·重定义检查·
 UnaryExp:
-	PrimaryExp						{$$ = $1;}
-	|Ident RDBRAL RDBRAR			{$$ = new GrammaNode(UnaryExp_func_,"UnaryExp_func_"); $$->son.push_back($1);}
-	|Ident RDBRAL FuncRParams RDBRAR	{$$ = new GrammaNode(UnaryExp_func_,"UnaryExp_func_"); $$->son.push_back($1);$$->son.push_back($3);}
-	|UnaryOp UnaryExp					{$$ = new GrammaNode(UnaryExp_,"UnaryExp_"); $$->son.push_back($1);$$->son.push_back($2);}
+	PrimaryExp {$$ = $1;}
+	|Ident RDBRAL RDBRAR {
+		GrammaNode* n = IdentDefineCheck($1);
+		$$ = new GrammaNode(lineno, UnaryExp_func_,"UnaryExp_func_");
+		$$->son.push_back(n);
+	}
+	|Ident RDBRAL FuncRParams RDBRAR {
+		GrammaNode* n = IdentDefineCheck($1);
+		$$ = new GrammaNode(lineno, UnaryExp_func_,"UnaryExp_func_");
+		$$->son.push_back(n);$$->son.push_back($3);
+	}
+	|UnaryOp UnaryExp {$$ = new GrammaNode(lineno, UnaryExp_,"UnaryExp_"); $$->son.push_back($1);$$->son.push_back($2);}
 ;
 
 //单目运算符
@@ -190,51 +283,51 @@ UnaryOp:
 
 // //函数实参表
 // FuncRParamse:
-// 	    FuncRParams	   {$$ = new GrammaNode(FuncRParamse_,"FuncRParamse_"); $$->son.push_back($1);}
+// 	    FuncRParams	   {$$ = new GrammaNode(lineno, FuncRParamse_,"FuncRParamse_"); $$->son.push_back($1);}
 // ;
 
 //实参
 FuncRParams:
-		Exp					{$$ = new GrammaNode(FuncRParams_,"FuncRParams_"); $$->son.push_back($1);}
+		Exp					{$$ = new GrammaNode(lineno, FuncRParams_,"FuncRParams_"); $$->son.push_back($1);}
 	   |FuncRParams COMM Exp{$1->son.push_back($3);}	   
 ;
 
 //乘除模表达式
 MulExp:
 		UnaryExp				{$$ = $1;}
-      |MulExp MUL UnaryExp	{$$ = new GrammaNode(MulExp_Mul_,"MulExp_Mul"); $$->son.push_back($1);$$->son.push_back($3);}
-      |MulExp DIV UnaryExp	{$$ = new GrammaNode(MulExp_Div_,"MulExp_Div"); $$->son.push_back($1);$$->son.push_back($3);}
-      |MulExp MOD UnaryExp	{$$ = new GrammaNode(MulExp_Mod_,"MulExp_Mod"); $$->son.push_back($1);$$->son.push_back($3);}
+      |MulExp MUL UnaryExp	{$$ = new GrammaNode(lineno, MulExp_Mul_,"MulExp_Mul"); $$->son.push_back($1);$$->son.push_back($3);}
+      |MulExp DIV UnaryExp	{$$ = new GrammaNode(lineno, MulExp_Div_,"MulExp_Div"); $$->son.push_back($1);$$->son.push_back($3);}
+      |MulExp MOD UnaryExp	{$$ = new GrammaNode(lineno, MulExp_Mod_,"MulExp_Mod"); $$->son.push_back($1);$$->son.push_back($3);}
 ;
 
 //加减表达式
 AddExp:
 	MulExp				{$$=$1;}
-      |AddExp ADD MulExp	{$$ = new GrammaNode(AddExp_Add_,"AddExp_Add"); $$->son.push_back($1);$$->son.push_back($3);}
-      |AddExp SUB MulExp	{$$ = new GrammaNode(AddExp_Sub_,"AddExp_Sub"); $$->son.push_back($1);$$->son.push_back($3);}
+      |AddExp ADD MulExp	{$$ = new GrammaNode(lineno, AddExp_Add_,"AddExp_Add"); $$->son.push_back($1);$$->son.push_back($3);}
+      |AddExp SUB MulExp	{$$ = new GrammaNode(lineno, AddExp_Sub_,"AddExp_Sub"); $$->son.push_back($1);$$->son.push_back($3);}
 ;
 
 RelExp:
 	AddExp				{$$ = $1;}
-	|RelExp LT AddExp	{$$ = new GrammaNode(RelExp_LT_,"RelExp_LT"); $$->son.push_back($1);$$->son.push_back($3);}
-	|RelExp BG AddExp	{$$ = new GrammaNode(RelExp_BG_,"RelExp_BG"); $$->son.push_back($1);$$->son.push_back($3);}
-	|RelExp LQ AddExp	{$$ = new GrammaNode(RelExp_LQ_,"RelExp_LQ"); $$->son.push_back($1);$$->son.push_back($3);}
-	|RelExp BQ AddExp	{$$ = new GrammaNode(RelExp_BQ_,"RelExp_BQ"); $$->son.push_back($1);$$->son.push_back($3);}
+	|RelExp LT AddExp	{$$ = new GrammaNode(lineno, RelExp_LT_,"RelExp_LT"); $$->son.push_back($1);$$->son.push_back($3);}
+	|RelExp BG AddExp	{$$ = new GrammaNode(lineno, RelExp_BG_,"RelExp_BG"); $$->son.push_back($1);$$->son.push_back($3);}
+	|RelExp LQ AddExp	{$$ = new GrammaNode(lineno, RelExp_LQ_,"RelExp_LQ"); $$->son.push_back($1);$$->son.push_back($3);}
+	|RelExp BQ AddExp	{$$ = new GrammaNode(lineno, RelExp_BQ_,"RelExp_BQ"); $$->son.push_back($1);$$->son.push_back($3);}
 ;
 
 EqExp:					
 	RelExp				{$$ = $1;}
-	|EqExp EQ RelExp	{$$ = new GrammaNode(EqExp_EQ_,"EqExp_EQ"); $$->son.push_back($1);$$->son.push_back($3);}
-	|EqExp NEQ RelExp	{$$ = new GrammaNode(EqExp_NEQ_,"EqExp_NEQ"); $$->son.push_back($1);$$->son.push_back($3);}
+	|EqExp EQ RelExp	{$$ = new GrammaNode(lineno, EqExp_EQ_,"EqExp_EQ"); $$->son.push_back($1);$$->son.push_back($3);}
+	|EqExp NEQ RelExp	{$$ = new GrammaNode(lineno, EqExp_NEQ_,"EqExp_NEQ"); $$->son.push_back($1);$$->son.push_back($3);}
 ;
 
 LAndExp:
-	EqExp				{$$ = new GrammaNode(LAndExp_,"LAndExp"); $$->son.push_back($1);}
+	EqExp				{$$ = new GrammaNode(lineno, LAndExp_,"LAndExp"); $$->son.push_back($1);}
 	|LAndExp AND EqExp	{$1->son.push_back($3);}
 ;
 
 LOrExp:
-	LAndExp				{$$ = new GrammaNode(LOrExp_,"LOrExp"); $$->son.push_back($1);}
+	LAndExp				{$$ = new GrammaNode(lineno, LOrExp_,"LOrExp"); $$->son.push_back($1);}
 	|LOrExp OR LAndExp	{$1->son.push_back($3);}
 ;
 
@@ -253,10 +346,93 @@ IntConst:
 
 %%
 
-void yyerror(char const *s)
+//-----------用于处理Identifier的声明：检查是否重复定义-----------
+//出现重复声明则报错、否则将其加入俩map中
+void IdentDeclareCheck(GrammaNode* deIdent)
 {
-printf("%s\n",s);
-return;
+	deIdent->var_scope = presentScope; // 更新该节点的作用域
+	//在idList变量列表中查找是否有名字相同且作用域相同的变量
+	if(idList.count(make_pair(deIdent->str, deIdent->var_scope)) != 0)
+	{//如果找到了，为真，则重复定义
+		string m = "Redeclared identifier: '" + deIdent->str + "'";
+		yyerror(m.c_str());
+	}
+	//否则就将该变量加入idList和idNameList中
+	idNameList.insert(make_pair(deIdent->str, deIdent->var_scope));
+	idList[make_pair(deIdent->str, deIdent->var_scope)] = deIdent;
+}
+
+//-----------用于处理Identifier的定义：检查是否未定义-----------
+//未定义则报错
+GrammaNode* IdentDefineCheck(GrammaNode* deIdent)
+{
+	GrammaNode* res = deIdent;
+	int idNameCount = idNameList.count(deIdent->str); //在idNameList中搜索有多少个一样的Ident
+	int declCnt = 0;
+	int minDefDis = MAX_SCOPE_STACK;
+
+	auto it = idNameList.find(deIdent->str); // 相同变量名的Ident的迭代器
+	int resScoptCmp; // 这是什么
+	while(idNameCount--)
+	{
+		resScoptCmp = scopeCmp(presentScope, it->second);
+		if(resScoptCmp >= 0)
+		{// 寻找距离最近的定义
+			if(resScoptCmp < minDefDis)
+			{
+				minDefDis = resScoptCmp;
+				//下来这部有点危险，改变树的结构
+				res = idList[make_pair(it->first, it->second)];
+			}
+			declCnt++;
+		}
+		it++;
+	}
+
+	//啥都没找见
+	if(declCnt == 0)
+	{
+		string m = "Undeclared identifier :'" + deIdent->str + "', scope : " + to_string(resScoptCmp);
+		yyerror(m.c_str());
+	}
+
+	return res;
+}
+/*
+ *	作用域比较函数 int scopeCmp (string, string)
+ *
+ *  输入参数： 
+ *    presScope： 当前变量所处的作用域
+ *    varScope:   希望进行比较的已声明变量作用域
+ *
+ *  返回值：
+ *    0： 作用域相同，
+ *          若为变量声明语句，为变量重定义。
+ *   >0： 已声明变量作用域在当前作用域外层，返回作用域距离（堆栈层数）
+ *          若为声明语句，不产生冲突，当前变量为新定义变量，
+ *          若为使用语句，当前变量为新定义变量。
+ *   -1：已声明变量作用域在当前作用域内层，
+ *          若为声明语句，不可能出现这种情况，
+ *          若为使用语句，不产生冲突。
+ *   -2：两个作用域互不包含，任何情况下都不会互相干扰
+ */
+int scopeCmp(std::string presScope, std::string varScope) {
+	unsigned int plen = presScope.length(), vlen = varScope.length();
+	unsigned int minlen = min(plen, vlen);
+	if (presScope.substr(0, minlen) == varScope.substr(0, minlen)) {
+		if (plen >= vlen)
+			return plen - vlen;
+		else
+			return -1;
+	}
+	return -2;
+}
+
+void yyerror(char const *message)
+{
+	string l = "\033[43;34m" + to_string(lineno) + " \033[0m ";
+	cout << "\033[31m[ERROR]\033[0m " << message << " at " << "\033[43;34m line \033[0m" << l << endl;
+	return;
 }
 
 

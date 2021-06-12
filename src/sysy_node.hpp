@@ -5,6 +5,8 @@
 // #ifndef _SYS_NODE_HPP_
 // #define _SYS_NODE_HPP_
 
+#define MAX_SCOPE_STACK 32 // 还暂时不知道为啥
+
 typedef enum{
     // 标识符(除保留字), 注释信息, 常量十进制，八进制，十六进制
     Ident_ = 300, Comment_, IntConst_D_,IntConst_O_, IntConst_H_,
@@ -39,14 +41,14 @@ struct position_t{
 struct GrammaNode
 { 
     int type;
-    std::string str;
+    int lineno;
+    std::string str; // 变量名称（如果是个ident或这函数名字或者保留字的话）
+    std::string var_scope; // 变量作用域标识符
     std::vector<GrammaNode*> son;
-    //struct position_t from;
-    //struct position_t to;
     GrammaNode(){son.clear();}
-    GrammaNode(int x){type=x;son.clear(); }
+    GrammaNode(int l, int x){lineno = l; type=x; son.clear();}
     //GrammaNode(int x, std::string y){std::cout<<y<<" ";type=x;str = y;son.clear();std::cout<<str<<std::endl;}
-    GrammaNode(int x, std::string y){type=x;str = y;son.clear();}
+    GrammaNode(int l, int x, std::string y){lineno = l; type=x; str = y; son.clear();}
 };
 
 // #endif
@@ -54,8 +56,8 @@ struct GrammaNode
 
 // GrammaNode* Exp_Sub_new(GrammaNode* a,GrammaNode* b);
 void search_node(GrammaNode* root);
-void show_node(GrammaNode* root,int layer);
-extern GrammaNode * Droot;
+void show_node(GrammaNode* root, int layer);
+extern GrammaNode* Droot;
 
 
 

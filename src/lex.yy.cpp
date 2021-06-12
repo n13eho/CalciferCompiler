@@ -506,18 +506,21 @@ int yy_flex_debug = 0;
 char *yytext;
 #line 1 "scan_pro.l"
 #line 2 "scan_pro.l"
+int lineno = 1; // 行号
+
+
 #include <stdio.h>
 #include <string>
 #include <typeinfo>
 #include "sysy_node.hpp"
 #include "part.tab.hpp"
 
-#line 516 "lex.yy.c"
+#line 519 "lex.yy.c"
 /*数值常量*/
 /*IntConst {octalConst}|{hexadecimalConst}|{decimalConst}|{zeroo}*/
 /*Ident,标识符*/
 /*注释？在这里处理吗*/
-#line 521 "lex.yy.c"
+#line 524 "lex.yy.c"
 
 #define INITIAL 0
 
@@ -734,9 +737,9 @@ YY_DECL
 		}
 
 	{
-#line 30 "scan_pro.l"
+#line 33 "scan_pro.l"
 
-#line 740 "lex.yy.c"
+#line 743 "lex.yy.c"
 
 	while ( /*CONSTCOND*/1 )		/* loops until end-of-file is reached */
 		{
@@ -795,218 +798,217 @@ do_action:	/* This label is used only to access EOF actions. */
 
 case 1:
 YY_RULE_SETUP
-#line 31 "scan_pro.l"
-{yylval.no = new GrammaNode(IntConst_D_,yytext);return ZERO;}
+#line 34 "scan_pro.l"
+{yylval.no = new GrammaNode(lineno, IntConst_D_,yytext);return ZERO;}
 	YY_BREAK
 case 2:
-YY_RULE_SETUP
-#line 33 "scan_pro.l"
-{}//{printf("%s: space\n",yytext);}
-	YY_BREAK
-case 3:
-/* rule 3 can match eol */
-YY_RULE_SETUP
-#line 34 "scan_pro.l"
-{}//{printf("%s: enter\n",yytext);}
-	YY_BREAK
-case 4:
-YY_RULE_SETUP
-#line 35 "scan_pro.l"
-{}//{printf("%s: zb\n",yytext);}
-	YY_BREAK
-case 5:
-/* rule 5 can match eol */
 YY_RULE_SETUP
 #line 36 "scan_pro.l"
 {}
 	YY_BREAK
-case 6:
+case 3:
+/* rule 3 can match eol */
+YY_RULE_SETUP
+#line 37 "scan_pro.l"
+{lineno++;} // 遇见\n，行号++
+	YY_BREAK
+case 4:
 YY_RULE_SETUP
 #line 38 "scan_pro.l"
-{                yylval.no = new GrammaNode(SEMI_,yytext);return SEMI;}
+{}
+	YY_BREAK
+case 5:
+/* rule 5 can match eol */
+YY_RULE_SETUP
+#line 39 "scan_pro.l"
+{}
+	YY_BREAK
+case 6:
+YY_RULE_SETUP
+#line 41 "scan_pro.l"
+{yylval.no = new GrammaNode(lineno, SEMI_, yytext);return SEMI;}
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 39 "scan_pro.l"
-{yylval.no = new GrammaNode(COMM_,yytext);return COMM;}
+#line 42 "scan_pro.l"
+{yylval.no = new GrammaNode(lineno, COMM_,yytext);return COMM;}
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 40 "scan_pro.l"
-{yylval.no = new GrammaNode(RDBRAL_,yytext);return RDBRAL;}
+#line 43 "scan_pro.l"
+{yylval.no = new GrammaNode(lineno, RDBRAL_,yytext);return RDBRAL;}
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 41 "scan_pro.l"
-{yylval.no = new GrammaNode(RDBRAR_,yytext);return RDBRAR;}
+#line 44 "scan_pro.l"
+{yylval.no = new GrammaNode(lineno, RDBRAR_,yytext);return RDBRAR;}
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 42 "scan_pro.l"
-{yylval.no = new GrammaNode(SQBRAL_,yytext);return SQBRAL;}
+#line 45 "scan_pro.l"
+{yylval.no = new GrammaNode(lineno, SQBRAL_,yytext);return SQBRAL;}
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 43 "scan_pro.l"
-{yylval.no = new GrammaNode(SQBRAR_,yytext);return SQBRAR;}
+#line 46 "scan_pro.l"
+{yylval.no = new GrammaNode(lineno, SQBRAR_,yytext);return SQBRAR;}
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 44 "scan_pro.l"
-{yylval.no = new GrammaNode(BRAL_,yytext);return BRAL;}
+#line 47 "scan_pro.l"
+{yylval.no = new GrammaNode(lineno, BRAL_,yytext);return BRAL;}
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 45 "scan_pro.l"
-{yylval.no = new GrammaNode(BRAR_,yytext);return BRAR;}
+#line 48 "scan_pro.l"
+{yylval.no = new GrammaNode(lineno, BRAR_,yytext);return BRAR;}
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 46 "scan_pro.l"
-{yylval.no = new GrammaNode(ASSIGN_,yytext);return ASSIGN;}
+#line 49 "scan_pro.l"
+{yylval.no = new GrammaNode(lineno, ASSIGN_,yytext);return ASSIGN;}
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 49 "scan_pro.l"
-{yylval.no = new GrammaNode(ADD_,yytext);return ADD;}
+#line 52 "scan_pro.l"
+{yylval.no = new GrammaNode(lineno, ADD_,yytext);return ADD;}
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
-#line 50 "scan_pro.l"
-{yylval.no = new GrammaNode(SUB_,yytext);return SUB;}
+#line 53 "scan_pro.l"
+{yylval.no = new GrammaNode(lineno, SUB_,yytext);return SUB;}
 	YY_BREAK
 case 17:
 YY_RULE_SETUP
-#line 51 "scan_pro.l"
-{yylval.no = new GrammaNode(DIV_,yytext);return DIV;}
+#line 54 "scan_pro.l"
+{yylval.no = new GrammaNode(lineno, DIV_,yytext);return DIV;}
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
-#line 52 "scan_pro.l"
-{yylval.no = new GrammaNode(MUL_,yytext);return MUL;}
+#line 55 "scan_pro.l"
+{yylval.no = new GrammaNode(lineno, MUL_,yytext);return MUL;}
 	YY_BREAK
 case 19:
 YY_RULE_SETUP
-#line 53 "scan_pro.l"
-{yylval.no = new GrammaNode(MOD_,yytext);return MOD;}
+#line 56 "scan_pro.l"
+{yylval.no = new GrammaNode(lineno, MOD_,yytext);return MOD;}
 	YY_BREAK
 case 20:
 YY_RULE_SETUP
-#line 54 "scan_pro.l"
-{yylval.no = new GrammaNode(EQ_,yytext);return EQ;}
+#line 57 "scan_pro.l"
+{yylval.no = new GrammaNode(lineno, EQ_,yytext);return EQ;}
 	YY_BREAK
 case 21:
 YY_RULE_SETUP
-#line 55 "scan_pro.l"
-{yylval.no = new GrammaNode(NOT_,yytext);return NOT;}
+#line 58 "scan_pro.l"
+{yylval.no = new GrammaNode(lineno, NOT_,yytext);return NOT;}
 	YY_BREAK
 case 22:
 YY_RULE_SETUP
-#line 56 "scan_pro.l"
-{yylval.no = new GrammaNode(NEQ_,yytext);return NEQ;}
+#line 59 "scan_pro.l"
+{yylval.no = new GrammaNode(lineno, NEQ_,yytext);return NEQ;}
 	YY_BREAK
 case 23:
 YY_RULE_SETUP
-#line 57 "scan_pro.l"
-{yylval.no = new GrammaNode(OR_,yytext);return OR;}
+#line 60 "scan_pro.l"
+{yylval.no = new GrammaNode(lineno, OR_,yytext);return OR;}
 	YY_BREAK
 case 24:
 YY_RULE_SETUP
-#line 58 "scan_pro.l"
-{yylval.no = new GrammaNode(AND_,yytext);return AND;}
+#line 61 "scan_pro.l"
+{yylval.no = new GrammaNode(lineno, AND_,yytext);return AND;}
 	YY_BREAK
 case 25:
 YY_RULE_SETUP
-#line 59 "scan_pro.l"
-{yylval.no = new GrammaNode(LT_,yytext);return LT;}
+#line 62 "scan_pro.l"
+{yylval.no = new GrammaNode(lineno, LT_,yytext);return LT;}
 	YY_BREAK
 case 26:
 YY_RULE_SETUP
-#line 60 "scan_pro.l"
-{yylval.no = new GrammaNode(BG_,yytext);return BG;}
+#line 63 "scan_pro.l"
+{yylval.no = new GrammaNode(lineno, BG_,yytext);return BG;}
 	YY_BREAK
 case 27:
 YY_RULE_SETUP
-#line 61 "scan_pro.l"
-{yylval.no = new GrammaNode(LQ_,yytext);return LQ;}
+#line 64 "scan_pro.l"
+{yylval.no = new GrammaNode(lineno, LQ_,yytext);return LQ;}
 	YY_BREAK
 case 28:
 YY_RULE_SETUP
-#line 62 "scan_pro.l"
-{yylval.no = new GrammaNode(BQ_,yytext);return BQ;}
+#line 65 "scan_pro.l"
+{yylval.no = new GrammaNode(lineno, BQ_,yytext);return BQ;}
 	YY_BREAK
 case 29:
 YY_RULE_SETUP
-#line 65 "scan_pro.l"
-{
-                yylval.no = new GrammaNode(CONST_,yytext);return CONST;}
+#line 68 "scan_pro.l"
+{yylval.no = new GrammaNode(lineno, CONST_,yytext);return CONST;}
 	YY_BREAK
 case 30:
 YY_RULE_SETUP
-#line 67 "scan_pro.l"
-{ yylval.no = new GrammaNode(INT_,yytext);return INT;}
+#line 69 "scan_pro.l"
+{ yylval.no = new GrammaNode(lineno, INT_,yytext);return INT;}
 	YY_BREAK
 case 31:
 YY_RULE_SETUP
-#line 68 "scan_pro.l"
-{ yylval.no = new GrammaNode(VOID_,yytext);return VOID;}
+#line 70 "scan_pro.l"
+{ yylval.no = new GrammaNode(lineno, VOID_,yytext);return VOID;}
 	YY_BREAK
 case 32:
 YY_RULE_SETUP
-#line 69 "scan_pro.l"
-{  yylval.no = new GrammaNode(IF_,yytext);return IF;}
+#line 71 "scan_pro.l"
+{  yylval.no = new GrammaNode(lineno, IF_,yytext);return IF;}
 	YY_BREAK
 case 33:
 YY_RULE_SETUP
-#line 70 "scan_pro.l"
-{  yylval.no = new GrammaNode(ELSE_,yytext);return ELSE;}
+#line 72 "scan_pro.l"
+{  yylval.no = new GrammaNode(lineno, ELSE_,yytext);return ELSE;}
 	YY_BREAK
 case 34:
 YY_RULE_SETUP
-#line 71 "scan_pro.l"
-{ yylval.no = new GrammaNode(WHILE_,yytext);return WHILE;}
+#line 73 "scan_pro.l"
+{ yylval.no = new GrammaNode(lineno, WHILE_,yytext);return WHILE;}
 	YY_BREAK
 case 35:
 YY_RULE_SETUP
-#line 72 "scan_pro.l"
-{yylval.no = new GrammaNode(BREAK_,yytext);return BREAK;}
+#line 74 "scan_pro.l"
+{yylval.no = new GrammaNode(lineno, BREAK_,yytext);return BREAK;}
 	YY_BREAK
 case 36:
 YY_RULE_SETUP
-#line 73 "scan_pro.l"
-{yylval.no = new GrammaNode(CONTINUE_,yytext);return CONTINUE;}
+#line 75 "scan_pro.l"
+{yylval.no = new GrammaNode(lineno, CONTINUE_,yytext);return CONTINUE;}
 	YY_BREAK
 case 37:
 YY_RULE_SETUP
-#line 74 "scan_pro.l"
-{yylval.no = new GrammaNode(RETURN_,yytext);return RETURN;}
+#line 76 "scan_pro.l"
+{yylval.no = new GrammaNode(lineno, RETURN_,yytext);return RETURN;}
 	YY_BREAK
 case 38:
 YY_RULE_SETUP
-#line 78 "scan_pro.l"
-{yylval.no = new GrammaNode(IntConst_O_,yytext);return IntConst_O;}
+#line 80 "scan_pro.l"
+{yylval.no = new GrammaNode(lineno, IntConst_O_,yytext);return IntConst_O;}
 	YY_BREAK
 case 39:
 YY_RULE_SETUP
-#line 79 "scan_pro.l"
-{yylval.no = new GrammaNode(IntConst_D_,yytext);return IntConst_D;}
+#line 81 "scan_pro.l"
+{yylval.no = new GrammaNode(lineno, IntConst_D_,yytext);return IntConst_D;}
 	YY_BREAK
 case 40:
 YY_RULE_SETUP
-#line 80 "scan_pro.l"
-{yylval.no = new GrammaNode(IntConst_H_,yytext);return IntConst_H;}
+#line 82 "scan_pro.l"
+{yylval.no = new GrammaNode(lineno, IntConst_H_,yytext);return IntConst_H;}
 	YY_BREAK
 case 41:
 YY_RULE_SETUP
-#line 82 "scan_pro.l"
-{yylval.no = new GrammaNode(Ident_,yytext);return Ident;}
+#line 84 "scan_pro.l"
+{yylval.no = new GrammaNode(lineno, Ident_,yytext);return Ident;}
 	YY_BREAK
 case 42:
 YY_RULE_SETUP
-#line 85 "scan_pro.l"
+#line 87 "scan_pro.l"
 ECHO;
 	YY_BREAK
-#line 1010 "lex.yy.c"
+#line 1012 "lex.yy.c"
 case YY_STATE_EOF(INITIAL):
 	yyterminate();
 
@@ -2011,7 +2013,7 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 85 "scan_pro.l"
+#line 87 "scan_pro.l"
 
 
 
