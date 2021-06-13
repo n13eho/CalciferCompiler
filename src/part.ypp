@@ -7,12 +7,15 @@
 	#include "sysy_node.hpp"
 	#include <map>
 
+	using namespace std;
+
 	extern int yylex();
 	void yyerror(char const *message);
 	void IdentDeclareCheck(GrammaNode* deIdent);
 	GrammaNode* IdentDefineCheck(GrammaNode* deIdent);
-	int scopeCmp(std::string presScope, std::string varScope);
-	using namespace std;
+	int scopeCmp(string presScope, string varScope);
+	void scopePush();
+	void scopePop();
 
 	//外部的lineno，行号信息
 	extern int lineno;
@@ -24,6 +27,7 @@
 	
 	unsigned int top = 0;
 	string presentScope = "1";
+	unsigned char max_scope_id = SCOPT_ID_BASE; //'1'
 %}
 
 %union{
@@ -152,17 +156,26 @@ FuncDef:
 		$$ = new GrammaNode(lineno, FuncDef_int_para_,"FuncDef_int_para_");
 		$$->son.push_back($2);$$->son.push_back($4);$$->son.push_back($6);
 		IdentDeclareCheck($2);
+		scopePop();
 	}
 	|VOID Ident RDBRAL FuncFParams RDBRAR Block {
 		$$ = new GrammaNode(lineno, FuncDef_void_para_,"FuncDef_void_para_");
 		$$->son.push_back($2);$$->son.push_back($4);$$->son.push_back($6);
 		IdentDeclareCheck($2);
+		scopePop();
 	}
 ;
 
 FuncFParams:
-	FuncFParam							{$$ = new GrammaNode(lineno, FuncFParams_,"FuncFParams"); $$->son.push_back($1);}
-	|FuncFParams COMM FuncFParam		{$1->son.push_back($3);}
+	FuncFParam {
+		scopePush();
+		$$ = new GrammaNode(lineno, FuncFParams_,"FuncFParams");
+		$$->son.push_back($1);
+	}
+	|FuncFParams COMM FuncFParam {
+		scopePush();
+		$1->son.push_back($3);
+	}
 ;
 
 //函数的参数定义（内含形参，因此也要对形参的ident做declaration check）
@@ -190,8 +203,12 @@ BlockItems:
 ;
 
 Block:
-	BRAL BlockItems BRAR				{$$=$2;}
-	|BRAL BRAR							{}
+	BRAL BlockItems BRAR {
+		scopePush();
+		$$=$2;
+		scopePop();
+	}
+	|BRAL BRAR {scopePush();scopePop();}
 ;
 
 BlockItem:
@@ -205,9 +222,25 @@ Stmt:
 	|SEMI								{}
 	|Exp SEMI							{$$ = new GrammaNode(lineno, Stmt_Exp_,"Stmt_Exp"); $$->son.push_back($1);}
 	|Block								{$$=$1;}
-	|IF RDBRAL Cond RDBRAR Stmt			{$$ = new GrammaNode(lineno, Stmt_If_,"Stmt_If");$$->son.push_back($3);$$->son.push_back($5);}
-	|IF RDBRAL Cond RDBRAR Stmt ELSE Stmt {$$ = new GrammaNode(lineno, Stmt_IfElse_,"Stmt_IfElse");$$->son.push_back($3);$$->son.push_back($5);$$->son.push_back($7);}
-	|WHILE RDBRAL Cond RDBRAR Stmt		{$$ = new GrammaNode(lineno, Stmt_While_,"Stmt_While"); $$->son.push_back($3);$$->son.push_back($5);}
+	|IF RDBRAL Cond RDBRAR Stmt {
+		scopePush();
+		$$ = new GrammaNode(lineno, Stmt_If_,"Stmt_If");
+		$$->son.push_back($3);$$->son.push_back($5);
+		scopePop();
+	}
+	|IF RDBRAL Cond RDBRAR Stmt ELSE Stmt {
+		scopePush();
+		$$ = new GrammaNode(lineno, Stmt_IfElse_,"Stmt_IfElse");
+		$$->son.push_back($3);$$->son.push_back($5);
+		$$->son.push_back($7);
+		scopePop();
+	}
+	|WHILE RDBRAL Cond RDBRAR Stmt {
+		scopePush();
+		$$ = new GrammaNode(lineno, Stmt_While_,"Stmt_While");
+		$$->son.push_back($3);$$->son.push_back($5);
+		scopePop();
+	}
 	|BREAK SEMI							{$$=$1;}
 	|CONTINUE SEMI						{$$=$1;}
 	|RETURN SEMI						{$$=$1;}
@@ -346,6 +379,13 @@ IntConst:
 
 %%
 
+void yyerror(char const *message)
+{
+	string l = "\033[43;34m" + to_string(lineno) + " \033[0m ";
+	cout << "\033[31m[ERROR]\033[0m " << message << " at " << "\033[43;34m line \033[0m" << l << endl;
+	return;
+}
+
 //-----------用于处理Identifier的声明：检查是否重复定义-----------
 //出现重复声明则报错、否则将其加入俩map中
 void IdentDeclareCheck(GrammaNode* deIdent)
@@ -428,12 +468,53 @@ int scopeCmp(std::string presScope, std::string varScope) {
 	return -2;
 }
 
-void yyerror(char const *message)
+
+void scopePush()
 {
-	string l = "\033[43;34m" + to_string(lineno) + " \033[0m ";
-	cout << "\033[31m[ERROR]\033[0m " << message << " at " << "\033[43;34m line \033[0m" << l << endl;
-	return;
+	presentScope += max_scope_id;
+	max_scope_id = SCOPT_ID_BASE; // 又赋一次值
+	top++;
+	cout << "* push -> " << presentScope << ", at line " << lineno << endl;
+
 }
 
+void scopePop()
+{
+	max_scope_id = presentScope[top] + 1;
+	presentScope = presentScope.substr(0, presentScope.length() - 1);
+	top--;
+	cout << "*  pop -> " << presentScope << ", at line " << lineno << endl;
+}
 
-
+/*
+ *	变量作用域切换只会发生在以下地方：
+ *
+ *		函数体		type funcName ( params ) block
+ *								  ↑ push		  ↑ pop
+ *
+ *		block块		{ stmts }
+ *					↑ push	↑ pop
+ *
+ *		if语句		IF ( cond ) block
+ *					↑ push			  ↑ pop
+ *
+ *					IF ( cond ) block ELSE block
+ *					↑ push						 ↑ pop
+ *
+ *		while语句	WHILE ( cond ) block
+ *					↑ push				 ↑ pop
+ *
+ *
+ * 	可得作用域推进表：
+ *
+ *		push:
+ *          FuncFParams
+ *			IF
+ *			WHILE
+ *			funcLPAREN
+ *		pop:
+ *			ifStmt(代码段尾部)
+ *			whileStmt(代码段尾部)
+ *			forStmt(代码段尾部)
+ *			funcDef(代码段尾部)
+ */

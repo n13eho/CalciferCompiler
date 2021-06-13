@@ -6,6 +6,7 @@
 // #define _SYS_NODE_HPP_
 
 #define MAX_SCOPE_STACK 32 // 还暂时不知道为啥
+#define SCOPT_ID_BASE '1'
 
 typedef enum{
     // 标识符(除保留字), 注释信息, 常量十进制，八进制，十六进制

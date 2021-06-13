@@ -1,5 +1,14 @@
 [31m[ERROR][0m Redeclared identifier: 'a' at [43;34m line [0m[43;34m4 [0m 
-->node string:ROOT	 son numbers:3
+* push -> 11, at line 4
+[31m[ERROR][0m Undeclared identifier :'true', scope : 32631 at [43;34m line [0m[43;34m8 [0m 
+* push -> 111, at line 11
+*  pop -> 11, at line 11
+* push -> 112, at line 11
+*  pop -> 11, at line 11
+* push -> 113, at line 12
+*  pop -> 11, at line 12
+*  pop -> 1, at line 12
+->node string:ROOT	 son numbers:3
    ->node string:VarDefs	 son numbers:2
       ->node string:VarDef_single_	 son numbers:1
          ->node string:a	 son numbers:0
@@ -19,7 +28,7 @@
       ->node string:FuncFParams	 son numbers:1
          ->node string:FuncFParam_single_	 son numbers:1
             ->node string:a	 son numbers:0
-      ->node string:Block	 son numbers:2
+      ->node string:Block	 son numbers:3
          ->node string:VarDefs	 son numbers:1
             ->node string:VarDef_single_init_	 son numbers:3
                ->node string:ans	 son numbers:0
@@ -36,3 +45,12 @@
                ->node string:UnaryExp_	 son numbers:2
                   ->node string:-	 son numbers:0
                   ->node string:b	 son numbers:0
+         ->node string:Stmt_While	 son numbers:2
+            ->node string:Cond	 son numbers:1
+               ->node string:LOrExp	 son numbers:1
+                  ->node string:LAndExp	 son numbers:1
+                     ->node string:true	 son numbers:0
+            ->node string:Block	 son numbers:1
+               ->node string:Stmt_Assign	 son numbers:2
+                  ->node string:a	 son numbers:0
+                  ->node string:0	 son numbers:0

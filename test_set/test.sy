@@ -5,4 +5,8 @@ int main(int a)
 {
     int ans = a+b;
     (+a)+(-b);
+    while(true)
+    {
+        a = 0;
+    }
 }
