@@ -1,7 +1,9 @@
 TARGET = ../bin/calcifer
 manual  = $(wildcard ./*.cpp)
 objcpp = part.tab.cpp lex.yy.cpp $(manual)
-objdelete = part.tab.cpp lex.yy.cpp lex.yy.c 
+objdelete = part.tab.cpp lex.yy.cpp lex.yy.c
+
+scope_check_file = $(wildcard ../test_set/scope_check/*.c)
 
 $(TARGET): $(objcpp)
 	g++ $(objcpp) -o $(TARGET)
@@ -18,8 +20,10 @@ lex.yy.c : scan_pro.l
 
 # 便捷测试
 run:
-	$(TARGET) ../test_set/test.sy | tee ../result.txt
+	$(TARGET) ../test_set/test.sy
 
+l1:
+	../bin/scope_check.sh
 
 clean:
 	rm -rf $(objdelete) $(TARGET)

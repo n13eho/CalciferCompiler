@@ -5,7 +5,10 @@
 // #ifndef _SYS_NODE_HPP_
 // #define _SYS_NODE_HPP_
 
-#define MAX_SCOPE_STACK 32 // 还暂时不知道为啥
+// scope部分调试信息打印
+#define DEBUG_SCOPE
+
+#define MAX_SCOPE_STACK 32 // 最大的深度
 #define SCOPT_ID_BASE '1'
 
 typedef enum{

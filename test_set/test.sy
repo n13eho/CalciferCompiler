@@ -1,12 +1,10 @@
-int a,b[1][2][3];
-const int x = 0x8;
+int z = 0;
 
-int main(int a)
-{
-    int ans = a+b;
-    (+a)+(-b);
-    while(true)
-    {
-        a = 0;
-    }
+void add(int z, int b){
+    return z + b;
+    int c = 9;
+}
+int main(){
+    z = 0;
+    c = add(z, 2);
 }

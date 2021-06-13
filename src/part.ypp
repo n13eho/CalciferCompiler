@@ -38,11 +38,12 @@
 %type <no> ASSIGN SEMI COMM RDBRAL RDBRAR SQBRAL SQBRAR BRAL BRAR ADD SUB DIV MUL MOD EQ NOT NEQ OR AND LT BG LQ BQ ZERO INT CONST IntConst_D IntConst_O IntConst_H VOID IF ELSE WHILE BREAK CONTINUE RETURN MAIN Ident
 %type <no> Decl ConstDecl ConstDefs ConstDef ConstExps Exp LVal Exps PrimaryExp UnaryExp UnaryOp FuncRParams MulExp AddExp IntConst
 %type <no> CompUnit VarDecl VarDefs VarDef InitVal InitVals FuncDef FuncFParams FuncFParam Block BlockItems BlockItem Stmt Cond RelExp EqExp LAndExp LOrExp
+%type <no> BARL_TEMP RDBRAL_TEMP Ident_TEMP
 
 %token ASSIGN SEMI COMM RDBRAL RDBRAR SQBRAL SQBRAR BRAL BRAR
 %token ADD SUB DIV MUL MOD EQ NOT NEQ OR AND LT BG LQ BQ
 %token ZERO INT CONST IntConst_D IntConst_O IntConst_H VOID IF ELSE WHILE BREAK CONTINUE RETURN MAIN
-%token Ident 
+%token Ident
 
 
 %left MUL
@@ -142,38 +143,52 @@ InitVals:
 
 //--------函数定义---------
 FuncDef:
-	INT Ident RDBRAL RDBRAR Block {
+	INT Ident_TEMP RDBRAL_TEMP RDBRAR Block {
 		$$ = new GrammaNode(lineno, FuncDef_int_,"FuncDef_int_");
 		$$->son.push_back($2);$$->son.push_back($5);
-		IdentDeclareCheck($2);
+		// IdentDeclareCheck($2);
+		scopePop();
 	}
-	|VOID Ident RDBRAL RDBRAR Block	{
+	|VOID Ident_TEMP RDBRAL_TEMP RDBRAR Block	{
 		$$ = new GrammaNode(lineno, FuncDef_void_,"FuncDef_void_");
 		$$->son.push_back($2);$$->son.push_back($5);
-		IdentDeclareCheck($2);
+		// IdentDeclareCheck($2);
+		scopePop();
 	}
-	|INT Ident RDBRAL FuncFParams RDBRAR Block {
+	|INT Ident_TEMP RDBRAL_TEMP FuncFParams RDBRAR Block {
 		$$ = new GrammaNode(lineno, FuncDef_int_para_,"FuncDef_int_para_");
 		$$->son.push_back($2);$$->son.push_back($4);$$->son.push_back($6);
-		IdentDeclareCheck($2);
+		// IdentDeclareCheck($2);
 		scopePop();
 	}
-	|VOID Ident RDBRAL FuncFParams RDBRAR Block {
+	|VOID Ident_TEMP RDBRAL_TEMP FuncFParams RDBRAR Block {
 		$$ = new GrammaNode(lineno, FuncDef_void_para_,"FuncDef_void_para_");
 		$$->son.push_back($2);$$->son.push_back($4);$$->son.push_back($6);
-		IdentDeclareCheck($2);
+		// IdentDeclareCheck($2);
 		scopePop();
+	}
+;
+Ident_TEMP:
+	Ident{
+		IdentDeclareCheck($1);
+		$$ = $1;
+	}
+;
+
+RDBRAL_TEMP:
+	RDBRAL{
+		scopePush();
+		$$ = $1;
 	}
 ;
 
 FuncFParams:
 	FuncFParam {
-		scopePush();
+		// scopePush();
 		$$ = new GrammaNode(lineno, FuncFParams_,"FuncFParams");
 		$$->son.push_back($1);
 	}
 	|FuncFParams COMM FuncFParam {
-		scopePush();
 		$1->son.push_back($3);
 	}
 ;
@@ -197,18 +212,31 @@ FuncFParam:
 	}
 ;
 
+
+
 BlockItems:
-	BlockItem							{$$ = new GrammaNode(lineno, Block_,"Block"); $$->son.push_back($1);}
+	BlockItem {
+		$$ = new GrammaNode(lineno, Block_,"Block");
+		$$->son.push_back($1);
+	}
 	|BlockItems BlockItem				{$1->son.push_back($2);}	
 ;
 
+
 Block:
-	BRAL BlockItems BRAR {
-		scopePush();
+	BARL_TEMP BlockItems BRAR {
 		$$=$2;
 		scopePop();
 	}
-	|BRAL BRAR {scopePush();scopePop();}
+	|BRAL BRAR {} // 空语句就不用对作用域进行push和pop了
+;
+
+//为了及时匹配到block的左大括号
+BARL_TEMP:
+	BRAL{
+		scopePush();
+		$$ = $1;
+	}
 ;
 
 BlockItem:
@@ -223,23 +251,23 @@ Stmt:
 	|Exp SEMI							{$$ = new GrammaNode(lineno, Stmt_Exp_,"Stmt_Exp"); $$->son.push_back($1);}
 	|Block								{$$=$1;}
 	|IF RDBRAL Cond RDBRAR Stmt {
-		scopePush();
+		// scopePush();
 		$$ = new GrammaNode(lineno, Stmt_If_,"Stmt_If");
 		$$->son.push_back($3);$$->son.push_back($5);
-		scopePop();
+		// scopePop();
 	}
 	|IF RDBRAL Cond RDBRAR Stmt ELSE Stmt {
-		scopePush();
+		// scopePush();
 		$$ = new GrammaNode(lineno, Stmt_IfElse_,"Stmt_IfElse");
 		$$->son.push_back($3);$$->son.push_back($5);
 		$$->son.push_back($7);
-		scopePop();
+		// scopePop();
 	}
 	|WHILE RDBRAL Cond RDBRAR Stmt {
-		scopePush();
+		// scopePush();
 		$$ = new GrammaNode(lineno, Stmt_While_,"Stmt_While");
 		$$->son.push_back($3);$$->son.push_back($5);
-		scopePop();
+		// scopePop();
 	}
 	|BREAK SEMI							{$$=$1;}
 	|CONTINUE SEMI						{$$=$1;}
@@ -412,7 +440,7 @@ GrammaNode* IdentDefineCheck(GrammaNode* deIdent)
 	int minDefDis = MAX_SCOPE_STACK;
 
 	auto it = idNameList.find(deIdent->str); // 相同变量名的Ident的迭代器
-	int resScoptCmp; // 这是什么
+	int resScoptCmp; // 作用域比较scopeCmp函数的返回值
 	while(idNameCount--)
 	{
 		resScoptCmp = scopeCmp(presentScope, it->second);
@@ -421,7 +449,7 @@ GrammaNode* IdentDefineCheck(GrammaNode* deIdent)
 			if(resScoptCmp < minDefDis)
 			{
 				minDefDis = resScoptCmp;
-				//下来这部有点危险，改变树的结构
+				//返回idList中同名且作用域相同的GrammaNode指针
 				res = idList[make_pair(it->first, it->second)];
 			}
 			declCnt++;
@@ -474,16 +502,20 @@ void scopePush()
 	presentScope += max_scope_id;
 	max_scope_id = SCOPT_ID_BASE; // 又赋一次值
 	top++;
+#ifdef DEBUG_SCOPE
 	cout << "* push -> " << presentScope << ", at line " << lineno << endl;
-
+#endif
 }
 
 void scopePop()
 {
+	
 	max_scope_id = presentScope[top] + 1;
 	presentScope = presentScope.substr(0, presentScope.length() - 1);
 	top--;
+#ifdef DEBUG_SCOPE
 	cout << "*  pop -> " << presentScope << ", at line " << lineno << endl;
+#endif
 }
 
 /*
@@ -508,13 +540,9 @@ void scopePop()
  * 	可得作用域推进表：
  *
  *		push:
- *          FuncFParams
- *			IF
- *			WHILE
- *			funcLPAREN
+ *          *
+ *			*
  *		pop:
- *			ifStmt(代码段尾部)
- *			whileStmt(代码段尾部)
- *			forStmt(代码段尾部)
- *			funcDef(代码段尾部)
+ *			*
+ *			*
  */

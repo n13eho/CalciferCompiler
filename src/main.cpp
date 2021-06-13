@@ -17,8 +17,8 @@ int main(int argc, char *argv[])
     int ret = yyparse();
     if(ret == 0)
     {
-        show_node(Droot, 0);
         semanticAnalyzer(Droot);
+        show_node(Droot, 0);
     }
     return 0;
 }
