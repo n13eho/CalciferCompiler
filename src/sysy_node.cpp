@@ -206,3 +206,4 @@ Value* UnaryExpNode(GrammaNode* node,LinearIR *IR)
 }
 
 Value* PrimaryExpNode(GrammaNode* node,LinearIR *IR)
+{}
