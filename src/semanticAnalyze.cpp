@@ -23,7 +23,7 @@ void semanticAnalyzer(GrammaNode* root)
     cout << "idList:" << endl;
     for(auto iter = idList.begin(); iter != idList.end(); iter++)
     {
-        cout << iter->first.first << " " << iter->first.second << endl;
+        cout << iter->first.first << " " << iter->first.second <<" " << iter->second->son.size()<<endl;
     }
 #endif
 }

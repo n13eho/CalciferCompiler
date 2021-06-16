@@ -2,12 +2,12 @@
 #include <iostream>
 #include <vector>
 #include <string>
-#include "BuildIR.h"
+#include "../include/BuildIR.h"
 // #ifndef _SYS_NODE_HPP_
 // #define _SYS_NODE_HPP_
 
 // scope部分调试信息打印
-#define DEBUG_SCOPE
+#define DEBUG_SCOPE 1
 
 #define MAX_SCOPE_STACK 32 // 最大的深度
 #define SCOPT_ID_BASE '1'

@@ -45,7 +45,7 @@ class Instruction
         Ret,
     };
 
-    Instruction(int id,Instruction::InsType ins_type,unsigned oprands_num);
+    Instruction(int id,Instruction::InsType ins_type,unsigned oprands_num):InstrId(id),OpType(ins_type),OpNums(oprands_num){}
     void setId(int id){InstrId=id;}
     void addOperand(Value* opd){Operands.push_back(opd);}
     void setResult(Value* res){Result = res;}

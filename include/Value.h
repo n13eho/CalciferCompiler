@@ -40,7 +40,6 @@ class IntegerValue:public Value
     public:
     IntegerValue(std::string name_,int line,std::string scope,int intValue):Value(name_,line,scope)
     {
-        
         RealValue=intValue;
     }
 
@@ -52,56 +51,36 @@ class IntegerValue:public Value
     int RealValue=0;
 };
 
+
+class ConstArrayValue:public Value{
+    public:
+    ConstArrayValue(std::string name_, int line, std::string scope,std::vector<int> demen,std::vector<int> value_):Value(name_,line,scope)
+    {
+        ArrayElement.clear();
+        ArrayElement.insert(ArrayElement.end(),value_.begin(),value_.end());
+        NumOfDimension.clear();
+        NumOfDimension.insert(demen.end(),demen.begin(),demen.end());
+    }
+    int getValue(int index){return ArrayElement[index];}
+    private:
+    std::vector<int> NumOfDimension;
+    std::vector<int> ArrayElement;
+};
+
 class ArrayValue:public Value
 {
     public:
     ArrayValue(std::string name_,int line,std::string scope):Value(name_,line,scope){}
 
     void setDimen(std::vector<int> dimen){NumOfDimension.assign(dimen.begin(), dimen.end());}
-   
-    //重新数组赋值
+    //重新数组赋值（用于归零）
     void setArray(std::vector<int> ele){ArrayElement.assign(ele.begin(), ele.end());}
-    //设置row行col列元素值
-    void setValue(int row,int col,int ele)
-    {
-        int index = col;
-        for(int i=0;i<row;i++)
-        {
-            index+=(NumOfDimension[i]);
-        }
-        ArrayElement[index]=ele;
-    }
-    //获取row行col列的元素
-    int getEle(int row,int col)
-    {
-        int index = col;
-        for(int i=0;i<row;i++)
-        {
-            index+=(NumOfDimension[i]);
-        }
-        return ArrayElement[index];
-    }
+    //赋值
+    void setValue(int index,int ele){ArrayElement[index]=ele;}
+    //访问
+    int getValue(int index){return ArrayElement[index];}
     //获取数组各维信息
     std::vector<int> getDimen(){return NumOfDimension;}
-    // //获取数组维数
-    // int getArrayDim()
-    // {
-    //     return NumOfDimension.size();
-    // }
-    // //获取数组第row行维数
-    // int getArrayDim(int row)
-    // {
-    //     if(row<NumOfDimension.size())
-    //     {
-    //         return NumOfDimension[row];
-    //     }
-    //     else
-    //     {
-    //         //error
-    //         return -1;
-    //     }
-    // }
-
 
     private:
     //store the dimension of array
@@ -141,7 +120,7 @@ class FunctionValue:public Value
 class ImmValue:public Value
 {
     public:
-    //立即数必须给值,行号和scope没必要？
+    //立即数必须给值,行号和scope没必要？---要的吧。。
     ImmValue(std::string name_,int intValue):Value(name_)
     {
         RealValue=intValue;
@@ -153,6 +132,7 @@ class ImmValue:public Value
     //立即数的值
     int RealValue;
 };
+class ConstIntegerValue:public ImmValue {};
 
 // class PointerValue:Value
 // {

@@ -6,5 +6,6 @@ void add(int z, int b){
 }
 int main(){
     z = 0;
+    {int z=0;}
     c = add(z, 2);
 }
