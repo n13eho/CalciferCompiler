@@ -9,6 +9,7 @@ extern int lineno;
 using namespace std;
 extern FILE* yyin;
 GrammaNode* Droot = new GrammaNode(lineno, 0, "ROOT");
+vector<Value*> SymbolTable;
 
 int main(int argc, char *argv[])
 {

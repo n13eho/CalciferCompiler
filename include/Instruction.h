@@ -66,17 +66,17 @@ class Instruction
 };
 
 //指令是否需要细化成子类，还需确认
-class AddIns:Instruction{};
+class AddIns:public Instruction{};
 
-class SubIns:Instruction{};
+class SubIns:public Instruction{};
 
-class MulIns:Instruction{};
+class MulIns:public Instruction{};
 
-class DivIns:Instruction{};
+class DivIns:public Instruction{};
 
-class ModIns:Instruction{};
+class ModIns:public Instruction{};
 
-class UnaryIns:Instruction
+class UnaryIns:public Instruction
 {
         // //单目运算符+
         // UnaryPos,
@@ -86,31 +86,31 @@ class UnaryIns:Instruction
         // UnaryNot,
 };
 
-class AssginIns:Instruction{};
+class AssginIns:public Instruction{};
 
-class LogicAndIns:Instruction{};
+class LogicAndIns:public Instruction{};
 
-class LogicAOrIns:Instruction{};
+class LogicAOrIns:public Instruction{};
 
-class ArithEqIns:Instruction{};
+class ArithEqIns:public Instruction{};
 
-class ArithNeIns:Instruction{};
+class ArithNeIns:public Instruction{};
 
-class ArithLTIns:Instruction{};
+class ArithLTIns:public Instruction{};
 
-class ArithBGIns:Instruction{};
+class ArithBGIns:public Instruction{};
 
-class ArithLQIns:Instruction{};
+class ArithLQIns:public Instruction{};
 
-class ArithGQIns:Instruction{};
+class ArithGQIns:public Instruction{};
 
-class JmpIns:Instruction{};
+class JmpIns:public Instruction{};
 
-class BranchIns:Instruction{};
+class BranchIns:public Instruction{};
 
-class CallIns:Instruction{};
+class CallIns:public Instruction{};
 
-class RetIns:Instruction{};
+class RetIns:public Instruction{};
 
 /*
 add : +,-

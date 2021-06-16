@@ -102,7 +102,7 @@ void VarDefNode(GrammaNode* node,LinearIR *IR)
             {
                 VR = InitValNode(node->son[i]->son[1],IR);
             }
-            Instruction* ins_new = new Instruction(IR->getInstCnt(),Instruction::InsType(8),1);
+            Instruction* ins_new = new Instruction(IR->getInstCnt(),Instruction::Assign,1);
             ins_new->addOperand(VR);
             ins_new->setResult(VL);
             IR->InsertInstr(ins_new);
