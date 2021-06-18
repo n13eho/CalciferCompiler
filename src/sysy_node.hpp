@@ -2,7 +2,6 @@
 #include <iostream>
 #include <vector>
 #include <string>
-#include "../include/BuildIR.h"
 // #ifndef _SYS_NODE_HPP_
 // #define _SYS_NODE_HPP_
 
@@ -63,17 +62,4 @@ struct GrammaNode
 void search_node(GrammaNode* root);
 void show_node(GrammaNode* root, int layer);
 extern GrammaNode* Droot;
-void VisitAST(GrammaNode* DRoot,LinearIR *IR);
-void ConstDefNode(GrammaNode* node,LinearIR *IR);
-void VarDefNode(GrammaNode* node,LinearIR *IR);
-void FuncDef_Int(GrammaNode* node,LinearIR *IR);
-void FuncDef_Void(GrammaNode* node,LinearIR *IR);
-void FuncDef_IntParams(GrammaNode* node,LinearIR *IR);
-void FuncDef_VoidParams(GrammaNode* node,LinearIR *IR);
-Value* InitValNode(GrammaNode* node,LinearIR *IR);
-Value* ExpNode(GrammaNode* node,LinearIR *IR);
-Value* UnaryExpNode(GrammaNode* node,LinearIR *IR);
-Value* MulExpNode(GrammaNode* node,LinearIR *IR);
-Value* PrimaryExpNode(GrammaNode* node,LinearIR *IR);
-
 
