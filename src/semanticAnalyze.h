@@ -22,7 +22,7 @@ struct idTable_struct
     // int addItem(string name,string scope,Value* info);
     void addItem(GrammaNode *key, Value *info);
     // Value* askItem(string name,string scope,Value* info);
-    Value *askItem(GrammaNode *key, Value *info);
+    Value *askItem(GrammaNode *key);
 };
 
 void semanticAnalyzer(GrammaNode *root);

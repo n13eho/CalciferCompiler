@@ -151,6 +151,7 @@ void semanticAnalyzer(GrammaNode *root)
         // else if (son->type == ConstDefs_)semanticConstDefs_(son);
         // else if (son->type == VarDefs_)semanticVarDefs_(son);
         int b;
+        int a;
     }
 }
 //zhushi
@@ -160,7 +161,7 @@ void idTable_struct::addItem(GrammaNode *key, Value *info)
     SymbolTable->table[key] = info;
 }
 
-Value *idTable_struct::askItem(GrammaNode *key, Value *info)
+Value *idTable_struct::askItem(GrammaNode *key)
 {
     return SymbolTable->table[key];
 }
