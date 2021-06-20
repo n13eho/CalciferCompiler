@@ -1,4 +1,5 @@
-void add(int z, int b, int c[][3][2]){
+const int c = 9;
+void add(int z, int b, int c[][3*2][1%2][9*c]){
     return z + b;
 }
 
@@ -6,3 +7,5 @@ int main(int a){
     int z;
     a = add(a, z[1][2]);
 }
+
+const int a=0, b=0, cn=0;

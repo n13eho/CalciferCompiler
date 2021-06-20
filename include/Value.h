@@ -1,3 +1,5 @@
+#pragma once
+
 #include <string>
 #include <vector>
 enum VType{
@@ -39,8 +41,10 @@ class Value
 class IntegerValue:public Value
 {
     public:
-    IntegerValue(std::string name_,int line,std::string scope):Value(name_,line,scope){}
-    IntegerValue(std::string name_,int line,std::string scope,int intValue):Value(name_,line,scope)
+    IntegerValue(std::string name_,int line,std::string scope)
+    :Value(name_,line,scope){}
+    IntegerValue(std::string name_,int line,std::string scope,int intValue)
+    :Value(name_,line,scope)
     {
         RealValue=intValue;
     }
@@ -49,8 +53,8 @@ class IntegerValue:public Value
     void setValue(int intValue){RealValue=intValue;}
 
     private:
-    //real value
-    int RealValue=0;
+    //初始化值
+    int RealValue=-99999;
 };
 
 class ConstArrayValue:public Value{
@@ -71,9 +75,10 @@ class ConstArrayValue:public Value{
 class ArrayValue:public Value
 {
     public:
-    ArrayValue(std::string name_,int line,std::string scope):Value(name_,line,scope){}
+    ArrayValue(std::string name_,int line,std::string scope)
+    :Value(name_,line,scope){}
 
-    void setDimen(std::vector<int> dimen){NumOfDimension.assign(dimen.begin(), dimen.end());}
+    void setDimen(std::vector<unsigned> dimen){NumOfDimension.assign(dimen.begin(), dimen.end());}
     //重新数组赋值（用于归零）
     void setArray(std::vector<int> ele){ArrayElement.assign(ele.begin(), ele.end());}
     //赋值
@@ -81,11 +86,11 @@ class ArrayValue:public Value
     //访问
     int getValue(int index){return ArrayElement[index];}
     //获取数组各维信息
-    std::vector<int> getDimen(){return NumOfDimension;}
+    std::vector<unsigned> getDimen(){return NumOfDimension;}
 
     private:
     //store the dimension of array
-    std::vector<int> NumOfDimension;
+    std::vector<unsigned> NumOfDimension;
     //具体值
     std::vector<int> ArrayElement;
 };
@@ -93,9 +98,11 @@ class ArrayValue:public Value
 class FunctionValue:public Value
 {
     public:
-    FunctionValue(std::string name_,int line,std::string scope,Value* ret,int paramcnt):Value(name_,line,scope)
+    //int returnType是返回值的类型，1为int，0为void
+    FunctionValue(std::string name_,int line,std::string scope,int paramcnt, int returnType)
+    :Value(name_,line,scope)
     {
-        Result=ret;
+        Result=returnType;
         ParamsNum=paramcnt;
     }
 
@@ -103,8 +110,8 @@ class FunctionValue:public Value
     void setEntrance(int idx){Entrance=idx;}    
     //设置函数参数列表
     void setParam(std::vector<Value *> params){FuncParams.assign(params.begin(),params.end());}
-    //获取函数返回值
-    Value* getResult(){return Result;}
+    //获取函数返回值类型
+    int getResult(){return Result;}
     //获取函数参数个数
     int getParamCnt(){return ParamsNum;}
     //获取函数参数列表
@@ -114,7 +121,7 @@ class FunctionValue:public Value
 
     private:
     //函数返回值
-    Value *Result;
+    int Result;
     //参数个数
     int ParamsNum;
     //函数参数列表
@@ -138,7 +145,16 @@ class ImmValue:public Value
     //立即数的值
     int RealValue;
 };
-class ConstIntegerValue:public ImmValue {};
+
+class ConstIntegerValue:public Value{
+    public:
+    ConstIntegerValue(std::string name_,int lineno,std::string scope,int value):Value(name_,lineno,scope){
+        RealValue = value;
+    }
+    int getValue(){return RealValue;}
+    private:
+    int RealValue;
+};
 
 // class PointerValue:Value
 // {

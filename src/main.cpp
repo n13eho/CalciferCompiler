@@ -2,6 +2,7 @@
 #include "sysy_node.hpp"
 #include "semanticAnalyze.h" //语义检查
 #include <bits/stdc++.h>
+#include "../include/Value.h"
 
 //外部的lineno，行号信息
 extern int lineno;
@@ -9,7 +10,7 @@ extern int lineno;
 using namespace std;
 extern FILE* yyin;
 GrammaNode* Droot = new GrammaNode(lineno, 0, "ROOT");
-vector<Value*> SymbolTable;
+idTable_struct* SymbolTable;
 
 int main(int argc, char *argv[])
 {
@@ -20,7 +21,7 @@ int main(int argc, char *argv[])
     {
         printIdMap(); // 打印idList和idNameList的信息
         semanticAnalyzer(Droot); // 语义检查
-        show_node(Droot, 0);
+        show_node(Droot, 0); //打印AST
     }
     return 0;
 }

@@ -1,24 +1,37 @@
-* push -> 11, at line 1
-*  pop -> 1, at line 3
-* push -> 12, at line 5
-*  pop -> 1, at line 8
-idNameList:
+* push -> 11, at line 2
+*  pop -> 1, at line 4
+* push -> 12, at line 6
+*  pop -> 1, at line 9
+idNameList:
 a 12
+a 1
 add 1
 b 11
+b 1
+c 1
 c 11
+cn 1
 main 1
 z 11
 z 12
 idList:
+a 1 300
 a 12 300
 add 1 300
+b 1 300
 b 11 300
+c 1 300
 c 11 300
+cn 1 300
 main 1 300
 z 11 300
 z 12 300
-->node string:ROOT	 son numbers:2
+->node string:ROOT	 son numbers:4
+   ->node string:ConstDefs_	 son numbers:1
+      ->node string:ConstDef_single_	 son numbers:2
+         ->node string:c	 son numbers:0
+         ->node string:InitVal_EXP	 son numbers:1
+            ->node string:9	 son numbers:0
    ->node string:FuncDef_void_para_	 son numbers:3
       ->node string:add	 son numbers:0
       ->node string:FuncFParams	 son numbers:3
@@ -30,9 +43,16 @@ z 12 300
             ->node string:c	 son numbers:0
             ->node string:[	 son numbers:0
             ->node string:]	 son numbers:0
-            ->node string:Exps_	 son numbers:2
-               ->node string:3	 son numbers:0
-               ->node string:2	 son numbers:0
+            ->node string:Exps_	 son numbers:3
+               ->node string:MulExp_Mul	 son numbers:2
+                  ->node string:3	 son numbers:0
+                  ->node string:2	 son numbers:0
+               ->node string:MulExp_Mod	 son numbers:2
+                  ->node string:1	 son numbers:0
+                  ->node string:2	 son numbers:0
+               ->node string:MulExp_Mul	 son numbers:2
+                  ->node string:9	 son numbers:0
+                  ->node string:c	 son numbers:0
       ->node string:Block	 son numbers:1
          ->node string:Stmt_Return	 son numbers:1
             ->node string:AddExp_Add	 son numbers:2
@@ -58,3 +78,16 @@ z 12 300
                      ->node string:Exps_	 son numbers:2
                         ->node string:1	 son numbers:0
                         ->node string:2	 son numbers:0
+   ->node string:ConstDefs_	 son numbers:3
+      ->node string:ConstDef_single_	 son numbers:2
+         ->node string:a	 son numbers:0
+         ->node string:InitVal_EXP	 son numbers:1
+            ->node string:0	 son numbers:0
+      ->node string:ConstDef_single_	 son numbers:2
+         ->node string:b	 son numbers:0
+         ->node string:InitVal_EXP	 son numbers:1
+            ->node string:0	 son numbers:0
+      ->node string:ConstDef_single_	 son numbers:2
+         ->node string:cn	 son numbers:0
+         ->node string:InitVal_EXP	 son numbers:1
+            ->node string:0	 son numbers:0

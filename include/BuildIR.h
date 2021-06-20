@@ -1,5 +1,5 @@
 #include "Instruction.h"
-#include "sysy_node.hpp"
+#include "../src/sysy_node.hpp"
 
 //线性IR，存储所有四元式
 class LinearIR

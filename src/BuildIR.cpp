@@ -1,4 +1,4 @@
-#include "BuildIR.h"
+#include "../include/BuildIR.h"
 
 
 void VisitAST(GrammaNode* DRoot,LinearIR *IR)
