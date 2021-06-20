@@ -1,0 +1,60 @@
+* push -> 11, at line 1
+*  pop -> 1, at line 3
+* push -> 12, at line 5
+*  pop -> 1, at line 8
+idNameList:
+a 12
+add 1
+b 11
+c 11
+main 1
+z 11
+z 12
+idList:
+a 12 300
+add 1 300
+b 11 300
+c 11 300
+main 1 300
+z 11 300
+z 12 300
+->node string:ROOT	 son numbers:2
+   ->node string:FuncDef_void_para_	 son numbers:3
+      ->node string:add	 son numbers:0
+      ->node string:FuncFParams	 son numbers:3
+         ->node string:FuncFParam_single_	 son numbers:1
+            ->node string:z	 son numbers:0
+         ->node string:FuncFParam_single_	 son numbers:1
+            ->node string:b	 son numbers:0
+         ->node string:FuncFParam_array_	 son numbers:4
+            ->node string:c	 son numbers:0
+            ->node string:[	 son numbers:0
+            ->node string:]	 son numbers:0
+            ->node string:Exps_	 son numbers:2
+               ->node string:3	 son numbers:0
+               ->node string:2	 son numbers:0
+      ->node string:Block	 son numbers:1
+         ->node string:Stmt_Return	 son numbers:1
+            ->node string:AddExp_Add	 son numbers:2
+               ->node string:z	 son numbers:0
+               ->node string:b	 son numbers:0
+   ->node string:FuncDef_int_para_	 son numbers:3
+      ->node string:main	 son numbers:0
+      ->node string:FuncFParams	 son numbers:1
+         ->node string:FuncFParam_single_	 son numbers:1
+            ->node string:a	 son numbers:0
+      ->node string:Block	 son numbers:2
+         ->node string:VarDefs	 son numbers:1
+            ->node string:VarDef_single_	 son numbers:1
+               ->node string:z	 son numbers:0
+         ->node string:Stmt_Assign	 son numbers:2
+            ->node string:a	 son numbers:0
+            ->node string:UnaryExp_func_	 son numbers:2
+               ->node string:add	 son numbers:0
+               ->node string:FuncRParams_	 son numbers:2
+                  ->node string:a	 son numbers:0
+                  ->node string:LVal_	 son numbers:2
+                     ->node string:z	 son numbers:0
+                     ->node string:Exps_	 son numbers:2
+                        ->node string:1	 son numbers:0
+                        ->node string:2	 son numbers:0

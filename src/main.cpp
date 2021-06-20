@@ -15,10 +15,11 @@ int main(int argc, char *argv[])
 {
     FILE * f1 = fopen(argv[1], "r");
     yyin = f1;
-    int ret = yyparse();
+    int ret = yyparse(); // 词法语法分析，无误返回0
     if(ret == 0)
     {
-        semanticAnalyzer(Droot);
+        printIdMap(); // 打印idList和idNameList的信息
+        semanticAnalyzer(Droot); // 语义检查
         show_node(Droot, 0);
     }
     return 0;
