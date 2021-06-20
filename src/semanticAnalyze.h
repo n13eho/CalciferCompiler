@@ -11,3 +11,4 @@
 
 
 void semanticAnalyzer(GrammaNode* root);
+void printIdMap();

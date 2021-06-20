@@ -1,11 +1,12 @@
 #include <string>
 #include <vector>
-enum VType {
+enum VType{
     VInteger=0,
     VArray,
     VFunction,
     //立即数
-    VImm};//,VPointer};
+    VImm
+};
 
 
 class Value
@@ -19,7 +20,7 @@ class Value
         lineno=line;
         var_scope=scope;
     }
-    //~Type() = default; default啥意思
+    //~Type() = default; default啥意思：就是默认的析构函数的意思（neho留，不过为啥不用呢
     ~Value(){}
 
     std::string getName(){return VName;}

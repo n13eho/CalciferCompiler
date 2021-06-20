@@ -6,6 +6,7 @@
 	#include <string>
 	#include "sysy_node.hpp"
 	#include <map>
+	#include <algorithm>
 
 	using namespace std;
 
@@ -16,6 +17,7 @@
 	int scopeCmp(string presScope, string varScope);
 	void scopePush();
 	void scopePop();
+	bool isReserveWord(string s);
 
 	//外部的lineno，行号信息
 	extern int lineno;
@@ -38,7 +40,7 @@
 %type <no> ASSIGN SEMI COMM RDBRAL RDBRAR SQBRAL SQBRAR BRAL BRAR ADD SUB DIV MUL MOD EQ NOT NEQ OR AND LT BG LQ BQ ZERO INT CONST IntConst_D IntConst_O IntConst_H VOID IF ELSE WHILE BREAK CONTINUE RETURN MAIN Ident
 %type <no> Decl ConstDecl ConstDefs ConstDef ConstExps Exp LVal Exps PrimaryExp UnaryExp UnaryOp FuncRParams MulExp AddExp IntConst
 %type <no> CompUnit VarDecl VarDefs VarDef InitVal InitVals FuncDef FuncFParams FuncFParam Block BlockItems BlockItem Stmt Cond RelExp EqExp LAndExp LOrExp
-%type <no> BARL_TEMP RDBRAL_TEMP Ident_TEMP
+%type <no> BARL_TEMP RDBRAL_TEMP Ident_TEMP Block_in_FuncDef
 
 %token ASSIGN SEMI COMM RDBRAL RDBRAR SQBRAL SQBRAR BRAL BRAR
 %token ADD SUB DIV MUL MOD EQ NOT NEQ OR AND LT BG LQ BQ
@@ -141,30 +143,26 @@ InitVals:
 	|InitVals COMM InitVal			{$1->son.push_back($3);}
 ;
 
-//--------函数定义---------
+//--------函数定义---------int无参数、void无参数、int有参数、void无参数
 FuncDef:
-	INT Ident_TEMP RDBRAL_TEMP RDBRAR Block {
+	INT Ident_TEMP RDBRAL_TEMP RDBRAR Block_in_FuncDef {
 		$$ = new GrammaNode(lineno, FuncDef_int_,"FuncDef_int_");
 		$$->son.push_back($2);$$->son.push_back($5);
-		// IdentDeclareCheck($2);
 		scopePop();
 	}
-	|VOID Ident_TEMP RDBRAL_TEMP RDBRAR Block	{
+	|VOID Ident_TEMP RDBRAL_TEMP RDBRAR Block_in_FuncDef	{
 		$$ = new GrammaNode(lineno, FuncDef_void_,"FuncDef_void_");
 		$$->son.push_back($2);$$->son.push_back($5);
-		// IdentDeclareCheck($2);
 		scopePop();
 	}
-	|INT Ident_TEMP RDBRAL_TEMP FuncFParams RDBRAR Block {
+	|INT Ident_TEMP RDBRAL_TEMP FuncFParams RDBRAR Block_in_FuncDef {
 		$$ = new GrammaNode(lineno, FuncDef_int_para_,"FuncDef_int_para_");
 		$$->son.push_back($2);$$->son.push_back($4);$$->son.push_back($6);
-		// IdentDeclareCheck($2);
 		scopePop();
 	}
-	|VOID Ident_TEMP RDBRAL_TEMP FuncFParams RDBRAR Block {
+	|VOID Ident_TEMP RDBRAL_TEMP FuncFParams RDBRAR Block_in_FuncDef {
 		$$ = new GrammaNode(lineno, FuncDef_void_para_,"FuncDef_void_para_");
 		$$->son.push_back($2);$$->son.push_back($4);$$->son.push_back($6);
-		// IdentDeclareCheck($2);
 		scopePop();
 	}
 ;
@@ -184,7 +182,6 @@ RDBRAL_TEMP:
 
 FuncFParams:
 	FuncFParam {
-		// scopePush();
 		$$ = new GrammaNode(lineno, FuncFParams_,"FuncFParams");
 		$$->son.push_back($1);
 	}
@@ -222,7 +219,15 @@ BlockItems:
 	|BlockItems BlockItem				{$1->son.push_back($2);}	
 ;
 
+// 在函数声明时候的block不再需要作用域的变换，否则会出错的
+Block_in_FuncDef:
+	BRAL BlockItems BRAR {
+		$$=$2;
+	}
+	|BRAL BRAR {}
+;
 
+// 在普通stmt的block是有作用域的
 Block:
 	BARL_TEMP BlockItems BRAR {
 		$$=$2;
@@ -318,8 +323,8 @@ PrimaryExp:
 ;
 
 //待测试
-//一元表达式
-//这里出现的Ident也一定是经过声明之后的使用环节，需要进行 ·重定义检查·
+//一元表达式：可以是基本语句PrimaryExp，也可以是函数调用
+//这里出现的Ident也一定是经过声明之后的使用环节，需要进行·重定义检查·
 UnaryExp:
 	PrimaryExp {$$ = $1;}
 	|Ident RDBRAL RDBRAR {
@@ -342,10 +347,6 @@ UnaryOp:
        |NOT				{$$=$1;}
 ;
 
-// //函数实参表
-// FuncRParamse:
-// 	    FuncRParams	   {$$ = new GrammaNode(lineno, FuncRParamse_,"FuncRParamse_"); $$->son.push_back($1);}
-// ;
 
 //实参
 FuncRParams:
@@ -414,10 +415,24 @@ void yyerror(char const *message)
 	return;
 }
 
+
 //-----------用于处理Identifier的声明：检查是否重复定义-----------
 //出现重复声明则报错、否则将其加入俩map中
 void IdentDeclareCheck(GrammaNode* deIdent)
 {
+	//----------------语义检查【0】:不可再次声明main----------------
+		/*int main(int a){
+			z = 0;
+			{int z=0;}
+			int main = add(a, 2);
+		}
+		*/
+	if((deIdent->str.compare("main") == 0) && idNameList.count("main") != 0)
+	{
+		string m = "Don't declare MAIN twice one way or another.";
+		yyerror(m.c_str());
+	}
+
 	deIdent->var_scope = presentScope; // 更新该节点的作用域
 	//在idList变量列表中查找是否有名字相同且作用域相同的变量
 	if(idList.count(make_pair(deIdent->str, deIdent->var_scope)) != 0)
@@ -434,6 +449,13 @@ void IdentDeclareCheck(GrammaNode* deIdent)
 //未定义则报错
 GrammaNode* IdentDefineCheck(GrammaNode* deIdent)
 {
+	//----------------语义检查【0】:不可使用main/定义main----------------
+	if(deIdent->str.compare("main") == 0)
+	{
+		string m = "You CANNOT use 'main' as an Ident. ";
+		yyerror(m.c_str());
+	}
+
 	GrammaNode* res = deIdent;
 	int idNameCount = idNameList.count(deIdent->str); //在idNameList中搜索有多少个一样的Ident
 	int declCnt = 0;
