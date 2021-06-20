@@ -150,6 +150,7 @@ void semanticAnalyzer(GrammaNode *root)
             semantic_FuncDef_void_para_(son); // void 有参数
         // else if (son->type == ConstDefs_)semanticConstDefs_(son);
         // else if (son->type == VarDefs_)semanticVarDefs_(son);
+        int a;
     }
 }
 
@@ -158,7 +159,7 @@ void idTable_struct::addItem(GrammaNode *key, Value *info)
     SymbolTable->table[key] = info;
 }
 
-Value *idTable_struct::askItem(GrammaNode *key, Value *info)
+Value *idTable_struct::askItem(GrammaNode *key)
 {
     return SymbolTable->table[key];
 }

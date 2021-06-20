@@ -57,7 +57,8 @@ class IntegerValue:public Value
     int RealValue=-99999;
 };
 
-class ConstArrayValue:public Value{
+class ConstArrayValue:public Value
+{
     public:
     ConstArrayValue(std::string name_, int line, std::string scope,std::vector<int> demen,std::vector<int> value_):Value(name_,line,scope)
     {
@@ -148,7 +149,8 @@ class ImmValue:public Value
     int RealValue;
 };
 
-class ConstIntegerValue:public Value{
+class ConstIntegerValue:public Value
+{
     public:
     ConstIntegerValue(std::string name_,int lineno,std::string scope,int value):Value(name_,lineno,scope){
         RealValue = value;
