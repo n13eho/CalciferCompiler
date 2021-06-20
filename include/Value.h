@@ -1,3 +1,4 @@
+#pragma once
 #include <string>
 #include <vector>
 enum VType {
@@ -47,7 +48,7 @@ class IntegerValue:public Value
     void setValue(int intValue){RealValue=intValue;}
 
     private:
-    //real value
+    //here record init value of a *varition*
     int RealValue=0;
 };
 
@@ -92,16 +93,13 @@ class ArrayValue:public Value
 class FunctionValue:public Value
 {
     public:
-    FunctionValue(std::string name_,int line,std::string scope,Value* ret,int paramcnt):Value(name_,line,scope)
+    FunctionValue(std::string name_,int line,std::string scope,int paramcnt):Value(name_,line,scope)
     {
-        Result=ret;
         ParamsNum=paramcnt;
     }
     
     //设置函数参数列表
     void setParam(std::vector<Value *> params){FuncParams.assign(params.begin(),params.end());}
-    //获取函数返回值
-    Value* getResult(){return Result;}
     //获取函数参数个数
     int getParamCnt(){return ParamsNum;}
     //获取函数参数列表
@@ -109,8 +107,6 @@ class FunctionValue:public Value
     
 
     private:
-    //函数返回值
-    Value *Result;
     //参数个数
     int ParamsNum;
     //函数参数列表
@@ -132,7 +128,15 @@ class ImmValue:public Value
     //立即数的值
     int RealValue;
 };
-class ConstIntegerValue:public ImmValue {};
+class ConstIntegerValue:public Value{
+    public:
+    ConstIntegerValue(std::string name_,int lineno,std::string scope,int value):Value(name_,lineno,scope){
+        RealValue = value;
+    }
+    int getValue(){return RealValue;}
+    private:
+    int RealValue;
+};
 
 // class PointerValue:Value
 // {
