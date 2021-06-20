@@ -26,7 +26,7 @@ class Instruction
         //算术等于
         ArithEq,
         //算术不等于，是否存在冗余？
-        ArithNe,
+        ArithNeq,
         //算术小于
         ArithLT,
         //算术大于
@@ -43,6 +43,10 @@ class Instruction
         Call,
         //return
         Ret,
+        //访问数组
+        Load,
+        //存入数组
+        Store
     };
 
     Instruction(int id,Instruction::InsType ins_type,unsigned oprands_num):InstrId(id),OpType(ins_type),OpNums(oprands_num){}
@@ -94,7 +98,7 @@ class LogicAOrIns:public Instruction{};
 
 class ArithEqIns:public Instruction{};
 
-class ArithNeIns:public Instruction{};
+class ArithNeqIns:public Instruction{};
 
 class ArithLTIns:public Instruction{};
 

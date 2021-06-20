@@ -42,4 +42,10 @@ Value* MulExpNode(GrammaNode* node,LinearIR *IR);
 Value* PrimaryExpNode(GrammaNode* node,LinearIR *IR);
 Value* LValArrayNode(GrammaNode* node,LinearIR *IR);
 
+void CondNode(GrammaNode* node,LinearIR *IR);
+void LOrExpNode(GrammaNode* node,LinearIR *IR);
+Value* LAndExpNode(GrammaNode* node,LinearIR *IR);
+Value* EqExpNode(GrammaNode* node,LinearIR *IR);
+Value* RelExpNode(GrammaNode* node,LinearIR *IR);
+
 

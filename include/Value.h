@@ -120,6 +120,8 @@ class FunctionValue:public Value
     std::vector<Value *> FuncParams;
     //函数入口指令索引
     int Entrance;
+    //函数出口指令索引
+    int Exitance;
 };
 
 class ImmValue:public Value
