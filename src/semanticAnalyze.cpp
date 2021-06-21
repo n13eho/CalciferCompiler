@@ -205,10 +205,7 @@ void semanticAnalyzer(GrammaNode *root)
             semantic_FuncDef_void_para_(son); // void 有参数
         else if (son->type == ConstDefs_)semantic_ConstDef_(son);
         // else if (son->type == VarDefs_)semanticVarDefs_(son);
-<<<<<<< Updated upstream
         
-=======
->>>>>>> Stashed changes
     }
 }
 
