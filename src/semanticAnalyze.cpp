@@ -51,14 +51,14 @@ void semantic_FuncDef_void_(GrammaNode *root)
     semanticAnalyzer(root->son[1]);                                                                  //去遍历block
 }
 
-//------------------------------------------待解决
+//------------------------------------------待解决--------------------------------------
 IntegerValue *semantic_Exp_(GrammaNode *root, bool needConst)
 { //这里可以做语义检查：其值必须是常量，needConst为真的话就表明这里必须都是常量，不能是变量
     
 }
 
 Value *semantic_Func_FparamSon(GrammaNode *root)
-{// 处理三种不同的函数参数声明：int、一维度的array、多维度array
+{// 处理三种不同的函数参数声明里面的参数：int、一维度的array、多维度array
     if (root->type == FuncFParam_single_)
     {
         IntegerValue *item = new IntegerValue(root->son[0]->str, root->lineno, root->var_scope);
@@ -71,7 +71,7 @@ Value *semantic_Func_FparamSon(GrammaNode *root)
     {
         ArrayValue *item = new ArrayValue(root->son[0]->str, root->lineno, root->var_scope);
         vector<unsigned> dimen;
-        dimen.push_back(-1);
+        dimen.push_back(-1); // 因为他是1维的，因此直接push一个最大的数字
         item->setDimen(dimen);
         //建表
         SymbolTable->addItem(root, item);
@@ -95,6 +95,7 @@ Value *semantic_Func_FparamSon(GrammaNode *root)
         SymbolTable->addItem(root->son[0], item);
         return item;
     }
+    else return NULL; // 为了让warning闭嘴，严格上不会执行到这一步
 }
 
 vector<Value *> semantic_Func_Fparam(GrammaNode *root)
@@ -204,10 +205,12 @@ void semanticAnalyzer(GrammaNode *root)
             semantic_FuncDef_void_para_(son); // void 有参数
         else if (son->type == ConstDefs_)semantic_ConstDef_(son);
         // else if (son->type == VarDefs_)semanticVarDefs_(son);
+<<<<<<< Updated upstream
         
+=======
+>>>>>>> Stashed changes
     }
 }
-//zhushi
 
 void idTable_struct::addItem(GrammaNode *key, Value *info)
 {
