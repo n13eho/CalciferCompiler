@@ -1,3 +1,4 @@
-const int c = {};
-const int a[2][4] = {1, 2, {}}, as = 0;
-const int a[3][4%4][5*6] = {};
+int x;
+const int x[4][2] = {1, 2, {3, 4}, 5, 6}, as = 0;
+const int a[x[0]][4%4][5*6] = {};
+x=10;

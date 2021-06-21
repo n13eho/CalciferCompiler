@@ -41,20 +41,19 @@ class Value
 class IntegerValue:public Value
 {
     public:
-    IntegerValue(std::string name_,int line,std::string scope)
-    :Value(name_,line,scope){}
-    IntegerValue(std::string name_,int line,std::string scope,int intValue)
+    IntegerValue(std::string name_,int line,std::string scope,int _isConst)
+    :Value(name_,line,scope){isConst=_isConst;}
+    IntegerValue(std::string name_,int line,std::string scope,int intValue,int _isConst)
     :Value(name_,line,scope)
     {
+        isConst = _isConst;
         RealValue=intValue;
     }
 
     int getValue(){return RealValue;}
     void setValue(int intValue){RealValue=intValue;}
-
-    private:
-    //初始化值
     int RealValue=-99999;
+    int isConst=-1;
 };
 
 class ConstArrayValue:public Value
@@ -68,6 +67,7 @@ class ConstArrayValue:public Value
         NumOfDimension.insert(demen.end(),demen.begin(),demen.end());
     }
     int getValue(int index){return ArrayElement[index];}
+    // vector get
     private:
     std::vector<int> NumOfDimension;
     std::vector<int> ArrayElement;
@@ -146,17 +146,6 @@ class ImmValue:public Value
 
     private:
     //立即数的值
-    int RealValue;
-};
-
-class ConstIntegerValue:public Value
-{
-    public:
-    ConstIntegerValue(std::string name_,int lineno,std::string scope,int value):Value(name_,lineno,scope){
-        RealValue = value;
-    }
-    int getValue(){return RealValue;}
-    private:
     int RealValue;
 };
 
