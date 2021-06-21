@@ -129,6 +129,60 @@ void semantic_FuncDef_void_para_(GrammaNode *root)
     item->setParam(semantic_Func_Fparam(root->son[1]));
     semanticAnalyzer(root->son[2]); //去遍历block
 }
+Value* semantic_InitVal3_(GrammaNode* root,int dimen=0)
+{
+    if(root->type == InitVal_EXP)
+    {
+
+    }
+    else if( root->type == InitVal_NULL)
+    {
+
+    }
+    else if( root->type == InitVal_)
+    {
+
+    }
+    else
+    {
+        ;//error
+    }
+}
+
+void semantic_ConstDefSon(GrammaNode* root)
+{
+    if(root->type == ConstDef_single_)
+    {//const int a = 0;
+        if(root->son[1]->type != InitVal_EXP)
+        {//error;
+            ;
+        }
+        ConstIntegerValue* initVal = (ConstIntegerValue*)semantic_InitVal3_(root->son[1]);//OOP
+        ConstIntegerValue* tem = new ConstIntegerValue(root->son[0]->str,root->lineno,root->var_scope,initVal->getValue());
+        SymbolTable->addItem(root,tem);
+        SymbolTable->addItem(root->son[0],tem);
+
+    }
+    else if(root->type == ConstDef_array_)
+    {
+        if(root->son[2]->type == InitVal_EXP)
+        {
+            ;//error
+        }
+        ConstArrayValue* initVal = (ConstArrayValue*)semantic_InitVal3_(root->son
+        [2]);//calc initval
+        
+    }
+    else
+    {
+      ;  //error
+    }
+}
+
+void semantic_ConstDef_(GrammaNode* root)
+{
+    for(int i=0;i<root->son.size();i++)semantic_ConstDefSon(root->son[i]);
+}
 
 void semanticAnalyzer(GrammaNode *root)
 {
@@ -148,10 +202,9 @@ void semanticAnalyzer(GrammaNode *root)
             semantic_FuncDef_int_para_(son); // int 有参数
         else if (son->type == FuncDef_void_para_)
             semantic_FuncDef_void_para_(son); // void 有参数
-        // else if (son->type == ConstDefs_)semanticConstDefs_(son);
+        else if (son->type == ConstDefs_)semantic_ConstDef_(son);
         // else if (son->type == VarDefs_)semanticVarDefs_(son);
-        int b;
-        int a;
+        
     }
 }
 //zhushi
