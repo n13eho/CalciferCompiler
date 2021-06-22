@@ -248,6 +248,9 @@ IntegerValue* semantic_PrimaryExp_(GrammaNode* root, int needConst,int needCond)
         IntegerValue* temp = (IntegerValue*)SymbolTable->askItem(init);
         if(needConst == 1 && temp->isConst != 1){
             //error
+            // 该左值->Ident：如果传入参数needConst为1的话，这个Ident也必须为常量，否则报错
+            //----------------语义检查【1】----------------
+            
         }
         else
         {
@@ -434,7 +437,7 @@ void semantic_FuncDef_void_para_(GrammaNode *root)
     semanticAnalyzer(root->son[2]); //去遍历block
 }
 
-Value* semantic_InitVal3_(GrammaNode* root,int dimen=0,vector<int> dimen_std={0})
+Value* semantic_InitVal3_(GrammaNode* root,int dimen=0, vector<unsigned> dimen_std={0})
 {// 三种常量初值：InitVal_EXP InitVal_NULL InitVal_
     if(root->type == InitVal_EXP)
     {
@@ -520,7 +523,7 @@ void semantic_ConstDefSon(GrammaNode* root)
         }
 
         // 计算维度
-        vector<int> dimen;
+        vector<unsigned> dimen;
         dimen.clear();
         for(int i=0;i<root->son[1]->son.size();i++)
         {
@@ -546,9 +549,81 @@ void semantic_ConstDef_(GrammaNode* root)
     for(int i=0;i<root->son.size();i++)semantic_ConstDefSon(root->son[i]);
 }
 
-void semanticVarDefs_(GrammaNode* root)
+void semantic_VarDefSon(GrammaNode* root)
+{// 有四种情况：VarDef_array_ VarDef_array_init_ VarDef_single_ VarDef_single_init_
+    if(root->type == VarDef_single_)
+    {// 单值变量，无初始参数（默认都为0）
+        //只需要new结点，建立映射即可
+        IntegerValue* single = new IntegerValue(root->son[0]->str, root->son[0]->lineno, root->son[0]->var_scope, 0);
+        //两个映射都建
+        SymbolTable->addItem(root, single);
+        SymbolTable->addItem(root->son[0], single);
+    }
+    else if(root->type == VarDef_single_init_)
+    {// 单值变量，有初始参数
+        //先算出初值 initValue
+        IntegerValue* initValueObj = (IntegerValue*)semantic_InitVal3_(root->son[2]);
+        int initValue = initValueObj->RealValue;
+        //new出新的结点
+        IntegerValue* single_init = new IntegerValue(root->son[0]->str, root->son[0]->lineno, root->son[0]->var_scope, initValue, 0);
+    }
+    else if(root->type == VarDef_array_)
+    {// 没有初始值的数组，算维度，new结点，建立映射
+        // 计算维度
+        vector<unsigned> dimen;
+        dimen.clear();
+        for(int i=0;i<root->son[1]->son.size();i++)
+        {
+            GrammaNode* constexp = root->son[1]->son[i];
+            IntegerValue* val = (IntegerValue*)semantic_Exp_(constexp,1);//计算第i维的大小
+            dimen.push_back(val->getValue());
+        }
+        //new结点
+        ArrayValue* varArray = new ArrayValue(root->son[0]->str, root->son[0]->lineno, root->son[0]->var_scope, 0);
+        // set dimension设置维度信息
+        varArray->setDimen(dimen);
+        //建立映射，root和root->son[0]都建立
+        SymbolTable->addItem(root, varArray);
+        SymbolTable->addItem(root->son[0], varArray);
+        
+    }
+    else if(root->type == VarDef_array_init_)
+    {// 有初值的array，算维度，算初值，new结点，建立映射
+        //先把结点new了
+        ArrayValue* varArrayInit = new ArrayValue(root->son[0]->str, root->son[0]->lineno, root->son[0]->var_scope, 0);
+        
+        //计算维度，和上面那个是一样的
+        vector<unsigned> dimen;
+        dimen.clear();
+        for(int i=0;i<root->son[1]->son.size();i++)
+        {
+            GrammaNode* constexp = root->son[1]->son[i];
+            IntegerValue* val = (IntegerValue*)semantic_Exp_(constexp,1);//计算第i维的大小
+            dimen.push_back(val->getValue());
+        }
+        // set dimension设置维度信息
+        varArrayInit->setDimen(dimen);
+
+        // 算初值
+        ArrayValue* initArrayValueObj = (ArrayValue*)semantic_InitVal3_(root->son[2], 0, dimen);
+        // TODO:算出初值之后还得检查这个声明的维度信息和这个初值是否匹配
+        // 语义检查 -------------------------- error
+        // set Array 设置初值
+        varArrayInit->setArray(initArrayValueObj->ArrayElement);
+
+        //建立映射，root和root->son[0]都建立
+        SymbolTable->addItem(root, varArrayInit);
+        SymbolTable->addItem(root->son[0], varArrayInit);
+    }
+    else
+    {
+        ;//error
+    }
+}
+
+void semantic_VarDefs_(GrammaNode* root)
 {
-    for(int i=0;i<root->son.size();i++)semantic_ConstDefSon(root->son[i]);
+    for(int i=0;i<root->son.size();i++)semantic_VarDefSon(root->son[i]);
 }
 
 void semanticAnalyzer(GrammaNode *root)
@@ -572,7 +647,7 @@ void semanticAnalyzer(GrammaNode *root)
         else if (son->type == ConstDefs_)
             semantic_ConstDef_(son); // 常量定义
         else if (son->type == VarDefs_)
-            semanticVarDefs_(son); // 常量定义
+            semantic_VarDefs_(son); // 常量定义
         
     }
 }

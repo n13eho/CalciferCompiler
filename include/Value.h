@@ -50,14 +50,14 @@ class IntegerValue:public Value
 
     int getValue(){return RealValue;}
     void setValue(int intValue){RealValue=intValue;}
-    int RealValue=-99999;
+    int RealValue=0;
     int isConst=-1; // 0代表它不是一个cosnt，1代表是。初值为-1
 };
 
 class ConstArrayValue:public Value
 {
     public:
-    ConstArrayValue(std::string name_, int line, std::string scope,std::vector<int> demen,std::vector<int> value_):Value(name_,line,scope)
+    ConstArrayValue(std::string name_, int line, std::string scope,std::vector<unsigned> demen,std::vector<int> value_):Value(name_,line,scope)
     {
         ArrayElement.clear();
         ArrayElement.insert(ArrayElement.end(),value_.begin(),value_.end());
@@ -67,7 +67,7 @@ class ConstArrayValue:public Value
     int getValue(int index){return ArrayElement[index];}
     // vector get
     private:
-    std::vector<int> NumOfDimension;
+    std::vector<unsigned> NumOfDimension;
     std::vector<int> ArrayElement;
 };
 
