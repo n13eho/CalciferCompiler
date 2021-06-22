@@ -41,10 +41,8 @@ class Value
 class IntegerValue:public Value
 {
     public:
-    IntegerValue(std::string name_,int line,std::string scope,int _isConst)
-    :Value(name_,line,scope){isConst=_isConst;}
-    IntegerValue(std::string name_,int line,std::string scope,int intValue,int _isConst)
-    :Value(name_,line,scope)
+    IntegerValue(std::string name_,int line,std::string scope,int _isConst):Value(name_,line,scope){isConst=_isConst;}
+    IntegerValue(std::string name_,int line,std::string scope,int intValue,int _isConst):Value(name_,line,scope)
     {
         isConst = _isConst;
         RealValue=intValue;
@@ -53,7 +51,7 @@ class IntegerValue:public Value
     int getValue(){return RealValue;}
     void setValue(int intValue){RealValue=intValue;}
     int RealValue=-99999;
-    int isConst=-1;
+    int isConst=-1; // 0代表它不是一个cosnt，1代表是。初值为-1
 };
 
 class ConstArrayValue:public Value
@@ -76,8 +74,10 @@ class ConstArrayValue:public Value
 class ArrayValue:public Value
 {
     public:
-    ArrayValue(std::string name_,int line,std::string scope)
-    :Value(name_,line,scope){}
+    ArrayValue(std::string name_,int line,std::string scope, int isConst_):Value(name_,line,scope)
+    {
+        isConst = isConst_;
+    }
 
     void setDimen(std::vector<unsigned> dimen){NumOfDimension.assign(dimen.begin(), dimen.end());}
     //重新数组赋值（用于归零）
@@ -89,11 +89,13 @@ class ArrayValue:public Value
     //获取数组各维信息
     std::vector<unsigned> getDimen(){return NumOfDimension;}
 
-    private:
+
     //store the dimension of array
     std::vector<unsigned> NumOfDimension;
     //具体值
     std::vector<int> ArrayElement;
+    //
+    int isConst;
 };
 
 class FunctionValue:public Value

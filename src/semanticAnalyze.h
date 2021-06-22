@@ -25,5 +25,6 @@ struct idTable_struct
     Value *askItem(GrammaNode *key);
 };
 
+void showSymbleTable(idTable_struct* SymbolTable);
 void semanticAnalyzer(GrammaNode *root);
 void printIdMap();

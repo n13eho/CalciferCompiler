@@ -6,7 +6,7 @@
 // #define _SYS_NODE_HPP_
 
 // scope部分调试信息打印
-#define DEBUG_SCOPE
+// #define DEBUG_SCOPE
 // 语义部分调试信息打印
 #define DEBUG_SEMANTIC
 
@@ -77,7 +77,5 @@ struct GrammaNode
 // GrammaNode* Exp_Add_new(GrammaNode* a,GrammaNode* b);
 
 // GrammaNode* Exp_Sub_new(GrammaNode* a,GrammaNode* b);
-void search_node(GrammaNode* root);
 void show_node(GrammaNode* root, int layer);
 extern GrammaNode* Droot;
-

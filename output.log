@@ -1,21 +1,44 @@
-idNameList:
-a 1
-as 1
-c 1
-x 1
-idList:
-a 1 300
-as 1 300
-c 1 300
-x 1 300
-->node string:ROOT	 son numbers:3
-   ->node string:ConstDefs_	 son numbers:1
+->node string:ROOT	 son numbers:3
+   ->node string:ConstDefs_	 son numbers:2
       ->node string:ConstDef_single_	 son numbers:2
-         ->node string:c	 son numbers:0
+         ->node string:x	 son numbers:0
+         ->node string:InitVal_EXP	 son numbers:1
+            ->node string:9	 son numbers:0
+      ->node string:ConstDef_single_	 son numbers:2
+         ->node string:a	 son numbers:0
+         ->node string:InitVal_EXP	 son numbers:1
+            ->node string:AddExp_Add	 son numbers:2
+               ->node string:12	 son numbers:0
+               ->node string:3	 son numbers:0
+   ->node string:ConstDefs_	 son numbers:1
+      ->node string:ConstDef_array_	 son numbers:3
+         ->node string:d	 son numbers:0
+         ->node string:ConstExps	 son numbers:6
+            ->node string:a	 son numbers:0
+            ->node string:LVal_	 son numbers:2
+               ->node string:x	 son numbers:0
+               ->node string:Exps_	 son numbers:1
+                  ->node string:0	 son numbers:0
+            ->node string:MulExp_Mod	 son numbers:2
+               ->node string:4	 son numbers:0
+               ->node string:4	 son numbers:0
+            ->node string:AddExp_Add	 son numbers:2
+               ->node string:MulExp_Mul	 son numbers:2
+                  ->node string:5	 son numbers:0
+                  ->node string:6	 son numbers:0
+               ->node string:1	 son numbers:0
+            ->node string:AddExp_Add	 son numbers:2
+               ->node string:1	 son numbers:0
+               ->node string:4	 son numbers:0
+            ->node string:AddExp_Sub	 son numbers:2
+               ->node string:4	 son numbers:0
+               ->node string:MulExp_Mul	 son numbers:2
+                  ->node string:9	 son numbers:0
+                  ->node string:9	 son numbers:0
          ->node string:InitVal_NULL	 son numbers:0
    ->node string:ConstDefs_	 son numbers:2
       ->node string:ConstDef_array_	 son numbers:3
-         ->node string:x	 son numbers:0
+         ->node string:z	 son numbers:0
          ->node string:ConstExps	 son numbers:2
             ->node string:4	 son numbers:0
             ->node string:2	 son numbers:0
@@ -39,15 +62,3 @@ x 1 300
          ->node string:as	 son numbers:0
          ->node string:InitVal_EXP	 son numbers:1
             ->node string:0	 son numbers:0
-   ->node string:ConstDefs_	 son numbers:1
-      ->node string:ConstDef_array_	 son numbers:3
-         ->node string:a	 son numbers:0
-         ->node string:ConstExps	 son numbers:3
-            ->node string:3	 son numbers:0
-            ->node string:MulExp_Mod	 son numbers:2
-               ->node string:4	 son numbers:0
-               ->node string:4	 son numbers:0
-            ->node string:MulExp_Mul	 son numbers:2
-               ->node string:5	 son numbers:0
-               ->node string:6	 son numbers:0
-         ->node string:InitVal_NULL	 son numbers:0
