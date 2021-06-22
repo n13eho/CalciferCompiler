@@ -22,6 +22,7 @@ int cycleStackTop = -1;
 //外部符号表
 extern idTable_struct *SymbolTable;
 void semanticAnalyzer(GrammaNode *root);
+IntegerValue* semantic_Exp_(GrammaNode *root, bool needConst);
 
 void printIdMap()
 { //这里输出的是作用域检查的结果，打印idNameList和idList的内容
