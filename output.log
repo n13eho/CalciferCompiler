@@ -1,17 +1,27 @@
-->node string:ROOT	 son numbers:3
-   ->node string:ConstDefs_	 son numbers:2
-      ->node string:ConstDef_single_	 son numbers:2
+->node string:ROOT	 son numbers:4
+   ->node string:VarDefs	 son numbers:3
+      ->node string:VarDef_single_	 son numbers:1
+         ->node string:sd	 son numbers:0
+      ->node string:VarDef_single_init_	 son numbers:3
          ->node string:x	 son numbers:0
+         ->node string:=	 son numbers:0
          ->node string:InitVal_EXP	 son numbers:1
             ->node string:9	 son numbers:0
-      ->node string:ConstDef_single_	 son numbers:2
+      ->node string:VarDef_single_init_	 son numbers:3
          ->node string:a	 son numbers:0
+         ->node string:=	 son numbers:0
          ->node string:InitVal_EXP	 son numbers:1
             ->node string:AddExp_Add	 son numbers:2
                ->node string:12	 son numbers:0
                ->node string:3	 son numbers:0
-   ->node string:ConstDefs_	 son numbers:1
-      ->node string:ConstDef_array_	 son numbers:3
+   ->node string:VarDefs	 son numbers:1
+      ->node string:VarDef_array_	 son numbers:2
+         ->node string:sda	 son numbers:0
+         ->node string:ConstExps	 son numbers:2
+            ->node string:10	 son numbers:0
+            ->node string:4	 son numbers:0
+   ->node string:VarDefs	 son numbers:1
+      ->node string:VarDef_array_init_	 son numbers:3
          ->node string:d	 son numbers:0
          ->node string:ConstExps	 son numbers:6
             ->node string:a	 son numbers:0
@@ -36,8 +46,8 @@
                   ->node string:9	 son numbers:0
                   ->node string:9	 son numbers:0
          ->node string:InitVal_NULL	 son numbers:0
-   ->node string:ConstDefs_	 son numbers:2
-      ->node string:ConstDef_array_	 son numbers:3
+   ->node string:VarDefs	 son numbers:1
+      ->node string:VarDef_array_init_	 son numbers:3
          ->node string:z	 son numbers:0
          ->node string:ConstExps	 son numbers:2
             ->node string:4	 son numbers:0
@@ -58,7 +68,3 @@
                   ->node string:5	 son numbers:0
                ->node string:InitVal_EXP	 son numbers:1
                   ->node string:6	 son numbers:0
-      ->node string:ConstDef_single_	 son numbers:2
-         ->node string:as	 son numbers:0
-         ->node string:InitVal_EXP	 son numbers:1
-            ->node string:0	 son numbers:0

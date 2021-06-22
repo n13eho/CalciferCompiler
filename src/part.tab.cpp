@@ -2463,7 +2463,7 @@ void yyerror(char const *message)
 //出现重复声明则报错、否则将其加入俩map中
 void IdentDeclareCheck(GrammaNode* deIdent)
 {
-	//----------------语义检查【0】:不可再次声明main----------------
+	//----------------语义检查【0.1】:不可再次声明main----------------
 		/*int main(int a){
 			z = 0;
 			{int z=0;}
@@ -2492,7 +2492,7 @@ void IdentDeclareCheck(GrammaNode* deIdent)
 //未定义则报错
 GrammaNode* IdentDefineCheck(GrammaNode* deIdent)
 {
-	//----------------语义检查【0】:不可使用main/定义main----------------
+	//----------------语义检查【0.1】:不可使用main/定义main----------------
 	if(deIdent->str.compare("main") == 0)
 	{
 		string m = "You CANNOT use 'main' as an Ident. ";
