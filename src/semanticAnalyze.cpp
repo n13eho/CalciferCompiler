@@ -1,6 +1,5 @@
 #include "semanticAnalyze.h" //语义检查
 #include "sysy_node.hpp"
-//TODO：我们的exp还没有考虑左值
 #include <string>
 #include <map>
 #include <stdexcept>
@@ -22,7 +21,12 @@ int cycleStackTop = -1;
 //外部符号表
 extern idTable_struct *SymbolTable;
 void semanticAnalyzer(GrammaNode *root);
-IntegerValue* semantic_Exp_(GrammaNode *root, bool needConst);
+IntegerValue* semantic_Exp_(GrammaNode *root, int needConst,int needCond);
+IntegerValue* semantic_LVal_Array_(GrammaNode* root, int needConst,int needCod);
+IntegerValue* semantic_PrimaryExp_(GrammaNode* root, int needConst,int needCod);
+IntegerValue* semantic_EqExp_(GrammaNode* root);
+void semantic_ConstDef_(GrammaNode* root);
+void semanticVarDefs_(GrammaNode* root);
 
 void printIdMap()
 { //这里输出的是作用域检查的结果，打印idNameList和idList的内容
@@ -40,6 +44,132 @@ void printIdMap()
 #endif
 }
 
+IntegerValue* semantic_LVal_(GrammaNode* root)
+{
+    if(root->type == LVal_Array_)return semantic_LVal_Array_(root,-1,0);//-1表示必须不是常量！！！error
+    else 
+    {
+        return semantic_PrimaryExp_(root,-1,0);//error,必须不是常量
+    }
+
+}
+
+IntegerValue* semantic_RelExp_(GrammaNode* root)
+{
+    if(root->type == RelExp_BG_||root->type == RelExp_BQ_ || root->type == RelExp_LQ_ || root->type == RelExp_LT_)
+    {
+        IntegerValue* rel = semantic_EqExp_(root->son[0]);
+        IntegerValue* add = semantic_RelExp_(root->son[1]);
+        IntegerValue* ret = new IntegerValue(name+to_string(cnt++),root->lineno,root->var_scope,0);
+        if(root->type == RelExp_BG_)ret->RealValue = (rel->RealValue > add->RealValue); 
+        else if(root->type == RelExp_BQ_)ret->RealValue = (rel->RealValue >= add->RealValue); 
+        else if(root->type == RelExp_LQ_)ret->RealValue = (rel->RealValue <= add->RealValue); 
+        else if(root->type == RelExp_LT_)ret->RealValue = (rel->RealValue < add->RealValue); 
+        SymbolTable->addItem(root, ret);
+        return ret;
+    }
+    else{ return semantic_Exp_(root,0,1);}
+}
+
+IntegerValue* semantic_EqExp_(GrammaNode* root)
+{
+    if(root->type == EqExp_EQ_||root->type == EqExp_NEQ_)
+    {
+        IntegerValue* eq = semantic_EqExp_(root->son[0]);
+        IntegerValue* rel = semantic_RelExp_(root->son[1]);
+        IntegerValue* ret = new IntegerValue(name+to_string(cnt++),root->lineno,root->var_scope,0);
+        if(root->type == EqExp_NEQ_)ret->RealValue = (eq->RealValue != rel->RealValue); 
+        else if(root->type == EqExp_EQ_)ret->RealValue = (eq->RealValue == rel->RealValue); 
+        SymbolTable->addItem(root, ret);
+        return ret;
+    }
+    else{ return semantic_RelExp_(root);}
+}
+
+IntegerValue* semantic_AndExp_(GrammaNode* root)
+{
+    IntegerValue* ret = new IntegerValue(name+to_string(cnt++),root->lineno,root->var_scope,0);
+    ret->RealValue =1;
+    for(int i=0;i<root->son.size();i++)
+    {
+        IntegerValue* tem =semantic_EqExp_(root->son[i]);
+        ret->RealValue=ret->RealValue && tem->RealValue;
+    }
+    SymbolTable->addItem(root,ret);
+    return ret;
+}
+
+IntegerValue* semantic_LOrExp_(GrammaNode* root)
+{
+    IntegerValue* ret = new IntegerValue(name+to_string(cnt++),root->lineno,root->var_scope,0);
+    ret->RealValue =1;
+    for(int i=0;i<root->son.size();i++)
+    {
+        IntegerValue* tem =semantic_AndExp_(root->son[i]);
+        ret->RealValue=ret->RealValue || tem->RealValue;
+    }
+    SymbolTable->addItem(root,ret);
+    return ret;
+}
+
+void semantic_cond_(GrammaNode* root)
+{
+    IntegerValue* temp = semantic_LOrExp_(root->son[0]);
+    SymbolTable->addItem(root->son[0],temp);
+}
+
+void semantic_stmt_(GrammaNode* root)
+{
+    if(root->type == Stmt_Assign_)
+    {
+        IntegerValue* zuo = semantic_LVal_(root);
+        IntegerValue* you = semantic_Exp_(root,0,0);
+        SymbolTable->addItem(root->son[0],zuo);
+        IntegerValue* tem = new IntegerValue(name+to_string(cnt++),root->lineno,root->var_scope,you->RealValue,0);
+        SymbolTable->addItem(root,tem);
+    }
+    else if(root->type == Stmt_Exp_)
+    {
+        semantic_Exp_(root->son[0],0,0);
+    }
+    else if(root->type == Stmt_If_)
+    {
+        semantic_cond_(root->son[0]);
+        semantic_stmt_(root->son[1]);
+    }
+    else if(root->type == Stmt_IfElse_)
+    {
+        semantic_cond_(root->son[0]);
+        semantic_stmt_(root->son[1]);
+        semantic_stmt_(root->son[1]);
+    }
+    else if(root->type == Stmt_While_)
+    {
+        semantic_cond_(root->son[0]);
+        semantic_stmt_(root->son[1]);
+    }
+    else if(root->type == Stmt_Return_)
+    {
+        semantic_Exp_(root->son[0],0,0);
+    }
+    else
+    {
+        //error
+        //break,return,continue;
+        //这里需要循环语义检查！
+    }
+}
+
+void semantic_Block(GrammaNode* root)
+{
+    for(int i=0;i<root->son.size();i++)
+    {
+        if(root->type == ConstDefs_)semantic_ConstDef_(root);
+        else if(root->type == VarDefs_)semanticVarDefs_(root);
+        else semantic_stmt_(root);
+    }
+}
+
 void semantic_FuncDef_int_(GrammaNode *root)
 {                                                                                                    //如果他是一个int返回值函数且无形参数
     FunctionValue *item = new FunctionValue(root->son[0]->str, root->lineno, root->var_scope, 0, 1); // build the value table of funcdef_int
@@ -54,8 +184,7 @@ void semantic_FuncDef_void_(GrammaNode *root)
     semanticAnalyzer(root->son[1]);                                                                  //去遍历block
 }
 
-
-IntegerValue* semantic_LVal_Array_(GrammaNode* root, bool needConst)
+IntegerValue* semantic_LVal_Array_(GrammaNode* root, int needConst,int needCond)
 {
     // 找到声明地方的原数组
     GrammaNode* temp = idList[make_pair(root->son[0]->str,root->son[0]->var_scope)]; // 从idList找原来的书上的结点
@@ -71,7 +200,7 @@ IntegerValue* semantic_LVal_Array_(GrammaNode* root, bool needConst)
     indexVector.clear();
     for(int i=0; i<root->son[1]->son.size(); i++)
     {
-        indexVector.push_back(semantic_Exp_(root->son[1]->son[i], needConst)->RealValue);
+        indexVector.push_back(semantic_Exp_(root->son[1]->son[i], needConst,needCond)->RealValue);
         dimensionSize *= val->NumOfDimension[i];
     }
     for(int i = 0; i< indexVector.size(); i++)
@@ -88,7 +217,7 @@ IntegerValue* semantic_LVal_Array_(GrammaNode* root, bool needConst)
     return ret;
 }
 
-IntegerValue* semantic_PrimaryExp_(GrammaNode* root, bool needConst)
+IntegerValue* semantic_PrimaryExp_(GrammaNode* root, int needConst,int needCond)
 {
     // 情况3：IntConst
     int constval = 0 ;
@@ -128,16 +257,15 @@ IntegerValue* semantic_PrimaryExp_(GrammaNode* root, bool needConst)
     }
     else if(root->type == LVal_Array_)
     {
-        return semantic_LVal_Array_(root, needConst);
+        return semantic_LVal_Array_(root, needConst,needCond);
     }
     else
     {
-        return semantic_Exp_(root, needConst);
+        return semantic_Exp_(root, needConst,needCond);
     }
 }
 
-
-IntegerValue* semantic_UnaryExp_(GrammaNode* root, bool needConst)
+IntegerValue* semantic_UnaryExp_(GrammaNode* root, int needConst,int needCond)
 {
     
 
@@ -152,7 +280,7 @@ IntegerValue* semantic_UnaryExp_(GrammaNode* root, bool needConst)
     }
     else if(UnaryExp_ == root->type)
     {
-        IntegerValue* sonval = semantic_UnaryExp_(root->son[1],needConst);
+        IntegerValue* sonval = semantic_UnaryExp_(root->son[1],needConst,needCond);
         if(needConst == 1 && sonval->isConst == 0){;}//error
         
         IntegerValue* tem = new IntegerValue(name+to_string(cnt++),root->lineno,root->son[1]->var_scope,sonval->isConst);
@@ -161,27 +289,30 @@ IntegerValue* semantic_UnaryExp_(GrammaNode* root, bool needConst)
             tem->RealValue = sonval->RealValue;
         else if(root->son[0]->str == "-")
             tem->RealValue = -sonval->RealValue;
-        else if(root->son[0]->str == "!")//可能需要判断这里能否取非（语义检查）
+        else if(root->son[0]->str == "!"&& needCond == 1)//可能需要判断这里能否取非（语义检查）
             tem->RealValue = !sonval->RealValue;
+        else {
+            //error
+        }
         
         SymbolTable->addItem(root,tem);
     }
     else
     {
-        return semantic_PrimaryExp_(root, needConst);
+        return semantic_PrimaryExp_(root, needConst,needCond);
     }
 }
 
-IntegerValue* semantic_MulExp_(GrammaNode *root, bool needConst)
+IntegerValue* semantic_MulExp_(GrammaNode *root, int needConst,int needCond)
 { //这里是MulExp
     if(root->type != MulExp_Mul_ && root->type != MulExp_Div_ && root->type != MulExp_Mod_)
     {
-        return semantic_UnaryExp_(root, needConst);
+        return semantic_UnaryExp_(root, needConst,needCond);
     }
     else
     {
-        IntegerValue* mul = semantic_MulExp_(root->son[0],needConst);
-        IntegerValue* unary = semantic_UnaryExp_(root->son[1],needConst);
+        IntegerValue* mul = semantic_MulExp_(root->son[0],needConst,needCond);
+        IntegerValue* unary = semantic_UnaryExp_(root->son[1],needConst,needCond);
         int thisconst = (mul->isConst>0) && (unary->isConst>0);
         if(thisconst == 0 && needConst == 1)
         {
@@ -202,18 +333,18 @@ IntegerValue* semantic_MulExp_(GrammaNode *root, bool needConst)
     }    
 }
 
-IntegerValue* semantic_Exp_(GrammaNode *root, bool needConst)
+IntegerValue* semantic_Exp_(GrammaNode *root, int needConst,int needCond)
 { //这里可以做语义检查：其值必须是常量，needConst为真的话就表明这里必须都是常量，不能是变量 
 // 这里本质是addexp
 // 来源可以是 InitVal_Exp->son[i] ConstExps->son[i]
     if(root->type != AddExp_Add_ && root->type != AddExp_Sub_)
     {// 对应一个没有孩子的 
-        return semantic_MulExp_(root, needConst);
+        return semantic_MulExp_(root, needConst,needCond);
     }
     else
     {
-        IntegerValue* add = semantic_Exp_(root->son[0],needConst);
-        IntegerValue* mul = semantic_MulExp_(root->son[1],needConst);
+        IntegerValue* add = semantic_Exp_(root->son[0],needConst,needCond);
+        IntegerValue* mul = semantic_MulExp_(root->son[1],needConst,needCond);
         int thisconst = (add->isConst>0) && (mul->isConst>0); // 必须确保两个两的常量状态相与 和 当前needConst一致 否则报错
         if(thisconst == 0 && needConst == 1)
         {
@@ -257,7 +388,7 @@ Value *semantic_Func_FparamSon(GrammaNode *root)
         dimen.push_back(-1);
         for (int i = 0; i < root->son[3]->son.size(); i++)
         {
-            IntegerValue *temp = (IntegerValue *)semantic_Exp_(root->son[3]->son[i], true); //！！这里必须返回常量
+            IntegerValue *temp = (IntegerValue *)semantic_Exp_(root->son[3]->son[i], 1,0); //！！这里必须返回常量
             dimen.push_back(temp->getValue());
         }
         // 建立维度信息的vector
@@ -307,7 +438,7 @@ Value* semantic_InitVal3_(GrammaNode* root,int dimen=0,vector<int> dimen_std={0}
 {// 三种常量初值：InitVal_EXP InitVal_NULL InitVal_
     if(root->type == InitVal_EXP)
     {
-        return semantic_Exp_(root->son[0], 1);
+        return semantic_Exp_(root->son[0], 1,0);
     }
     else if( root->type == InitVal_NULL)
     {
@@ -394,7 +525,7 @@ void semantic_ConstDefSon(GrammaNode* root)
         for(int i=0;i<root->son[1]->son.size();i++)
         {
             GrammaNode* constexp = root->son[1]->son[i];
-            IntegerValue* val = (IntegerValue*)semantic_Exp_(constexp,1);//计算第i维的大小
+            IntegerValue* val = (IntegerValue*)semantic_Exp_(constexp,1,0);//计算第i维的大小
             dimen.push_back(val->getValue());
         }
 
