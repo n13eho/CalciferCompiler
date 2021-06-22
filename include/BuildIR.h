@@ -14,10 +14,20 @@ class LinearIR
         InstCnt++;
     }
 
+    void AddBlock(BasicBlock* bloc){Blocks.push_back(bloc);}
+
+    BasicBlock* getLastBlock(){return Blocks.back();}
+
     int getInstCnt(){return InstCnt;}
+
     Instruction* getIns(int index){return InstList[index];}
+
     std::vector<Instruction*> InstList;
     int InstCnt=0;
+    //记录所有的block
+    std::vector<BasicBlock*> Blocks;
+    //将函数的value与对应的basicblock对应
+    std::map<Value*,BasicBlock*> FuncMap;
 };
 
 void VisitAST(GrammaNode* DRoot,LinearIR *IR);
@@ -47,5 +57,9 @@ void LOrExpNode(GrammaNode* node,LinearIR *IR);
 Value* LAndExpNode(GrammaNode* node,LinearIR *IR);
 Value* EqExpNode(GrammaNode* node,LinearIR *IR);
 Value* RelExpNode(GrammaNode* node,LinearIR *IR);
+
+BasicBlock* GetPresentBlock(BasicBlock* funcP,BasicBlock::BlockType t);
+
+BasicBlock* CreateBlock(BasicBlock::BlockType t);
 
 

@@ -39,6 +39,8 @@ class Instruction
         Jmp,
         //分支,不确定使用与否
         Branch,
+        //条件跳转
+        ConBr,
         //子过程/函数 调用
         Call,
         //return
@@ -46,13 +48,18 @@ class Instruction
         //访问数组
         Load,
         //存入数组
-        Store
+        Store,
+        Break
     };
 
     Instruction(int id,Instruction::InsType ins_type,unsigned oprands_num):InstrId(id),OpType(ins_type),OpNums(oprands_num){}
     void setId(int id){InstrId=id;}
     void addOperand(Value* opd){Operands.push_back(opd);}
     void setResult(Value* res){Result = res;}
+    void setParent(BasicBlock* p){ParentBasicblock = p;}
+    int getId(){return InstrId;}
+    BasicBlock* getParent(){return ParentBasicblock;}
+
     private:
     //instruction id
     int InstrId;

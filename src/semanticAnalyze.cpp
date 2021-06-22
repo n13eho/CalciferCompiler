@@ -158,7 +158,7 @@ void idTable_struct::addItem(GrammaNode *key, Value *info)
     SymbolTable->table[key] = info;
 }
 
-Value *idTable_struct::askItem(GrammaNode *key, Value *info)
+Value *idTable_struct::askItem(GrammaNode *key)
 {
     return SymbolTable->table[key];
 }
