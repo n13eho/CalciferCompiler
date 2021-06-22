@@ -18,8 +18,7 @@ BasicBlock* GetPresentBlock(BasicBlock* funcP,BasicBlock::BlockType t)
     //若当前函数已有基本块，更新前驱后继
     if(0 != funcP->domBlock.size())
     {
-        funcP->domBlock.back()->AddSucc(bbNow);
-        bbNow->AddPion(funcP->domBlock.back());
+        funcP->domBlock.back()->Link(bbNow);
     }
     funcP->AddDom(bbNow);   
     bbNow->setParnt(funcP);
@@ -440,21 +439,17 @@ void IfNode(GrammaNode* node,LinearIR *IR)
         //if下一条转移的基本块
         BasicBlock* next = new BasicBlock(BasicBlock::Basic);
         //条件所在基本块建立与caseT、next的联系
-        bbNow->AddSucc(caseT);
-        bbNow->AddSucc(next);
-
-        caseT->AddPion(bbNow);
-        next->AddPion(bbNow);
+        bbNow->Link(caseT);
+        bbNow->Link(next);
 
         caseT->setParnt(FuncN);
         next->setParnt(FuncN);
-
         FuncN->AddDom(caseT);
         FuncN->AddDom(next);    
         
 
         //跳转指令
-        Instruction* ins_br = new Instruction(IR->getInstCnt(),Instruction::Branch,1);
+        Instruction* ins_br = new Instruction(IR->getInstCnt(),Instruction::Jmp,1);
         IR->InsertInstr(ins_br);
         bbNow->Addins(ins_br->getId());
         ins_br->setParent(bbNow);
@@ -462,8 +457,7 @@ void IfNode(GrammaNode* node,LinearIR *IR)
         bbNow = caseT;
         BlockNode(node->son[1],IR);
         //此时的bbNow不一定是caseT
-        bbNow->AddSucc(next);
-        next->AddPion(bbNow);
+        bbNow->Link(next);
         bbNow = next;
     }
     else
@@ -501,13 +495,8 @@ void IfElseNode(GrammaNode* node,LinearIR *IR)
         caseF->setParnt(FuncN);
         next->setParnt(FuncN);
         //更新基本块前驱、后继信息
-        bbNow->AddSucc(caseT);
-        bbNow->AddSucc(caseF);
-
-
-        caseT->AddPion(bbNow);
-        caseF->AddPion(bbNow);
-
+        bbNow->Link(caseT);
+        bbNow->Link(caseF);
 
         //条件不成立，跳转至caseF
         Instruction* ins_br2 = new Instruction(IR->getInstCnt(),Instruction::ConBr,1);
@@ -519,10 +508,9 @@ void IfElseNode(GrammaNode* node,LinearIR *IR)
         bbNow = caseT;
         BlockNode(node->son[1],IR);
         //此时bbNow不一定是caseT
-        bbNow->AddSucc(next);
-        next->AddPion(bbNow);
+        bbNow->Link(next);
         //T跳转至next
-        Instruction* ins_br = new Instruction(IR->getInstCnt(),Instruction::Branch,1);
+        Instruction* ins_br = new Instruction(IR->getInstCnt(),Instruction::Jmp,1);
         IR->InsertInstr(ins_br);
         caseT->Addins(ins_br->getId());
         ins_br->setParent(caseT);
@@ -531,8 +519,7 @@ void IfElseNode(GrammaNode* node,LinearIR *IR)
         bbNow = caseF;
         BlockNode(node->son[2],IR);
         //bbNow不一定是caseF
-        bbNow->AddSucc(next);
-        next->AddPion(bbNow);
+        bbNow->Link(next);
         //更新ins_br2参数，todo
         bbNow = next;
     }
@@ -560,8 +547,7 @@ void WhileNode(GrammaNode* node,LinearIR *IR)
             condBlock->setParnt(FuncN);
             FuncN->AddDom(condBlock);
 
-            bbNow->AddSucc(condBlock);
-            condBlock->AddPion(bbNow);
+            bbNow->Link(condBlock);
 
             bbNow = condBlock;
         }
@@ -578,14 +564,10 @@ void WhileNode(GrammaNode* node,LinearIR *IR)
         caseT->setParnt(FuncN);
         next->setParnt(FuncN);
         //更新前驱、后继信息
-        bbNow->AddSucc(caseT);
-        bbNow->AddSucc(next);
-
-        caseT->AddPion(bbNow);
-        next->AddPion(bbNow);
+        bbNow->Link(caseT);
+        bbNow->Link(next);
         //循环
-        caseT->AddSucc(bbNow);
-        bbNow->AddPion(caseT);
+        caseT->Link(bbNow);
 
         //条件不成立，跳转至next,该指令属于bbNow
         Instruction* ins_br = new Instruction(IR->getInstCnt(),Instruction::ConBr,1);
@@ -598,7 +580,7 @@ void WhileNode(GrammaNode* node,LinearIR *IR)
         bbNow = caseT;
         BlockNode(node->son[1],IR);
         //插入跳转到cond语句的跳转语句
-        Instruction* ins_br2 = new Instruction(IR->getInstCnt(),Instruction::Branch,1);
+        Instruction* ins_br2 = new Instruction(IR->getInstCnt(),Instruction::Jmp,1);
         ImmValue* jmpIns = new ImmValue("jmpaddress",condInsId);
         ins_br2->addOperand(jmpIns);
         IR->InsertInstr(ins_br2);
@@ -642,15 +624,14 @@ void BreakNode(GrammaNode* node,LinearIR *IR)
         //error
         return;
     }
-    BasicBlock* breakB = CreateBlock(BasicBlock::Basic);
+    BasicBlock* breakB = CreateBlock(BasicBlock::Break);
     FuncN->AddDom(breakB);
     breakB->setParnt(FuncN);
 
-    bbNow->AddSucc(breakB);
-    breakB->AddPion(bbNow);
+    bbNow->Link(breakB);
 
     //根据语义信息，break一定出现在while中
-    Instruction* ins_bk = new Instruction(IR->getInstCnt(),Instruction::Branch,1);
+    Instruction* ins_bk = new Instruction(IR->getInstCnt(),Instruction::Jmp,1);
     IR->InsertInstr(ins_bk);
     if(!LoopNext.empty())
     {
@@ -658,8 +639,7 @@ void BreakNode(GrammaNode* node,LinearIR *IR)
         next->Addins(ins_bk->getId());
         ins_bk->setParent(next);
 
-        breakB->AddSucc(next);
-        next->AddPion(breakB);
+        breakB->Link(next);
         bbNow = next;
     }
     
@@ -675,17 +655,25 @@ void ContinueNode(GrammaNode* node,LinearIR *IR)
         //error
         return;
     }   
+    
+    BasicBlock* continueB = CreateBlock(BasicBlock::Continue);
+    FuncN->AddDom(continueB);
+    continueB->setParnt(FuncN);
+
+    bbNow->Link(continueB);
+
     Instruction* ins_jmp = new Instruction(IR->getInstCnt(),Instruction::Jmp,1);
     //跳转位置？？
     IR->InsertInstr(ins_jmp);
-    bbNow->Addins(ins_jmp->getId());
-    ins_jmp->setParent(bbNow);
+    continueB->Addins(ins_jmp->getId());
+    ins_jmp->setParent(continueB);
     if(!LoopNext.empty())
     {
         BasicBlock* whileB = LoopNext.top().first;
-        bbNow->AddSucc(whileB);
-        whileB->AddPion(bbNow);
+        continueB->Link(whileB);
+        bbNow = continueB;
     }
+    
 
 }
 void ReturnValueNode(GrammaNode* node,LinearIR *IR)
@@ -1252,13 +1240,11 @@ Value* UnaryExpNode(GrammaNode* node,LinearIR *IR)
 
             //调用函数对应的函数基本块
             BasicBlock* funcCalled = IR->FuncMap[called];
-            bbNow->AddSucc(funcCalled);
-            funcCalled->AddPion(bbNow);
+            bbNow->Link(funcCalled);
 
             BasicBlock* next = CreateBlock(BasicBlock::Basic);
 
-            funcCalled->AddSucc(next);
-            next->AddPion(funcCalled);
+            funcCalled->Link(next);
 
             bbNow = next;
             return ret;
@@ -1287,13 +1273,11 @@ Value* UnaryExpNode(GrammaNode* node,LinearIR *IR)
 
             //调用函数对应的函数基本块
             BasicBlock* funcCalled = IR->FuncMap[called];
-            bbNow->AddSucc(funcCalled);
-            funcCalled->AddPion(bbNow);
+            bbNow->Link(funcCalled);
 
             //call指令下一条指令作为首指令的基本块
             BasicBlock* next = CreateBlock(BasicBlock::Basic);
-            funcCalled->AddSucc(next);
-            next->AddPion(funcCalled);
+            funcCalled->Link(next);
 
             bbNow = next;
             return ret;

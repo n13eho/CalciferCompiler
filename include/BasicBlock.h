@@ -7,11 +7,18 @@ class BasicBlock
     Basic,
     If,
     While,
+    //用于部分死代码删除
+    Break,
+    Continue
     };
     BasicBlock(BasicBlock::BlockType t){bType = t;}
     void Addins(int id){InstrList.push_back(id);}
-    void AddSucc(BasicBlock* b){succBlock.push_back(b);}
-    void AddPion(BasicBlock* b){pioneerBlock.push_back(b);}
+    //this作为前驱、succ作为后继
+    void Link(BasicBlock* succ)
+    {
+        this->succBlock.push_back(succ);
+        succ->pioneerBlock.push_back(this);
+    }
     void AddDom(BasicBlock* b){domBlock.push_back(b);}
 
     void setParnt(BasicBlock* p){parent_ = p;}

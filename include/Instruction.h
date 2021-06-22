@@ -37,8 +37,6 @@ class Instruction
         ArithGQ,
         //跳转
         Jmp,
-        //分支,不确定使用与否
-        Branch,
         //条件跳转
         ConBr,
         //子过程/函数 调用
