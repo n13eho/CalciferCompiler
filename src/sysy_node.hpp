@@ -5,10 +5,7 @@
 // #ifndef _SYS_NODE_HPP_
 // #define _SYS_NODE_HPP_
 
-// scope部分调试信息打印
-// #define DEBUG_SCOPE
-// 语义部分调试信息打印
-#define DEBUG_SEMANTIC
+
 
 #define MAX_SCOPE_STACK 32 // 最大的深度
 #define SCOPT_ID_BASE '1'
