@@ -46,10 +46,10 @@ void printIdMap()
 
 IntegerValue* semantic_LVal_(GrammaNode* root)
 {
-    if(root->type == LVal_Array_)return semantic_LVal_Array_(root,-1,0);//-1表示必须不是常量！！！error
+    if(root->type == LVal_Array_)return semantic_LVal_Array_(root,-1,0);//-1表示必须不是常量！！！error1
     else 
     {
-        return semantic_PrimaryExp_(root,-1,0);//error,必须不是常量
+        return semantic_PrimaryExp_(root,-1,0);//error2,必须不是常量
     }
 
 }
@@ -154,7 +154,7 @@ void semantic_stmt_(GrammaNode* root)
     }
     else
     {
-        //error
+        //error3
         //break,return,continue;
         //这里需要循环语义检查！
     }
@@ -247,7 +247,7 @@ IntegerValue* semantic_PrimaryExp_(GrammaNode* root, int needConst,int needCond)
         GrammaNode* init = idList[make_pair(root->str,root->var_scope)];
         IntegerValue* temp = (IntegerValue*)SymbolTable->askItem(init);
         if(needConst == 1 && temp->isConst != 1){
-            //error
+            //error4
             // 该左值->Ident：如果传入参数needConst为1的话，这个Ident也必须为常量，否则报错
             //----------------语义检查【1】----------------
             
@@ -276,7 +276,7 @@ IntegerValue* semantic_UnaryExp_(GrammaNode* root, int needConst,int needCond)
     {
         GrammaNode* temp = idList[make_pair(root->son[0]->str,root->son[0]->var_scope)]; // 从idList找原来的书上的结点
         FunctionValue* val =(FunctionValue*)SymbolTable->askItem(temp);
-        // 函数调用语义检查 error
+        // 函数调用语义检查 error5
 
         //语义检查没问题就映射
         SymbolTable->addItem(temp,val);
@@ -284,7 +284,7 @@ IntegerValue* semantic_UnaryExp_(GrammaNode* root, int needConst,int needCond)
     else if(UnaryExp_ == root->type)
     {
         IntegerValue* sonval = semantic_UnaryExp_(root->son[1],needConst,needCond);
-        if(needConst == 1 && sonval->isConst == 0){;}//error
+        if(needConst == 1 && sonval->isConst == 0){;}//error6
         
         IntegerValue* tem = new IntegerValue(name+to_string(cnt++),root->lineno,root->son[1]->var_scope,sonval->isConst);
         
@@ -295,7 +295,7 @@ IntegerValue* semantic_UnaryExp_(GrammaNode* root, int needConst,int needCond)
         else if(root->son[0]->str == "!"&& needCond == 1)//可能需要判断这里能否取非（语义检查）
             tem->RealValue = !sonval->RealValue;
         else {
-            //error
+            //error7
         }
         
         SymbolTable->addItem(root,tem);
@@ -319,7 +319,7 @@ IntegerValue* semantic_MulExp_(GrammaNode *root, int needConst,int needCond)
         int thisconst = (mul->isConst>0) && (unary->isConst>0);
         if(thisconst == 0 && needConst == 1)
         {
-            //error;
+            //error8;
         }
         IntegerValue* temp = new IntegerValue(name+to_string(cnt++),root->lineno,root->var_scope,thisconst);
 
@@ -351,7 +351,7 @@ IntegerValue* semantic_Exp_(GrammaNode *root, int needConst,int needCond)
         int thisconst = (add->isConst>0) && (mul->isConst>0); // 必须确保两个两的常量状态相与 和 当前needConst一致 否则报错
         if(thisconst == 0 && needConst == 1)
         {
-            //error;
+            //error9;
         }
         IntegerValue* temp = new IntegerValue(name+to_string(cnt++),root->lineno,root->var_scope,thisconst);
         // 把两个儿子的计算结果求出来
@@ -456,39 +456,13 @@ Value* semantic_InitVal3_(GrammaNode* root,int dimen=0, vector<unsigned> dimen_s
     {// 该怎么解决呢
         if(dimen >= dimen_std.size())
         {//----------语义检查：维度匹配-----
-            //error;
+            //error10;
             return NULL;
         }
 
         vector<int> valzero;
         GrammaNode* initnode = root->son[0];
         int tot = 1;
-        // for(auto i : )
-        // for(int j=0;j<batch;j++)
-        // {
-        //     for(int i=0;i<initnode->son.size();i++)
-        //     {
-        //         if(initnode->son[i]->type == InitVal_EXP)
-        //         {
-        //             IntegerValue* t = (IntegerValue*)semantic_InitVal3_(initnode->son[i]);
-        //             valzero.push_back(t->getValue());
-        //         }
-
-        //         // else if(initnode->son[i]->type == InitVal_NULL)
-        //         // {
-        //         //     IntegerValue* t = (IntegerValue*)semantic_InitVal3_(initnode->son[i]);
-
-        //         // }
-        //         // else if(initnode->son[i]->type == InitVal_)
-        //         // {
-
-        //         // }
-        //         // else 
-        //         // {
-        //         //     ;//error
-        //         // }
-        //     }
-        // }
         
         ConstArrayValue* ret = new ConstArrayValue(name+to_string(cnt),root->lineno,root->var_scope,dimen_std,valzero);
         SymbolTable->addItem(root,ret);
@@ -575,7 +549,7 @@ void semantic_VarDefSon(GrammaNode* root)
         for(int i=0;i<root->son[1]->son.size();i++)
         {
             GrammaNode* constexp = root->son[1]->son[i];
-            IntegerValue* val = (IntegerValue*)semantic_Exp_(constexp,1);//计算第i维的大小
+            IntegerValue* val = (IntegerValue*)semantic_Exp_(constexp,1,0);//计算第i维的大小
             dimen.push_back(val->getValue());
         }
         //new结点
@@ -598,7 +572,7 @@ void semantic_VarDefSon(GrammaNode* root)
         for(int i=0;i<root->son[1]->son.size();i++)
         {
             GrammaNode* constexp = root->son[1]->son[i];
-            IntegerValue* val = (IntegerValue*)semantic_Exp_(constexp,1);//计算第i维的大小
+            IntegerValue* val = (IntegerValue*)semantic_Exp_(constexp,1,0);//计算第i维的大小
             dimen.push_back(val->getValue());
         }
         // set dimension设置维度信息
