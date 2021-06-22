@@ -10,26 +10,19 @@ class ac:public a{};
 
 int main()
 {
-	//const int a[4][2] = {{1}, {2, 3}, 4, 5, 6};
-	// const int a[4][3] = {1, 2, {3, 4}, 5, 6};
-	// for(int i=0; i<4; i++)
-	// {
-	// 	for(int j = 0; j<3; j++)
-	// 	{
-	// 		cout<<a[i][j]<<" ";
-	// 	}
-	// 	cout<<endl;
-	
-	// }
-	// 	cout<<endl;
-	int k=stoi("0xc",0,16);
-	cout<<k<<endl;
-	ab* testa= new ab();
-	a* testb =testa;
-	ac* testc = (ac*)testb;
-	if(typeid(*testc)==typeid(ac))
+	const int shuzu[3][4][2]={{0,1},1,2,3,4};
+	for(int i=0;i<3;i++)
 	{
-		printf("win!\n");
+		cout<<"{";
+		for(int j=0;j<4;j++)
+		{
+			printf("{");
+			for(int k=0;k<2;k++)
+			{
+				printf("%d ",shuzu[i][j][k]);
+			}
+			cout<<"}\n";
+		}
+		cout<<"}\n";
 	}
-   return 0;
 }

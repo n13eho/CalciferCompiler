@@ -27,6 +27,7 @@ IntegerValue* semantic_PrimaryExp_(GrammaNode* root, int needConst,int needCod);
 IntegerValue* semantic_EqExp_(GrammaNode* root);
 void semantic_ConstDef_(GrammaNode* root);
 void semantic_VarDefs_(GrammaNode* root);
+ArrayValue* semantic_initVal_Son(GrammaNode* root,int dimen=0,vector<unsigned> dimen_std={0},int isConst);
 
 void printIdMap()
 { //这里输出的是作用域检查的结果，打印idNameList和idList的内容
@@ -210,7 +211,6 @@ IntegerValue* semantic_LVal_Array_(GrammaNode* root, int needConst,int needCond)
     }
     int indexVal = val->ArrayElement[index];
     IntegerValue* ret = new IntegerValue(name+to_string(cnt++),root->lineno,root->var_scope,indexVal,val->isConst);
-
     // 建立映射
     SymbolTable->addItem(root, ret);
 
@@ -437,8 +437,53 @@ void semantic_FuncDef_void_para_(GrammaNode *root)
     semanticAnalyzer(root->son[2]); //去遍历block
 }
 
-Value* semantic_InitVal3_(GrammaNode* root,int dimen=0, vector<unsigned> dimen_std={0})
+ArrayValue* semantic_initVal_Son(GrammaNode* root,int dimen=0,vector<unsigned> dimen_std={0},int isConst)
+{
+    int base=0,batchsize,batchnum=dimen_std.size()-1,tot = 1;
+    ArrayValue* ret = new ArrayValue(name+to_string(cnt++),root->lineno,root->var_scope,isConst);
+    batchsize = dimen_std[batchnum];
+    for(auto i : dimen_std)tot*=i;
+    int soni = 0;
+    for(soni=0;soni<root->son.size();soni++)
+    {
+        if(root->son[soni]->type == InitVal_EXP)break;
+        else
+        {
+            vector<unsigned> new_dim;
+            new_dim.assign(dimen_std.begin()+1,dimen_std.end());//新维度减少到0 error
+            ArrayValue* val =(ArrayValue* )semantic_InitVal3_(root->son[soni],0,new_dim,isConst);
+            ret->ArrayElement.insert(ret->ArrayElement.end(),val->ArrayElement.begin(),val->ArrayElement.end());
+            base+=tot/dimen_std[0];
+        }
+    }
+    int batchi = 0;
+    for(;soni<root->son.size();soni++)
+    {
+        if(root->son[soni]->type ==InitVal_EXP )
+        {
+            IntegerValue* val = (IntegerValue*)semantic_InitVal3_(root->son[soni],0,dimen_std,isConst);
+            batchi++;batchi%=batchsize;base++;
+            ret->ArrayElement.push_back(val->RealValue);
+        }
+        else
+        {
+            ArrayValue* val =(ArrayValue* )semantic_InitVal3_(root->son[soni],0,dimen_std,isConst);
+            while(val->ArrayElement[val->ArrayElement.size()-1]==0)val->ArrayElement.pop_back();
+            if(val->ArrayElement.size()+batchi>batchsize)
+            {
+                //error;
+            }
+            ret->ArrayElement.insert(ret->ArrayElement.end(),val->ArrayElement.begin(),val->ArrayElement.end());
+        }
+    }
+    while(base<tot)ret->ArrayElement.push_back(0);
+    SymbolTable->addItem(root,ret);
+    return ret;
+}
+
+Value* semantic_InitVal3_(GrammaNode* root,int dimen=0, vector<unsigned> dimen_std={0},int isConst)
 {// 三种常量初值：InitVal_EXP InitVal_NULL InitVal_
+    
     if(root->type == InitVal_EXP)
     {
         return semantic_Exp_(root->son[0], 1,0);
@@ -448,7 +493,7 @@ Value* semantic_InitVal3_(GrammaNode* root,int dimen=0, vector<unsigned> dimen_s
         int x=1;
         for(int i=dimen; i<dimen_std.size(); i++) x *= dimen_std[i];
         vector<int> valzero(x, 0); //初值全设为0
-        ConstArrayValue* ret = new ConstArrayValue(name+to_string(cnt), root->lineno, root->var_scope, dimen_std, valzero);
+        ArrayValue* ret = semantic_initVal_Son(root->son[0],dimen,dimen_std,isConst);
         SymbolTable->addItem(root,ret);
         return ret;
     }
@@ -459,12 +504,7 @@ Value* semantic_InitVal3_(GrammaNode* root,int dimen=0, vector<unsigned> dimen_s
             //error10;
             return NULL;
         }
-
-        vector<int> valzero;
-        GrammaNode* initnode = root->son[0];
-        int tot = 1;
-        
-        ConstArrayValue* ret = new ConstArrayValue(name+to_string(cnt),root->lineno,root->var_scope,dimen_std,valzero);
+        ArrayValue* ret = semantic_initVal_Son(root->son[0],dimen,dimen_std,isConst);
         SymbolTable->addItem(root,ret);
         return ret;
     }
