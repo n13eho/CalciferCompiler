@@ -26,7 +26,7 @@ IntegerValue* semantic_LVal_Array_(GrammaNode* root, int needConst,int needCod);
 IntegerValue* semantic_PrimaryExp_(GrammaNode* root, int needConst,int needCod);
 IntegerValue* semantic_EqExp_(GrammaNode* root);
 void semantic_ConstDef_(GrammaNode* root);
-void semanticVarDefs_(GrammaNode* root);
+void semantic_VarDefs_(GrammaNode* root);
 
 void printIdMap()
 { //这里输出的是作用域检查的结果，打印idNameList和idList的内容
@@ -165,7 +165,7 @@ void semantic_Block(GrammaNode* root)
     for(int i=0;i<root->son.size();i++)
     {
         if(root->type == ConstDefs_)semantic_ConstDef_(root);
-        else if(root->type == VarDefs_)semanticVarDefs_(root);
+        else if(root->type == VarDefs_)semantic_VarDefs_(root);
         else semantic_stmt_(root);
     }
 }
