@@ -31,7 +31,6 @@ Value* semantic_InitVal3_(GrammaNode* root, int isConst, int dimen=0, vector<uns
 
 void printIdMap()
 { //这里输出的是作用域检查的结果，打印idNameList和idList的内容
-#ifdef DEBUG_SCOPE
     cout << "idNameList:" << endl;
     for (auto iter = idNameList.begin(); iter != idNameList.end(); iter++)
     {
@@ -42,7 +41,6 @@ void printIdMap()
     {
         cout << iter->first.first << " " << iter->first.second << " " << iter->second->type << endl;
     }
-#endif
 }
 
 IntegerValue* semantic_LVal_(GrammaNode* root)
@@ -173,16 +171,18 @@ void semantic_Block(GrammaNode* root)
 
 void semantic_FuncDef_int_(GrammaNode *root)
 {                                                                                                    //如果他是一个int返回值函数且无形参数
-    FunctionValue *item = new FunctionValue(root->son[0]->str, root->lineno, root->var_scope, 0, 1); // build the value table of funcdef_int
+    FunctionValue *item = new FunctionValue(root->son[0]->str, root->lineno, root->son[0]->var_scope, 0, 1); // build the value table of funcdef_int
     SymbolTable->addItem(root->son[0], item);                                                        //建立SymbolTable映射
-    semanticAnalyzer(root->son[1]);                                                                  //去遍历block
+    SymbolTable->addItem(root, item); // 他自己也要，不然找不到
+    semantic_Block(root->son[1]);                                                                  //去遍历block
 }
 
 void semantic_FuncDef_void_(GrammaNode *root)
 {                                                                                                    //如果他是一个void返回值函数且无形参数
-    FunctionValue *item = new FunctionValue(root->son[0]->str, root->lineno, root->var_scope, 0, 0); // build the value table of funcdef_int
+    FunctionValue *item = new FunctionValue(root->son[0]->str, root->lineno, root->son[0]->var_scope, 0, 0); // build the value table of funcdef_int
     SymbolTable->addItem(root->son[0], item);                                                        //建立SymbolTable映射
-    semanticAnalyzer(root->son[1]);                                                                  //去遍历block
+    SymbolTable->addItem(root, item);
+    semantic_Block(root->son[1]);                                                                  //去遍历block
 }
 
 IntegerValue* semantic_LVal_Array_(GrammaNode* root, int needConst,int needCond)
@@ -372,7 +372,7 @@ Value *semantic_Func_FparamSon(GrammaNode *root)
 {// 处理三种不同的函数参数声明里面的参数：int、一维度的array、多维度array
     if (root->type == FuncFParam_single_)
     {
-        IntegerValue *item = new IntegerValue(root->son[0]->str, root->lineno, root->var_scope,0);
+        IntegerValue *item = new IntegerValue(root->son[0]->str, root->lineno, root->son[0]->var_scope,0);
         //建表
         SymbolTable->addItem(root, item);
         SymbolTable->addItem(root->son[0], item);
@@ -380,7 +380,7 @@ Value *semantic_Func_FparamSon(GrammaNode *root)
     }
     else if (root->type == FuncFParam_singleArray_)
     {
-        ArrayValue *item = new ArrayValue(root->son[0]->str, root->lineno, root->var_scope, 0);
+        ArrayValue *item = new ArrayValue(root->son[0]->str, root->lineno, root->son[0]->var_scope, 0);
         vector<unsigned> dimen;
         dimen.push_back(-1); // 因为他是1维的，因此直接push一个最大的数字
         item->setDimen(dimen);
@@ -391,7 +391,7 @@ Value *semantic_Func_FparamSon(GrammaNode *root)
     }
     else if (root->type == FuncFParam_array_)
     {
-        ArrayValue *item = new ArrayValue(root->son[0]->str, root->lineno, root->var_scope, 0);
+        ArrayValue *item = new ArrayValue(root->son[0]->str, root->lineno, root->son[0]->var_scope, 0);
         vector<unsigned> dimen;
         dimen.push_back(-1);
         for (int i = 0; i < root->son[3]->son.size(); i++)
@@ -425,21 +425,23 @@ vector<Value *> semantic_Func_Fparam(GrammaNode *root)
 void semantic_FuncDef_int_para_(GrammaNode *root)
 { //如果他是一个int返回值函数且有形参
     int howManySon = root->son[1]->son.size();
-    FunctionValue *item = new FunctionValue(root->son[0]->str, root->lineno, root->var_scope, howManySon, 1); // build the value table of funcdef_int
+    FunctionValue *item = new FunctionValue(root->son[0]->str, root->lineno, root->son[0]->var_scope, howManySon, 1); // build the value table of funcdef_int
     SymbolTable->addItem(root->son[0], item);                                                                 //建立SymbolTable映射
+    SymbolTable->addItem(root, item);
     // 创建参数列表
     item->setParam(semantic_Func_Fparam(root->son[1]));
-    semanticAnalyzer(root->son[2]); //去遍历block
+    semantic_Block(root->son[2]); //去遍历block
 }
 
 void semantic_FuncDef_void_para_(GrammaNode *root)
 { //如果他是一个void返回值函数且有形参
     int howManySon = root->son[1]->son.size();
-    FunctionValue *item = new FunctionValue(root->son[0]->str, root->lineno, root->var_scope, howManySon, 0); // build the value table of funcdef_int
+    FunctionValue *item = new FunctionValue(root->son[0]->str, root->lineno, root->son[0]->var_scope, howManySon, 0); // build the value table of funcdef_int
     SymbolTable->addItem(root->son[0], item);                                                                 //建立SymbolTable映射
+    SymbolTable->addItem(root, item);
     // 创建参数列表
     item->setParam(semantic_Func_Fparam(root->son[1]));
-    semanticAnalyzer(root->son[2]); //去遍历block
+    semantic_Block(root->son[2]); //去遍历block
 }
 
 ArrayValue* semantic_initVal_Son(GrammaNode* root, int isConst, int dimen=0, vector<unsigned> dimen_std={0})
@@ -665,8 +667,8 @@ void semanticAnalyzer(GrammaNode *root)
             semantic_FuncDef_void_para_(son); // 函数声明  void 有参数
         else if (son->type == ConstDefs_)
             semantic_ConstDef_(son); // 常量定义
-        else if (son->type == VarDefs_)
-            semantic_VarDefs_(son); // 常量定义
+        // else if (son->type == VarDefs_)
+        //     semantic_VarDefs_(son); // 常量定义
         
     }
 }
@@ -681,10 +683,48 @@ Value *idTable_struct::askItem(GrammaNode *key)
     return SymbolTable->table[key];
 }
 
+void printFuncInfo(int type, FunctionValue* FV)
+{
+    cout << "GrammaNode Type: " << type  << "\t函数名称：" << FV->VName \
+        << "\t作用域：" << FV->var_scope << "\t返回类型：" << FV->getResult() << "\t参数个数：" << FV->getParamCnt() << endl;
+}
+
+void printFuncParam(vector<Value *> params)
+{
+    for(int i=0; i<params.size(); i++)
+    {
+        cout << "参数名：" << params[i]->VName <<"\tscope:" <<  params[i]->var_scope << endl;
+    }
+}
+
 void showSymbleTable(idTable_struct* SymbolTable)
 {
+    cout << "SymbolTable指针地址：" << SymbolTable << " 符号表大小：" <<  SymbolTable->table.size() << endl;
     for(auto iter = SymbolTable->table.begin(); iter != SymbolTable->table.end(); iter++)
     {
-        cout << iter->first->str << "\t" << iter->second->VName << endl;
+        cout << "GN Type: " << iter->first->type << "\tscope:\t" << iter->first->var_scope \
+        << "\tGN Name: " << iter->first->str << "\t\tlineNumber:" << iter->first->lineno  << endl;
+    }
+    cout<<endl;
+    for(auto iter = SymbolTable->table.begin(); iter != SymbolTable->table.end(); iter++)
+    {
+        /// 函数声明
+        if(iter->first->type == FuncDef_int_ || iter->first->type == FuncDef_void_)// 函数声明-int无参数 和 函数声明-void无参数
+            printFuncInfo(iter->first->type, (FunctionValue*)iter->second);
+        else if(iter->first->type == FuncDef_int_para_)
+        {// 函数声明  int 有参数
+            printFuncInfo(FuncDef_int_para_, (FunctionValue*)iter->second);
+            printFuncParam(((FunctionValue*)iter->second)->getParams());
+        }
+        else if(iter->first->type == FuncDef_void_para_)
+        {// 函数声明  void 有参数
+            printFuncInfo(FuncDef_void_para_, (FunctionValue*)iter->second);
+            printFuncParam(((FunctionValue*)iter->second)->getParams());
+        }
+
+        /// 常量声明
+
+
+        /// 变量声明
     }
 }

@@ -14,8 +14,6 @@
 #include <map>
 using namespace std;
 
-// scope部分调试信息打印
-// #define DEBUG_SCOPE
 // 语义部分调试信息打印
 #define DEBUG_SEMANTIC
 

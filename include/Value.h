@@ -35,7 +35,7 @@ class Value
     int lineno;
     // 变量作用域标识符
     std::string var_scope;
-
+    
 };
 
 class IntegerValue:public Value
@@ -52,8 +52,11 @@ class IntegerValue:public Value
     void setValue(int intValue){RealValue=intValue;}
     int RealValue=0;
     int isConst=-1; // 0代表它不是一个cosnt，1代表是。初值为-1
+    
+
 };
 
+// 即将被废除
 class ConstArrayValue:public Value
 {
     public:
@@ -96,6 +99,7 @@ class ArrayValue:public Value
     std::vector<int> ArrayElement;
     //
     int isConst;
+
 };
 
 class FunctionValue:public Value
@@ -123,7 +127,7 @@ class FunctionValue:public Value
     int getEntrance(){return Entrance;}
 
     private:
-    //函数返回值
+    //函数返回值类型
     int Result;
     //参数个数
     int ParamsNum;
@@ -133,8 +137,11 @@ class FunctionValue:public Value
     int Entrance;
     //函数出口指令索引
     int Exitance;
+
+    
 };
 
+// 即将废弃
 class ImmValue:public Value
 {
     public:

@@ -10,7 +10,7 @@ extern int lineno;
 using namespace std;
 extern FILE* yyin;
 GrammaNode* Droot = new GrammaNode(lineno, 0, "ROOT");
-idTable_struct* SymbolTable;
+idTable_struct* SymbolTable = new idTable_struct();
 
 int main(int argc, char *argv[])
 {
@@ -19,10 +19,10 @@ int main(int argc, char *argv[])
     int ret = yyparse(); // 词法语法分析，无误返回0
     if(ret == 0)
     {
-        printIdMap(); // 打印idList和idNameList的信息
+        // printIdMap(); // 打印idList和idNameList的信息
         semanticAnalyzer(Droot); // 语义检查
-        show_node(Droot, 0); //打印AST
-        // showSymbleTable(SymbolTable); // 打印符号表
+        // show_node(Droot, 0); //打印AST
+        showSymbleTable(SymbolTable); // 打印符号表
     }
     return 0;
 }
