@@ -480,7 +480,16 @@ ArrayValue* semantic_initVal_Son(GrammaNode* root, int isConst, int dimen=0, vec
             {
                 //error;
             }
+            if(batchi == 0)
+            {//如果恰好在一个batch，那就不拉平数组了
+                ret->ArrayElement.insert(ret->ArrayElement.end(),val->ArrayElement.begin(),val->ArrayElement.end());
+                batchi+=val->ArrayElement.size();
+                while(batchi<batchsize){ret->ArrayElement.push_back(0);base++;batchi++;}
+                batchi%=batchsize;
+                continue;
+            }
             ret->ArrayElement.insert(ret->ArrayElement.end(),val->ArrayElement.begin(),val->ArrayElement.end());
+            batchi+=val->ArrayElement.size();batchi%=batchsize;
         }
     }
     while(base<tot){ret->ArrayElement.push_back(0);base++;}//here we padding with zero
