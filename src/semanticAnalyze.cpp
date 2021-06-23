@@ -531,7 +531,7 @@ void semantic_ConstDefSon(GrammaNode* root)
         }
         // 要的到初值
         IntegerValue* initVal = (IntegerValue*)semantic_InitVal3_(root->son[1], 1);//OOP
-        IntegerValue* tem = new IntegerValue(root->son[0]->str,root->lineno,root->var_scope,initVal->getValue(),1);
+        IntegerValue* tem = new IntegerValue(root->son[0]->str,root->lineno,root->son[0]->var_scope,initVal->getValue(),1);
         SymbolTable->addItem(root,tem);
         SymbolTable->addItem(root->son[0],tem);
 
@@ -554,9 +554,17 @@ void semantic_ConstDefSon(GrammaNode* root)
         }
 
         // 计算初值
-        ConstArrayValue* initVal = (ConstArrayValue*)semantic_InitVal3_(root->son[2], 1, 0, dimen);//calc initval
-        //TODO:语义检查：维度和初值是否匹配
-        // ConstArrayValue* tem = new Const
+        ArrayValue* initVal = (ArrayValue*)semantic_InitVal3_(root->son[2], 1, 0, dimen);//calc initval
+        //TODO:语义检查：维度和初值是否匹配 error
+
+        /// 语义检查通过，new结点，建立映射
+        // new
+        ArrayValue* tem = new ArrayValue(root->son[0]->str, root->lineno, root->son[0]->var_scope, 1);
+        tem->setDimen(dimen); // 设置维度信息
+        tem->setArray(initVal->ArrayElement);
+        // mapping
+        SymbolTable->addItem(root,tem);
+        SymbolTable->addItem(root->son[0],tem);
         
     }
     else
@@ -668,7 +676,7 @@ void semanticAnalyzer(GrammaNode *root)
         else if (son->type == ConstDefs_)
             semantic_ConstDef_(son); // 常量定义
         // else if (son->type == VarDefs_)
-        //     semantic_VarDefs_(son); // 常量定义
+        //     semantic_VarDefs_(son); // 变量定义
         
     }
 }
@@ -697,6 +705,26 @@ void printFuncParam(vector<Value *> params)
     }
 }
 
+void printVector(vector<int> v)
+{
+    cout << "\t初值：";
+    for(int i=0; i<v.size(); i++)
+    {
+        cout << v[i] << " ";
+    }
+    cout << endl;
+}
+void printVector(vector<unsigned> v)
+{
+    cout << "\t维度：";
+    for(int i=0; i<v.size(); i++)
+    {
+        cout << v[i] << " ";
+    }
+    cout << endl;
+    
+}
+
 void showSymbleTable(idTable_struct* SymbolTable)
 {
     cout << "SymbolTable指针地址：" << SymbolTable << " 符号表大小：" <<  SymbolTable->table.size() << endl;
@@ -722,8 +750,24 @@ void showSymbleTable(idTable_struct* SymbolTable)
             printFuncParam(((FunctionValue*)iter->second)->getParams());
         }
 
-        /// 常量声明
+        /// 常量声明-single
+        else if(iter->first->type == ConstDef_single_)
+        {
+            IntegerValue* IV = (IntegerValue*)iter->second;
+            cout << "GrammaNode Type: " << iter->first->type  << "\t常量single名称：" << IV->VName \
+                << "\t初值" << IV->RealValue << "\tisConst："<< IV->isConst << "\t作用域：" << IV->var_scope  << endl;
+        }
 
+        /// 常量声明-array
+        else if(iter->first->type == ConstDef_array_)
+        {
+            ArrayValue* AV = (ArrayValue*)iter->second;
+            cout << "GrammaNode Type: " << iter->first->type  << "\t常量array名称：" << AV->VName \
+                << "\tisConst："<< AV->isConst << "\t作用域：" << AV->var_scope  << endl;
+            
+            printVector(AV->NumOfDimension);
+            printVector(AV->ArrayElement);
+        }
 
         /// 变量声明
     }
