@@ -10,6 +10,8 @@ class ac:public a{};
 
 int main()
 {
+	int bianl=0;
+	const int changl=bianl;
 	const int shuzu[3][4][2]={{0,1},1,2,3,4};
 	for(int i=0;i<3;i++)
 	{

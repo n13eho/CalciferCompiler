@@ -1,4 +1,15 @@
-->node string:ROOT	 son numbers:2
+
+
+
+
+
+
+
+
+
+
+
+->node string:ROOT	 son numbers:2
    ->node string:VarDefs	 son numbers:1
       ->node string:VarDef_array_init_	 son numbers:3
          ->node string:a	 son numbers:0
@@ -50,3 +61,116 @@ line 43	GN Type: 433	变量array名称：a	isConst：0	作用域：1
 -->维度：2 3 
 -->初值：1 2 3 4 5 6 
 line 44	GN Type: 436	变量single名称：b	初值：5	isConst：0	作用域：1
+SymbolTable指针地址：0x7fffcd9b6f20 符号表大小：93
+GN Type: 300	scope:	1	GN Name: a		lineNumber:25
+GN Type: 302	scope:		GN Name: 4		lineNumber:25
+GN Type: 302	scope:		GN Name: 1		lineNumber:25
+GN Type: 302	scope:		GN Name: 1		lineNumber:25
+GN Type: 424	scope:		GN Name: AddExp_Add		lineNumber:25
+GN Type: 302	scope:		GN Name: 0		lineNumber:25
+GN Type: 405	scope:		GN Name: InitVals		lineNumber:25
+GN Type: 302	scope:		GN Name: 2		lineNumber:25
+GN Type: 405	scope:		GN Name: InitVals		lineNumber:25
+GN Type: 302	scope:		GN Name: 3		lineNumber:25
+GN Type: 406	scope:		GN Name: InitVal		lineNumber:25
+GN Type: 302	scope:		GN Name: 4		lineNumber:25
+GN Type: 405	scope:		GN Name: InitVals		lineNumber:25
+GN Type: 302	scope:		GN Name: 5		lineNumber:25
+GN Type: 406	scope:		GN Name: InitVal		lineNumber:25
+GN Type: 302	scope:		GN Name: 6		lineNumber:25
+GN Type: 406	scope:		GN Name: InitVal		lineNumber:25
+GN Type: 446	scope:		GN Name: ConstDef_array_		lineNumber:25
+GN Type: 300	scope:	1	GN Name: b		lineNumber:26
+GN Type: 302	scope:		GN Name: 4		lineNumber:26
+GN Type: 302	scope:		GN Name: 2		lineNumber:26
+GN Type: 302	scope:		GN Name: 0		lineNumber:26
+GN Type: 405	scope:		GN Name: InitVals		lineNumber:26
+GN Type: 302	scope:		GN Name: 2		lineNumber:26
+GN Type: 302	scope:		GN Name: 3		lineNumber:26
+GN Type: 302	scope:		GN Name: 4		lineNumber:26
+GN Type: 405	scope:		GN Name: InitVals		lineNumber:26
+GN Type: 302	scope:		GN Name: 5		lineNumber:26
+GN Type: 406	scope:		GN Name: InitVal		lineNumber:26
+GN Type: 302	scope:		GN Name: 6		lineNumber:26
+GN Type: 406	scope:		GN Name: InitVal		lineNumber:26
+GN Type: 446	scope:		GN Name: ConstDef_array_		lineNumber:26
+GN Type: 300	scope:	1	GN Name: c		lineNumber:27
+GN Type: 302	scope:		GN Name: 2		lineNumber:27
+GN Type: 302	scope:		GN Name: 2		lineNumber:27
+GN Type: 302	scope:		GN Name: 0		lineNumber:27
+GN Type: 405	scope:		GN Name: InitVals		lineNumber:27
+GN Type: 406	scope:		GN Name: InitVal		lineNumber:27
+GN Type: 405	scope:		GN Name: InitVals		lineNumber:27
+GN Type: 302	scope:		GN Name: 2		lineNumber:27
+GN Type: 405	scope:		GN Name: InitVals		lineNumber:27
+GN Type: 406	scope:		GN Name: InitVal		lineNumber:27
+GN Type: 406	scope:		GN Name: InitVal		lineNumber:27
+GN Type: 446	scope:		GN Name: ConstDef_array_		lineNumber:27
+GN Type: 300	scope:	1	GN Name: d		lineNumber:28
+GN Type: 302	scope:		GN Name: 4		lineNumber:28
+GN Type: 302	scope:		GN Name: 2		lineNumber:28
+GN Type: 302	scope:		GN Name: 0		lineNumber:28
+GN Type: 405	scope:		GN Name: InitVals		lineNumber:28
+GN Type: 302	scope:		GN Name: 2		lineNumber:28
+GN Type: 302	scope:		GN Name: 3		lineNumber:28
+GN Type: 302	scope:		GN Name: 4		lineNumber:28
+GN Type: 405	scope:		GN Name: InitVals		lineNumber:28
+GN Type: 406	scope:		GN Name: InitVal		lineNumber:28
+GN Type: 302	scope:		GN Name: 5		lineNumber:28
+GN Type: 302	scope:		GN Name: 6		lineNumber:28
+GN Type: 406	scope:		GN Name: InitVal		lineNumber:28
+GN Type: 446	scope:		GN Name: ConstDef_array_		lineNumber:28
+GN Type: 300	scope:	1	GN Name: e		lineNumber:29
+GN Type: 302	scope:		GN Name: 4		lineNumber:29
+GN Type: 302	scope:		GN Name: 2		lineNumber:29
+GN Type: 302	scope:		GN Name: 0		lineNumber:29
+GN Type: 405	scope:		GN Name: InitVals		lineNumber:29
+GN Type: 406	scope:		GN Name: InitVal		lineNumber:29
+GN Type: 405	scope:		GN Name: InitVals		lineNumber:29
+GN Type: 302	scope:		GN Name: 2		lineNumber:29
+GN Type: 302	scope:		GN Name: 3		lineNumber:29
+GN Type: 302	scope:		GN Name: 4		lineNumber:29
+GN Type: 405	scope:		GN Name: InitVals		lineNumber:29
+GN Type: 406	scope:		GN Name: InitVal		lineNumber:29
+GN Type: 302	scope:		GN Name: 5		lineNumber:29
+GN Type: 302	scope:		GN Name: 6		lineNumber:29
+GN Type: 405	scope:		GN Name: InitVals		lineNumber:29
+GN Type: 406	scope:		GN Name: InitVal		lineNumber:29
+GN Type: 406	scope:		GN Name: InitVal		lineNumber:29
+GN Type: 446	scope:		GN Name: ConstDef_array_		lineNumber:29
+GN Type: 300	scope:	1	GN Name: today		lineNumber:30
+GN Type: 302	scope:		GN Name: 9		lineNumber:30
+GN Type: 302	scope:		GN Name: 8		lineNumber:30
+GN Type: 421	scope:		GN Name: MulExp_Div		lineNumber:30
+GN Type: 302	scope:		GN Name: 7		lineNumber:30
+GN Type: 424	scope:		GN Name: AddExp_Add		lineNumber:30
+GN Type: 447	scope:		GN Name: ConstDef_single_		lineNumber:30
+GN Type: 300	scope:	1	GN Name: to		lineNumber:30
+GN Type: 302	scope:		GN Name: 12		lineNumber:30
+GN Type: 302	scope:		GN Name: 3		lineNumber:30
+GN Type: 424	scope:		GN Name: AddExp_Add		lineNumber:30
+GN Type: 447	scope:		GN Name: ConstDef_single_		lineNumber:30
+GN Type: 300	scope:	1	GN Name: mondy		lineNumber:30
+GN Type: 302	scope:		GN Name: 19		lineNumber:30
+GN Type: 302	scope:		GN Name: 3		lineNumber:30
+GN Type: 422	scope:		GN Name: MulExp_Mod		lineNumber:30
+GN Type: 447	scope:		GN Name: ConstDef_single_		lineNumber:30
+
+GrammaNode Type: 446	常量array名称：a	isConst：1	作用域：1
+	维度：4 2 
+	初值：0 2 3 4 5 6 0 0 
+GrammaNode Type: 446	常量array名称：b	isConst：1	作用域：1
+	维度：4 2 
+	初值：0 2 3 4 5 6 0 0 
+GrammaNode Type: 446	常量array名称：c	isConst：1	作用域：1
+	维度：2 2 
+	初值：0 0 2 0 
+GrammaNode Type: 446	常量array名称：d	isConst：1	作用域：1
+	维度：4 2 
+	初值：0 2 3 4 5 6 0 0 
+GrammaNode Type: 446	常量array名称：e	isConst：1	作用域：1
+	维度：4 2 
+	初值：0 0 2 3 4 0 5 6 0 
+GrammaNode Type: 447	常量single名称：today	初值8	isConst：1	作用域：1
+GrammaNode Type: 447	常量single名称：to	初值15	isConst：1	作用域：1
+GrammaNode Type: 447	常量single名称：mondy	初值1	isConst：1	作用域：1
