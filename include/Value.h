@@ -113,8 +113,6 @@ class FunctionValue:public Value
         ParamsNum=paramcnt;
     }
 
-    //设置函数入口
-    void setEntrance(int idx){Entrance=idx;}    
     //设置函数参数列表
     void setParam(std::vector<Value *> params){FuncParams.assign(params.begin(),params.end());}
     //获取函数返回值类型
@@ -123,8 +121,6 @@ class FunctionValue:public Value
     int getParamCnt(){return ParamsNum;}
     //获取函数参数列表
     std::vector<Value *> getParams(){return FuncParams;}
-    //获取函数入口
-    int getEntrance(){return Entrance;}
 
     private:
     //函数返回值类型
@@ -133,12 +129,6 @@ class FunctionValue:public Value
     int ParamsNum;
     //函数参数列表
     std::vector<Value *> FuncParams;
-    //函数入口指令索引
-    int Entrance;
-    //函数出口指令索引
-    int Exitance;
-
-    
 };
 
 // 即将废弃

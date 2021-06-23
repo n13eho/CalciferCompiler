@@ -21,7 +21,7 @@ int main(int argc, char *argv[])
     {
         // printIdMap(); // 打印idList和idNameList的信息
         semanticAnalyzer(Droot); // 语义检查
-        // show_node(Droot, 0); //打印AST
+        show_node(Droot, 0); //打印AST
         showSymbleTable(SymbolTable); // 打印符号表
     }
     return 0;

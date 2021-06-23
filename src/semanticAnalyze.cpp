@@ -604,6 +604,8 @@ void semantic_VarDefSon(GrammaNode* root)
         int initValue = initValueObj->RealValue;
         //new出新的结点
         IntegerValue* single_init = new IntegerValue(root->son[0]->str, root->son[0]->lineno, root->son[0]->var_scope, initValue, 0);
+        SymbolTable->addItem(root, single_init);
+        SymbolTable->addItem(root->son[0], single_init);
     }
     else if(root->type == VarDef_array_)
     {// 没有初始值的数组，算维度，new结点，建立映射
@@ -684,8 +686,8 @@ void semanticAnalyzer(GrammaNode *root)
             semantic_FuncDef_void_para_(son); // 函数声明  void 有参数
         else if (son->type == ConstDefs_)
             semantic_ConstDef_(son); // 常量定义
-        // else if (son->type == VarDefs_)
-        //     semantic_VarDefs_(son); // 变量定义
+        else if (son->type == VarDefs_)
+            semantic_VarDefs_(son); // 变量定义
         
     }
 }
@@ -702,7 +704,7 @@ Value *idTable_struct::askItem(GrammaNode *key)
 
 void printFuncInfo(int type, FunctionValue* FV)
 {
-    cout << "GrammaNode Type: " << type  << "\t函数名称：" << FV->VName \
+    cout << "line " << FV->lineno << "\tGNType: " << type  << "\t函数名称：" << FV->VName \
         << "\t作用域：" << FV->var_scope << "\t返回类型：" << FV->getResult() << "\t参数个数：" << FV->getParamCnt() << endl;
 }
 
@@ -710,13 +712,13 @@ void printFuncParam(vector<Value *> params)
 {
     for(int i=0; i<params.size(); i++)
     {
-        cout << "参数名：" << params[i]->VName <<"\tscope:" <<  params[i]->var_scope << endl;
+        cout << "\t参数名：" << params[i]->VName <<"\tscope:" <<  params[i]->var_scope << endl;
     }
 }
 
 void printVector(vector<int> v)
 {
-    cout << "\t初值：";
+    cout << "-->初值：";
     for(int i=0; i<v.size(); i++)
     {
         cout << v[i] << " ";
@@ -725,7 +727,7 @@ void printVector(vector<int> v)
 }
 void printVector(vector<unsigned> v)
 {
-    cout << "\t维度：";
+    cout << "-->维度：";
     for(int i=0; i<v.size(); i++)
     {
         cout << v[i] << " ";
@@ -736,6 +738,7 @@ void printVector(vector<unsigned> v)
 
 void showSymbleTable(idTable_struct* SymbolTable)
 {
+    int count = 0;
     cout << "SymbolTable指针地址：" << SymbolTable << " 符号表大小：" <<  SymbolTable->table.size() << endl;
     for(auto iter = SymbolTable->table.begin(); iter != SymbolTable->table.end(); iter++)
     {
@@ -745,6 +748,7 @@ void showSymbleTable(idTable_struct* SymbolTable)
     cout<<endl;
     for(auto iter = SymbolTable->table.begin(); iter != SymbolTable->table.end(); iter++)
     {
+        // cout << "[" << count++ << "]: ";
         /// 函数声明
         if(iter->first->type == FuncDef_int_ || iter->first->type == FuncDef_void_)// 函数声明-int无参数 和 函数声明-void无参数
             printFuncInfo(iter->first->type, (FunctionValue*)iter->second);
@@ -759,25 +763,42 @@ void showSymbleTable(idTable_struct* SymbolTable)
             printFuncParam(((FunctionValue*)iter->second)->getParams());
         }
 
-        /// 常量声明-single
+        // 常量声明-single
         else if(iter->first->type == ConstDef_single_)
         {
             IntegerValue* IV = (IntegerValue*)iter->second;
-            cout << "GrammaNode Type: " << iter->first->type  << "\t常量single名称：" << IV->VName \
-                << "\t初值" << IV->RealValue << "\tisConst："<< IV->isConst << "\t作用域：" << IV->var_scope  << endl;
+            cout << "line " << IV->lineno << "\tGN Type: " << iter->first->type  << "\t常量single名称：" << IV->VName \
+                << "\t初值：" << IV->RealValue << "\tisConst："<< IV->isConst << "\t作用域：" << IV->var_scope  << endl;
         }
 
-        /// 常量声明-array
+        // 常量声明-array
         else if(iter->first->type == ConstDef_array_)
         {
             ArrayValue* AV = (ArrayValue*)iter->second;
-            cout << "GrammaNode Type: " << iter->first->type  << "\t常量array名称：" << AV->VName \
+            cout << "line " << AV->lineno << "\tGN Type: " << iter->first->type  << "\t常量array名称：" << AV->VName \
                 << "\tisConst："<< AV->isConst << "\t作用域：" << AV->var_scope  << endl;
             
             printVector(AV->NumOfDimension);
             printVector(AV->ArrayElement);
         }
 
-        /// 变量声明
+        // 变量声明-single-noInit 变量声明-single-Init
+        else if(iter->first->type == VarDef_single_ || iter->first->type ==VarDef_single_init_)
+        {
+            IntegerValue* IV = (IntegerValue*)iter->second;
+            cout << "line " << IV->lineno << "\tGN Type: " << iter->first->type  << "\t变量single名称：" << IV->VName \
+                << "\t初值：" << IV->RealValue << "\tisConst："<< IV->isConst << "\t作用域：" << IV->var_scope  << endl;
+        }
+
+        // 变量声明-array-noInit 变量声明-array-Init
+        else if(iter->first->type == VarDef_array_ || iter->first->type ==VarDef_array_init_)
+        {
+            ArrayValue* AV = (ArrayValue*)iter->second;
+            cout << "line " << AV->lineno << "\tGN Type: " << iter->first->type  << "\t变量array名称：" << AV->VName \
+                << "\tisConst："<< AV->isConst << "\t作用域：" << AV->var_scope  << endl;
+            
+            printVector(AV->NumOfDimension);
+            printVector(AV->ArrayElement);
+        }
     }
 }
