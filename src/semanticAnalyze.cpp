@@ -163,9 +163,9 @@ void semantic_Block(GrammaNode* root)
 {
     for(int i=0;i<root->son.size();i++)
     {
-        if(root->type == ConstDefs_)semantic_ConstDef_(root);
-        else if(root->type == VarDefs_)semantic_VarDefs_(root);
-        else semantic_stmt_(root);
+        if(root->son[i]->type == ConstDefs_)semantic_ConstDef_(root->son[i]);
+        else if(root->son[i]->type == VarDefs_)semantic_VarDefs_(root->son[i]);
+        else semantic_stmt_(root->son[i]);
     }
 }
 
@@ -447,12 +447,17 @@ void semantic_FuncDef_void_para_(GrammaNode *root)
 ArrayValue* semantic_initVal_Son(GrammaNode* root, int isConst, int dimen=0, vector<unsigned> dimen_std={0})
 {
     int base=0,batchsize,batchnum=dimen_std.size()-1,tot = 1;
+    //base: 当前填充到数组的第几个
+    //batchnum：鸡肋变量，待删
+    //tot：当前需要填充的数组总共多大
     ArrayValue* ret = new ArrayValue(name+to_string(cnt++),root->lineno,root->var_scope,isConst);
+    //创建带返回的value
     batchsize = dimen_std[batchnum];
+    //batchsize：当前填充维度大小
     for(auto i : dimen_std)tot*=i;
-    int soni = 0;
+    int soni = 0;// 遍历他的儿子
     for(soni=0;soni<root->son.size();soni++)
-    {
+    {//如果碰到了下一层数组就直接填过来，碰到exp，就换思路
         if(root->son[soni]->type == InitVal_EXP)break;
         else
         {
@@ -460,16 +465,16 @@ ArrayValue* semantic_initVal_Son(GrammaNode* root, int isConst, int dimen=0, vec
             new_dim.assign(dimen_std.begin()+1,dimen_std.end());//新维度减少到0 error
             ArrayValue* val =(ArrayValue* )semantic_InitVal3_(root->son[soni],isConst,0,new_dim);
             ret->ArrayElement.insert(ret->ArrayElement.end(),val->ArrayElement.begin(),val->ArrayElement.end());
-            base+=tot/dimen_std[0];
+            base+=tot/dimen_std[0];//多了一个数组的值
         }
     }
     int batchi = 0;
     for(;soni<root->son.size();soni++)
-    {
+    {//这里按batch填充，如果遇到数组恰好batch也是新的，就不展开了，否则全部展开填，填满就报错
         if(root->son[soni]->type ==InitVal_EXP )
         {
             IntegerValue* val = (IntegerValue*)semantic_InitVal3_(root->son[soni], isConst, 0, dimen_std);
-            batchi++;batchi%=batchsize;base++;
+            batchi++;batchi%=batchsize;base++;//又多了一个值
             ret->ArrayElement.push_back(val->RealValue);
         }
         else
@@ -490,6 +495,7 @@ ArrayValue* semantic_initVal_Son(GrammaNode* root, int isConst, int dimen=0, vec
             }
             ret->ArrayElement.insert(ret->ArrayElement.end(),val->ArrayElement.begin(),val->ArrayElement.end());
             batchi+=val->ArrayElement.size();batchi%=batchsize;
+            base+=val->ArrayElement.size();
         }
     }
     while(base<tot){ret->ArrayElement.push_back(0);base++;}//here we padding with zero
