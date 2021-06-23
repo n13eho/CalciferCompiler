@@ -1,17 +1,12 @@
-SymbolTable指针地址：0x7fffc9f33f20 符号表大小：10
-GN Type: 300	scope:	1	GN Name: whh		lineNumber:13
-GN Type: 300	scope:	11	GN Name: a		lineNumber:13
-GN Type: 438	scope:		GN Name: FuncFParam_single_		lineNumber:13
-GN Type: 443	scope:		GN Name: FuncDef_void_para_		lineNumber:16
-GN Type: 300	scope:	1	GN Name: add		lineNumber:18
-GN Type: 300	scope:	12	GN Name: a		lineNumber:18
-GN Type: 438	scope:		GN Name: FuncFParam_single_		lineNumber:18
-GN Type: 300	scope:	12	GN Name: b		lineNumber:18
-GN Type: 439	scope:		GN Name: FuncFParam_singleArray_		lineNumber:18
-GN Type: 442	scope:		GN Name: FuncDef_int_para_		lineNumber:23
+SymbolTable指针地址：0x7fffe5b29f20 符号表大小：10
+GN Type: 302	scope:		GN Name: 2		lineNumber:27
+GN Type: 302	scope:		GN Name: 2		lineNumber:27
+GN Type: 302	scope:		GN Name: 0		lineNumber:27
+GN Type: 405	scope:		GN Name: InitVals		lineNumber:27
+GN Type: 406	scope:		GN Name: InitVal		lineNumber:27
+GN Type: 405	scope:		GN Name: InitVals		lineNumber:27
+GN Type: 302	scope:		GN Name: 2		lineNumber:27
+GN Type: 405	scope:		GN Name: InitVals		lineNumber:27
+GN Type: 406	scope:		GN Name: InitVal		lineNumber:27
+GN Type: 406	scope:		GN Name: InitVal		lineNumber:27
 
-GrammaNode Type: 443	函数名称：whh	作用域：1	返回类型：0	参数个数：1
-参数名：a	scope:11
-GrammaNode Type: 442	函数名称：add	作用域：1	返回类型：1	参数个数：2
-参数名：a	scope:12
-参数名：b	scope:12

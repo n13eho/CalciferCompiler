@@ -483,7 +483,7 @@ ArrayValue* semantic_initVal_Son(GrammaNode* root, int isConst, int dimen=0, vec
             ret->ArrayElement.insert(ret->ArrayElement.end(),val->ArrayElement.begin(),val->ArrayElement.end());
         }
     }
-    while(base<tot)ret->ArrayElement.push_back(0);
+    while(base<tot){ret->ArrayElement.push_back(0);base++;}//here we padding with zero
     SymbolTable->addItem(root,ret);
     return ret;
 }
