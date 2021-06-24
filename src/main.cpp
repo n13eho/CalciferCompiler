@@ -20,8 +20,8 @@ int main(int argc, char *argv[])
     if(ret == 0)
     {
         // printIdMap(); // 打印idList和idNameList的信息
-        semanticAnalyzer(Droot); // 语义检查
         show_node(Droot, 0); //打印AST
+        semanticAnalyzer(Droot); // 语义检查
         showSymbleTable(SymbolTable); // 打印符号表
     }
     return 0;

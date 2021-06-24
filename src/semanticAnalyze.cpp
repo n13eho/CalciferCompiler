@@ -225,20 +225,20 @@ IntegerValue* semantic_PrimaryExp_(GrammaNode* root, int needConst,int needCond)
     {
         constval = stoi(root->str,0,10);
         IntegerValue* ret = new IntegerValue(name+to_string(cnt++),root->lineno,root->var_scope,constval,1);
-        SymbolTable->addItem(root,ret);
+        // SymbolTable->addItem(root,ret); // 这样的纯数字就不需要映射了
         return ret;
     }
     else if(root->type == IntConst_O_){
         constval = stoi(root->str,0,8);
         IntegerValue* ret = new IntegerValue(name+to_string(cnt++),root->lineno,root->var_scope,constval,1);
-        SymbolTable->addItem(root,ret);
+        // SymbolTable->addItem(root,ret); // 这样的纯数字就不需要映射了
         return ret;
     }
     else if(root->type == IntConst_O_)
     {
         constval = stoi(root->str,0,16);
         IntegerValue* ret = new IntegerValue(name+to_string(cnt++),root->lineno,root->var_scope,constval,1);
-        SymbolTable->addItem(root,ret);
+        // SymbolTable->addItem(root,ret); // 这样的纯数字就不需要映射了
         return ret;
     }
     // 情况2.2 Ident
@@ -247,11 +247,10 @@ IntegerValue* semantic_PrimaryExp_(GrammaNode* root, int needConst,int needCond)
         GrammaNode* init = idList[make_pair(root->str,root->var_scope)];
         IntegerValue* temp = (IntegerValue*)SymbolTable->askItem(init);
         if(needConst == 1 && temp->isConst != 1){
-            //error4
+            //√error4
             // 该左值->Ident：如果传入参数needConst为1的话，这个Ident也必须为常量，否则报错
-            //----------------语义检查【1】----------------
-            return NULL;
-            
+            //----------------语义检查【1.2】----------------
+            throw SemanticError(temp->lineno, temp->VName, "不是常量");
         }
         else
         {
@@ -346,7 +345,7 @@ IntegerValue* semantic_Exp_(GrammaNode *root, int needConst,int needCond)
 // 这里本质是addexp
 // 来源可以是 InitVal_Exp->son[i] ConstExps->son[i]
     if(root->type != AddExp_Add_ && root->type != AddExp_Sub_)
-    {// 对应一个没有孩子的 
+    {// 对应没有一个孩子的 
         return semantic_MulExp_(root, needConst,needCond);
     }
     else
@@ -508,7 +507,7 @@ Value* semantic_InitVal3_(GrammaNode* root, int isConst, int dimen, vector<unsig
     
     if(root->type == InitVal_EXP)
     {
-        return semantic_Exp_(root->son[0], 1,0);
+        return semantic_Exp_(root->son[0], 1, 0);
     }
     else if( root->type == InitVal_NULL)
     {
@@ -546,6 +545,15 @@ void semantic_ConstDefSon(GrammaNode* root)
         }
         // 要的到初值
         IntegerValue* initVal = (IntegerValue*)semantic_InitVal3_(root->son[1], 1);//OOP
+
+        cout<<22222<<endl;
+        cout<<initVal<<endl; // 0 问题所在
+        cout<<initVal->getValue()<<endl;
+        cout<<1111111<<endl;
+        cout<<root->son[0];
+        cout<<" "<<root->lineno<<" ";
+
+
         IntegerValue* tem = new IntegerValue(root->son[0]->str,root->lineno,root->son[0]->var_scope,initVal->getValue(),1);
         SymbolTable->addItem(root,tem);
         SymbolTable->addItem(root->son[0],tem);
@@ -724,7 +732,7 @@ void printFuncParam(vector<Value *> params)
 
 void printVector(vector<int> v)
 {
-    cout << "-->初值：";
+    cout << " -->初值：";
     for(int i=0; i<v.size(); i++)
     {
         cout << v[i] << " ";
@@ -733,7 +741,7 @@ void printVector(vector<int> v)
 }
 void printVector(vector<unsigned> v)
 {
-    cout << "-->维度：";
+    cout << " -->维度：";
     for(int i=0; i<v.size(); i++)
     {
         cout << v[i] << " ";
@@ -744,11 +752,12 @@ void printVector(vector<unsigned> v)
 
 void showSymbleTable(idTable_struct* SymbolTable)
 {
+    
     int count = 0;
     cout << "SymbolTable指针地址：" << SymbolTable << " 符号表大小：" <<  SymbolTable->table.size() << endl;
     for(auto iter = SymbolTable->table.begin(); iter != SymbolTable->table.end(); iter++)
     {
-        cout << "GN Type: " << iter->first->type << "\tscope:\t" << iter->first->var_scope \
+        cout << "GNType: " << iter->first->type << "\tscope:\t" << iter->first->var_scope \
         << "\tGN Name: " << iter->first->str << "\t\tlineNumber:" << iter->first->lineno  << endl;
     }
     cout<<endl;
@@ -773,7 +782,7 @@ void showSymbleTable(idTable_struct* SymbolTable)
         else if(iter->first->type == ConstDef_single_)
         {
             IntegerValue* IV = (IntegerValue*)iter->second;
-            cout << "line " << IV->lineno << "\tGN Type: " << iter->first->type  << "\t常量single名称：" << IV->VName \
+            cout << "line " << IV->lineno << "\tGNType: " << iter->first->type  << "\t常量single名称：" << IV->VName \
                 << "\t初值：" << IV->RealValue << "\tisConst："<< IV->isConst << "\t作用域：" << IV->var_scope  << endl;
         }
 
@@ -781,7 +790,7 @@ void showSymbleTable(idTable_struct* SymbolTable)
         else if(iter->first->type == ConstDef_array_)
         {
             ArrayValue* AV = (ArrayValue*)iter->second;
-            cout << "line " << AV->lineno << "\tGN Type: " << iter->first->type  << "\t常量array名称：" << AV->VName \
+            cout << "line " << AV->lineno << "\tGNType: " << iter->first->type  << "\t常量array名称：" << AV->VName \
                 << "\tisConst："<< AV->isConst << "\t作用域：" << AV->var_scope  << endl;
             
             printVector(AV->NumOfDimension);
@@ -792,7 +801,7 @@ void showSymbleTable(idTable_struct* SymbolTable)
         else if(iter->first->type == VarDef_single_ || iter->first->type ==VarDef_single_init_)
         {
             IntegerValue* IV = (IntegerValue*)iter->second;
-            cout << "line " << IV->lineno << "\tGN Type: " << iter->first->type  << "\t变量single名称：" << IV->VName \
+            cout << "line " << IV->lineno << "\tGNType: " << iter->first->type  << "\t变量single名称：" << IV->VName \
                 << "\t初值：" << IV->RealValue << "\tisConst："<< IV->isConst << "\t作用域：" << IV->var_scope  << endl;
         }
 
@@ -800,7 +809,7 @@ void showSymbleTable(idTable_struct* SymbolTable)
         else if(iter->first->type == VarDef_array_ || iter->first->type ==VarDef_array_init_)
         {
             ArrayValue* AV = (ArrayValue*)iter->second;
-            cout << "line " << AV->lineno << "\tGN Type: " << iter->first->type  << "\t变量array名称：" << AV->VName \
+            cout << "line " << AV->lineno << "\tGNType: " << iter->first->type  << "\t变量array名称：" << AV->VName \
                 << "\tisConst："<< AV->isConst << "\t作用域：" << AV->var_scope  << endl;
             
             printVector(AV->NumOfDimension);

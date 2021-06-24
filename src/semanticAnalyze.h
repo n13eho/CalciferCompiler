@@ -28,7 +28,23 @@ struct idTable_struct
     Value *askItem(GrammaNode *key);
 };
 
-void showSymbleTable(idTable_struct* SymbolTable);
+// SemanticError to raise
+class SemanticError : public std::exception {
+public:
+	SemanticError(int ln, string& name, const string& msg)
+    {  
+        msg_ ="\n\033[31m[SemanticError]\033[0m line " + to_string(ln) + ": " + name + " " + msg;
+    }
+	const char* what() const throw() override { return msg_.c_str(); }
+private:
+	string msg_;
+};
+
+// 建表+语义分析
 void semanticAnalyzer(GrammaNode *root);
+
+// 打印idLIst
 void printIdMap();
 
+// 打印符号表
+void showSymbleTable(idTable_struct* SymbolTable);
