@@ -5,10 +5,7 @@
 // #ifndef _SYS_NODE_HPP_
 // #define _SYS_NODE_HPP_
 
-// scope部分调试信息打印
-#define DEBUG_SCOPE
-// 语义部分调试信息打印
-#define DEBUG_SEMANTIC
+
 
 #define MAX_SCOPE_STACK 32 // 最大的深度
 #define SCOPT_ID_BASE '1'
@@ -25,18 +22,6 @@ typedef enum{
     // 文件结束, 错误
     ENDF_, ERROR_
 } TokenType;
-
-// typedef enum{
-//     RT=400,Decl_,CompUnit_,
-//     ConstDecl_,ConstDef_,ConstDefs_,ConstInitVal_,,
-//     UnaryExp_,UnaryOp_,PrimaryExp_,MulExp_,AddExp_,Exp_,Exps_,LVal_,
-//     IntConst_,ConstExp_,ConstExps_,FuncType_,FuncDef_,
-//     InitVals_,InitVal_,VarDefs_,VarDecl_,
-//     FuncRParams_,FuncRParamse_,FuncFParam_,FuncFParams_,
-//     LOrExp_,LAndExp_,EqExp_,RelExp_,Cond_,Stmt_,BlockItems_,
-//     BlockItem_,Block_,Stmt_Assign_,Stmt_Exp_,Stmt_If_,Stmt_IfElse_,Stmt_While_,Stmt_Return_,
-//     MulExp_Mul_,MulExp_Div_,MulExp_Mod_,AddExp_Sub_,AddExp_Add_,RelExp_LT_,RelExp_BG_,RelExp_BQ_,RelExp_LQ_,EqExp_EQ_,EqExp_NEQ_,UnaryExp_func_,LVal_Array_,VarDef_array_init_,VarDef_array_,VarDef_single_,VarDef_single_init_,FuncFParam_array_,FuncFParam_single_,FuncFParam_singleArray_,FuncDef_int_,FuncDef_void_,FuncDef_int_para_,FuncDef_void_para_,InitVal_EXP,InitVal_NULL,ConstDef_array_,ConstDef_single_
-// } GrammaType;
 
 typedef enum{
     // 常量声明语句
@@ -77,7 +62,5 @@ struct GrammaNode
 // GrammaNode* Exp_Add_new(GrammaNode* a,GrammaNode* b);
 
 // GrammaNode* Exp_Sub_new(GrammaNode* a,GrammaNode* b);
-void search_node(GrammaNode* root);
 void show_node(GrammaNode* root, int layer);
 extern GrammaNode* Droot;
-

@@ -1,3 +1,0 @@
-const int c = {};
-const int a[2][4] = {1, 2, {}}, as = 0;
-const int a[3][4%4][5*6] = {};
