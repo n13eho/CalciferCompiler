@@ -22,8 +22,8 @@ class Value
         lineno=line;
         var_scope=scope;
     }
-    //~Type() = default; default啥意思：就是默认的析构函数的意思（neho留，不过为啥不用呢
-    ~Value(){}
+
+    ~Value() = default;//默认的析构函数
 
     std::string getName(){return VName;}
     int getLine(){return lineno;}
@@ -108,7 +108,8 @@ class FunctionValue:public Value
     }
 
     //设置函数入口
-    void setEntrance(int idx){Entrance=idx;}    
+    void setEntrance(int idx){Entrance=idx;}
+    void setExit(int idx){Exit_=idx;}    
     //设置函数参数列表
     void setParam(std::vector<Value *> params){FuncParams.assign(params.begin(),params.end());}
     //获取函数返回值类型
@@ -119,6 +120,7 @@ class FunctionValue:public Value
     std::vector<Value *> getParams(){return FuncParams;}
     //获取函数入口
     int getEntrance(){return Entrance;}
+    int getExit(){return Exit_;}
 
     private:
     //函数返回值
@@ -130,7 +132,7 @@ class FunctionValue:public Value
     //函数入口指令索引
     int Entrance;
     //函数出口指令索引
-    int Exitance;
+    int Exit_;
 };
 
 class ImmValue:public Value

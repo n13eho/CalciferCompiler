@@ -3,6 +3,7 @@
 #include "semanticAnalyze.h" //语义检查
 #include <bits/stdc++.h>
 #include "../include/Value.h"
+#include "../include/BuildIR.h"
 
 //外部的lineno，行号信息
 extern int lineno;
@@ -11,6 +12,7 @@ using namespace std;
 extern FILE* yyin;
 GrammaNode* Droot = new GrammaNode(lineno, 0, "ROOT");
 idTable_struct* SymbolTable;
+LinearIR* IR1 = new LinearIR();
 
 int main(int argc, char *argv[])
 {
@@ -22,6 +24,7 @@ int main(int argc, char *argv[])
         printIdMap(); // 打印idList和idNameList的信息
         semanticAnalyzer(Droot); // 语义检查
         show_node(Droot, 0); //打印AST
+        //VisitAST(Droot,IR1);//建立四元式
     }
     return 0;
 }

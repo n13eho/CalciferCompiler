@@ -1,13 +1,73 @@
-#include <vector>
-
+#include "Value.h"
 //基本块
 class BasicBlock
 {
     public:
-    BasicBlock();
+    enum BlockType {
+    Basic,
+    If,
+    While,
+    //用于部分死代码删除
+    Break,
+    Continue
+    };
+    BasicBlock(BasicBlock::BlockType t){bType = t;}
+    void Addins(int id){InstrList.push_back(id);}
+    //this作为前驱、succ作为后继
+    void Link(BasicBlock* succ)
+    {
+        this->succBlock.push_back(succ);
+        succ->pioneerBlock.push_back(this);
+    }
+    void AddDom(BasicBlock* b){domBlock.push_back(b);}
 
-    protected:
+    void setParnt(BasicBlock* p){parent_ = p;}
+    //获取该基本块的首指令
+    int getFirstIns()
+    {
+        if(0!=InstrList.size())
+        {
+            return InstrList[0];
+        }
+        else
+        {
+            return -1;
+        }
+    }
 
-    private:
+    int getLastIns()
+    {
+        if(0!=InstrList.size())
+        {
+            return InstrList.back();
+        }
+        else
+        {
+            return -1;
+        }
+    }
+    //获取函数基本块的第一个基本块
+    BasicBlock* getFirstB()
+    {
+        if(0 != domBlock.size())
+        {
+            return domBlock[0];
+        }
+        else
+        {
+            return nullptr;
+        }
+    }
+
     std::vector<int> InstrList;
+    //后继基本块
+    std::vector<BasicBlock*> succBlock;
+    //前驱基本块
+    std::vector<BasicBlock*> pioneerBlock;
+    //属于的函数体
+    BasicBlock* parent_;
+    //函数所控制的基本块
+    std::vector<BasicBlock*> domBlock;
+    //基本块类型
+    BlockType bType;
 };
