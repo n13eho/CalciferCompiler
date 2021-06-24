@@ -478,7 +478,9 @@ ArrayValue* semantic_initVal_Son(GrammaNode* root, int isConst, int dimen=0, vec
         }
         else
         {
-            ArrayValue* val =(ArrayValue* )semantic_InitVal3_(root->son[soni], isConst, 0, dimen_std);
+            vector<unsigned> new_dim;
+            new_dim.assign(dimen_std.begin()+1,dimen_std.end());
+            ArrayValue* val =(ArrayValue* )semantic_InitVal3_(root->son[soni], isConst, 0, new_dim);
             while(val->ArrayElement[val->ArrayElement.size()-1]==0)val->ArrayElement.pop_back();
             if(val->ArrayElement.size()+batchi>batchsize)
             {
@@ -488,6 +490,7 @@ ArrayValue* semantic_initVal_Son(GrammaNode* root, int isConst, int dimen=0, vec
             {//如果恰好在一个batch，那就不拉平数组了
                 ret->ArrayElement.insert(ret->ArrayElement.end(),val->ArrayElement.begin(),val->ArrayElement.end());
                 batchi+=val->ArrayElement.size();
+                base+=val->ArrayElement.size();
                 while(batchi<batchsize){ret->ArrayElement.push_back(0);base++;batchi++;}
                 batchi%=batchsize;
                 continue;
