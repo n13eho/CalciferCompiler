@@ -35,32 +35,32 @@ class Value
     int lineno;
     // 变量作用域标识符
     std::string var_scope;
-
+    
 };
 
 class IntegerValue:public Value
 {
     public:
-    IntegerValue(std::string name_,int line,std::string scope)
-    :Value(name_,line,scope){}
-    IntegerValue(std::string name_,int line,std::string scope,int intValue)
-    :Value(name_,line,scope)
+    IntegerValue(std::string name_,int line,std::string scope,int _isConst):Value(name_,line,scope){isConst=_isConst;}
+    IntegerValue(std::string name_,int line,std::string scope,int intValue,int _isConst):Value(name_,line,scope)
     {
+        isConst = _isConst;
         RealValue=intValue;
     }
 
     int getValue(){return RealValue;}
     void setValue(int intValue){RealValue=intValue;}
+    int RealValue=0;
+    int isConst=-1; // 0代表它不是一个cosnt，1代表是。初值为-1
+    
 
-    private:
-    //初始化值
-    int RealValue=-99999;
 };
 
+// 即将被废除
 class ConstArrayValue:public Value
 {
     public:
-    ConstArrayValue(std::string name_, int line, std::string scope,std::vector<int> demen,std::vector<int> value_):Value(name_,line,scope)
+    ConstArrayValue(std::string name_, int line, std::string scope,std::vector<unsigned> demen,std::vector<int> value_):Value(name_,line,scope)
     {
         ArrayElement.clear();
         ArrayElement.insert(ArrayElement.end(),value_.begin(),value_.end());
@@ -68,16 +68,19 @@ class ConstArrayValue:public Value
         NumOfDimension.insert(demen.end(),demen.begin(),demen.end());
     }
     int getValue(int index){return ArrayElement[index];}
+    // vector get
     private:
-    std::vector<int> NumOfDimension;
+    std::vector<unsigned> NumOfDimension;
     std::vector<int> ArrayElement;
 };
 
 class ArrayValue:public Value
 {
     public:
-    ArrayValue(std::string name_,int line,std::string scope)
-    :Value(name_,line,scope){}
+    ArrayValue(std::string name_,int line,std::string scope, int isConst_):Value(name_,line,scope)
+    {
+        isConst = isConst_;
+    }
 
     void setDimen(std::vector<unsigned> dimen){NumOfDimension.assign(dimen.begin(), dimen.end());}
     //重新数组赋值（用于归零）
@@ -89,11 +92,14 @@ class ArrayValue:public Value
     //获取数组各维信息
     std::vector<unsigned> getDimen(){return NumOfDimension;}
 
-    private:
+
     //store the dimension of array
     std::vector<unsigned> NumOfDimension;
     //具体值
     std::vector<int> ArrayElement;
+    //
+    int isConst;
+
 };
 
 class FunctionValue:public Value
@@ -107,9 +113,6 @@ class FunctionValue:public Value
         ParamsNum=paramcnt;
     }
 
-    //设置函数入口
-    void setEntrance(int idx){Entrance=idx;}
-    void setExit(int idx){Exit_=idx;}    
     //设置函数参数列表
     void setParam(std::vector<Value *> params){FuncParams.assign(params.begin(),params.end());}
     //获取函数返回值类型
@@ -118,23 +121,17 @@ class FunctionValue:public Value
     int getParamCnt(){return ParamsNum;}
     //获取函数参数列表
     std::vector<Value *> getParams(){return FuncParams;}
-    //获取函数入口
-    int getEntrance(){return Entrance;}
-    int getExit(){return Exit_;}
 
     private:
-    //函数返回值
+    //函数返回值类型
     int Result;
     //参数个数
     int ParamsNum;
     //函数参数列表
     std::vector<Value *> FuncParams;
-    //函数入口指令索引
-    int Entrance;
-    //函数出口指令索引
-    int Exit_;
 };
 
+// 即将废弃
 class ImmValue:public Value
 {
     public:
@@ -148,17 +145,6 @@ class ImmValue:public Value
 
     private:
     //立即数的值
-    int RealValue;
-};
-
-class ConstIntegerValue:public Value
-{
-    public:
-    ConstIntegerValue(std::string name_,int lineno,std::string scope,int value):Value(name_,lineno,scope){
-        RealValue = value;
-    }
-    int getValue(){return RealValue;}
-    private:
     int RealValue;
 };
 
