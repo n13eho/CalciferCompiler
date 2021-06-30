@@ -33,7 +33,11 @@ class SemanticError : public std::exception {
 public:
 	SemanticError(int ln, string& name, const string& msg)
     {  
-        msg_ ="\n\033[31m[SemanticError]\033[0m line " + to_string(ln) + ": " + name + " " + msg;
+        msg_ ="\n\033[31m[SemanticError]\033[0m line " + to_string(ln) + "： " + name + " " + msg;
+    }
+	SemanticError(int ln, const string& msg)
+    {  
+        msg_ ="\n\033[31m[SemanticError]\033[0m line " + to_string(ln) + "： " + msg;
     }
 	const char* what() const throw() override { return msg_.c_str(); }
 private:
