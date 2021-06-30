@@ -608,7 +608,7 @@ Value *semantic_InitVal3_(GrammaNode *root, int isConst, int dimen, vector<unsig
 
     if (root->type == InitVal_EXP)
     {
-        return semantic_Exp_(root->son[0], 1, 0); // 好像有问题，isConst和这个1
+        return semantic_Exp_(root->son[0], isConst, 0); // 好像有问题，isConst和这个1
     }
     else if (root->type == InitVal_NULL)
     {

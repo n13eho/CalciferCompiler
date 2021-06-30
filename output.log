@@ -1,42 +1,41 @@
-->node string:ROOT	 son numbers:2
-   ->node string:FuncDef_void_	 son numbers:2
-      ->node string:add	 son numbers:0
-      ->node string:Block	 son numbers:1
-         ->node string:Stmt_Return	 son numbers:1
-            ->node string:1	 son numbers:0
+->node string:ROOT	 son numbers:2
+   ->node string:VarDefs	 son numbers:3
+      ->node string:VarDef_single_	 son numbers:1
+         ->node string:y	 son numbers:0
+      ->node string:VarDef_single_	 son numbers:1
+         ->node string:z	 son numbers:0
+      ->node string:VarDef_single_init_	 son numbers:3
+         ->node string:p	 son numbers:0
+         ->node string:=	 son numbers:0
+         ->node string:InitVal_EXP	 son numbers:1
+            ->node string:12	 son numbers:0
    ->node string:FuncDef_int_	 son numbers:2
       ->node string:main	 son numbers:0
-      ->node string:Block	 son numbers:3
-         ->node string:VarDefs	 son numbers:2
-            ->node string:VarDef_single_	 son numbers:1
-               ->node string:a	 son numbers:0
-            ->node string:VarDef_single_	 son numbers:1
-               ->node string:b	 son numbers:0
-         ->node string:Stmt_While	 son numbers:2
-            ->node string:Cond	 son numbers:1
-               ->node string:LOrExp	 son numbers:1
-                  ->node string:LAndExp	 son numbers:1
-                     ->node string:1	 son numbers:0
-            ->node string:Block	 son numbers:5
-               ->node string:Stmt_Assign	 son numbers:2
-                  ->node string:a	 son numbers:0
+      ->node string:Block	 son numbers:1
+         ->node string:VarDefs	 son numbers:1
+            ->node string:VarDef_single_init_	 son numbers:3
+               ->node string:c	 son numbers:0
+               ->node string:=	 son numbers:0
+               ->node string:InitVal_EXP	 son numbers:1
                   ->node string:AddExp_Add	 son numbers:2
-                     ->node string:a	 son numbers:0
-                     ->node string:1	 son numbers:0
-               ->node string:continue	 son numbers:0
-               ->node string:Stmt_While	 son numbers:2
-                  ->node string:Cond	 son numbers:1
-                     ->node string:LOrExp	 son numbers:1
-                        ->node string:LAndExp	 son numbers:1
-                           ->node string:1	 son numbers:0
-                  ->node string:Block	 son numbers:3
-                     ->node string:Stmt_Assign	 son numbers:2
-                        ->node string:a	 son numbers:0
-                        ->node string:AddExp_Sub	 son numbers:2
-                           ->node string:a	 son numbers:0
-                           ->node string:1	 son numbers:0
-                     ->node string:break	 son numbers:0
-                     ->node string:continue	 son numbers:0
-               ->node string:continue	 son numbers:0
-               ->node string:break	 son numbers:0
-         ->node string:return	 son numbers:0
+                     ->node string:y	 son numbers:0
+                     ->node string:z	 son numbers:0
+
+SymbolTable指针地址：0x7fffbba3df20 符号表大小：11
+GNType: 300	scope:	1	GN Name: y		lineNumber:65
+GNType: 435	scope:		GN Name: VarDef_single_		lineNumber:65
+GNType: 300	scope:	1	GN Name: z		lineNumber:65
+GNType: 435	scope:		GN Name: VarDef_single_		lineNumber:65
+GNType: 300	scope:	1	GN Name: p		lineNumber:65
+GNType: 436	scope:		GN Name: VarDef_single_init_		lineNumber:65
+GNType: 300	scope:	1	GN Name: main		lineNumber:66
+GNType: 300	scope:	11	GN Name: c		lineNumber:68
+GNType: 424	scope:		GN Name: AddExp_Add		lineNumber:68
+GNType: 436	scope:		GN Name: VarDef_single_init_		lineNumber:68
+GNType: 440	scope:		GN Name: FuncDef_int_		lineNumber:69
+
+line 65	GNType: 435	变量single名称：y	初值：0	isConst：0	作用域：1
+line 65	GNType: 435	变量single名称：z	初值：0	isConst：0	作用域：1
+line 65	GNType: 436	变量single名称：p	初值：12	isConst：0	作用域：1
+line 68	GNType: 436	变量single名称：c	初值：0	isConst：0	作用域：11
+line 69	GNType: 440	函数名称：main	作用域：1	返回类型：1	参数个数：0
