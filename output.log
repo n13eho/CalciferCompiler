@@ -8,226 +8,48 @@
 
 
 
-->node string:ROOT	 son numbers:7
-   ->node string:ConstDefs_	 son numbers:1
-      ->node string:ConstDef_array_	 son numbers:3
-         ->node string:a	 son numbers:0
-         ->node string:ConstExps	 son numbers:2
-            ->node string:4	 son numbers:0
-            ->node string:AddExp_Add	 son numbers:2
-               ->node string:1	 son numbers:0
-               ->node string:1	 son numbers:0
-         ->node string:InitVal	 son numbers:1
-            ->node string:InitVals	 son numbers:4
-               ->node string:InitVal_EXP	 son numbers:1
-                  ->node string:0	 son numbers:0
-               ->node string:InitVal	 son numbers:1
-                  ->node string:InitVals	 son numbers:2
-                     ->node string:InitVal_EXP	 son numbers:1
-                        ->node string:2	 son numbers:0
-                     ->node string:InitVal_EXP	 son numbers:1
-                        ->node string:3	 son numbers:0
-               ->node string:InitVal	 son numbers:1
-                  ->node string:InitVals	 son numbers:2
-                     ->node string:InitVal_EXP	 son numbers:1
-                        ->node string:4	 son numbers:0
-                     ->node string:InitVal_EXP	 son numbers:1
-                        ->node string:5	 son numbers:0
-               ->node string:InitVal_EXP	 son numbers:1
-                  ->node string:6	 son numbers:0
-   ->node string:ConstDefs_	 son numbers:1
-      ->node string:ConstDef_array_	 son numbers:3
-         ->node string:b	 son numbers:0
-         ->node string:ConstExps	 son numbers:2
-            ->node string:4	 son numbers:0
-            ->node string:2	 son numbers:0
-         ->node string:InitVal	 son numbers:1
-            ->node string:InitVals	 son numbers:5
-               ->node string:InitVal_EXP	 son numbers:1
-                  ->node string:0	 son numbers:0
-               ->node string:InitVal_EXP	 son numbers:1
-                  ->node string:2	 son numbers:0
-               ->node string:InitVal_EXP	 son numbers:1
-                  ->node string:3	 son numbers:0
-               ->node string:InitVal	 son numbers:1
-                  ->node string:InitVals	 son numbers:2
-                     ->node string:InitVal_EXP	 son numbers:1
-                        ->node string:4	 son numbers:0
-                     ->node string:InitVal_EXP	 son numbers:1
-                        ->node string:5	 son numbers:0
-               ->node string:InitVal_EXP	 son numbers:1
-                  ->node string:6	 son numbers:0
-   ->node string:ConstDefs_	 son numbers:1
-      ->node string:ConstDef_array_	 son numbers:3
-         ->node string:c	 son numbers:0
-         ->node string:ConstExps	 son numbers:2
-            ->node string:2	 son numbers:0
-            ->node string:2	 son numbers:0
-         ->node string:InitVal	 son numbers:1
-            ->node string:InitVals	 son numbers:2
-               ->node string:InitVal	 son numbers:1
-                  ->node string:InitVals	 son numbers:1
-                     ->node string:InitVal_EXP	 son numbers:1
-                        ->node string:0	 son numbers:0
-               ->node string:InitVal	 son numbers:1
-                  ->node string:InitVals	 son numbers:1
-                     ->node string:InitVal_EXP	 son numbers:1
-                        ->node string:2	 son numbers:0
-   ->node string:ConstDefs_	 son numbers:1
-      ->node string:ConstDef_array_	 son numbers:3
-         ->node string:d	 son numbers:0
-         ->node string:ConstExps	 son numbers:2
-            ->node string:4	 son numbers:0
-            ->node string:2	 son numbers:0
-         ->node string:InitVal	 son numbers:1
-            ->node string:InitVals	 son numbers:6
-               ->node string:InitVal_EXP	 son numbers:1
-                  ->node string:0	 son numbers:0
-               ->node string:InitVal_EXP	 son numbers:1
-                  ->node string:2	 son numbers:0
-               ->node string:InitVal_EXP	 son numbers:1
-                  ->node string:3	 son numbers:0
-               ->node string:InitVal	 son numbers:1
-                  ->node string:InitVals	 son numbers:1
-                     ->node string:InitVal_EXP	 son numbers:1
-                        ->node string:4	 son numbers:0
-               ->node string:InitVal_EXP	 son numbers:1
-                  ->node string:5	 son numbers:0
-               ->node string:InitVal_EXP	 son numbers:1
-                  ->node string:6	 son numbers:0
-   ->node string:ConstDefs_	 son numbers:1
-      ->node string:ConstDef_array_	 son numbers:3
-         ->node string:e	 son numbers:0
-         ->node string:ConstExps	 son numbers:2
-            ->node string:4	 son numbers:0
-            ->node string:2	 son numbers:0
-         ->node string:InitVal	 son numbers:1
-            ->node string:InitVals	 son numbers:6
-               ->node string:InitVal	 son numbers:1
-                  ->node string:InitVals	 son numbers:1
-                     ->node string:InitVal_EXP	 son numbers:1
-                        ->node string:0	 son numbers:0
-               ->node string:InitVal_EXP	 son numbers:1
-                  ->node string:2	 son numbers:0
-               ->node string:InitVal_EXP	 son numbers:1
-                  ->node string:3	 son numbers:0
-               ->node string:InitVal	 son numbers:1
-                  ->node string:InitVals	 son numbers:1
-                     ->node string:InitVal_EXP	 son numbers:1
-                        ->node string:4	 son numbers:0
-               ->node string:InitVal_EXP	 son numbers:1
-                  ->node string:5	 son numbers:0
-               ->node string:InitVal	 son numbers:1
-                  ->node string:InitVals	 son numbers:1
-                     ->node string:InitVal_EXP	 son numbers:1
-                        ->node string:6	 son numbers:0
-   ->node string:ConstDefs_	 son numbers:2
-      ->node string:ConstDef_single_	 son numbers:2
-         ->node string:today	 son numbers:0
-         ->node string:InitVal_EXP	 son numbers:1
-            ->node string:AddExp_Add	 son numbers:2
-               ->node string:MulExp_Div	 son numbers:2
-                  ->node string:9	 son numbers:0
-                  ->node string:8	 son numbers:0
-               ->node string:7	 son numbers:0
-      ->node string:ConstDef_single_	 son numbers:2
-         ->node string:to	 son numbers:0
-         ->node string:InitVal_EXP	 son numbers:1
-            ->node string:AddExp_Add	 son numbers:2
-               ->node string:12	 son numbers:0
-               ->node string:3	 son numbers:0
-   ->node string:ConstDefs_	 son numbers:1
-      ->node string:ConstDef_single_	 son numbers:2
-         ->node string:mondy	 son numbers:0
-         ->node string:InitVal_EXP	 son numbers:1
-            ->node string:AddExp_Add	 son numbers:2
-               ->node string:AddExp_Add	 son numbers:2
-                  ->node string:today	 son numbers:0
-                  ->node string:1	 son numbers:0
-               ->node string:LVal_	 son numbers:2
-                  ->node string:c	 son numbers:0
-                  ->node string:Exps_	 son numbers:1
-                     ->node string:2	 son numbers:0
-22222
-0x7fffcdb65a90
-8
-1111111
-0x7fffcdb619d0 30 22222
-0x7fffcdb65cd0
-15
-1111111
-0x7fffcdb620e0 30 22222
-0x7fffcdb66050
-11
-1111111
-0x7fffcdb62740 31 SymbolTable指针地址：0x7fffcdb54f20 符号表大小：51
-GNType: 300	scope:	1	GN Name: a		lineNumber:25
-GNType: 424	scope:		GN Name: AddExp_Add		lineNumber:25
-GNType: 405	scope:		GN Name: InitVals		lineNumber:25
-GNType: 405	scope:		GN Name: InitVals		lineNumber:25
-GNType: 406	scope:		GN Name: InitVal		lineNumber:25
-GNType: 405	scope:		GN Name: InitVals		lineNumber:25
-GNType: 406	scope:		GN Name: InitVal		lineNumber:25
-GNType: 406	scope:		GN Name: InitVal		lineNumber:25
-GNType: 446	scope:		GN Name: ConstDef_array_		lineNumber:25
-GNType: 300	scope:	1	GN Name: b		lineNumber:26
-GNType: 405	scope:		GN Name: InitVals		lineNumber:26
-GNType: 405	scope:		GN Name: InitVals		lineNumber:26
-GNType: 406	scope:		GN Name: InitVal		lineNumber:26
-GNType: 406	scope:		GN Name: InitVal		lineNumber:26
-GNType: 446	scope:		GN Name: ConstDef_array_		lineNumber:26
-GNType: 300	scope:	1	GN Name: c		lineNumber:27
-GNType: 405	scope:		GN Name: InitVals		lineNumber:27
-GNType: 406	scope:		GN Name: InitVal		lineNumber:27
-GNType: 405	scope:		GN Name: InitVals		lineNumber:27
-GNType: 405	scope:		GN Name: InitVals		lineNumber:27
-GNType: 406	scope:		GN Name: InitVal		lineNumber:27
-GNType: 406	scope:		GN Name: InitVal		lineNumber:27
-GNType: 446	scope:		GN Name: ConstDef_array_		lineNumber:27
-GNType: 300	scope:	1	GN Name: d		lineNumber:28
-GNType: 405	scope:		GN Name: InitVals		lineNumber:28
-GNType: 405	scope:		GN Name: InitVals		lineNumber:28
-GNType: 406	scope:		GN Name: InitVal		lineNumber:28
-GNType: 406	scope:		GN Name: InitVal		lineNumber:28
-GNType: 446	scope:		GN Name: ConstDef_array_		lineNumber:28
-GNType: 300	scope:	1	GN Name: e		lineNumber:29
-GNType: 405	scope:		GN Name: InitVals		lineNumber:29
-GNType: 406	scope:		GN Name: InitVal		lineNumber:29
-GNType: 405	scope:		GN Name: InitVals		lineNumber:29
-GNType: 405	scope:		GN Name: InitVals		lineNumber:29
-GNType: 406	scope:		GN Name: InitVal		lineNumber:29
-GNType: 405	scope:		GN Name: InitVals		lineNumber:29
-GNType: 406	scope:		GN Name: InitVal		lineNumber:29
-GNType: 406	scope:		GN Name: InitVal		lineNumber:29
-GNType: 446	scope:		GN Name: ConstDef_array_		lineNumber:29
-GNType: 300	scope:	1	GN Name: today		lineNumber:30
-GNType: 421	scope:		GN Name: MulExp_Div		lineNumber:30
-GNType: 424	scope:		GN Name: AddExp_Add		lineNumber:30
-GNType: 447	scope:		GN Name: ConstDef_single_		lineNumber:30
-GNType: 300	scope:	1	GN Name: to		lineNumber:30
-GNType: 424	scope:		GN Name: AddExp_Add		lineNumber:30
-GNType: 447	scope:		GN Name: ConstDef_single_		lineNumber:30
-GNType: 300	scope:	1	GN Name: mondy		lineNumber:31
-GNType: 424	scope:		GN Name: AddExp_Add		lineNumber:31
-GNType: 432	scope:		GN Name: LVal_		lineNumber:31
-GNType: 424	scope:		GN Name: AddExp_Add		lineNumber:31
-GNType: 447	scope:		GN Name: ConstDef_single_		lineNumber:31
 
-line 25	GNType: 446	常量array名称：a	isConst：1	作用域：1
- -->维度：4 2 
- -->初值：0 2 3 4 5 6 0 0 
-line 26	GNType: 446	常量array名称：b	isConst：1	作用域：1
- -->维度：4 2 
- -->初值：0 2 3 4 5 6 0 0 
-line 27	GNType: 446	常量array名称：c	isConst：1	作用域：1
- -->维度：2 2 
- -->初值：0 0 2 0 
-line 28	GNType: 446	常量array名称：d	isConst：1	作用域：1
- -->维度：4 2 
- -->初值：0 2 3 4 5 6 0 0 
-line 29	GNType: 446	常量array名称：e	isConst：1	作用域：1
- -->维度：4 2 
- -->初值：0 0 2 3 4 0 5 6 0 
-line 30	GNType: 447	常量single名称：today	初值：8	isConst：1	作用域：1
-line 30	GNType: 447	常量single名称：to	初值：15	isConst：1	作用域：1
-line 31	GNType: 447	常量single名称：mondy	初值：11	isConst：1	作用域：1
+
+
+
+->node string:ROOT	 son numbers:2
+   ->node string:VarDefs	 son numbers:3
+      ->node string:VarDef_single_	 son numbers:1
+         ->node string:y	 son numbers:0
+      ->node string:VarDef_single_	 son numbers:1
+         ->node string:z	 son numbers:0
+      ->node string:VarDef_single_init_	 son numbers:3
+         ->node string:p	 son numbers:0
+         ->node string:=	 son numbers:0
+         ->node string:InitVal_EXP	 son numbers:1
+            ->node string:12	 son numbers:0
+   ->node string:FuncDef_int_	 son numbers:2
+      ->node string:main	 son numbers:0
+      ->node string:Block	 son numbers:1
+         ->node string:VarDefs	 son numbers:1
+            ->node string:VarDef_single_init_	 son numbers:3
+               ->node string:c	 son numbers:0
+               ->node string:=	 son numbers:0
+               ->node string:InitVal_EXP	 son numbers:1
+                  ->node string:AddExp_Add	 son numbers:2
+                     ->node string:y	 son numbers:0
+                     ->node string:z	 son numbers:0
+
+SymbolTable指针地址：0x7fffbba3df20 符号表大小：11
+GNType: 300	scope:	1	GN Name: y		lineNumber:65
+GNType: 435	scope:		GN Name: VarDef_single_		lineNumber:65
+GNType: 300	scope:	1	GN Name: z		lineNumber:65
+GNType: 435	scope:		GN Name: VarDef_single_		lineNumber:65
+GNType: 300	scope:	1	GN Name: p		lineNumber:65
+GNType: 436	scope:		GN Name: VarDef_single_init_		lineNumber:65
+GNType: 300	scope:	1	GN Name: main		lineNumber:66
+GNType: 300	scope:	11	GN Name: c		lineNumber:68
+GNType: 424	scope:		GN Name: AddExp_Add		lineNumber:68
+GNType: 436	scope:		GN Name: VarDef_single_init_		lineNumber:68
+GNType: 440	scope:		GN Name: FuncDef_int_		lineNumber:69
+
+line 65	GNType: 435	变量single名称：y	初值：0	isConst：0	作用域：1
+line 65	GNType: 435	变量single名称：z	初值：0	isConst：0	作用域：1
+line 65	GNType: 436	变量single名称：p	初值：12	isConst：0	作用域：1
+line 68	GNType: 436	变量single名称：c	初值：0	isConst：0	作用域：11
+line 69	GNType: 440	函数名称：main	作用域：1	返回类型：1	参数个数：0
