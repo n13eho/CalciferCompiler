@@ -41,6 +41,7 @@ void VisitAST(GrammaNode* DRoot,LinearIR *IR)
 {
     //全局基本块
     BasicBlock* globalBlock = nullptr;
+    std::cout<<"start VisitAST"<<std::endl;
 
     for(int i=0;i<DRoot->son.size();i++)
     {
@@ -103,6 +104,7 @@ void ConstDefNode(GrammaNode* node,LinearIR *IR)
                 {
                     //赋值四元式，复杂情况仍需讨论
                     Instruction* ins_new = new Instruction(IR->getInstCnt(),Instruction::Assign,1);
+                    // std::cout<<"Instruction id:"<<IR->getInstCnt()<<" type:"<<"Assign"<<"Operator nums:"<<1<<std::endl;
                     ins_new->addOperand(VR);
                     ins_new->setResult(VL);
                     //属于某个函数且该指令为首指令，新建一个基本块，并建立联系
@@ -119,6 +121,7 @@ void ConstDefNode(GrammaNode* node,LinearIR *IR)
             }
             else
             {
+                throw BuildIRError(VL->lineno, VL->VName, "错误");
                 //error
             }
 
@@ -136,6 +139,7 @@ void ConstDefNode(GrammaNode* node,LinearIR *IR)
                 VR = InitValNode(p_node->son[1],IR);
                 if(VR == nullptr)
                 {
+                    throw BuildIRError(VL->lineno, VL->VName, "错误");
                     //error，不符合语义约束
                 }
                 else
@@ -156,12 +160,14 @@ void ConstDefNode(GrammaNode* node,LinearIR *IR)
             }
             else
             {
+                throw BuildIRError(VL->lineno, VL->VName, "错误");
                 //error
             }
             
         }
         else
         {
+            // throw BuildIRError(VL->lineno, VL->VName, "错误");
             //error
         }
     }
@@ -826,7 +832,8 @@ Value* EqExpNode(GrammaNode* node,LinearIR *IR)
         Value* ret = new Value("t1",node->lineno,node->var_scope);
         if(nullptr == FuncN)
         {
-            return ;
+            throw BuildIRError(VL->lineno, VL->VName, "错误");
+            // return ;
         }
         //属于某个函数且该指令为首指令，新建一个基本块，并建立联系
         if(nullptr == bbNow)
@@ -849,7 +856,8 @@ Value* EqExpNode(GrammaNode* node,LinearIR *IR)
         Value* ret = new Value("t1",node->lineno,node->var_scope);
         if(nullptr == FuncN)
         {
-            return ;
+            throw BuildIRError(VL->lineno, VL->VName, "错误");
+            // return ;
         }
         //属于某个函数且该指令为首指令，新建一个基本块，并建立联系
         if(nullptr == bbNow)
@@ -905,7 +913,8 @@ Value* RelExpNode(GrammaNode* node,LinearIR *IR)
 
         if(nullptr == FuncN)
         {
-            return ;
+            throw BuildIRError(VL->lineno, VL->VName, "错误");
+            // return ;
         }
         //属于某个函数且该指令为首指令，新建一个基本块，并建立联系
         if(nullptr == bbNow)
@@ -929,7 +938,8 @@ Value* RelExpNode(GrammaNode* node,LinearIR *IR)
         Value* ret = new Value("t1",node->lineno,node->var_scope);
         if(nullptr == FuncN)
         {
-            return ;
+            throw BuildIRError(VL->lineno, VL->VName, "错误");
+            // return ;
         }
         //属于某个函数且该指令为首指令，新建一个基本块，并建立联系
         if(nullptr == bbNow)
@@ -952,7 +962,8 @@ Value* RelExpNode(GrammaNode* node,LinearIR *IR)
         Value* ret = new Value("t1",node->lineno,node->var_scope);
         if(nullptr == FuncN)
         {
-            return ;
+            throw BuildIRError(VL->lineno, VL->VName, "错误");
+            // return ;
         }
         //属于某个函数且该指令为首指令，新建一个基本块，并建立联系
         if(nullptr == bbNow)
@@ -1019,6 +1030,10 @@ Value* InitValNode(GrammaNode* node,LinearIR *IR)
         }
         
     }
+    else
+    {
+        return nullptr;
+    }
 }
 
 Value* AddExpNode(GrammaNode* node,LinearIR *IR)
@@ -1035,7 +1050,8 @@ Value* AddExpNode(GrammaNode* node,LinearIR *IR)
             Value* ret = new IntegerValue("t3",node->lineno,node->var_scope,0);
             if(nullptr == FuncN)
             {
-                return ;
+                throw BuildIRError(arg1->lineno, arg1->VName, "错误");
+                // return ;
             }
             //属于某个函数且该指令为首指令，新建一个基本块，并建立联系
             if(nullptr == bbNow)
@@ -1069,7 +1085,8 @@ Value* AddExpNode(GrammaNode* node,LinearIR *IR)
 
             if(nullptr == FuncN)
             {
-                return ;
+                throw BuildIRError(arg1->lineno, arg1->VName, "错误");
+                // return ;
             }
             //属于某个函数且该指令为首指令，新建一个基本块，并建立联系
             if(nullptr == bbNow)
@@ -1113,7 +1130,8 @@ Value* MulExpNode(GrammaNode* node,LinearIR *IR)
             Value* ret = new IntegerValue("t3",node->lineno,node->var_scope,0);
             if(nullptr == FuncN)
             {
-                return ;
+                throw BuildIRError(arg1->lineno, arg1->VName, "错误");
+                // return ;
             }
             //属于某个函数且该指令为首指令，新建一个基本块，并建立联系
             if(nullptr == bbNow)
@@ -1148,7 +1166,8 @@ Value* MulExpNode(GrammaNode* node,LinearIR *IR)
 
             if(nullptr == FuncN)
             {
-                return ;
+                throw BuildIRError(arg1->lineno, arg1->VName, "错误");
+                // return ;
             }
             //属于某个函数且该指令为首指令，新建一个基本块，并建立联系
             if(nullptr == bbNow)
@@ -1183,7 +1202,8 @@ Value* MulExpNode(GrammaNode* node,LinearIR *IR)
             Value* ret = new IntegerValue("t3",node->lineno,node->var_scope,0);
             if(nullptr == FuncN)
             {
-                return ;
+                throw BuildIRError(arg1->lineno, arg1->VName, "错误");
+                // return ;
             }
             //属于某个函数且该指令为首指令，新建一个基本块，并建立联系
             if(nullptr == bbNow)
@@ -1227,7 +1247,8 @@ Value* UnaryExpNode(GrammaNode* node,LinearIR *IR)
 
             if(nullptr == FuncN)
             {
-                return ;
+                throw BuildIRError(ret->lineno, ret->VName, "错误");
+                // return ;
             }
             //属于某个函数且该指令为首指令，新建一个基本块，并建立联系
             if(nullptr == bbNow)
@@ -1266,7 +1287,8 @@ Value* UnaryExpNode(GrammaNode* node,LinearIR *IR)
             Value* ret=new Value("t1",node->lineno,node->var_scope);
             if(nullptr == FuncN)
             {
-                return ;
+                throw BuildIRError(ret->lineno, ret->VName, "错误");
+                // return ;
             }
             //属于某个函数且该指令为首指令，新建一个基本块，并建立联系
             if(nullptr == bbNow)

@@ -12,7 +12,34 @@
 
 
 
-->node string:ROOT	 son numbers:2
+
+->node string:ROOT	 son numbers:3
+   ->node string:ConstDefs_	 son numbers:1
+      ->node string:ConstDef_array_	 son numbers:3
+         ->node string:e	 son numbers:0
+         ->node string:ConstExps	 son numbers:2
+            ->node string:4	 son numbers:0
+            ->node string:2	 son numbers:0
+         ->node string:InitVal	 son numbers:1
+            ->node string:InitVals	 son numbers:6
+               ->node string:InitVal	 son numbers:1
+                  ->node string:InitVals	 son numbers:1
+                     ->node string:InitVal_EXP	 son numbers:1
+                        ->node string:0	 son numbers:0
+               ->node string:InitVal_EXP	 son numbers:1
+                  ->node string:2	 son numbers:0
+               ->node string:InitVal_EXP	 son numbers:1
+                  ->node string:3	 son numbers:0
+               ->node string:InitVal	 son numbers:1
+                  ->node string:InitVals	 son numbers:1
+                     ->node string:InitVal_EXP	 son numbers:1
+                        ->node string:4	 son numbers:0
+               ->node string:InitVal_EXP	 son numbers:1
+                  ->node string:5	 son numbers:0
+               ->node string:InitVal	 son numbers:1
+                  ->node string:InitVals	 son numbers:1
+                     ->node string:InitVal_EXP	 son numbers:1
+                        ->node string:6	 son numbers:0
    ->node string:VarDefs	 son numbers:3
       ->node string:VarDef_single_	 son numbers:1
          ->node string:y	 son numbers:0
@@ -34,6 +61,7 @@
                   ->node string:AddExp_Add	 son numbers:2
                      ->node string:y	 son numbers:0
                      ->node string:z	 son numbers:0
+<<<<<<< HEAD
 
 SymbolTable指针地址：0x7fffbba3df20 符号表大小：11
 GNType: 300	scope:	1	GN Name: y		lineNumber:65
@@ -53,3 +81,5 @@ line 65	GNType: 435	变量single名称：z	初值：0	isConst：0	作用域：1
 line 65	GNType: 436	变量single名称：p	初值：12	isConst：0	作用域：1
 line 68	GNType: 436	变量single名称：c	初值：0	isConst：0	作用域：11
 line 69	GNType: 440	函数名称：main	作用域：1	返回类型：1	参数个数：0
+=======
+>>>>>>> 79a4adc8374fd51a93c6f5f522d1fab4e26cc1e2
