@@ -38,11 +38,32 @@
 // int a[2][3] = {1,2,3,4,5};
 // int b = a[2][3], c;
 
+// void add()
+// {
+//     return 1;
+// }
+
+// int main()
+// {
+//     int a, b;
+//     while (1)
+//     {
+//         a = a + 1;
+//         continue;
+//         while(1)
+//         {
+//             a = a - 1;
+//             break;
+//             continue; // just dead code
+//         }
+//         continue;
+//         break; // just dead code
+//     }
+//     return;
+// }
+
+int y, z, p = 12;
 int main()
 {
-    // int k= !10;
-    const int tt=10;
-    tt = 100;
-    // y*(x=k);
-    
+    int c = y + z;
 }
