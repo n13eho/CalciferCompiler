@@ -12,11 +12,10 @@ string name = "t";
 multimap<string, string> idNameList;
 // map <<标识符名称， 作用域>, 结点指针> 变量列表
 map<pair<string, string>, GrammaNode *> idList;
-
-//循环体栈，用于标记continue，break
-GrammaNode *cycleStack[10]; // 10 for 十层循环MAX
-//该栈顶
+// 循环栈顶
 int cycleStackTop = 0;
+// 函数类型type
+int funcType = -1; // -1：初始值  0：返回值为int  1：返回值为void
 
 //外部符号表
 extern idTable_struct *SymbolTable;
@@ -164,7 +163,12 @@ void semantic_stmt_(GrammaNode *root)
         cycleStackTop--;
     }
     else if (root->type == Stmt_Return_)
-    {
+    {// 到了这一步，肯定是int返回类型的
+        if(funcType != 0)
+        {// √error
+            //----------------语义检查【4.2】----------------
+            throw SemanticError(root->lineno, root->str, "函数返回类型不一致");
+        }
         semantic_Exp_(root->son[0], 0, 0);
     }
     else
@@ -179,13 +183,14 @@ void semantic_stmt_(GrammaNode *root)
                 //----------------语义检查【4.1】----------------
                 throw SemanticError(root->lineno, root->str, "不在循环内");
             }
-            else
-            {
-                // cycleStackTop--;
-            }
         }
 
         // what to do with return xerror
+        if(root->str.compare("return") == 0 && funcType != 1)
+        {// 到了这一步必须是void，因此若当前是int返回类型则报错
+            //----------------语义检查【4.2】----------------
+            throw SemanticError(root->lineno, root->str, "函数返回类型不一致");
+        }
     }
 }
 
@@ -785,13 +790,25 @@ void semanticAnalyzer(GrammaNode *root)
     {
         GrammaNode *son = root->son[i];
         if (son->type == FuncDef_int_)
+        {
             semantic_FuncDef_int_(son); // 函数声明 int 无参数
+            funcType = 0;
+        }
         else if (son->type == FuncDef_void_)
+        {
             semantic_FuncDef_void_(son); // 函数声明  void 无参数
+            funcType = 1;
+        }
         else if (son->type == FuncDef_int_para_)
+        {
             semantic_FuncDef_int_para_(son); // 函数声明  int 有参数
+            funcType = 0;
+        }
         else if (son->type == FuncDef_void_para_)
+        {
             semantic_FuncDef_void_para_(son); // 函数声明  void 有参数
+            funcType = 1;
+        }
         else if (son->type == ConstDefs_)
             semantic_ConstDef_(son); // 常量定义
         else if (son->type == VarDefs_)

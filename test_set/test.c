@@ -38,6 +38,11 @@
 // int a[2][3] = {1,2,3,4,5};
 // int b = a[2][3], c;
 
+void add()
+{
+    return 1;
+}
+
 int main()
 {
     int a, b;
@@ -54,6 +59,5 @@ int main()
         continue;
         break; // just dead code
     }
-    continue;
-    
+    return;
 }

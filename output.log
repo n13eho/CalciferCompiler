@@ -1,4 +1,9 @@
-->node string:ROOT	 son numbers:1
+->node string:ROOT	 son numbers:2
+   ->node string:FuncDef_void_	 son numbers:2
+      ->node string:add	 son numbers:0
+      ->node string:Block	 son numbers:1
+         ->node string:Stmt_Return	 son numbers:1
+            ->node string:1	 son numbers:0
    ->node string:FuncDef_int_	 son numbers:2
       ->node string:main	 son numbers:0
       ->node string:Block	 son numbers:3
@@ -34,4 +39,4 @@
                      ->node string:continue	 son numbers:0
                ->node string:continue	 son numbers:0
                ->node string:break	 son numbers:0
-         ->node string:continue	 son numbers:0
+         ->node string:return	 son numbers:0
