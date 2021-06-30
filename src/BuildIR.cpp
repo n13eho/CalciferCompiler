@@ -775,7 +775,8 @@ Value* LAndExpNode(GrammaNode* node,LinearIR *IR)
 
         if(nullptr == FuncN)
         {
-            return ;
+            throw BuildIRError(ret->lineno,ret->VName,"error");
+            // return ;
         }
         //属于某个函数且该指令为首指令，新建一个基本块，并建立联系
         if(nullptr == bbNow)
@@ -797,7 +798,8 @@ Value* LAndExpNode(GrammaNode* node,LinearIR *IR)
     Value* ret = new Value("tr",node->lineno,node->var_scope);
     if(nullptr == FuncN)
     {
-        return ;
+        throw BuildIRError(ret->lineno,ret->VName,"error");
+        // return ;
     }
     //属于某个函数且该指令为首指令，新建一个基本块，并建立联系
     if(nullptr == bbNow)
@@ -878,7 +880,8 @@ Value* RelExpNode(GrammaNode* node,LinearIR *IR)
         Value* ret = new Value("t1",node->lineno,node->var_scope);
         if(nullptr == FuncN)
         {
-            return ;
+            throw BuildIRError(ret->lineno,ret->VName,"error");
+            // return ;
         }
         //属于某个函数且该指令为首指令，新建一个基本块，并建立联系
         if(nullptr == bbNow)

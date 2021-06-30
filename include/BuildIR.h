@@ -2,6 +2,7 @@
 #include "Instruction.h"
 #include "../src/sysy_node.hpp"
 #include<bits/stdc++.h>
+using namespace std;
 
 //线性IR，存储所有四元式
 class LinearIR
@@ -67,12 +68,12 @@ BasicBlock* CreateBlock(BasicBlock::BlockType t);
 //error
 class BuildIRError : public std::exception {
 public:
-	BuildIRError(int ln, string& name, const string& msg)
+	BuildIRError(int ln, std::string& name, const std::string& msg)
     {  
-        msg_ ="\n\033[31m[BuildIRError]\033[0m line " + to_string(ln) + ": " + name + " " + msg;
+        msg_ ="\n\033[31m[BuildIRError]\033[0m line " + std::to_string(ln) + ": " + name + " " + msg;
     }
 	const char* what() const throw() override { return msg_.c_str(); }
 private:
-	string msg_;
+	std::string msg_;
 };
 
