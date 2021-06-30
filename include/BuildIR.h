@@ -1,5 +1,7 @@
+#pragma once
 #include "Instruction.h"
 #include "../src/sysy_node.hpp"
+#include<bits/stdc++.h>
 
 //线性IR，存储所有四元式
 class LinearIR
@@ -27,7 +29,7 @@ class LinearIR
     //记录所有的block
     std::vector<BasicBlock*> Blocks;
     //将函数的value与对应的basicblock对应
-    std::map<Value*,BasicBlock*> FuncMap;
+    map<Value*,BasicBlock*> FuncMap;
 };
 
 void VisitAST(GrammaNode* DRoot,LinearIR *IR);
@@ -62,4 +64,15 @@ BasicBlock* GetPresentBlock(BasicBlock* funcP,BasicBlock::BlockType t);
 
 BasicBlock* CreateBlock(BasicBlock::BlockType t);
 
+//error
+class BuildIRError : public std::exception {
+public:
+	BuildIRError(int ln, string& name, const string& msg)
+    {  
+        msg_ ="\n\033[31m[BuildIRError]\033[0m line " + to_string(ln) + ": " + name + " " + msg;
+    }
+	const char* what() const throw() override { return msg_.c_str(); }
+private:
+	string msg_;
+};
 

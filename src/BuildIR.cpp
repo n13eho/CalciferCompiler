@@ -1000,7 +1000,7 @@ Value* InitValNode(GrammaNode* node,LinearIR *IR)
             //InitVals_
             GrammaNode* p_node = node->son[0];
             //临时变量需要一个全局变量记录对应序号
-            ArrayValue* ret= new ArrayValue("t1",p_node->lineno,p_node->var_scope);
+            ArrayValue* ret= new ArrayValue("t1",p_node->lineno,p_node->var_scope,0);
             for(int i=0;i<p_node->son.size();i++)
             {
                 Value* arrayV = InitValNode(p_node->son[i],IR);
@@ -1029,7 +1029,7 @@ Value* AddExpNode(GrammaNode* node,LinearIR *IR)
             Value* arg1 = AddExpNode(node->son[0],IR);
             Value* arg2 = MulExpNode(node->son[1],IR);
             //本表达式结果
-            Value* ret = new IntegerValue("t3",node->lineno,node->var_scope);
+            Value* ret = new IntegerValue("t3",node->lineno,node->var_scope,0);
             if(nullptr == FuncN)
             {
                 return ;
@@ -1062,7 +1062,7 @@ Value* AddExpNode(GrammaNode* node,LinearIR *IR)
             //递归arg1、arg2
             Value* arg1 = AddExpNode(node->son[0],IR);
             Value* arg2 = MulExpNode(node->son[1],IR);
-            Value* ret = new IntegerValue("t3",node->lineno,node->var_scope);
+            Value* ret = new IntegerValue("t3",node->lineno,node->var_scope,0);
 
             if(nullptr == FuncN)
             {
@@ -1107,7 +1107,7 @@ Value* MulExpNode(GrammaNode* node,LinearIR *IR)
             Value* arg1 = MulExpNode(node->son[0],IR);
             Value* arg2 = UnaryExpNode(node->son[1],IR);
             //临时变量名待改
-            Value* ret = new IntegerValue("t3",node->lineno,node->var_scope);
+            Value* ret = new IntegerValue("t3",node->lineno,node->var_scope,0);
             if(nullptr == FuncN)
             {
                 return ;
@@ -1141,7 +1141,7 @@ Value* MulExpNode(GrammaNode* node,LinearIR *IR)
             Value* arg1 = MulExpNode(node->son[0],IR);
             Value* arg2 = UnaryExpNode(node->son[1],IR);
             //临时变量名待改
-            Value* ret = new IntegerValue("t3",node->lineno,node->var_scope);
+            Value* ret = new IntegerValue("t3",node->lineno,node->var_scope,0);
 
             if(nullptr == FuncN)
             {
@@ -1177,7 +1177,7 @@ Value* MulExpNode(GrammaNode* node,LinearIR *IR)
             Value* arg1 = MulExpNode(node->son[0],IR);
             Value* arg2 = UnaryExpNode(node->son[1],IR);
             //临时变量名待改
-            Value* ret = new IntegerValue("t3",node->lineno,node->var_scope);
+            Value* ret = new IntegerValue("t3",node->lineno,node->var_scope,0);
             if(nullptr == FuncN)
             {
                 return ;
@@ -1315,10 +1315,11 @@ Value* UnaryExpNode(GrammaNode* node,LinearIR *IR)
             }
             else if(SUB_ == node->son[0]->type)
             {
-                ret = new IntegerValue("t3",node->lineno,node->var_scope);
+                ret = new IntegerValue("t3",node->lineno,node->var_scope,0);
                 if(nullptr == FuncN)
                 {
-                    return ;
+                    throw BuildIRError(node->lineno, ret->VName, "错误");
+                    // return ;
                 }
                 //属于某个函数且该指令为首指令，新建一个基本块，并建立联系
                 if(nullptr == bbNow)
@@ -1339,7 +1340,8 @@ Value* UnaryExpNode(GrammaNode* node,LinearIR *IR)
 
                 if(nullptr == FuncN)
                 {
-                    return ;
+                    throw BuildIRError(node->lineno, ret->VName, "错误");
+                    // return ;
                 }
                 //属于某个函数且该指令为首指令，新建一个基本块，并建立联系
                 if(nullptr == bbNow)
@@ -1384,11 +1386,12 @@ Value* PrimaryExpNode(GrammaNode* node,LinearIR *IR)
     {
         ArrayValue* lval = (ArrayValue*)SymbolTable->askItem(node);
         Value* index = LValArrayNode(node,IR);
-        Value* ret = new IntegerValue("tx",node->lineno,node->var_scope);
+        Value* ret = new IntegerValue("tx",node->lineno,node->var_scope,0);
 
         if(nullptr == FuncN)
         {
-            return ;
+            throw BuildIRError((int)node->lineno, (string&)ret->VName, (string&)"错误");
+            // return ;
         }
         //属于某个函数且该指令为首指令，新建一个基本块，并建立联系
         if(nullptr == bbNow)
@@ -1446,11 +1449,12 @@ Value* LValArrayNode(GrammaNode* node,LinearIR *IR)
                 ImmValue* present_dimen = new ImmValue("dimen",dimen);
                 //当前维度的索引
                 Value* present_index = AddExpNode(p_node->son[i],IR);
-                Value* arg3 = new IntegerValue("t"+std::to_string(i),node->lineno,node->var_scope);
+                Value* arg3 = new IntegerValue("t"+std::to_string(i),node->lineno,node->var_scope,0);
 
                 if(nullptr == FuncN)
                 {
-                    return ;
+                    throw BuildIRError(arg3->lineno, arg3->VName, "错误");
+                    // return ;
                 }
                 //属于某个函数且该指令为首指令，新建一个基本块，并建立联系
                 if(nullptr == bbNow)
