@@ -2,6 +2,12 @@
 #include "semanticAnalyze.h"
 #include <stack>
 
+/*
+每次进入表达式，判断is_const
+constdef 剪枝
+vardef 左值剪枝
+*/
+
 extern idTable_struct* SymbolTable;
 //当前是否在全局基本块中，加入顶层所有的变量定义相关指令加
 int global = 0;
@@ -40,16 +46,16 @@ void VisitAST(GrammaNode* DRoot,LinearIR *IR)
     {
         if(ConstDefs_ == DRoot->son[i]->type)
         {
-            if(globalBlock == nullptr)
-            {
-                globalBlock = new BasicBlock(BasicBlock::Basic);
-                IR->AddBlock(globalBlock);
-            }
-            bbNow = globalBlock;
-            global = 1;
-            ConstDefNode(DRoot->son[i],IR);
-            bbNow = nullptr;
-            global = 0;
+            // if(globalBlock == nullptr)
+            // {
+            //     globalBlock = new BasicBlock(BasicBlock::Basic);
+            //     IR->AddBlock(globalBlock);
+            // }
+            // bbNow = globalBlock;
+            // global = 1;
+            // ConstDefNode(DRoot->son[i],IR);
+            // bbNow = nullptr;
+            // global = 0;
         }
         else if(VarDefs_ ==  DRoot->son[i]->type)
         {
