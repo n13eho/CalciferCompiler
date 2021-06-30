@@ -25,7 +25,7 @@ int main(int argc, char *argv[])
         show_node(Droot, 0); //打印AST
         semanticAnalyzer(Droot); // 语义检查
         showSymbleTable(SymbolTable); // 打印符号表
-        //VisitAST(Droot,IR1);//建立四元式
+        VisitAST(Droot,IR1);//建立四元式
     }
     return 0;
 }
