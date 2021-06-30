@@ -47,10 +47,10 @@ void printIdMap()
 IntegerValue *semantic_LVal_(GrammaNode *root)
 {
     if (root->type == LVal_Array_)
-        return semantic_LVal_Array_(root, -1, 0); //-1表示必须不是常量！！！xerror
+        return semantic_LVal_Array_(root, -1, 0); //-1表示必须不是常量！！！√error
     else
     {
-        return semantic_PrimaryExp_(root, -1, 0); //xerror,必须不是常量
+        return semantic_PrimaryExp_(root, -1, 0); //√error,必须不是常量
     }
 }
 
@@ -224,6 +224,8 @@ IntegerValue *semantic_LVal_Array_(GrammaNode *root, int needConst, int needCond
     GrammaNode *temp = idList[make_pair(root->son[0]->str, root->son[0]->var_scope)]; // 从idList找原来的书上的结点
     // 检查一下是不是arrayvlaue
     ArrayValue *val = (ArrayValue *)SymbolTable->askItem(temp);
+     if(val->isConst == 1 && needConst == -1) //左值出现了一个常量数组
+        throw SemanticError(root->lineno,root->str,"左值应该是个变量");
     // 建立映射
     SymbolTable->addItem(root, val);
     // SymbolTable->addItem(root->son[0], val);
@@ -271,6 +273,7 @@ IntegerValue *semantic_LVal_Array_(GrammaNode *root, int needConst, int needCond
     }
     //根据索引求值
     int indexVal = val->ArrayElement[index];
+   
     IntegerValue *ret = new IntegerValue(name + to_string(cnt++), root->lineno, root->var_scope, indexVal, val->isConst);
     // 建立映射
     SymbolTable->addItem(root, ret);
@@ -282,21 +285,21 @@ IntegerValue *semantic_PrimaryExp_(GrammaNode *root, int needConst, int needCond
 {
     // 情况3：IntConst
     int constval = 0;
-    if (root->type == IntConst_D_)
+    if (root->type == IntConst_D_&& needConst!=-1)
     {
         constval = stoi(root->str, 0, 10);
         IntegerValue *ret = new IntegerValue(name + to_string(cnt++), root->lineno, root->var_scope, constval, 1);
         // SymbolTable->addItem(root,ret); // 这样的纯数字就不需要映射了
         return ret;
     }
-    else if (root->type == IntConst_O_)
+    else if (root->type == IntConst_O_&& needConst!=-1)
     {
         constval = stoi(root->str, 0, 8);
         IntegerValue *ret = new IntegerValue(name + to_string(cnt++), root->lineno, root->var_scope, constval, 1);
         // SymbolTable->addItem(root,ret); // 这样的纯数字就不需要映射了
         return ret;
     }
-    else if (root->type == IntConst_O_)
+    else if (root->type == IntConst_O_&& needConst!=-1)
     {
         constval = stoi(root->str, 0, 16);
         IntegerValue *ret = new IntegerValue(name + to_string(cnt++), root->lineno, root->var_scope, constval, 1);
@@ -317,6 +320,10 @@ IntegerValue *semantic_PrimaryExp_(GrammaNode *root, int needConst, int needCond
             //----------------语义检查【1.2】----------------
             throw SemanticError(temp->lineno, temp->VName, "不是常量");
         }
+        else if(needConst == -1 && temp->isConst == 1)
+        {
+            throw SemanticError(temp->lineno, temp->VName, "左值应该是一个变量");
+        }
         else
         {
             SymbolTable->addItem(root, temp);
@@ -329,6 +336,8 @@ IntegerValue *semantic_PrimaryExp_(GrammaNode *root, int needConst, int needCond
     }
     else
     {
+        if(needConst == -1)
+            throw SemanticError(root->lineno, root->str, "左值不能是表达式");
         return semantic_Exp_(root, needConst, needCond);
     }
 }
@@ -373,7 +382,7 @@ IntegerValue *semantic_UnaryExp_(GrammaNode *root, int needConst, int needCond)
             tem->RealValue = !sonval->RealValue;
         else
         {
-            //xerror
+            throw SemanticError(sonval->lineno,sonval->VName,"不是条件语句");//√error
         }
 
         SymbolTable->addItem(root, tem);
@@ -523,13 +532,12 @@ void semantic_FuncDef_void_para_(GrammaNode *root)
 
 ArrayValue *semantic_initVal_Son(GrammaNode *root, int isConst, int dimen = 0, vector<unsigned> dimen_std = {0})
 {
-    int base = 0, batchsize, batchnum = dimen_std.size() - 1, tot = 1;
+    int base = 0, batchsize, tot = 1;
     //base: 当前填充到数组的第几个
-    //batchnum：鸡肋变量，待删
     //tot：当前需要填充的数组总共多大
     ArrayValue *ret = new ArrayValue(name + to_string(cnt++), root->lineno, root->var_scope, isConst);
     //创建带返回的value
-    batchsize = dimen_std[batchnum];
+    batchsize = dimen_std[dimen_std.size() - 1];
     //batchsize：当前填充维度大小
     for (auto i : dimen_std)
         tot *= i;
@@ -541,7 +549,10 @@ ArrayValue *semantic_initVal_Son(GrammaNode *root, int isConst, int dimen = 0, v
         else
         {
             vector<unsigned> new_dim;
-            new_dim.assign(dimen_std.begin() + 1, dimen_std.end()); //新维度减少到0 xerror101
+            if(dimen_std.size()==1)
+                throw SemanticError(root->lineno,root->str,"维度错误");
+            else new_dim.assign(dimen_std.begin() + 1, dimen_std.end());
+            new_dim.assign(dimen_std.begin() + 1, dimen_std.end()); //新维度减少到0 √error101
             ArrayValue *val = (ArrayValue *)semantic_InitVal3_(root->son[soni], isConst, 0, new_dim);
             ret->ArrayElement.insert(ret->ArrayElement.end(), val->ArrayElement.begin(), val->ArrayElement.end());
             base += tot / dimen_std[0]; //多了一个数组的值
@@ -561,13 +572,15 @@ ArrayValue *semantic_initVal_Son(GrammaNode *root, int isConst, int dimen = 0, v
         else
         {
             vector<unsigned> new_dim;
-            new_dim.assign(dimen_std.begin() + 1, dimen_std.end());
+            if(dimen_std.size()==1)
+                throw SemanticError(root->lineno,root->str,"维度错误");
+            else new_dim.assign(dimen_std.begin() + 1, dimen_std.end());
             ArrayValue *val = (ArrayValue *)semantic_InitVal3_(root->son[soni], isConst, 0, new_dim);
             while (val->ArrayElement[val->ArrayElement.size() - 1] == 0)
                 val->ArrayElement.pop_back();
             if (val->ArrayElement.size() + batchi > batchsize)
             {
-                //xerror101;
+                throw SemanticError(val->lineno,val->VName,"维度错误");
             }
             if (batchi == 0)
             { //如果恰好在一个batch，那就不拉平数组了
@@ -608,27 +621,23 @@ Value *semantic_InitVal3_(GrammaNode *root, int isConst, int dimen, vector<unsig
     else if (root->type == InitVal_NULL)
     {
         int x = 1;
-        for (int i = dimen; i < dimen_std.size(); i++)
+        for (int i = 0; i < dimen_std.size(); i++)
             x *= dimen_std[i];
         vector<int> valzero(x, 0); //初值全设为0
-        ArrayValue *ret = semantic_initVal_Son(root->son[0], isConst, dimen, dimen_std);
+        ArrayValue *ret = semantic_initVal_Son(root->son[0], isConst, 0, dimen_std);
         SymbolTable->addItem(root, ret);
         return ret;
     }
     else if (root->type == InitVal_)
     { //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@该怎么解决呢
-        if (dimen >= dimen_std.size())
-        { //----------语义检查：维度匹配-----
-            //xerror;
-            return NULL;
-        }
-        ArrayValue *ret = semantic_initVal_Son(root->son[0], isConst, dimen, dimen_std);
+        ArrayValue *ret = semantic_initVal_Son(root->son[0], isConst, 0, dimen_std);
         SymbolTable->addItem(root, ret);
         return ret;
     }
     else
     {
-        return NULL; //xerror
+        throw SemanticError(root->lineno,root->str,"不可能");
+        return NULL; //√error
     }
 }
 
@@ -672,7 +681,7 @@ void semantic_ConstDefSon(GrammaNode *root)
 
         // 计算初值
         ArrayValue *initVal = (ArrayValue *)semantic_InitVal3_(root->son[2], 1, 0, dimen); //calc initval
-        //TODO:语义检查：维度和初值是否匹配 xerror
+        //语义检查：维度和初值是否匹配 在semantic_InitVal3_中已经检查
 
         /// 语义检查通过，new结点，建立映射
         // new
@@ -753,8 +762,8 @@ void semantic_VarDefSon(GrammaNode *root)
 
         // 算初值
         ArrayValue *initArrayValueObj = (ArrayValue *)semantic_InitVal3_(root->son[2], 0, 0, dimen);
-        // TODO:算出初值之后还得检查这个声明的维度信息和这个初值是否匹配
-        // 语义检查 -------------------------- xerror
+        // 算出初值之后还得检查这个声明的维度信息和这个初值是否匹配
+        // 语义检查 -------------------------- 在semantic_InitVal3_里检查了
         // set Array 设置初值
         varArrayInit->setArray(initArrayValueObj->ArrayElement);
 

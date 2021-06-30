@@ -1,37 +1,12 @@
-->node string:ROOT	 son numbers:1
+->node string:ROOT	 son numbers:1
    ->node string:FuncDef_int_	 son numbers:2
       ->node string:main	 son numbers:0
-      ->node string:Block	 son numbers:3
-         ->node string:VarDefs	 son numbers:2
-            ->node string:VarDef_single_	 son numbers:1
-               ->node string:a	 son numbers:0
-            ->node string:VarDef_single_	 son numbers:1
-               ->node string:b	 son numbers:0
-         ->node string:Stmt_While	 son numbers:2
-            ->node string:Cond	 son numbers:1
-               ->node string:LOrExp	 son numbers:1
-                  ->node string:LAndExp	 son numbers:1
-                     ->node string:1	 son numbers:0
-            ->node string:Block	 son numbers:5
-               ->node string:Stmt_Assign	 son numbers:2
-                  ->node string:a	 son numbers:0
-                  ->node string:AddExp_Add	 son numbers:2
-                     ->node string:a	 son numbers:0
-                     ->node string:1	 son numbers:0
-               ->node string:continue	 son numbers:0
-               ->node string:Stmt_While	 son numbers:2
-                  ->node string:Cond	 son numbers:1
-                     ->node string:LOrExp	 son numbers:1
-                        ->node string:LAndExp	 son numbers:1
-                           ->node string:1	 son numbers:0
-                  ->node string:Block	 son numbers:3
-                     ->node string:Stmt_Assign	 son numbers:2
-                        ->node string:a	 son numbers:0
-                        ->node string:AddExp_Sub	 son numbers:2
-                           ->node string:a	 son numbers:0
-                           ->node string:1	 son numbers:0
-                     ->node string:break	 son numbers:0
-                     ->node string:continue	 son numbers:0
-               ->node string:continue	 son numbers:0
-               ->node string:break	 son numbers:0
-         ->node string:continue	 son numbers:0
+      ->node string:Block	 son numbers:2
+         ->node string:ConstDefs_	 son numbers:1
+            ->node string:ConstDef_single_	 son numbers:2
+               ->node string:tt	 son numbers:0
+               ->node string:InitVal_EXP	 son numbers:1
+                  ->node string:10	 son numbers:0
+         ->node string:Stmt_Assign	 son numbers:2
+            ->node string:tt	 son numbers:0
+            ->node string:100	 son numbers:0
