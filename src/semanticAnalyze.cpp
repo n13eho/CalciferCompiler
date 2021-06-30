@@ -16,7 +16,7 @@ map<pair<string, string>, GrammaNode *> idList;
 //循环体栈，用于标记continue，break
 GrammaNode *cycleStack[10]; // 10 for 十层循环MAX
 //该栈顶
-int cycleStackTop = -1;
+int cycleStackTop = 0;
 
 //外部符号表
 extern idTable_struct *SymbolTable;
@@ -28,6 +28,7 @@ IntegerValue *semantic_EqExp_(GrammaNode *root);
 void semantic_ConstDef_(GrammaNode *root);
 void semantic_VarDefs_(GrammaNode *root);
 Value *semantic_InitVal3_(GrammaNode *root, int isConst, int dimen = 0, vector<unsigned> dimen_std = {0});
+void semantic_Block(GrammaNode *root);
 
 void printIdMap()
 { //这里输出的是作用域检查的结果，打印idNameList和idList的内容
@@ -49,7 +50,6 @@ IntegerValue *semantic_LVal_(GrammaNode *root)
         return semantic_LVal_Array_(root, -1, 0); //-1表示必须不是常量！！！xerror
     else
     {
-        cout<<2222<<endl;
         return semantic_PrimaryExp_(root, -1, 0); //xerror,必须不是常量
     }
 }
@@ -134,10 +134,9 @@ void semantic_stmt_(GrammaNode *root)
 {
     if (root->type == Stmt_Assign_)
     {
-        cout<<1111<<endl;
-        IntegerValue *zuo = semantic_LVal_(root); // here lies the prob, i wanna sleep first... see ya in 8 hours
-        cout<<9999<<endl;
-        IntegerValue *you = semantic_Exp_(root, 0, 0);
+        IntegerValue *zuo = semantic_LVal_(root->son[0]); // here lies the prob
+        IntegerValue *you = semantic_Exp_(root->son[1], 0, 0);
+        // cout<< you->RealValue <<endl;
         IntegerValue *tem = new IntegerValue(name + to_string(cnt++), root->lineno, root->var_scope, you->RealValue, 0);
         SymbolTable->addItem(root->son[0], tem);
         SymbolTable->addItem(root, tem);
@@ -159,18 +158,34 @@ void semantic_stmt_(GrammaNode *root)
     }
     else if (root->type == Stmt_While_)
     {
+        cycleStackTop++;
         semantic_cond_(root->son[0]);
-        semantic_stmt_(root->son[1]);
+        semantic_Block(root->son[1]);
+        cycleStackTop--;
     }
     else if (root->type == Stmt_Return_)
     {
         semantic_Exp_(root->son[0], 0, 0);
     }
     else
-    {
-        //xerror
+    {   
         //break,return,continue;
         //这里需要循环语义检查！
+        // break and continue here first
+        if(root->str.compare("break") == 0 || root->str.compare("continue") == 0)
+        {
+            if(cycleStackTop == 0)
+            {// 0 层循环
+                //----------------语义检查【4.1】----------------
+                throw SemanticError(root->lineno, root->str, "不在循环内");
+            }
+            else
+            {
+                // cycleStackTop--;
+            }
+        }
+
+        // what to do with return xerror
     }
 }
 
@@ -304,9 +319,7 @@ IntegerValue *semantic_PrimaryExp_(GrammaNode *root, int needConst, int needCond
         }
         else
         {
-            
             SymbolTable->addItem(root, temp);
-            cout<<5555<<endl;
             return temp;
         }
     }
@@ -326,7 +339,12 @@ IntegerValue *semantic_UnaryExp_(GrammaNode *root, int needConst, int needCond)
     {
         GrammaNode *tempGn = idList[make_pair(root->son[0]->str, root->son[0]->var_scope)]; // 从idList找原来的书上的结点
         FunctionValue *val = (FunctionValue *)SymbolTable->askItem(tempGn);
-        // 函数调用语义检查 xerror
+        // 函数调用语义检查 √error：这里先只检查参数个数
+        if(root->son[1]->son.size() != val->getParams().size())
+        {// 个数不匹配
+            //----------------语义检查【3.1】----------------
+            throw SemanticError(root->lineno, root->son[0]->str, "函数参数个数不匹配");
+        }
 
         //语义检查没问题就映射
         SymbolTable->addItem(root->son[0], val);

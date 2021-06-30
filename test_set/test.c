@@ -40,6 +40,20 @@
 
 int main()
 {
-    int x;
-    x = 10;
+    int a, b;
+    while (1)
+    {
+        a = a + 1;
+        continue;
+        while(1)
+        {
+            a = a - 1;
+            break;
+            continue; // just dead code
+        }
+        continue;
+        break; // just dead code
+    }
+    continue;
+    
 }
