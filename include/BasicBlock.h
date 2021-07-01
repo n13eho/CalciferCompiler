@@ -12,6 +12,10 @@ class BasicBlock
     Continue
     };
     BasicBlock(BasicBlock::BlockType t){bType = t;}
+    void setFuncV(FunctionValue* f)
+    {
+        FuncV = f;
+    }
     void Addins(int id){InstrList.push_back(id);}
     //this作为前驱、succ作为后继
     void Link(BasicBlock* succ)
@@ -27,7 +31,7 @@ class BasicBlock
     {
         if(0!=InstrList.size())
         {
-            return InstrList[0];
+            return *(InstrList.begin());
         }
         else
         {
@@ -59,7 +63,10 @@ class BasicBlock
         }
     }
 
-    std::vector<int> InstrList;
+    FunctionValue* getFuncV(){return FuncV;}
+
+    std::list<int> InstrList;
+    // std::vector<int> ;
     //后继基本块
     std::vector<BasicBlock*> succBlock;
     //前驱基本块
@@ -70,4 +77,6 @@ class BasicBlock
     std::vector<BasicBlock*> domBlock;
     //基本块类型
     BlockType bType;
+    //对应符号表中的函数
+    FunctionValue* FuncV;
 };

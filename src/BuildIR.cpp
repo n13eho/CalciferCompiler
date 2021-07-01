@@ -42,8 +42,10 @@ BasicBlock* CreateBlock(BasicBlock::BlockType t)
 void VisitAST(GrammaNode* DRoot,LinearIR *IR)
 {
     //全局基本块
-    BasicBlock* globalBlock = nullptr;
-    // std::cout<<"start VisitAST"<<std::endl;
+    BasicBlock* globalBlock = new BasicBlock(BasicBlock::Basic);
+    IR->AddBlock(globalBlock);
+    std::cout<<"start VisitAST"<<std::endl;
+    
 
     for(int i=0;i<DRoot->son.size();i++)
     {
@@ -64,8 +66,9 @@ void VisitAST(GrammaNode* DRoot,LinearIR *IR)
         {
             if(globalBlock == nullptr)
             {
-                globalBlock = new BasicBlock(BasicBlock::Basic);
-                IR->AddBlock(globalBlock);
+                //error
+                // globalBlock = new BasicBlock(BasicBlock::Basic);
+                // IR->AddBlock(globalBlock);
             }
             bbNow = globalBlock;
             global = 1;
@@ -225,14 +228,15 @@ void VarDefNode(GrammaNode* node,LinearIR *IR)
         else if(VarDef_single_init_ ==  p_node->type)
         {
             //左值
+            // std::cout<<"VarDef_single_init_"<<p_node->type<<std::endl;
             Value* VL=SymbolTable->askItem(p_node->son[0]);
 
             //右值必为单值
             Value* VR=nullptr;
             //VarDef:Ident ASSIGN InitVal
-            if(node->son[i]->son.size()==2)
+            if(p_node->son.size()==3)
             {
-                VR = InitValNode(node->son[i]->son[1],IR);
+                VR = InitValNode(p_node->son[2],IR);
                 Instruction* ins_new = new Instruction(IR->getInstCnt(),Instruction::Assign,1);
                 ins_new->addOperand(VR);
                 ins_new->setResult(VL);
@@ -250,6 +254,7 @@ void VarDefNode(GrammaNode* node,LinearIR *IR)
             }
             else
             {
+                std::cout<<"VarDef_single's children num is "<<p_node->son.size()<<std::endl;
                 //1. int a={}  不符合语义约束
                 //2. 其他
                 //error
@@ -288,8 +293,15 @@ void FuncDefNode(GrammaNode* node,LinearIR *IR)
     if(nullptr != block_)
     {    
         BasicBlock* NewFunc = new BasicBlock(BasicBlock::Basic);
+        FunctionValue* fcNode = (FunctionValue*)SymbolTable->askItem(node);
+        NewFunc->setFuncV(fcNode);
         IR->AddBlock(NewFunc);
-        IR->FuncMap[SymbolTable->askItem(node)] = NewFunc;
+        IR->FuncMap[(Value*)fcNode] = NewFunc;
+        if(fcNode->getName() == "main")
+        {
+            IR->Blocks[0]->Link(NewFunc);
+        }
+
         FuncN = NewFunc;
         bbNow = nullptr;
         //递归函数体
@@ -463,8 +475,8 @@ void IfNode(GrammaNode* node,LinearIR *IR)
         FuncN->AddDom(next);    
         
 
-        //跳转指令
-        Instruction* ins_br = new Instruction(IR->getInstCnt(),Instruction::Jmp,1);
+        //条件跳转指令
+        Instruction* ins_br = new Instruction(IR->getInstCnt(),Instruction::ConBr,1);
         IR->InsertInstr(ins_br);
         bbNow->Addins(ins_br->getId());
         ins_br->setParent(bbNow);
@@ -1253,6 +1265,7 @@ Value* UnaryExpNode(GrammaNode* node,LinearIR *IR)
 {
     if(UnaryExp_func_ == node->type)
     {
+        // std::cout<<"UnaryExp_func "<<node->str<<std::endl;
         if(node->son.size() == 2)
         {
             //有实参的函数调用

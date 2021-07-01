@@ -43,7 +43,7 @@
 // int a[2][3] = {1,2,3,4,5};
 // int b = a[2][3], c;
 
-// void add()
+// int add()
 // {
 //     return 1;
 // }
@@ -66,9 +66,18 @@
 //     }
 //     return;
 // }
-int p;
+int val(int c,int b)
+{
+    int w = b+c;
+    return 5;
+}
+
+int p=5;
 int main()
 {
     int a[1]={1,2};
-    a[0]=p;
+    if(p>0)
+    {
+        a[0] = 0;
+    }
 }
