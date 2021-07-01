@@ -332,15 +332,15 @@ void BlockNode(GrammaNode* node,LinearIR *IR)
         }
         else if(BREAK_ == sonnode->type)
         {
-            //todo
+            BreakNode(sonnode,IR);
         }
         else if(CONTINUE_ == sonnode->type)
         {
-            //todo
+            ContinueNode(sonnode,IR);
         }
         else if(RETURN_ == sonnode->type)
         {
-            //todo
+            ReturnNode(sonnode,IR);
         }
         else if(Block_ == sonnode->type)
         {
