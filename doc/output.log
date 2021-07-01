@@ -94,7 +94,7 @@ w 11 300
                ->node string:p	 son numbers:0
                ->node string:1	 son numbers:0
 
-SymbolTable指针地址：0x7fffd67f0180 符号表大小：30
+SymbolTable指针地址：0x7fffcaa66180 符号表大小：30
 GNType: 300	scope:	1	GN Name: val		lineNumber:69
 GNType: 300	scope:	11	GN Name: c		lineNumber:69
 GNType: 438	scope:		GN Name: FuncFParam_single_		lineNumber:69

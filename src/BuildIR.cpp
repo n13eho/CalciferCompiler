@@ -851,7 +851,7 @@ Value* EqExpNode(GrammaNode* node,LinearIR *IR)
     {
         Value* VL = EqExpNode(node->son[0],IR);
         Value* RL = RelExpNode(node->son[1],IR);
-        Value* ret = new Value("t1",node->lineno,node->var_scope);
+        Value* ret = SymbolTable->askItem(node);//new Value("t1",node->lineno,node->var_scope);
         if(nullptr == FuncN)
         {
             throw BuildIRError(VL->lineno, VL->VName, "错误");
@@ -875,7 +875,7 @@ Value* EqExpNode(GrammaNode* node,LinearIR *IR)
     {
         Value* VL = EqExpNode(node->son[0],IR);
         Value* RL = RelExpNode(node->son[1],IR);
-        Value* ret = new Value("t1",node->lineno,node->var_scope);
+        Value* ret = SymbolTable->askItem(node);//new Value("t1",node->lineno,node->var_scope);
         if(nullptr == FuncN)
         {
             throw BuildIRError(VL->lineno, VL->VName, "错误");
@@ -912,7 +912,7 @@ Value* RelExpNode(GrammaNode* node,LinearIR *IR)
     {
         Value* VL = RelExpNode(node->son[0],IR);
         Value* RL = AddExpNode(node->son[1],IR);
-        Value* ret = new Value("t1",node->lineno,node->var_scope);
+        Value* ret = SymbolTable->askItem(node);//new Value("t1",node->lineno,node->var_scope);
         if(nullptr == FuncN)
         {
             throw BuildIRError(ret->lineno,ret->VName,"error");
@@ -937,7 +937,7 @@ Value* RelExpNode(GrammaNode* node,LinearIR *IR)
         // std::cout<<"RelExp_BG_..."<<node->type<<std::endl;
         Value* VL = RelExpNode(node->son[0],IR);
         Value* RL = AddExpNode(node->son[1],IR);
-        Value* ret = new Value("t1",node->lineno,node->var_scope);
+        Value* ret = SymbolTable->askItem(node);// new Value("t1",node->lineno,node->var_scope);
 
         if(nullptr == FuncN)
         {
@@ -963,7 +963,7 @@ Value* RelExpNode(GrammaNode* node,LinearIR *IR)
     {
         Value* VL = RelExpNode(node->son[0],IR);
         Value* RL = AddExpNode(node->son[1],IR);
-        Value* ret = new Value("t1",node->lineno,node->var_scope);
+        Value* ret = SymbolTable->askItem(node);//new Value("t1",node->lineno,node->var_scope);
         if(nullptr == FuncN)
         {
             throw BuildIRError(VL->lineno, VL->VName, "错误");
@@ -987,7 +987,7 @@ Value* RelExpNode(GrammaNode* node,LinearIR *IR)
     {
         Value* VL = RelExpNode(node->son[0],IR);
         Value* RL = AddExpNode(node->son[1],IR);
-        Value* ret = new Value("t1",node->lineno,node->var_scope);
+        Value* ret = SymbolTable->askItem(node);//new Value("t1",node->lineno,node->var_scope);
         if(nullptr == FuncN)
         {
             throw BuildIRError(VL->lineno, VL->VName, "错误");
@@ -1077,7 +1077,7 @@ Value* AddExpNode(GrammaNode* node,LinearIR *IR)
             Value* arg1 = AddExpNode(node->son[0],IR);
             Value* arg2 = MulExpNode(node->son[1],IR);
             //本表达式结果
-            Value* ret = new IntegerValue("t3",node->lineno,node->var_scope,0);
+            Value* ret = SymbolTable->askItem(node);//new IntegerValue("t3",node->lineno,node->var_scope,0);
             if(nullptr == FuncN)
             {
                 throw BuildIRError(arg1->lineno, arg1->VName, "错误");
@@ -1111,7 +1111,7 @@ Value* AddExpNode(GrammaNode* node,LinearIR *IR)
             //递归arg1、arg2
             Value* arg1 = AddExpNode(node->son[0],IR);
             Value* arg2 = MulExpNode(node->son[1],IR);
-            Value* ret = new IntegerValue("t3",node->lineno,node->var_scope,0);
+            Value* ret = SymbolTable->askItem(node);//erValue("t3",node->lineno,node->var_scope,0);
 
             if(nullptr == FuncN)
             {
@@ -1157,7 +1157,7 @@ Value* MulExpNode(GrammaNode* node,LinearIR *IR)
             Value* arg1 = MulExpNode(node->son[0],IR);
             Value* arg2 = UnaryExpNode(node->son[1],IR);
             //临时变量名待改
-            Value* ret = new IntegerValue("t3",node->lineno,node->var_scope,0);
+            Value* ret = SymbolTable->askItem(node);//new IntegerValue("t3",node->lineno,node->var_scope,0);
             if(nullptr == FuncN)
             {
                 throw BuildIRError(arg1->lineno, arg1->VName, "错误");
@@ -1192,7 +1192,7 @@ Value* MulExpNode(GrammaNode* node,LinearIR *IR)
             Value* arg1 = MulExpNode(node->son[0],IR);
             Value* arg2 = UnaryExpNode(node->son[1],IR);
             //临时变量名待改
-            Value* ret = new IntegerValue("t3",node->lineno,node->var_scope,0);
+            Value* ret = SymbolTable->askItem(node);//new IntegerValue("t3",node->lineno,node->var_scope,0);
 
             if(nullptr == FuncN)
             {
@@ -1229,7 +1229,7 @@ Value* MulExpNode(GrammaNode* node,LinearIR *IR)
             Value* arg1 = MulExpNode(node->son[0],IR);
             Value* arg2 = UnaryExpNode(node->son[1],IR);
             //临时变量名待改
-            Value* ret = new IntegerValue("t3",node->lineno,node->var_scope,0);
+            Value* ret = SymbolTable->askItem(node);//new IntegerValue("t3",node->lineno,node->var_scope,0);
             if(nullptr == FuncN)
             {
                 throw BuildIRError(arg1->lineno, arg1->VName, "错误");
@@ -1273,7 +1273,7 @@ Value* UnaryExpNode(GrammaNode* node,LinearIR *IR)
             //有实参的函数调用
             FunctionValue* called=(FunctionValue*)SymbolTable->askItem(node->son[0]);
             //根据函数返回值，若为int，建立返回值
-            Value* ret=new Value("t1",node->lineno,node->var_scope);
+            Value* ret=SymbolTable->askItem(node);//new Value("t1",node->lineno,node->var_scope);
             int para_num = node->son[1]->son.size();
 
             if(nullptr == FuncN)
@@ -1315,7 +1315,7 @@ Value* UnaryExpNode(GrammaNode* node,LinearIR *IR)
             //无实参的函数调用
             FunctionValue* called=(FunctionValue*)SymbolTable->askItem(node->son[0]);
             //根据函数返回值，若为int，建立返回值
-            Value* ret=new Value("t1",node->lineno,node->var_scope);
+            Value* ret=SymbolTable->askItem(node);//new Value("t1",node->lineno,node->var_scope);
             if(nullptr == FuncN)
             {
                 throw BuildIRError(ret->lineno, ret->VName, "错误");
@@ -1371,7 +1371,7 @@ Value* UnaryExpNode(GrammaNode* node,LinearIR *IR)
             }
             else if(SUB_ == node->son[0]->type)
             {
-                ret = new IntegerValue("t3",node->lineno,node->var_scope,0);
+                ret = SymbolTable->askItem(node->son[0]);//new IntegerValue("t3",node->lineno,node->var_scope,0);
                 if(nullptr == FuncN)
                 {
                     throw BuildIRError(node->lineno, ret->VName, "错误");
@@ -1392,7 +1392,7 @@ Value* UnaryExpNode(GrammaNode* node,LinearIR *IR)
             }
             else if(NOT_ == node->son[0]->type)
             {
-                ret = new Value("t3",node->lineno,node->var_scope);
+                ret = SymbolTable->askItem(node->son[0]);//new Value("t3",node->lineno,node->var_scope);
 
                 if(nullptr == FuncN)
                 {
@@ -1442,7 +1442,7 @@ Value* PrimaryExpNode(GrammaNode* node,LinearIR *IR)
     {
         ArrayValue* lval = (ArrayValue*)SymbolTable->askItem(node);
         Value* index = LValArrayNode(node,IR);
-        Value* ret = new IntegerValue("tx",node->lineno,node->var_scope,0);
+        Value* ret = SymbolTable->askItem(node);//new IntegerValue("tx",node->lineno,node->var_scope,0);
 
         if(nullptr == FuncN)
         {
