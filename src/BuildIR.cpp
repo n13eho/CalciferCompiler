@@ -20,6 +20,7 @@ stack<pair<BasicBlock*,BasicBlock*>> LoopNext;
 
 BasicBlock* GetPresentBlock(BasicBlock* funcP,BasicBlock::BlockType t)
 {
+    // std::cout<<"GetPresentBlock"<<std::endl;
     bbNow = CreateBlock(t);
     //若当前函数已有基本块，更新前驱后继
     if(0 != funcP->domBlock.size())
@@ -33,6 +34,7 @@ BasicBlock* GetPresentBlock(BasicBlock* funcP,BasicBlock::BlockType t)
 
 BasicBlock* CreateBlock(BasicBlock::BlockType t)
 {
+    // std::cout<<"CreateBlock"<<std::endl;
     BasicBlock* b = new BasicBlock(t);
     return b;
 }
@@ -41,7 +43,7 @@ void VisitAST(GrammaNode* DRoot,LinearIR *IR)
 {
     //全局基本块
     BasicBlock* globalBlock = nullptr;
-    std::cout<<"start VisitAST"<<std::endl;
+    // std::cout<<"start VisitAST"<<std::endl;
 
     for(int i=0;i<DRoot->son.size();i++)
     {
@@ -435,6 +437,7 @@ void IfNode(GrammaNode* node,LinearIR *IR)
 {
     if(node->son.size() == 2)
     {
+        // std::cout<<"IfNode..."<<std::endl;
         if(nullptr == FuncN)
         {
             return ;
@@ -710,11 +713,14 @@ void ReturnValueNode(GrammaNode* node,LinearIR *IR)
 
 void CondNode(GrammaNode* node,LinearIR *IR)
 {
-    LOrExpNode(node,IR);
+    // std::cout<<"CondNode..."<<node->type<<std::endl;
+    if(node->son.size()>=1)
+        LOrExpNode(node->son[0],IR);
 }
 
 void LOrExpNode(GrammaNode* node,LinearIR *IR)
 {
+    // std::cout<<"LOrExpNode..."<<node->type<<std::endl;
     //前一个条件value
     Value* Condpre = LAndExpNode(node->son[0],IR);
     for(int i=1;i<node->son.size();i++)
@@ -770,6 +776,7 @@ void LOrExpNode(GrammaNode* node,LinearIR *IR)
 
 Value* LAndExpNode(GrammaNode* node,LinearIR *IR)
 {
+    // std::cout<<"LAndExpNode..."<<node->type<<std::endl;
     //前一个条件value
     Value* Condpre = EqExpNode(node->son[0],IR);
     for(int i=1;i<node->son.size();i++)
@@ -825,6 +832,7 @@ Value* LAndExpNode(GrammaNode* node,LinearIR *IR)
 
 Value* EqExpNode(GrammaNode* node,LinearIR *IR)
 {
+    // std::cout<<"EqExpNode..."<<node->type<<std::endl;
     if(EqExp_EQ_ == node->type)
     {
         Value* VL = EqExpNode(node->son[0],IR);
@@ -881,6 +889,11 @@ Value* EqExpNode(GrammaNode* node,LinearIR *IR)
 
 Value* RelExpNode(GrammaNode* node,LinearIR *IR)
 {
+    // std::cout<<"RelExpNode..."<<node->type<<std::endl;
+    // for(int i=0;i<node->son.size();i++)
+    // {
+    //     std::cout<<node->son[i]->type<<std::endl;
+    // }
     if(RelExp_LT_ == node->type)
     {
         Value* VL = RelExpNode(node->son[0],IR);
@@ -907,6 +920,7 @@ Value* RelExpNode(GrammaNode* node,LinearIR *IR)
     }
     else if(RelExp_BG_ == node->type)
     {
+        // std::cout<<"RelExp_BG_..."<<node->type<<std::endl;
         Value* VL = RelExpNode(node->son[0],IR);
         Value* RL = AddExpNode(node->son[1],IR);
         Value* ret = new Value("t1",node->lineno,node->var_scope);
@@ -921,7 +935,7 @@ Value* RelExpNode(GrammaNode* node,LinearIR *IR)
         {
             bbNow = GetPresentBlock(FuncN,BasicBlock::Basic);
         }
-
+        // std::cout<<"CreateIns"<<std::endl;
         Instruction* ins_bg = new Instruction(IR->getInstCnt(),Instruction::ArithBG,2);
         ins_bg->addOperand(VL);
         ins_bg->addOperand(RL);
@@ -982,7 +996,9 @@ Value* RelExpNode(GrammaNode* node,LinearIR *IR)
     else
     {
         //RelExp:AddExp
+        // std::cout<<"AddExp"<<node->type<<std::endl;
         return AddExpNode(node,IR);
+        return nullptr;
     }
 }
 

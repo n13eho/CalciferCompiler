@@ -3,6 +3,7 @@
 #include "Value.h"
 #include <iostream>
 
+
 //四元式的具体指令
 class Instruction
 {
@@ -54,7 +55,7 @@ class Instruction
 
     Instruction(int id,Instruction::InsType ins_type,unsigned oprands_num):InstrId(id),OpType(ins_type),OpNums(oprands_num)
     {
-        std::cout<<"Instruction id:"<<id<<" type:"<<ins_type<<"Operator nums:"<<oprands_num<<std::endl;
+        std::cout<<"Instruction id:"<<id<<" type:"<<ins_type<<" Operator nums:"<<oprands_num<<std::endl;
     }
     void setId(int id){InstrId=id;}
     void addOperand(Value* opd){Operands.push_back(opd);}

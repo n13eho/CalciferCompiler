@@ -370,11 +370,11 @@ AddExp:
 ;
 
 RelExp:
-	AddExp				{$$ = $1;}
-	|RelExp LT AddExp	{$$ = new GrammaNode(lineno, RelExp_LT_,"RelExp_LT"); $$->son.push_back($1);$$->son.push_back($3);}
+	RelExp LT AddExp	{$$ = new GrammaNode(lineno, RelExp_LT_,"RelExp_LT"); $$->son.push_back($1);$$->son.push_back($3);}
 	|RelExp BG AddExp	{$$ = new GrammaNode(lineno, RelExp_BG_,"RelExp_BG"); $$->son.push_back($1);$$->son.push_back($3);}
 	|RelExp LQ AddExp	{$$ = new GrammaNode(lineno, RelExp_LQ_,"RelExp_LQ"); $$->son.push_back($1);$$->son.push_back($3);}
 	|RelExp BQ AddExp	{$$ = new GrammaNode(lineno, RelExp_BQ_,"RelExp_BQ"); $$->son.push_back($1);$$->son.push_back($3);}
+	|AddExp				{$$ = $1;}
 ;
 
 EqExp:					
