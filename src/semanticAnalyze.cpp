@@ -259,7 +259,7 @@ IntegerValue *semantic_LVal_Array_(GrammaNode *root, int needConst, int needCond
     for (int i = 0; i < root->son[1]->son.size(); i++)
     {
         // 获取访问的维度 eachIndex
-        eachIndex = semantic_Exp_(root->son[1]->son[i], needConst, needCond)->RealValue;
+        eachIndex = semantic_Exp_(root->son[1]->son[i], 0, 0)->RealValue;
         // 判断访问维度是否越界
         if (eachIndex >= val->NumOfDimension[i] || eachIndex < 0)
         { // √error 超额或者索引是负数
