@@ -735,6 +735,8 @@ void LOrExpNode(GrammaNode* node,LinearIR *IR)
     // std::cout<<"LOrExpNode..."<<node->type<<std::endl;
     //前一个条件value
     Value* Condpre = LAndExpNode(node->son[0],IR);
+    if(node->son.size()==1)
+        return;
     for(int i=1;i<node->son.size();i++)
     {
         //当前条件value

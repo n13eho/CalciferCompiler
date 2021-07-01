@@ -75,9 +75,16 @@ int val(int c,int b)
 int p=5;
 int main()
 {
-    int a[1]={1,2};
-    if(p>0)
+    int a[10]={1,2};
+    int i=5;
+    while(i)
     {
-        a[0] = 0;
+        a[i] = i;
+        if(i == 5)
+        {
+            break;
+        }
+        i = i-1;
     }
+    p = p+1;
 }
