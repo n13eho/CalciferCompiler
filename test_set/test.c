@@ -67,15 +67,3 @@
 //     return;
 // }
 
-int y,z,p = 12;
-int val(int b,int c)
-{
-    int res;
-    res = b+c;
-    return res;
-}
-int main()
-{
-    int c = y+z;
-    c = val(c,p);
-}
