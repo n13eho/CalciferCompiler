@@ -31,13 +31,13 @@
 // const int mondy = today + 1 + c[2]; // 11, but should be wrong
 
 
-// int x[1+2][4/3][5%3];
-int y, z, p = 12;
+// // int x[1+2][4/3][5%3];
+// int y, z, p = 12;
 
-int main()
-{
-    int c = y+z;
-}
+// int main()
+// {
+//     int c = y+z;
+// }
 // int q[4][2] ={0, 2, 3, {4}, 5, 6}; // 0 2 3 4 5 6 0 0
 
 // int a[2][3] = {1,2,3,4,5};
@@ -67,8 +67,3 @@ int main()
 //     return;
 // }
 
-int y, z, p = 12;
-int main()
-{
-    int c = y + z;
-}

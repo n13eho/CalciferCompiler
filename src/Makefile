@@ -18,7 +18,7 @@ lex.yy.c : scan_pro.l
 
 # 便捷测试
 run:
-	$(TARGET) ../test_set/test.c | tee ../output.log
+	$(TARGET) ../test_set/test.c | tee ../doc/output.log
 
 l1:
 	../bin/scope_check.sh
