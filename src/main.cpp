@@ -22,7 +22,7 @@ int main(int argc, char *argv[])
     if(ret == 0)
     {
         // printIdMap(); // 打印idList和idNameList的信息
-        show_node(Droot, 0); //打印AST
+        // show_node(Droot, 0); //打印AST
         semanticAnalyzer(Droot); // 语义检查
         showSymbleTable(SymbolTable); // 打印符号表
         VisitAST(Droot,IR1);//建立四元式

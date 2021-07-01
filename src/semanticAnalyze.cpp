@@ -800,23 +800,23 @@ void semanticAnalyzer(GrammaNode *root)
         GrammaNode *son = root->son[i];
         if (son->type == FuncDef_int_)
         {
-            semantic_FuncDef_int_(son); // 函数声明 int 无参数
             funcType = 0;
+            semantic_FuncDef_int_(son); // 函数声明 int 无参数
         }
         else if (son->type == FuncDef_void_)
         {
-            semantic_FuncDef_void_(son); // 函数声明  void 无参数
             funcType = 1;
+            semantic_FuncDef_void_(son); // 函数声明  void 无参数
         }
         else if (son->type == FuncDef_int_para_)
         {
-            semantic_FuncDef_int_para_(son); // 函数声明  int 有参数
             funcType = 0;
+            semantic_FuncDef_int_para_(son); // 函数声明  int 有参数
         }
         else if (son->type == FuncDef_void_para_)
         {
-            semantic_FuncDef_void_para_(son); // 函数声明  void 有参数
             funcType = 1;
+            semantic_FuncDef_void_para_(son); // 函数声明  void 有参数
         }
         else if (son->type == ConstDefs_)
             semantic_ConstDef_(son); // 常量定义
