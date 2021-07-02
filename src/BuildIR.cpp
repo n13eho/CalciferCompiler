@@ -1,12 +1,22 @@
 #include "../include/BuildIR.h"
 #include "semanticAnalyze.h"
 #include <stack>
+using namespace std;
 
 /*
 每次进入表达式，判断is_const
 constdef 剪枝
 vardef 左值剪枝
 */
+
+std::map<int, std::string> DEBUG_insOP = {{Instruction::InsType::Add, "+"}, {Instruction::InsType::Sub, "-"}, 
+{Instruction::InsType::Mul, "*"}, {Instruction::InsType::Div, "/"}, {Instruction::InsType::Mod, "%"}, {Instruction::InsType::UnaryPos, "single+"}, 
+{Instruction::InsType::UnaryNeg, "single-"}, {Instruction::InsType::UnaryNot, "single!"}, {Instruction::InsType::Assign, "="}, 
+{Instruction::InsType::LogicAnd, "logic&&"}, {Instruction::InsType::LogicOr, "logic||"}, {Instruction::InsType::ArithEq, "算数等于"}, 
+{Instruction::InsType::ArithNeq, "a!="}, {Instruction::InsType::ArithLT, "a<"}, {Instruction::InsType::ArithBG, "算术大于"}, 
+{Instruction::InsType::ArithLQ, "a<="}, {Instruction::InsType::ArithGQ, "a>="}, {Instruction::InsType::Jmp, "跳转"}, 
+{Instruction::InsType::ConBr, "条件跳转"}, {Instruction::InsType::Call, "Call"}, {Instruction::InsType::Ret, "return"}, 
+{Instruction::InsType::Load, "Load"}, {Instruction::InsType::Store, "Store"}, {Instruction::InsType::Break, "break"}};
 
 extern idTable_struct* SymbolTable;
 //当前是否在全局基本块中，加入顶层所有的变量定义相关指令加
@@ -1468,6 +1478,7 @@ Value* PrimaryExpNode(GrammaNode* node,LinearIR *IR)
     }
     else if(IntConst_O_ == node->type || IntConst_D_ == node->type || IntConst_H_ == node->type)
     {
+        // cout<<"AAAAAa"<<endl;
         return SymbolTable->askItem(node);
     }
     else
@@ -1566,14 +1577,7 @@ Value* LValArrayNode(GrammaNode* node,LinearIR *IR)
 
 
 
-std::map<int, std::string> DEBUG_insOP = {{Instruction::InsType::Add, "+"}, {Instruction::InsType::Sub, "-"}, 
-{Instruction::InsType::Mul, "*"}, {Instruction::InsType::Div, "/"}, {Instruction::InsType::Mod, "%"}, {Instruction::InsType::UnaryPos, "single+"}, 
-{Instruction::InsType::UnaryNeg, "single-"}, {Instruction::InsType::UnaryNot, "single!"}, {Instruction::InsType::Assign, "="}, 
-{Instruction::InsType::LogicAnd, "logic&&"}, {Instruction::InsType::LogicOr, "logic||"}, {Instruction::InsType::ArithEq, "算数等于"}, 
-{Instruction::InsType::ArithNeq, "a!="}, {Instruction::InsType::ArithLT, "a<"}, {Instruction::InsType::ArithBG, "算术大于"}, 
-{Instruction::InsType::ArithLQ, "a<="}, {Instruction::InsType::ArithGQ, "a>="}, {Instruction::InsType::Jmp, "跳转"}, 
-{Instruction::InsType::ConBr, "条件跳转"}, {Instruction::InsType::Call, "Call"}, {Instruction::InsType::Ret, "return"}, 
-{Instruction::InsType::Load, "Load"}, {Instruction::InsType::Store, "Store"}, {Instruction::InsType::Break, "break"}};
+
 
 // 打印当前IR中的所有指令
 void show_IR_ins(LinearIR *IR)
@@ -1597,7 +1601,11 @@ void show_IR_ins(LinearIR *IR)
         // cout<<presenIns->getOp()[1]<<endl;///
         // cout<<presenIns->getOp()[2]<<endl;///
         // cout << presenIns->getResult() << endl;///
-        
+        if(presenIns->getOpType() == Instruction::Jmp|| presenIns->getOpType() == Instruction::ConBr)
+        {
+            cout<<endl;
+            continue;
+        }
         for(int i = 0; i < presenIns->getOp().size(); i++)
         {
             std::cout << presenIns->getOp()[i]->VName << "\t";
@@ -1611,7 +1619,7 @@ void show_IR_ins(LinearIR *IR)
         {
             cout << presenIns->getResult()->VName << endl;
         }
-        
+        // cout <<sizeof(presenIns)<<"\n";
 
     }
 }

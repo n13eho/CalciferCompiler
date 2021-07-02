@@ -171,6 +171,10 @@ void semantic_stmt_(GrammaNode *root)
         }
         semantic_Exp_(root->son[0], 0, 0);
     }
+    else if (root->type == Block_)
+    {
+        semantic_Block(root);
+    }
     else
     {   
         //break,return,continue;
@@ -295,6 +299,7 @@ IntegerValue *semantic_PrimaryExp_(GrammaNode *root, int needConst, int needCond
         constval = stoi(root->str, 0, 10);
         IntegerValue *ret = new IntegerValue(name + to_string(cnt++), root->lineno, root->var_scope, constval, 1);
         SymbolTable->addItem(root,ret); // 这样的纯数字就不需要映射了
+        // cout<<"AAAA "<<constval<<endl;
         return ret;
     }
     else if (root->type == IntConst_O_&& needConst!=-1)
@@ -304,7 +309,7 @@ IntegerValue *semantic_PrimaryExp_(GrammaNode *root, int needConst, int needCond
         SymbolTable->addItem(root,ret); // 这样的纯数字就不需要映射了
         return ret;
     }
-    else if (root->type == IntConst_O_&& needConst!=-1)
+    else if (root->type == IntConst_H_&& needConst!=-1)
     {
         constval = stoi(root->str, 0, 16);
         IntegerValue *ret = new IntegerValue(name + to_string(cnt++), root->lineno, root->var_scope, constval, 1);

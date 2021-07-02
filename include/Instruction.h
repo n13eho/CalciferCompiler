@@ -13,7 +13,7 @@ class Instruction
 {
     public:
     enum InsType{
-        Add,
+        Add,// add
         Sub,
         Mul,
         Div,
