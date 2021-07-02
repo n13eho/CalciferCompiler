@@ -147,15 +147,3 @@ class ImmValue:public Value
     //立即数的值
     int RealValue;
 };
-
-// class PointerValue:Value
-// {
-//     public:
-//     PointerValue();
-
-//     private:
-//     VType Type_=VPointer;
-//     //指针指向的对象
-//     Value *Contained;
-
-// };

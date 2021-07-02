@@ -868,7 +868,7 @@ void printVector(vector<unsigned> v)
     cout << endl;
 }
 
-void showSymbleTable(idTable_struct *SymbolTable)
+void show_SymbleTable(idTable_struct *SymbolTable)
 {
 
     int count = 0;

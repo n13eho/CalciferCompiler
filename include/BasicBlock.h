@@ -1,9 +1,11 @@
+#pragma once
+
 #include "Value.h"
 #include<list>
 //基本块
 class BasicBlock
 {
-    public:
+public:
     enum BlockType {
     Basic,
     If,
@@ -12,12 +14,12 @@ class BasicBlock
     Break,
     Continue
     };
+
     BasicBlock(BasicBlock::BlockType t){bType = t;}
-    void setFuncV(FunctionValue* f)
-    {
-        FuncV = f;
-    }
+
+    void setFuncV(FunctionValue* f){FuncV = f;}
     void Addins(int id){InstrList.push_back(id);}
+
     //this作为前驱、succ作为后继
     void Link(BasicBlock* succ)
     {
@@ -27,6 +29,7 @@ class BasicBlock
     void AddDom(BasicBlock* b){domBlock.push_back(b);}
 
     void setParnt(BasicBlock* p){parent_ = p;}
+
     //获取该基本块的首指令
     int getFirstIns()
     {
@@ -40,6 +43,7 @@ class BasicBlock
         }
     }
 
+    //获取该基本块的末尾指令
     int getLastIns()
     {
         if(0!=InstrList.size())
@@ -51,6 +55,7 @@ class BasicBlock
             return -1;
         }
     }
+    
     //获取函数基本块的第一个基本块
     BasicBlock* getFirstB()
     {
@@ -81,3 +86,4 @@ class BasicBlock
     //对应符号表中的函数
     FunctionValue* FuncV;
 };
+

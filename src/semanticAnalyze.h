@@ -51,4 +51,4 @@ void semanticAnalyzer(GrammaNode *root);
 void printIdMap();
 
 // 打印符号表
-void showSymbleTable(idTable_struct* SymbolTable);
+void show_SymbleTable(idTable_struct* SymbolTable);

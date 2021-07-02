@@ -77,3 +77,5 @@ private:
 	std::string msg_;
 };
 
+// 打印当前IR中的所有指令
+void show_IR_ins(LinearIR *IR);

@@ -21,12 +21,12 @@ int main(int argc, char *argv[])
     int ret = yyparse(); // 词法语法分析，无误返回0
     if(ret == 0)
     {
-        std::cout<<"ret=0"<<std::endl;
-        printIdMap(); // 打印idList和idNameList的信息
-        show_node(Droot, 0); //打印AST
+        // printIdMap(); // 打印idList和idNameList的信息 (unnecessary)
+        // show_node(Droot, 0); //打印AST
         semanticAnalyzer(Droot); // 语义检查
-        showSymbleTable(SymbolTable); // 打印符号表
+        // show_SymbleTable(SymbolTable); // 打印符号表
         VisitAST(Droot, IR1); // 建立四元式
+        show_IR_ins(IR1); // 打印指令
     }
     return 0;
 }

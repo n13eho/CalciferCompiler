@@ -62,6 +62,9 @@ class Instruction
     void setResult(Value* res){Result = res;}
     void setParent(BasicBlock* p){ParentBasicblock = p;}
     int getId(){return InstrId;}
+    int getOpType(){return OpType;}
+    std::vector<Value *> getOp(){return Operands;}
+    Value* getResult(){return Result;}
     BasicBlock* getParent(){return ParentBasicblock;}
 
     private:
@@ -79,6 +82,8 @@ class Instruction
     //本条指令属于的基本块
     BasicBlock* ParentBasicblock;
 };
+
+
 
 //指令是否需要细化成子类，还需确认
 class AddIns:public Instruction{};

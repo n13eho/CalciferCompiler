@@ -44,7 +44,7 @@ void VisitAST(GrammaNode* DRoot,LinearIR *IR)
     //全局基本块
     BasicBlock* globalBlock = new BasicBlock(BasicBlock::Basic);
     IR->AddBlock(globalBlock);
-    std::cout<<"start VisitAST"<<std::endl;
+    std::cout<<"\nstart VisitAST"<<std::endl;
     
 
     for(int i=0;i<DRoot->son.size();i++)
@@ -248,8 +248,9 @@ void VarDefNode(GrammaNode* node,LinearIR *IR)
                 }
                 //向基本块加入指令
                 bbNow->Addins(ins_new->getId());
+                // 标识该条指令所属的基本块
                 ins_new->setParent(bbNow);
-
+                // 向IR中添加这一条指令
                 IR->InsertInstr(ins_new);
             }
             else
@@ -290,6 +291,7 @@ void FuncDefNode(GrammaNode* node,LinearIR *IR)
     {
         //error
     }
+    
     if(nullptr != block_)
     {    
         BasicBlock* NewFunc = new BasicBlock(BasicBlock::Basic);
@@ -1559,5 +1561,35 @@ Value* LValArrayNode(GrammaNode* node,LinearIR *IR)
     {
         //error
         return nullptr;
+    }
+}
+
+
+
+std::map<int, std::string> DEBUG_insOP = {{Instruction::InsType::Add, "+"}, {Instruction::InsType::Sub, "-"}, 
+{Instruction::InsType::Mul, "*"}, {Instruction::InsType::Div, "/"}, {Instruction::InsType::Mod, "%"}, {Instruction::InsType::UnaryPos, "single+"}, 
+{Instruction::InsType::UnaryNeg, "single-"}, {Instruction::InsType::UnaryNot, "single!"}, {Instruction::InsType::Assign, "="}, 
+{Instruction::InsType::LogicAnd, "logic&&"}, {Instruction::InsType::LogicOr, "logic||"}, {Instruction::InsType::ArithEq, "算数等于"}, 
+{Instruction::InsType::ArithNeq, "算数不等于"}, {Instruction::InsType::ArithLT, "算数小于"}, {Instruction::InsType::ArithBG, "算术大于"}, 
+{Instruction::InsType::ArithLQ, "算术小于等于"}, {Instruction::InsType::ArithGQ, "算术大于等于"}, {Instruction::InsType::Jmp, "跳转"}, 
+{Instruction::InsType::ConBr, "条件跳转"}, {Instruction::InsType::Call, "子过程/函数 调用"}, {Instruction::InsType::Ret, "return"}, 
+{Instruction::InsType::Load, "Load"}, {Instruction::InsType::Store, "Store"}, {Instruction::InsType::Break, "break"}};
+
+// 打印当前IR中的所有指令
+void show_IR_ins(LinearIR *IR)
+{
+    cout<<"\nid\tOP\targ1\targ2\tresult\n";
+    Instruction* presenIns;
+    for(int i=0; i<IR->InstList.size(); i++)
+    {
+        // 当前指令
+        presenIns = IR->InstList[i];
+
+        cout << presenIns->getId() << "\t" << DEBUG_insOP[presenIns->getOpType()] << "\t";
+        for(int i = 0; i < presenIns->getOp().size(); i++)
+        {
+            std::cout << presenIns->getOp()[i]->VName << "\t";
+        }
+        cout << presenIns->getResult()->VName << endl;
     }
 }
