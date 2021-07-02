@@ -153,7 +153,7 @@ void semantic_stmt_(GrammaNode *root)
     {
         semantic_cond_(root->son[0]);
         semantic_stmt_(root->son[1]);
-        semantic_stmt_(root->son[1]);
+        semantic_stmt_(root->son[2]);
     }
     else if (root->type == Stmt_While_)
     {
