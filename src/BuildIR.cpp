@@ -331,61 +331,70 @@ void BlockNode(GrammaNode* node,LinearIR *IR)
             continue;
         }
         GrammaNode* sonnode = node->son[i];
-        if(Stmt_Assign_ == sonnode->type)
+        //Decl
+        if(ConstDefs_ == sonnode->type)
         {
-            AssignNode(sonnode,IR);
+            ConstDefNode(sonnode,IR);
         }
-        else if(Stmt_Exp_ == sonnode->type)
+        else if(VarDefs_ == sonnode->type)
         {
-            Value* useless = AddExpNode(sonnode,IR);
-        }
-        else if(Stmt_If_ == sonnode->type)
-        {
-            IfNode(sonnode,IR);
-        }
-        else if(Stmt_IfElse_ == sonnode->type)
-        {
-            IfElseNode(sonnode,IR);
-        }
-        else if(Stmt_While_ == sonnode->type)
-        {
-            WhileNode(sonnode,IR);
-        }
-        else if(Stmt_Return_ == sonnode->type)
-        {
-            //带返回值
-            ReturnValueNode(sonnode,IR);
-        }
-        else if(BREAK_ == sonnode->type)
-        {
-            BreakNode(sonnode,IR);
-        }
-        else if(CONTINUE_ == sonnode->type)
-        {
-            ContinueNode(sonnode,IR);
-        }
-        else if(RETURN_ == sonnode->type)
-        {
-            ReturnNode(sonnode,IR);
-        }
-        else if(Block_ == sonnode->type)
-        {
-            BlockNode(sonnode,IR);
+            VarDefNode(sonnode,IR);
         }
         else
         {
-            //Decl
-            if(ConstDefs_ == sonnode->type)
-            {
-                ConstDefNode(sonnode,IR);
-            }
-            else if(VarDefs_ == sonnode->type)
-            {
-                VarDefNode(sonnode,IR);
-            }
+            StmtNode(sonnode,IR);
         }
-        
     }
+}
+
+void StmtNode(GrammaNode* node,LinearIR *IR)
+{
+    if(Stmt_Assign_ == node->type)
+    {
+        AssignNode(node,IR);
+    }
+    else if(Stmt_Exp_ == node->type)
+    {
+        Value* useless = AddExpNode(node,IR);
+    }
+    else if(Stmt_If_ == node->type)
+    {
+        IfNode(node,IR);
+    }
+    else if(Stmt_IfElse_ == node->type)
+    {
+        IfElseNode(node,IR);
+    }
+    else if(Stmt_While_ == node->type)
+    {
+        WhileNode(node,IR);
+    }
+    else if(Stmt_Return_ == node->type)
+    {
+        //带返回值
+        ReturnValueNode(node,IR);
+    }
+    else if(BREAK_ == node->type)
+    {
+        BreakNode(node,IR);
+    }
+    else if(CONTINUE_ == node->type)
+    {
+        ContinueNode(node,IR);
+    }
+    else if(RETURN_ == node->type)
+    {
+        ReturnNode(node,IR);
+    }
+    else if(Block_ == node->type)
+    {
+        BlockNode(node,IR);
+    }
+    else
+    {
+        //error
+    }
+        
 }
 
 void AssignNode(GrammaNode* node,LinearIR *IR)
@@ -488,16 +497,19 @@ void IfNode(GrammaNode* node,LinearIR *IR)
         
 
         //条件跳转指令
-        Instruction* ins_br = new Instruction(IR->getInstCnt(),Instruction::ConBr,1);
+        Instruction* ins_br = new Instruction(IR->getInstCnt(),Instruction::ConBr,0);
         IR->InsertInstr(ins_br);
         bbNow->Addins(ins_br->getId());
         ins_br->setParent(bbNow);
 
         bbNow = caseT;
-        BlockNode(node->son[1],IR);
+        StmtNode(node->son[1],IR);
         //此时的bbNow不一定是caseT
         bbNow->Link(next);
         bbNow = next;
+        //update jmp address
+        ins_br->setResult(new IntegerValue("jmpAddress0",node->lineno,node->var_scope,IR->getInstCnt(),1));
+        cout<<ins_br->getResult()<<endl;
     }
     else
     {
@@ -538,29 +550,37 @@ void IfElseNode(GrammaNode* node,LinearIR *IR)
         bbNow->Link(caseF);
 
         //条件不成立，跳转至caseF
-        Instruction* ins_br2 = new Instruction(IR->getInstCnt(),Instruction::ConBr,1);
+        Instruction* ins_br2 = new Instruction(IR->getInstCnt(),Instruction::ConBr,0);
         IR->InsertInstr(ins_br2);
         bbNow->Addins(ins_br2->getId());
         ins_br2->setParent(bbNow);    
 
         //T
         bbNow = caseT;
-        BlockNode(node->son[1],IR);
+        StmtNode(node->son[1],IR);
         //此时bbNow不一定是caseT
         bbNow->Link(next);
         //T跳转至next
-        Instruction* ins_br = new Instruction(IR->getInstCnt(),Instruction::Jmp,1);
+        Instruction* ins_br = new Instruction(IR->getInstCnt(),Instruction::Jmp,0);
         IR->InsertInstr(ins_br);
         caseT->Addins(ins_br->getId());
         ins_br->setParent(caseT);
 
+        //update if条件跳转地址
+        ins_br2->setResult(new IntegerValue("jmpAddress0",node->lineno,node->var_scope,IR->getInstCnt(),1));
+        cout<<"ifelse 中if跳转地址："<<ins_br2->getResult()<<endl;
+
         //F
         bbNow = caseF;
-        BlockNode(node->son[2],IR);
+        StmtNode(node->son[2],IR);
         //bbNow不一定是caseF
         bbNow->Link(next);
         //更新ins_br2参数，todo
         bbNow = next;
+
+        //update caseT最后一条无条件跳转指令的地址
+        ins_br->setResult(new IntegerValue("jmpAddress0",node->lineno,node->var_scope,IR->getInstCnt(),1));
+        cout<<"ifelse 中caseT跳转地址："<<ins_br->getResult()<<endl;
     }
     else
     {
@@ -609,7 +629,7 @@ void WhileNode(GrammaNode* node,LinearIR *IR)
         caseT->Link(bbNow);
 
         //条件不成立，跳转至next,该指令属于bbNow
-        Instruction* ins_br = new Instruction(IR->getInstCnt(),Instruction::ConBr,1);
+        Instruction* ins_br = new Instruction(IR->getInstCnt(),Instruction::ConBr,0);
         IR->InsertInstr(ins_br);
         bbNow->Addins(ins_br->getId());
         ins_br->setParent(bbNow);
@@ -617,15 +637,20 @@ void WhileNode(GrammaNode* node,LinearIR *IR)
         
         //T
         bbNow = caseT;
-        BlockNode(node->son[1],IR);
+        StmtNode(node->son[1],IR);
+
         //插入跳转到cond语句的跳转语句
-        Instruction* ins_br2 = new Instruction(IR->getInstCnt(),Instruction::Jmp,1);
+        Instruction* ins_br2 = new Instruction(IR->getInstCnt(),Instruction::Jmp,0);
         ImmValue* jmpIns = new ImmValue("jmpaddress",condInsId);
-        ins_br2->addOperand(jmpIns);
+        ins_br2->setResult(jmpIns);
+        cout<<ins_br->getResult()<<endl;
         IR->InsertInstr(ins_br2);
         bbNow->Addins(ins_br2->getId());
         ins_br2->setParent(bbNow);
-        
+
+        //caseT body的无条件跳转指令的下一条指令就是 update while的条件跳转目的地址
+        ins_br->setResult(new IntegerValue("jmpAddress0",node->lineno,node->var_scope,IR->getInstCnt(),1));
+        cout<<ins_br->getResult()<<endl;
         //next
         bbNow = next;
         LoopNext.pop();
@@ -670,7 +695,9 @@ void BreakNode(GrammaNode* node,LinearIR *IR)
     bbNow->Link(breakB);
 
     //根据语义信息，break一定出现在while中
-    Instruction* ins_bk = new Instruction(IR->getInstCnt(),Instruction::Jmp,1);
+    Instruction* ins_bk = new Instruction(IR->getInstCnt(),Instruction::Jmp,0);
+    //operand todo
+
     IR->InsertInstr(ins_bk);
     if(!LoopNext.empty())
     {
@@ -701,8 +728,8 @@ void ContinueNode(GrammaNode* node,LinearIR *IR)
 
     bbNow->Link(continueB);
 
-    Instruction* ins_jmp = new Instruction(IR->getInstCnt(),Instruction::Jmp,1);
-    //跳转位置？？
+    Instruction* ins_jmp = new Instruction(IR->getInstCnt(),Instruction::Jmp,0);
+    //operand todo
     IR->InsertInstr(ins_jmp);
     continueB->Addins(ins_jmp->getId());
     ins_jmp->setParent(continueB);
@@ -1595,7 +1622,7 @@ void show_IR_ins(LinearIR *IR)
 
         cout << presenIns->getId() << "\t" << DEBUG_insOP[presenIns->getOpType()] << "\t";
         
-        // cout<<"3333"<<endl;///
+        cout<<"3333"<<endl;///
         // cout<<presenIns->getOp().size()<<endl;///
         // cout<<presenIns->getOp()[0]<<endl;///
         // cout<<presenIns->getOp()[1]<<endl;///
@@ -1608,6 +1635,7 @@ void show_IR_ins(LinearIR *IR)
         }
         for(int i = 0; i < presenIns->getOp().size(); i++)
         {
+            std::cout << presenIns->getOp()[i]<< " \t";
             std::cout << presenIns->getOp()[i]->VName << "\t";
         }
         if(presenIns->getOp().size() == 1) cout << "\t";

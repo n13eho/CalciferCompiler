@@ -55,6 +55,11 @@ int main()
     // }
     // p = p+1;
     int i=3;
+    int p;
+    p = 1+5;
     if(i)
         i=i-1;
+    else
+        i=i+1;
+    
 }

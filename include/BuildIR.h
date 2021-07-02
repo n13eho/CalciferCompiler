@@ -39,6 +39,7 @@ void ConstDefNode(GrammaNode* node,LinearIR *IR);
 void VarDefNode(GrammaNode* node,LinearIR *IR);
 void FuncDefNode(GrammaNode* node,LinearIR *IR);
 void BlockNode(GrammaNode* node,LinearIR *IR);
+void StmtNode(GrammaNode* node,LinearIR *IR);
 void AssignNode(GrammaNode* node,LinearIR *IR);
 void IfNode(GrammaNode* node,LinearIR *IR);
 void IfElseNode(GrammaNode* node,LinearIR *IR);
