@@ -126,7 +126,7 @@ void ConstDefNode(GrammaNode* node,LinearIR *IR)
             }
             else
             {
-                throw BuildIRError(VL->lineno, VL->VName, "错误");
+                throw BuildIRError(VL->lineno, VL->VName, "错误1");
                 //error
             }
 
@@ -144,7 +144,7 @@ void ConstDefNode(GrammaNode* node,LinearIR *IR)
                 VR = InitValNode(p_node->son[1],IR);
                 if(VR == nullptr)
                 {
-                    throw BuildIRError(VL->lineno, VL->VName, "错误");
+                    throw BuildIRError(VL->lineno, VL->VName, "错误2");
                     //error，不符合语义约束
                 }
                 else
@@ -165,14 +165,14 @@ void ConstDefNode(GrammaNode* node,LinearIR *IR)
             }
             else
             {
-                throw BuildIRError(VL->lineno, VL->VName, "错误");
+                throw BuildIRError(VL->lineno, VL->VName, "错误3");
                 //error
             }
             
         }
         else
         {
-            // throw BuildIRError(VL->lineno, VL->VName, "错误");
+            // throw BuildIRError(VL->lineno, VL->VName, "错误4");
             //error
         }
     }
@@ -317,7 +317,7 @@ void BlockNode(GrammaNode* node,LinearIR *IR)
     for(int i=0;i<node->son.size();i++)
     {
         if(nullptr==node->son[i])
-        {
+        {// 这是何故
             continue;
         }
         GrammaNode* sonnode = node->son[i];
@@ -718,7 +718,7 @@ void ReturnValueNode(GrammaNode* node,LinearIR *IR)
     }
     Value* retvalue = AddExpNode(node->son[0],IR);
     Instruction* ins_ret = new Instruction(IR->getInstCnt(),Instruction::Ret,1);
-    ins_ret->addOperand(retvalue);
+    ins_ret->addOperand(retvalue); // 把return的value放进操作数vector中
     IR->InsertInstr(ins_ret);
 
     bbNow->Addins(ins_ret->getId());
@@ -856,7 +856,7 @@ Value* EqExpNode(GrammaNode* node,LinearIR *IR)
         Value* ret = SymbolTable->askItem(node);//new Value("t1",node->lineno,node->var_scope);
         if(nullptr == FuncN)
         {
-            throw BuildIRError(VL->lineno, VL->VName, "错误");
+            throw BuildIRError(VL->lineno, VL->VName, "错误5");
             // return ;
         }
         //属于某个函数且该指令为首指令，新建一个基本块，并建立联系
@@ -880,7 +880,7 @@ Value* EqExpNode(GrammaNode* node,LinearIR *IR)
         Value* ret = SymbolTable->askItem(node);//new Value("t1",node->lineno,node->var_scope);
         if(nullptr == FuncN)
         {
-            throw BuildIRError(VL->lineno, VL->VName, "错误");
+            throw BuildIRError(VL->lineno, VL->VName, "错误6");
             // return ;
         }
         //属于某个函数且该指令为首指令，新建一个基本块，并建立联系
@@ -943,7 +943,7 @@ Value* RelExpNode(GrammaNode* node,LinearIR *IR)
 
         if(nullptr == FuncN)
         {
-            throw BuildIRError(VL->lineno, VL->VName, "错误");
+            throw BuildIRError(VL->lineno, VL->VName, "错误7");
             // return ;
         }
         //属于某个函数且该指令为首指令，新建一个基本块，并建立联系
@@ -968,7 +968,7 @@ Value* RelExpNode(GrammaNode* node,LinearIR *IR)
         Value* ret = SymbolTable->askItem(node);//new Value("t1",node->lineno,node->var_scope);
         if(nullptr == FuncN)
         {
-            throw BuildIRError(VL->lineno, VL->VName, "错误");
+            throw BuildIRError(VL->lineno, VL->VName, "错误8");
             // return ;
         }
         //属于某个函数且该指令为首指令，新建一个基本块，并建立联系
@@ -992,7 +992,7 @@ Value* RelExpNode(GrammaNode* node,LinearIR *IR)
         Value* ret = SymbolTable->askItem(node);//new Value("t1",node->lineno,node->var_scope);
         if(nullptr == FuncN)
         {
-            throw BuildIRError(VL->lineno, VL->VName, "错误");
+            throw BuildIRError(VL->lineno, VL->VName, "错误9");
             // return ;
         }
         //属于某个函数且该指令为首指令，新建一个基本块，并建立联系
@@ -1082,7 +1082,7 @@ Value* AddExpNode(GrammaNode* node,LinearIR *IR)
             Value* ret = SymbolTable->askItem(node);//new IntegerValue("t3",node->lineno,node->var_scope,0);
             if(nullptr == FuncN)
             {
-                throw BuildIRError(arg1->lineno, arg1->VName, "错误");
+                throw BuildIRError(arg1->lineno, arg1->VName, "错误10");
                 // return ;
             }
             //属于某个函数且该指令为首指令，新建一个基本块，并建立联系
@@ -1117,7 +1117,7 @@ Value* AddExpNode(GrammaNode* node,LinearIR *IR)
 
             if(nullptr == FuncN)
             {
-                throw BuildIRError(arg1->lineno, arg1->VName, "错误");
+                throw BuildIRError(arg1->lineno, arg1->VName, "错误11");
                 // return ;
             }
             //属于某个函数且该指令为首指令，新建一个基本块，并建立联系
@@ -1162,7 +1162,7 @@ Value* MulExpNode(GrammaNode* node,LinearIR *IR)
             Value* ret = SymbolTable->askItem(node);//new IntegerValue("t3",node->lineno,node->var_scope,0);
             if(nullptr == FuncN)
             {
-                throw BuildIRError(arg1->lineno, arg1->VName, "错误");
+                throw BuildIRError(arg1->lineno, arg1->VName, "错误12");
                 // return ;
             }
             //属于某个函数且该指令为首指令，新建一个基本块，并建立联系
@@ -1198,7 +1198,7 @@ Value* MulExpNode(GrammaNode* node,LinearIR *IR)
 
             if(nullptr == FuncN)
             {
-                throw BuildIRError(arg1->lineno, arg1->VName, "错误");
+                throw BuildIRError(arg1->lineno, arg1->VName, "错误13");
                 // return ;
             }
             //属于某个函数且该指令为首指令，新建一个基本块，并建立联系
@@ -1234,7 +1234,7 @@ Value* MulExpNode(GrammaNode* node,LinearIR *IR)
             Value* ret = SymbolTable->askItem(node);//new IntegerValue("t3",node->lineno,node->var_scope,0);
             if(nullptr == FuncN)
             {
-                throw BuildIRError(arg1->lineno, arg1->VName, "错误");
+                throw BuildIRError(arg1->lineno, arg1->VName, "错误14");
                 // return ;
             }
             //属于某个函数且该指令为首指令，新建一个基本块，并建立联系
@@ -1280,7 +1280,7 @@ Value* UnaryExpNode(GrammaNode* node,LinearIR *IR)
 
             if(nullptr == FuncN)
             {
-                throw BuildIRError(ret->lineno, ret->VName, "错误");
+                throw BuildIRError(ret->lineno, ret->VName, "错误15");
                 // return ;
             }
             //属于某个函数且该指令为首指令，新建一个基本块，并建立联系
@@ -1320,7 +1320,7 @@ Value* UnaryExpNode(GrammaNode* node,LinearIR *IR)
             Value* ret=SymbolTable->askItem(node);//new Value("t1",node->lineno,node->var_scope);
             if(nullptr == FuncN)
             {
-                throw BuildIRError(ret->lineno, ret->VName, "错误");
+                throw BuildIRError(ret->lineno, ret->VName, "错误16");
                 // return ;
             }
             //属于某个函数且该指令为首指令，新建一个基本块，并建立联系
@@ -1376,7 +1376,7 @@ Value* UnaryExpNode(GrammaNode* node,LinearIR *IR)
                 ret = SymbolTable->askItem(node->son[0]);//new IntegerValue("t3",node->lineno,node->var_scope,0);
                 if(nullptr == FuncN)
                 {
-                    throw BuildIRError(node->lineno, ret->VName, "错误");
+                    throw BuildIRError(node->lineno, ret->VName, "错误17");
                     // return ;
                 }
                 //属于某个函数且该指令为首指令，新建一个基本块，并建立联系
@@ -1398,7 +1398,7 @@ Value* UnaryExpNode(GrammaNode* node,LinearIR *IR)
 
                 if(nullptr == FuncN)
                 {
-                    throw BuildIRError(node->lineno, ret->VName, "错误");
+                    throw BuildIRError(node->lineno, ret->VName, "错误18");
                     // return ;
                 }
                 //属于某个函数且该指令为首指令，新建一个基本块，并建立联系
@@ -1448,7 +1448,7 @@ Value* PrimaryExpNode(GrammaNode* node,LinearIR *IR)
 
         if(nullptr == FuncN)
         {
-            throw BuildIRError((int)node->lineno, (string&)ret->VName, (string&)"错误");
+            throw BuildIRError((int)node->lineno, (string&)ret->VName, (string&)"错误19");
             // return ;
         }
         //属于某个函数且该指令为首指令，新建一个基本块，并建立联系
@@ -1511,7 +1511,7 @@ Value* LValArrayNode(GrammaNode* node,LinearIR *IR)
 
                 if(nullptr == FuncN)
                 {
-                    throw BuildIRError(arg3->lineno, arg3->VName, "错误");
+                    throw BuildIRError(arg3->lineno, arg3->VName, "错误20");
                     // return ;
                 }
                 //属于某个函数且该指令为首指令，新建一个基本块，并建立联系
@@ -1570,26 +1570,48 @@ std::map<int, std::string> DEBUG_insOP = {{Instruction::InsType::Add, "+"}, {Ins
 {Instruction::InsType::Mul, "*"}, {Instruction::InsType::Div, "/"}, {Instruction::InsType::Mod, "%"}, {Instruction::InsType::UnaryPos, "single+"}, 
 {Instruction::InsType::UnaryNeg, "single-"}, {Instruction::InsType::UnaryNot, "single!"}, {Instruction::InsType::Assign, "="}, 
 {Instruction::InsType::LogicAnd, "logic&&"}, {Instruction::InsType::LogicOr, "logic||"}, {Instruction::InsType::ArithEq, "算数等于"}, 
-{Instruction::InsType::ArithNeq, "算数不等于"}, {Instruction::InsType::ArithLT, "算数小于"}, {Instruction::InsType::ArithBG, "算术大于"}, 
-{Instruction::InsType::ArithLQ, "算术小于等于"}, {Instruction::InsType::ArithGQ, "算术大于等于"}, {Instruction::InsType::Jmp, "跳转"}, 
-{Instruction::InsType::ConBr, "条件跳转"}, {Instruction::InsType::Call, "子过程/函数 调用"}, {Instruction::InsType::Ret, "return"}, 
+{Instruction::InsType::ArithNeq, "a!="}, {Instruction::InsType::ArithLT, "a<"}, {Instruction::InsType::ArithBG, "算术大于"}, 
+{Instruction::InsType::ArithLQ, "a<="}, {Instruction::InsType::ArithGQ, "a>="}, {Instruction::InsType::Jmp, "跳转"}, 
+{Instruction::InsType::ConBr, "条件跳转"}, {Instruction::InsType::Call, "Call"}, {Instruction::InsType::Ret, "return"}, 
 {Instruction::InsType::Load, "Load"}, {Instruction::InsType::Store, "Store"}, {Instruction::InsType::Break, "break"}};
 
 // 打印当前IR中的所有指令
 void show_IR_ins(LinearIR *IR)
 {
     cout<<"\nid\tOP\targ1\targ2\tresult\n";
+    // cout<<"1111"<<endl;///
     Instruction* presenIns;
+    
     for(int i=0; i<IR->InstList.size(); i++)
     {
         // 当前指令
         presenIns = IR->InstList[i];
+        // presenIns = IR->InstList[6];
+        // cout<<"2222"<<endl;///
 
         cout << presenIns->getId() << "\t" << DEBUG_insOP[presenIns->getOpType()] << "\t";
+        
+        // cout<<"3333"<<endl;///
+        // cout<<presenIns->getOp().size()<<endl;///
+        // cout<<presenIns->getOp()[0]<<endl;///
+        // cout<<presenIns->getOp()[1]<<endl;///
+        // cout<<presenIns->getOp()[2]<<endl;///
+        // cout << presenIns->getResult() << endl;///
+        
         for(int i = 0; i < presenIns->getOp().size(); i++)
         {
             std::cout << presenIns->getOp()[i]->VName << "\t";
         }
-        cout << presenIns->getResult()->VName << endl;
+        if(presenIns->getOp().size() == 1) cout << "\t";
+        if(presenIns->getOpType() == Instruction::InsType::Ret)
+        { // Retrun 语句没有reslut，访问空0 segmentation fault
+            cout << endl;
+        }
+        else
+        {
+            cout << presenIns->getResult()->VName << endl;
+        }
+        
+
     }
 }

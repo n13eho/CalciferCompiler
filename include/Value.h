@@ -56,23 +56,6 @@ class IntegerValue:public Value
 
 };
 
-// 即将被废除
-class ConstArrayValue:public Value
-{
-    public:
-    ConstArrayValue(std::string name_, int line, std::string scope,std::vector<unsigned> demen,std::vector<int> value_):Value(name_,line,scope)
-    {
-        ArrayElement.clear();
-        ArrayElement.insert(ArrayElement.end(),value_.begin(),value_.end());
-        NumOfDimension.clear();
-        NumOfDimension.insert(demen.end(),demen.begin(),demen.end());
-    }
-    int getValue(int index){return ArrayElement[index];}
-    // vector get
-    private:
-    std::vector<unsigned> NumOfDimension;
-    std::vector<int> ArrayElement;
-};
 
 class ArrayValue:public Value
 {

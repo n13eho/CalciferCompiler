@@ -1,11 +1,209 @@
-
+->node string:ROOT	 son numbers:4
+   ->node string:FuncDef_int_para_	 son numbers:3
+      ->node string:func	 son numbers:0
+      ->node string:FuncFParams	 son numbers:2
+         ->node string:FuncFParam_single_	 son numbers:1
+            ->node string:c	 son numbers:0
+         ->node string:FuncFParam_single_	 son numbers:1
+            ->node string:b	 son numbers:0
+      ->node string:Block	 son numbers:2
+         ->node string:VarDefs	 son numbers:1
+            ->node string:VarDef_single_init_	 son numbers:3
+               ->node string:w	 son numbers:0
+               ->node string:=	 son numbers:0
+               ->node string:InitVal_EXP	 son numbers:1
+                  ->node string:AddExp_Add	 son numbers:2
+                     ->node string:b	 son numbers:0
+                     ->node string:c	 son numbers:0
+         ->node string:Stmt_Return	 son numbers:1
+            ->node string:5	 son numbers:0
+   ->node string:FuncDef_void_	 son numbers:2
+      ->node string:add	 son numbers:0
+      ->node string:Block	 son numbers:2
+         ->node string:VarDefs	 son numbers:1
+            ->node string:VarDef_single_init_	 son numbers:3
+               ->node string:a	 son numbers:0
+               ->node string:=	 son numbers:0
+               ->node string:InitVal_EXP	 son numbers:1
+                  ->node string:10	 son numbers:0
+         ->node string:return	 son numbers:0
+   ->node string:VarDefs	 son numbers:2
+      ->node string:VarDef_single_	 son numbers:1
+         ->node string:p	 son numbers:0
+      ->node string:VarDef_single_init_	 son numbers:3
+         ->node string:z	 son numbers:0
+         ->node string:=	 son numbers:0
+         ->node string:InitVal_EXP	 son numbers:1
+            ->node string:9	 son numbers:0
+   ->node string:FuncDef_int_	 son numbers:2
+      ->node string:main	 son numbers:0
+      ->node string:Block	 son numbers:5
+         ->node string:VarDefs	 son numbers:1
+            ->node string:VarDef_single_init_	 son numbers:3
+               ->node string:x	 son numbers:0
+               ->node string:=	 son numbers:0
+               ->node string:InitVal_EXP	 son numbers:1
+                  ->node string:UnaryExp_func_	 son numbers:2
+                     ->node string:func	 son numbers:0
+                     ->node string:FuncRParams_	 son numbers:2
+                        ->node string:AddExp_Add	 son numbers:2
+                           ->node string:9	 son numbers:0
+                           ->node string:0	 son numbers:0
+                        ->node string:10	 son numbers:0
+         ->node string:VarDefs	 son numbers:1
+            ->node string:VarDef_array_init_	 son numbers:3
+               ->node string:a	 son numbers:0
+               ->node string:ConstExps	 son numbers:1
+                  ->node string:10	 son numbers:0
+               ->node string:InitVal	 son numbers:1
+                  ->node string:InitVals	 son numbers:2
+                     ->node string:InitVal_EXP	 son numbers:1
+                        ->node string:1	 son numbers:0
+                     ->node string:InitVal_EXP	 son numbers:1
+                        ->node string:2	 son numbers:0
+         ->node string:VarDefs	 son numbers:1
+            ->node string:VarDef_single_init_	 son numbers:3
+               ->node string:i	 son numbers:0
+               ->node string:=	 son numbers:0
+               ->node string:InitVal_EXP	 son numbers:1
+                  ->node string:5	 son numbers:0
+         ->node string:Stmt_While	 son numbers:2
+            ->node string:Cond	 son numbers:1
+               ->node string:LOrExp	 son numbers:1
+                  ->node string:LAndExp	 son numbers:1
+                     ->node string:i	 son numbers:0
+            ->node string:Block	 son numbers:3
+               ->node string:Stmt_Assign	 son numbers:2
+                  ->node string:LVal_	 son numbers:2
+                     ->node string:a	 son numbers:0
+                     ->node string:Exps_	 son numbers:1
+                        ->node string:i	 son numbers:0
+                  ->node string:i	 son numbers:0
+               ->node string:Stmt_If	 son numbers:2
+                  ->node string:Cond	 son numbers:1
+                     ->node string:LOrExp	 son numbers:1
+                        ->node string:LAndExp	 son numbers:1
+                           ->node string:EqExp_EQ	 son numbers:2
+                              ->node string:i	 son numbers:0
+                              ->node string:5	 son numbers:0
+                  ->node string:Block	 son numbers:1
+                     ->node string:break	 son numbers:0
+               ->node string:Stmt_Assign	 son numbers:2
+                  ->node string:i	 son numbers:0
+                  ->node string:AddExp_Sub	 son numbers:2
+                     ->node string:i	 son numbers:0
+                     ->node string:1	 son numbers:0
+         ->node string:Stmt_Assign	 son numbers:2
+            ->node string:p	 son numbers:0
+            ->node string:AddExp_Add	 son numbers:2
+               ->node string:p	 son numbers:0
+               ->node string:1	 son numbers:0
+
+SymbolTable指针地址：0x7fffb8921900 符号表大小：53
+GNType: 300	scope:	1	GN Name: func		lineNumber:28
+GNType: 300	scope:	11	GN Name: c		lineNumber:28
+GNType: 438	scope:		GN Name: FuncFParam_single_		lineNumber:28
+GNType: 300	scope:	11	GN Name: b		lineNumber:28
+GNType: 438	scope:		GN Name: FuncFParam_single_		lineNumber:28
+GNType: 300	scope:	11	GN Name: w		lineNumber:30
+GNType: 424	scope:		GN Name: AddExp_Add		lineNumber:30
+GNType: 436	scope:		GN Name: VarDef_single_init_		lineNumber:30
+GNType: 302	scope:		GN Name: 5		lineNumber:31
+GNType: 442	scope:		GN Name: FuncDef_int_para_		lineNumber:32
+GNType: 300	scope:	1	GN Name: add		lineNumber:34
+GNType: 300	scope:	12	GN Name: a		lineNumber:36
+GNType: 302	scope:		GN Name: 10		lineNumber:36
+GNType: 436	scope:		GN Name: VarDef_single_init_		lineNumber:36
+GNType: 441	scope:		GN Name: FuncDef_void_		lineNumber:38
+GNType: 300	scope:	1	GN Name: p		lineNumber:40
+GNType: 435	scope:		GN Name: VarDef_single_		lineNumber:40
+GNType: 300	scope:	1	GN Name: z		lineNumber:40
+GNType: 302	scope:		GN Name: 9		lineNumber:40
+GNType: 436	scope:		GN Name: VarDef_single_init_		lineNumber:40
+GNType: 300	scope:	1	GN Name: main		lineNumber:42
+GNType: 300	scope:	13	GN Name: x		lineNumber:44
+GNType: 302	scope:		GN Name: 9		lineNumber:44
+GNType: 302	scope:		GN Name: 0		lineNumber:44
+GNType: 424	scope:		GN Name: AddExp_Add		lineNumber:44
+GNType: 302	scope:		GN Name: 10		lineNumber:44
+GNType: 431	scope:		GN Name: UnaryExp_func_		lineNumber:44
+GNType: 436	scope:		GN Name: VarDef_single_init_		lineNumber:44
+GNType: 300	scope:	13	GN Name: a		lineNumber:45
+GNType: 302	scope:		GN Name: 10		lineNumber:45
+GNType: 302	scope:		GN Name: 1		lineNumber:45
+GNType: 405	scope:		GN Name: InitVals		lineNumber:45
+GNType: 302	scope:		GN Name: 2		lineNumber:45
+GNType: 406	scope:		GN Name: InitVal		lineNumber:45
+GNType: 433	scope:		GN Name: VarDef_array_init_		lineNumber:45
+GNType: 300	scope:	13	GN Name: i		lineNumber:46
+GNType: 302	scope:		GN Name: 5		lineNumber:46
+GNType: 436	scope:		GN Name: VarDef_single_init_		lineNumber:46
+GNType: 411	scope:		GN Name: LAndExp		lineNumber:47
+GNType: 410	scope:		GN Name: LOrExp		lineNumber:47
+GNType: 432	scope:		GN Name: LVal_		lineNumber:49
+GNType: 414	scope:		GN Name: Stmt_Assign		lineNumber:49
+GNType: 302	scope:		GN Name: 5		lineNumber:50
+GNType: 429	scope:		GN Name: EqExp_EQ		lineNumber:50
+GNType: 411	scope:		GN Name: LAndExp		lineNumber:50
+GNType: 410	scope:		GN Name: LOrExp		lineNumber:50
+GNType: 302	scope:		GN Name: 1		lineNumber:54
+GNType: 423	scope:		GN Name: AddExp_Sub		lineNumber:54
+GNType: 414	scope:		GN Name: Stmt_Assign		lineNumber:54
+GNType: 302	scope:		GN Name: 1		lineNumber:56
+GNType: 424	scope:		GN Name: AddExp_Add		lineNumber:56
+GNType: 414	scope:		GN Name: Stmt_Assign		lineNumber:56
+GNType: 440	scope:		GN Name: FuncDef_int_		lineNumber:57
+
+line 30	GNType: 436	变量single名称：w	初值：0	isConst：0	作用域：11
+line 32	GNType: 442	函数名称：func	作用域：1	返回类型：1	参数个数：2
+	参数名：c	scope:11
+	参数名：b	scope:11
+line 36	GNType: 436	变量single名称：a	初值：10	isConst：0	作用域：12
+line 38	GNType: 441	函数名称：add	作用域：1	返回类型：0	参数个数：0
+line 40	GNType: 435	变量single名称：p	初值：0	isConst：0	作用域：1
+line 40	GNType: 436	变量single名称：z	初值：9	isConst：0	作用域：1
+line 44	GNType: 436	变量single名称：x	初值：0	isConst：0	作用域：13
+line 45	GNType: 433	变量array名称：a	isConst：0	作用域：13
+ -->维度：10 
+ -->初值：1 2 0 0 0 0 0 0 0 0 
+line 46	GNType: 436	变量single名称：i	初值：5	isConst：0	作用域：13
+line 57	GNType: 440	函数名称：main	作用域：1	返回类型：1	参数个数：0
+
 start VisitAST
 Instruction id:0 type:0 Operator nums:2
 Instruction id:1 type:8 Operator nums:1
 Instruction id:2 type:20 Operator nums:1
 Instruction id:3 type:8 Operator nums:1
 Instruction id:4 type:20 Operator nums:0
+Instruction id:5 type:8 Operator nums:1
+Instruction id:6 type:19 Operator nums:3
+Instruction id:6 type:0 Operator nums:2
+Instruction id:8 type:8 Operator nums:1
+Instruction id:9 type:8 Operator nums:1
+Instruction id:10 type:8 Operator nums:1
+Instruction id:11 type:12 Operator nums:2
+Instruction id:12 type:18 Operator nums:1
+Instruction id:13 type:22 Operator nums:3
+Instruction id:14 type:11 Operator nums:2
+Instruction id:15 type:12 Operator nums:2
+Instruction id:16 type:18 Operator nums:1
+Instruction id:17 type:17 Operator nums:1
+Instruction id:18 type:1 Operator nums:2
+Instruction id:19 type:8 Operator nums:1
+Instruction id:20 type:17 Operator nums:1
+Instruction id:21 type:0 Operator nums:2
+Instruction id:22 type:8 Operator nums:1
 
 id	OP	arg1	arg2	result
 0	+	b	c	t0
-1	=	t0	w
+1	=	t0		w
+2	return	t1		
+3	=	t2		a
+4	return	
+5	=	t3		z
+6	+	t4	t5	t6
+7	Call	func	t6	t7	t8
+8	=	t8		x
+9	=	t1		a
+10	=	t13		t24
+11	a!=	t24	0	tr

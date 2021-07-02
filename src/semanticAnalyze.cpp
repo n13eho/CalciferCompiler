@@ -294,21 +294,21 @@ IntegerValue *semantic_PrimaryExp_(GrammaNode *root, int needConst, int needCond
     {
         constval = stoi(root->str, 0, 10);
         IntegerValue *ret = new IntegerValue(name + to_string(cnt++), root->lineno, root->var_scope, constval, 1);
-        // SymbolTable->addItem(root,ret); // 这样的纯数字就不需要映射了
+        SymbolTable->addItem(root,ret); // 这样的纯数字就不需要映射了
         return ret;
     }
     else if (root->type == IntConst_O_&& needConst!=-1)
     {
         constval = stoi(root->str, 0, 8);
         IntegerValue *ret = new IntegerValue(name + to_string(cnt++), root->lineno, root->var_scope, constval, 1);
-        // SymbolTable->addItem(root,ret); // 这样的纯数字就不需要映射了
+        SymbolTable->addItem(root,ret); // 这样的纯数字就不需要映射了
         return ret;
     }
     else if (root->type == IntConst_O_&& needConst!=-1)
     {
         constval = stoi(root->str, 0, 16);
         IntegerValue *ret = new IntegerValue(name + to_string(cnt++), root->lineno, root->var_scope, constval, 1);
-        // SymbolTable->addItem(root,ret); // 这样的纯数字就不需要映射了
+        SymbolTable->addItem(root,ret); // 这样的纯数字就不需要映射了
         return ret;
     }
     // 情况2.2 Ident
@@ -360,8 +360,15 @@ IntegerValue *semantic_UnaryExp_(GrammaNode *root, int needConst, int needCond)
             throw SemanticError(root->lineno, root->son[0]->str, "函数参数个数不匹配");
         }
 
-        //语义检查没问题就映射
+        //语义检查没问题就映射函数名字
         SymbolTable->addItem(root->son[0], val);
+
+        //映射参数
+        for(int i=0; i<root->son[1]->son.size(); i++)
+        {
+            IntegerValue *param_i = semantic_Exp_(root->son[1]->son[i], needConst, needCond);
+            SymbolTable->addItem(root->son[1]->son[i], param_i);
+        }
 
         // 这里好像不能return一个IntegerValue了，还是会warning，先warning住吧。随便返回一个临时变量，初始值为0
         IntegerValue *lsbl = new IntegerValue(name + to_string(cnt++), root->lineno, root->var_scope, 0);

@@ -5,6 +5,10 @@
 
 
 //四元式的具体指令
+/*
+* return 类语句都没有result
+
+*/
 class Instruction
 {
     public:

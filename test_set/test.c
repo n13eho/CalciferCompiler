@@ -36,21 +36,22 @@ void add()
     int a = 10;
     return;
 }
-// int p, z = 9;
-// int a = func(9, 10);
 
-// int main()
-// {
-//     int a[10]={1,2};
-//     int i=5;
-//     while(i)
-//     {
-//         a[i] = i;
-//         if(i == 5)
-//         {
-//             break;
-//         }
-//         i = i-1;
-//     }
-//     p = p+1;
-// }
+int p, z = 9;
+
+int main()
+{
+    int x = func(9+0, 10);
+    int a[10]={1,2};
+    int i=5;
+    while(i)
+    {
+        a[i] = i;
+        if(i == 5)
+        {
+            break;
+        }
+        i = i-1;
+    }
+    p = p+1;
+}
