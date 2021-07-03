@@ -1,94 +1,42 @@
-->node string:ROOT	 son numbers:1
+->node string:ROOT	 son numbers:2
+   ->node string:VarDefs	 son numbers:1
+      ->node string:VarDef_single_init_	 son numbers:3
+         ->node string:p	 son numbers:0
+         ->node string:=	 son numbers:0
+         ->node string:InitVal_EXP	 son numbers:1
+            ->node string:0	 son numbers:0
    ->node string:FuncDef_int_	 son numbers:2
       ->node string:main	 son numbers:0
-      ->node string:Block	 son numbers:4
+      ->node string:Block	 son numbers:2
          ->node string:VarDefs	 son numbers:1
             ->node string:VarDef_single_init_	 son numbers:3
                ->node string:i	 son numbers:0
                ->node string:=	 son numbers:0
                ->node string:InitVal_EXP	 son numbers:1
                   ->node string:3	 son numbers:0
-         ->node string:VarDefs	 son numbers:1
-            ->node string:VarDef_single_	 son numbers:1
-               ->node string:p	 son numbers:0
          ->node string:Stmt_Assign	 son numbers:2
-            ->node string:p	 son numbers:0
+            ->node string:i	 son numbers:0
             ->node string:AddExp_Add	 son numbers:2
+               ->node string:i	 son numbers:0
                ->node string:1	 son numbers:0
-               ->node string:5	 son numbers:0
-         ->node string:Stmt_IfElse	 son numbers:3
-            ->node string:Cond	 son numbers:1
-               ->node string:LOrExp	 son numbers:1
-                  ->node string:LAndExp	 son numbers:1
-                     ->node string:i	 son numbers:0
-            ->node string:Stmt_Assign	 son numbers:2
-               ->node string:i	 son numbers:0
-               ->node string:AddExp_Sub	 son numbers:2
-                  ->node string:i	 son numbers:0
-                  ->node string:1	 son numbers:0
-            ->node string:Stmt_Assign	 son numbers:2
-               ->node string:i	 son numbers:0
-               ->node string:AddExp_Add	 son numbers:2
-                  ->node string:i	 son numbers:0
-                  ->node string:1	 son numbers:0
-
-SymbolTable指针地址：0x7fffcc676900 符号表大小：19
-GNType: 300	scope:	1	GN Name: main		lineNumber:42
-GNType: 300	scope:	11	GN Name: i		lineNumber:57
-GNType: 302	scope:		GN Name: 3		lineNumber:57
-GNType: 436	scope:		GN Name: VarDef_single_init_		lineNumber:57
-GNType: 300	scope:	11	GN Name: p		lineNumber:58
-GNType: 435	scope:		GN Name: VarDef_single_		lineNumber:58
-GNType: 302	scope:		GN Name: 1		lineNumber:59
-GNType: 302	scope:		GN Name: 5		lineNumber:59
-GNType: 424	scope:		GN Name: AddExp_Add		lineNumber:59
-GNType: 414	scope:		GN Name: Stmt_Assign		lineNumber:59
-GNType: 411	scope:		GN Name: LAndExp		lineNumber:60
-GNType: 410	scope:		GN Name: LOrExp		lineNumber:60
-GNType: 302	scope:		GN Name: 1		lineNumber:61
-GNType: 423	scope:		GN Name: AddExp_Sub		lineNumber:61
-GNType: 414	scope:		GN Name: Stmt_Assign		lineNumber:61
-GNType: 302	scope:		GN Name: 1		lineNumber:63
-GNType: 424	scope:		GN Name: AddExp_Add		lineNumber:63
-GNType: 414	scope:		GN Name: Stmt_Assign		lineNumber:63
-GNType: 440	scope:		GN Name: FuncDef_int_		lineNumber:65
-
-line 57	GNType: 436	变量single名称：i	初值：3	isConst：0	作用域：11
-line 58	GNType: 435	变量single名称：p	初值：0	isConst：0	作用域：11
-line 65	GNType: 440	函数名称：main	作用域：1	返回类型：1	参数个数：0
+*****7 t0
+0x7fffd7997ca0 VarDef_single_init_**** p
+*****7 t1
+0x7fffd79984d0 VarDef_single_init_**** i
+*****7 t2
+*****13 t3
+0x7fffd79984d0 *****5 t4
 
 start VisitAST
+0x7fffd7997ca0 VL p
 Instruction id:0 type:8 Operator nums:1
-Instruction id:1 type:0 Operator nums:2
-Instruction id:2 type:8 Operator nums:1
-Instruction id:3 type:12 Operator nums:2
-Instruction id:4 type:18 Operator nums:0
-Instruction id:5 type:1 Operator nums:2
-Instruction id:6 type:8 Operator nums:1
-Instruction id:7 type:17 Operator nums:0
-ifelse 中if跳转地址：0x7fffcc67fd40
-Instruction id:8 type:0 Operator nums:2
-Instruction id:9 type:8 Operator nums:1
-ifelse 中caseT跳转地址：0x7fffcc67ff70
+0x7fffd79984d0 VL i
+Instruction id:1 type:8 Operator nums:1
+Instruction id:2 type:0 Operator nums:2
+Instruction id:3 type:8 Operator nums:1
 
 id	OP	arg1	arg2	result
-0	=	3333
-0x7fffcc67ea20 	t0		t12
-1	+	3333
-0x7fffcc67ec80 	t1	0x7fffcc67ed20 	t2	t3
-2	=	3333
-0x7fffcc67edc0 	t3		t4
-3	a!=	3333
-0x7fffcc67f360 	t12	0x7fffcc67f7f0 	0	tr
-4	条件跳转	3333
-
-5	-	3333
-0x7fffcc67f360 	t12	0x7fffcc67f040 	t7	t8
-6	=	3333
-0x7fffcc67f0e0 	t8		t12
-7	跳转	3333
-
-8	+	3333
-0x7fffcc67f360 	t12	0x7fffcc67f220 	t10	t11
-9	=	3333
-0x7fffcc67f2c0 	t11		t12
+0	=	t0		p
+1	=	t1		i
+2	+	i	t2	t3
+3	=	t3		i

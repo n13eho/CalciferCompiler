@@ -38,6 +38,7 @@
 // }
 
 // int p, z = 9;
+int p = 0;
 
 int main()
 {
@@ -55,11 +56,14 @@ int main()
     // }
     // p = p+1;
     int i=3;
-    int p;
-    p = 1+5;
-    if(i)
-        i=i-1;
-    else
-        i=i+1;
+    // int p = 0;
+    i = i+1;
+    // p = p + 1;
+    // if(i)
+    //     i=i-1;
+    // else
+    //     i=i+1;
     
+    // int p;
+    // p = 1+5;
 }
