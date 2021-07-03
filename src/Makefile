@@ -1,3 +1,11 @@
+# 0703
+
+
+
+
+
+
+# origin
 TARGET = ../bin/calcifer
 manual  = $(wildcard ./*.cpp)
 objcpp = part.tab.cpp lex.yy.cpp $(manual)

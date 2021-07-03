@@ -13,8 +13,8 @@ std::map<int, std::string> DEBUG_insOP = {{Instruction::InsType::Add, "+"}, {Ins
 {Instruction::InsType::Mul, "*"}, {Instruction::InsType::Div, "/"}, {Instruction::InsType::Mod, "%"}, {Instruction::InsType::UnaryPos, "single+"}, 
 {Instruction::InsType::UnaryNeg, "single-"}, {Instruction::InsType::UnaryNot, "single!"}, {Instruction::InsType::Assign, "="}, 
 {Instruction::InsType::LogicAnd, "logic&&"}, {Instruction::InsType::LogicOr, "logic||"}, {Instruction::InsType::ArithEq, "算数等于"}, 
-{Instruction::InsType::ArithNeq, "a!="}, {Instruction::InsType::ArithLT, "a<"}, {Instruction::InsType::ArithBG, "算术大于"}, 
-{Instruction::InsType::ArithLQ, "a<="}, {Instruction::InsType::ArithGQ, "a>="}, {Instruction::InsType::Jmp, "跳转"}, 
+{Instruction::InsType::ArithNeq, "!="}, {Instruction::InsType::ArithLT, "<"}, {Instruction::InsType::ArithBG, "算术大于"}, 
+{Instruction::InsType::ArithLQ, "<="}, {Instruction::InsType::ArithGQ, ">="}, {Instruction::InsType::Jmp, "跳转"}, 
 {Instruction::InsType::ConBr, "条件跳转"}, {Instruction::InsType::Call, "Call"}, {Instruction::InsType::Ret, "return"}, 
 {Instruction::InsType::Load, "Load"}, {Instruction::InsType::Store, "Store"}, {Instruction::InsType::Break, "break"}};
 
@@ -240,6 +240,7 @@ void VarDefNode(GrammaNode* node,LinearIR *IR)
             //左值
             // std::cout<<"VarDef_single_init_"<<p_node->type<<std::endl;
             Value* VL=SymbolTable->askItem(p_node->son[0]);
+            cout<<p_node->son[0]<<" VL "<< VL->VName <<endl;
 
             //右值必为单值
             Value* VR=nullptr;
@@ -1622,7 +1623,7 @@ void show_IR_ins(LinearIR *IR)
 
         cout << presenIns->getId() << "\t" << DEBUG_insOP[presenIns->getOpType()] << "\t";
         
-        cout<<"3333"<<endl;///
+        // cout<<"3333"<<endl;///
         // cout<<presenIns->getOp().size()<<endl;///
         // cout<<presenIns->getOp()[0]<<endl;///
         // cout<<presenIns->getOp()[1]<<endl;///
@@ -1635,7 +1636,7 @@ void show_IR_ins(LinearIR *IR)
         }
         for(int i = 0; i < presenIns->getOp().size(); i++)
         {
-            std::cout << presenIns->getOp()[i]<< " \t";
+            // std::cout << presenIns->getOp()[i]<< " \t";
             std::cout << presenIns->getOp()[i]->VName << "\t";
         }
         if(presenIns->getOp().size() == 1) cout << "\t";
