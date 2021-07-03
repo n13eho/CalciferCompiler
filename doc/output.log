@@ -20,34 +20,17 @@
                ->node string:i	 son numbers:0
                ->node string:1	 son numbers:0
 *****7 t0
-0x7fffc0b97ca0 VarDef_single_init_**** p
+0x7fffd7997ca0 VarDef_single_init_**** p
 *****7 t1
-0x7fffc0b984d0 VarDef_single_init_**** i
+0x7fffd79984d0 VarDef_single_init_**** i
 *****7 t2
 *****13 t3
-0x7fffc0b984d0 *****5 t4
-
-SymbolTable指针地址：0x7fffc0b91900 符号表大小：11
-GNType: 300	scope:	1	GN Name: p		lineNumber:41
-GNType: 302	scope:		GN Name: 0		lineNumber:41
-GNType: 436	scope:		GN Name: VarDef_single_init_		lineNumber:41
-GNType: 300	scope:	1	GN Name: main		lineNumber:43
-GNType: 300	scope:	11	GN Name: i		lineNumber:58
-GNType: 302	scope:		GN Name: 3		lineNumber:58
-GNType: 436	scope:		GN Name: VarDef_single_init_		lineNumber:58
-GNType: 302	scope:		GN Name: 1		lineNumber:60
-GNType: 424	scope:		GN Name: AddExp_Add		lineNumber:60
-GNType: 414	scope:		GN Name: Stmt_Assign		lineNumber:60
-GNType: 440	scope:		GN Name: FuncDef_int_		lineNumber:69
-
-line 41	GNType: 436	变量single名称：p	初值：0	isConst：0	作用域：1
-line 58	GNType: 436	变量single名称：i	初值：3	isConst：0	作用域：11
-line 69	GNType: 440	函数名称：main	作用域：1	返回类型：1	参数个数：0
+0x7fffd79984d0 *****5 t4
 
 start VisitAST
-0x7fffc0b97ca0 VL p
+0x7fffd7997ca0 VL p
 Instruction id:0 type:8 Operator nums:1
-0x7fffc0b984d0 VL i
+0x7fffd79984d0 VL i
 Instruction id:1 type:8 Operator nums:1
 Instruction id:2 type:0 Operator nums:2
 Instruction id:3 type:8 Operator nums:1
