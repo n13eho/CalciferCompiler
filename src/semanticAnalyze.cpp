@@ -60,7 +60,7 @@ IntegerValue *semantic_RelExp_(GrammaNode *root)
         IntegerValue *rel = semantic_EqExp_(root->son[0]);
         IntegerValue *add = semantic_RelExp_(root->son[1]);
         IntegerValue *ret = new IntegerValue(name + to_string(cnt++), root->lineno, root->var_scope, 0);
-        cout<<"*****1 "<<ret->VName<<endl;
+        // cout<<"*****1 "<<ret->VName<<endl;
         if (root->type == RelExp_BG_)
             ret->RealValue = (rel->RealValue > add->RealValue);
         else if (root->type == RelExp_BQ_)
@@ -85,7 +85,7 @@ IntegerValue *semantic_EqExp_(GrammaNode *root)
         IntegerValue *eq = semantic_EqExp_(root->son[0]);
         IntegerValue *rel = semantic_RelExp_(root->son[1]);
         IntegerValue *ret = new IntegerValue(name + to_string(cnt++), root->lineno, root->var_scope, 0);
-        cout<<"*****2 "<<ret->VName<<endl;
+        // cout<<"*****2 "<<ret->VName<<endl;
         if (root->type == EqExp_NEQ_)
             ret->RealValue = (eq->RealValue != rel->RealValue);
         else if (root->type == EqExp_EQ_)
@@ -102,7 +102,7 @@ IntegerValue *semantic_EqExp_(GrammaNode *root)
 IntegerValue *semantic_AndExp_(GrammaNode *root)
 {
     IntegerValue *ret = new IntegerValue(name + to_string(cnt++), root->lineno, root->var_scope, 0);
-    cout<<"*****3 "<<ret->VName<<endl;
+    // cout<<"*****3 "<<ret->VName<<endl;
     ret->RealValue = 1;
     for (int i = 0; i < root->son.size(); i++)
     {

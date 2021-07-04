@@ -30,40 +30,18 @@
 //     int w = b+c;
 //     return 5;
 // }
-
-// void add()
-// {
-//     int a = 10;
-//     return;
-// }
-
-// int p, z = 9;
 int p = 0;
+void add()
+{
+    int a = 10;
+    return;
+}
 
 int main()
 {
-    // int x = func(9+0, 10);
-    // int a[10]={1,2};
-    // int i=5;
-    // while(i)
-    // {
-    //     a[i] = i;
-    //     if(i == 5)
-    //     {
-    //         break;
-    //     }
-    //     i = i-1;
-    // }
-    // p = p+1;
+
     int i=3;
     // int p = 0;
+    add();
     i = i+1;
-    // p = p + 1;
-    // if(i)
-    //     i=i-1;
-    // else
-    //     i=i+1;
-    
-    // int p;
-    // p = 1+5;
 }

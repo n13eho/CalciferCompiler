@@ -1,4 +1,5 @@
 #include "../include/BuildIR.h"
+#include "../include/debug.h"
 #include "semanticAnalyze.h"
 #include <stack>
 using namespace std;
@@ -9,16 +10,8 @@ constdef 剪枝
 vardef 左值剪枝
 */
 
-std::map<int, std::string> DEBUG_insOP = {{Instruction::InsType::Add, "+"}, {Instruction::InsType::Sub, "-"}, 
-{Instruction::InsType::Mul, "*"}, {Instruction::InsType::Div, "/"}, {Instruction::InsType::Mod, "%"}, {Instruction::InsType::UnaryPos, "single+"}, 
-{Instruction::InsType::UnaryNeg, "single-"}, {Instruction::InsType::UnaryNot, "single!"}, {Instruction::InsType::Assign, "="}, 
-{Instruction::InsType::LogicAnd, "logic&&"}, {Instruction::InsType::LogicOr, "logic||"}, {Instruction::InsType::ArithEq, "算数等于"}, 
-{Instruction::InsType::ArithNeq, "!="}, {Instruction::InsType::ArithLT, "<"}, {Instruction::InsType::ArithBG, "算术大于"}, 
-{Instruction::InsType::ArithLQ, "<="}, {Instruction::InsType::ArithGQ, ">="}, {Instruction::InsType::Jmp, "跳转"}, 
-{Instruction::InsType::ConBr, "条件跳转"}, {Instruction::InsType::Call, "Call"}, {Instruction::InsType::Ret, "return"}, 
-{Instruction::InsType::Load, "Load"}, {Instruction::InsType::Store, "Store"}, {Instruction::InsType::Break, "break"}};
-
 extern idTable_struct* SymbolTable;
+extern BasicBlock* globalBlock;
 //当前是否在全局基本块中，加入顶层所有的变量定义相关指令加
 int global = 0;
 //全局基本块或者当前函数内基本块
@@ -52,11 +45,9 @@ BasicBlock* CreateBlock(BasicBlock::BlockType t)
 void VisitAST(GrammaNode* DRoot,LinearIR *IR)
 {
     //全局基本块
-    BasicBlock* globalBlock = new BasicBlock(BasicBlock::Basic);
     IR->AddBlock(globalBlock);
     std::cout<<"\nstart VisitAST"<<std::endl;
     
-
     for(int i=0;i<DRoot->son.size();i++)
     {
         if(ConstDefs_ == DRoot->son[i]->type)
@@ -1618,17 +1609,8 @@ void show_IR_ins(LinearIR *IR)
     {
         // 当前指令
         presenIns = IR->InstList[i];
-        // presenIns = IR->InstList[6];
-        // cout<<"2222"<<endl;///
-
         cout << presenIns->getId() << "\t" << DEBUG_insOP[presenIns->getOpType()] << "\t";
-        
-        // cout<<"3333"<<endl;///
-        // cout<<presenIns->getOp().size()<<endl;///
-        // cout<<presenIns->getOp()[0]<<endl;///
-        // cout<<presenIns->getOp()[1]<<endl;///
-        // cout<<presenIns->getOp()[2]<<endl;///
-        // cout << presenIns->getResult() << endl;///
+    
         if(presenIns->getOpType() == Instruction::Jmp|| presenIns->getOpType() == Instruction::ConBr)
         {
             cout<<endl;
@@ -1648,7 +1630,5 @@ void show_IR_ins(LinearIR *IR)
         {
             cout << presenIns->getResult()->VName << endl;
         }
-        // cout <<sizeof(presenIns)<<"\n";
-
     }
 }

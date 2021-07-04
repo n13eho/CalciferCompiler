@@ -2,7 +2,7 @@
 TARGET = ../bin/calcifer
 # SOURCE = $(wildcard ./*.cpp)
 # OBJECT = $(patsubst %.cpp, %.o, $(SOURCE))
-OBJECT = main.o lex.yy.o sysy_node.o part.tab.o semanticAnalyze.o BuildIR.o
+OBJECT = main.o lex.yy.o sysy_node.o part.tab.o semanticAnalyze.o BuildIR.o debug.o
 
 # $(TARGET): $(SOURCE)
 # 	g++ -o $(TARGET) $(SOURCE)
@@ -24,6 +24,8 @@ semanticAnalyze.o: semanticAnalyze.cpp semanticAnalyze.h sysy_node.hpp
 	g++ -c semanticAnalyze.cpp
 BuildIR.o: BuildIR.cpp ../include/BuildIR.h semanticAnalyze.h
 	g++ -c BuildIR.cpp
+debug.o : debug.cpp  ../include/debug.h
+	g++ -c debug.cpp 
 
 
 

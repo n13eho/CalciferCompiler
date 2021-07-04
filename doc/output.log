@@ -1,42 +1,40 @@
-->node string:ROOT	 son numbers:2
+->node string:ROOT	 son numbers:3
    ->node string:VarDefs	 son numbers:1
       ->node string:VarDef_single_init_	 son numbers:3
          ->node string:p	 son numbers:0
          ->node string:=	 son numbers:0
          ->node string:InitVal_EXP	 son numbers:1
             ->node string:0	 son numbers:0
+   ->node string:FuncDef_void_	 son numbers:2
+      ->node string:add	 son numbers:0
+      ->node string:Block	 son numbers:2
+         ->node string:VarDefs	 son numbers:1
+            ->node string:VarDef_single_init_	 son numbers:3
+               ->node string:a	 son numbers:0
+               ->node string:=	 son numbers:0
+               ->node string:InitVal_EXP	 son numbers:1
+                  ->node string:10	 son numbers:0
+         ->node string:return	 son numbers:0
    ->node string:FuncDef_int_	 son numbers:2
       ->node string:main	 son numbers:0
-      ->node string:Block	 son numbers:2
+      ->node string:Block	 son numbers:3
          ->node string:VarDefs	 son numbers:1
             ->node string:VarDef_single_init_	 son numbers:3
                ->node string:i	 son numbers:0
                ->node string:=	 son numbers:0
                ->node string:InitVal_EXP	 son numbers:1
                   ->node string:3	 son numbers:0
+         ->node string:Stmt_Exp	 son numbers:1
+            ->node string:UnaryExp_func_	 son numbers:1
+               ->node string:add	 son numbers:0
          ->node string:Stmt_Assign	 son numbers:2
             ->node string:i	 son numbers:0
             ->node string:AddExp_Add	 son numbers:2
                ->node string:i	 son numbers:0
                ->node string:1	 son numbers:0
 *****7 t0
-0x7fffd7997ca0 VarDef_single_init_**** p
+0x7fffd18a4ea0 VarDef_single_init_**** p
 *****7 t1
-0x7fffd79984d0 VarDef_single_init_**** i
+0x7fffd18a56d0 VarDef_single_init_**** a
 *****7 t2
-*****13 t3
-0x7fffd79984d0 *****5 t4
-
-start VisitAST
-0x7fffd7997ca0 VL p
-Instruction id:0 type:8 Operator nums:1
-0x7fffd79984d0 VL i
-Instruction id:1 type:8 Operator nums:1
-Instruction id:2 type:0 Operator nums:2
-Instruction id:3 type:8 Operator nums:1
-
-id	OP	arg1	arg2	result
-0	=	t0		p
-1	=	t1		i
-2	+	i	t2	t3
-3	=	t3		i
+0x7fffd18a6170 VarDef_single_init_**** i
