@@ -27,10 +27,10 @@ int main(int argc, char *argv[])
         // printIdMap(); // 打印idList和idNameList的信息 (unnecessary)
         show_node(Droot, 0); //打印AST
         semanticAnalyzer(Droot); // 语义检查
-        // show_SymbleTable(SymbolTable); // 打印符号表
-        cout<<"win\n"<<endl;
-        // VisitAST(Droot, IR1); // 建立四元式
-        // show_IR_ins(IR1); // 打印指令
+        show_SymbleTable(SymbolTable); // 打印符号表
+        // cout<<"win\n"<<endl;
+        VisitAST(Droot, IR1); // 建立四元式
+        show_IR_ins(IR1); // 打印指令
         // show_block(globalBlock,0);
     }
     return 0;

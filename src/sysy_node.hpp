@@ -40,12 +40,6 @@ typedef enum{
 } GrammaType;
 
 
-struct position_t{
-    char *file;
-    int line;
-    int column;
-};
-
 struct GrammaNode
 {
     int type;
