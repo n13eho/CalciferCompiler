@@ -1,17 +1,20 @@
 # image: "debian:stretch"
+
+
+before_script:
+  - echo "init the git submodule"
+  - git submodule sync
+  - git submodule update --init
+
+
 stages:
-  - default
   - build
   - test
 
-default-job:
-  stage: default
-  before_script:
-    - echo "init the git submodule"
-    - git submodule sync
-    - git submodule update --init
 
 build-job:
+  tags:
+    - taag
   stage: build
   script:
     - echo "start building..."
@@ -23,7 +26,10 @@ build-job:
     - cmake ..
     - make
 
+
 test-job:
+  tags:
+    - taag
   stage: test
   script:
     - echo "test starts"
