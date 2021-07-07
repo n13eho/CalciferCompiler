@@ -1,4 +1,4 @@
-# image: "debian:stretch"
+image: "debian:stretch"
 
 
 before_script:
