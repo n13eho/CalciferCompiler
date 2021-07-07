@@ -4,14 +4,14 @@ stages:
   - build
   - test
 
-default_job:
+default-job:
   stage: default
   before_script:
     - echo "init the git submodule"
     - git submodule sync
     - git submodule update --init
 
-build_job:
+build-job:
   stage: build
   script:
     - echo "start building..."
@@ -23,7 +23,7 @@ build_job:
     - cmake ..
     - make
 
-test_job:
+test-job:
   stage: test
   script:
     - echo "test starts"
