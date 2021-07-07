@@ -8,8 +8,8 @@
 */
 #pragma once
 
-#include "sysy_node.hpp"
-#include "../include/Value.h"
+#include "../include/sysy_node.hpp"
+#include "Value.h"
 
 #include <map>
 using namespace std;

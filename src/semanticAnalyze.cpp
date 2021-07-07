@@ -1,5 +1,5 @@
-#include "semanticAnalyze.h" //语义检查
-#include "sysy_node.hpp"
+#include "../include/semanticAnalyze.h" //语义检查
+#include "../include/sysy_node.hpp"
 #include <string>
 #include <map>
 #include <stdexcept>

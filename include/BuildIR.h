@@ -1,6 +1,6 @@
 #pragma once
 #include "Instruction.h"
-#include "../src/sysy_node.hpp"
+#include "../include/sysy_node.hpp"
 #include<bits/stdc++.h>
 using namespace std;
 

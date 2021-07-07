@@ -1,7 +1,7 @@
 #include "part.tab.hpp"
-#include "sysy_node.hpp"
-#include "semanticAnalyze.h" //语义检查
 #include <bits/stdc++.h>
+#include "../include/sysy_node.hpp"
+#include "../include/semanticAnalyze.h" //语义检查
 #include "../include/Value.h"
 #include "../include/BuildIR.h"
 #include"../include/debug.h"

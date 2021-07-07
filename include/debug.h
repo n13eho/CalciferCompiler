@@ -4,7 +4,7 @@
 #include"BuildIR.h"
 #include"Instruction.h"
 #include"Value.h"
-#include"../src/semanticAnalyze.h"
+#include"../include/semanticAnalyze.h"
 using namespace std;
 
 extern map<int,string> DEBUG_blkOP;

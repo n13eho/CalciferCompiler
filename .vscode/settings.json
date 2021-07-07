@@ -1,5 +1,8 @@
 {
     "files.associations": {
+        "stack": "cpp",
+        "map": "cpp",
+        "stdexcept": "cpp",
         "any": "cpp",
         "array": "cpp",
         "atomic": "cpp",
@@ -31,7 +34,6 @@
         "deque": "cpp",
         "forward_list": "cpp",
         "list": "cpp",
-        "map": "cpp",
         "set": "cpp",
         "unordered_map": "cpp",
         "unordered_set": "cpp",
@@ -67,13 +69,11 @@
         "scoped_allocator": "cpp",
         "shared_mutex": "cpp",
         "sstream": "cpp",
-        "stdexcept": "cpp",
         "streambuf": "cpp",
         "thread": "cpp",
         "typeindex": "cpp",
         "typeinfo": "cpp",
         "valarray": "cpp",
-        "variant": "cpp",
-        "*.def": "cpp"
+        "variant": "cpp"
     }
 }

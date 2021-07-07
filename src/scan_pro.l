@@ -5,7 +5,7 @@ int lineno = 1; // 行号
 #include <stdio.h>
 #include <string>
 #include <typeinfo>
-#include "sysy_node.hpp"
+#include "../include/sysy_node.hpp"
 #include "part.tab.hpp"
 
 %}
