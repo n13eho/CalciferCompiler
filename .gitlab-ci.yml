@@ -1,13 +1,20 @@
-image: "debian:stretch"
+# image: "debian:stretch"
+stages:
+  - default
+  - build
+  - test
 
-default:
+default_job:
+  stage: default
   before_script:
-    # - cp .gitmodules-ci .gitmodules
+    - echo "init the git submodule"
     - git submodule sync
     - git submodule update --init
 
-build_and_test:
+build_job:
+  stage: build
   script:
+    - echo "start building..."
     - echo "deb http://mirrors.tuna.tsinghua.edu.cn/debian bullseye main" >> /etc/apt/sources.list
     - apt-get update
     - apt-get install -y make cmake g++
@@ -15,4 +22,9 @@ build_and_test:
     - cd build
     - cmake ..
     - make
+
+test_job:
+  stage: test
+  script:
+    - echo "test starts"
     - make test
