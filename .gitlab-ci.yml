@@ -1,4 +1,4 @@
-image: "debian:stretch"
+image: "tico/docker:latest"
 
 
 before_script:
