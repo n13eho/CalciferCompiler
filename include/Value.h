@@ -106,7 +106,7 @@ class FunctionValue:public Value
     std::vector<Value *> getParams(){return FuncParams;}
 
     private:
-    //函数返回值类型
+    //函数返回值类型，1为int，0为void
     int Result;
     //参数个数
     int ParamsNum;

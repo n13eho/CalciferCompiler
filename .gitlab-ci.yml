@@ -1,0 +1,42 @@
+image: "tico/docker:latest"
+
+
+before_script:
+  - echo "install pakages"
+  - echo "deb http://mirrors.tuna.tsinghua.edu.cn/debian bullseye main" >> /etc/apt/sources.list
+  - apt-get update
+  - apt-get install -y make cmake g++
+  
+  - cp .gitmodules-ci .gitmodules # path issue
+  - echo "init the git submodule"
+  - git submodule sync
+  - git submodule update --init
+
+
+stages:
+  - build
+  - test
+
+
+build-job:
+  tags:
+    - taag
+  stage: build
+  script:
+    - echo "start building..."
+    - echo "deb http://mirrors.tuna.tsinghua.edu.cn/debian bullseye main" >> /etc/apt/sources.list
+    - apt-get update
+    - apt-get install -y make cmake g++
+    - mkdir build
+    - cd build
+    - cmake ..
+    - make
+
+
+test-job:
+  tags:
+    - taag
+  stage: test
+  script:
+    - echo "test starts"
+    - make test

@@ -1,6 +1,6 @@
 #include <iostream>
 #include <stdio.h>
-#include "sysy_node.hpp"
+#include "../include/sysy_node.hpp"
 
 void show_node(GrammaNode* root,int layer=0)
 {

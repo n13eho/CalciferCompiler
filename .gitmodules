@@ -1,0 +1,3 @@
+[submodule "sysyruntimelibrary"]
+	path = sysyruntimelibrary
+	url = https://gitlab.eduxiji.net/calcifer/sysyruntimelibrary.git

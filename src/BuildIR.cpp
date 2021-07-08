@@ -1,6 +1,6 @@
 #include "../include/BuildIR.h"
 #include "../include/debug.h"
-#include "semanticAnalyze.h"
+#include "../include/semanticAnalyze.h"
 #include <stack>
 using namespace std;
 

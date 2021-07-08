@@ -72,7 +72,7 @@
 	#include <stdio.h>
 	#include <iostream>
 	#include <string>
-	#include "sysy_node.hpp"
+	#include "../include/sysy_node.hpp"
 	#include <map>
 	#include <algorithm>
 
