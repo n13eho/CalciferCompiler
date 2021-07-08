@@ -347,7 +347,7 @@ void StmtNode(GrammaNode* node,LinearIR *IR)
     }
     else if(Stmt_Exp_ == node->type)
     {
-        Value* useless = AddExpNode(node,IR);
+        Value* useless = AddExpNode(node->son[0],IR);
     }
     else if(Stmt_If_ == node->type)
     {
@@ -1298,7 +1298,6 @@ Value* UnaryExpNode(GrammaNode* node,LinearIR *IR)
 {
     if(UnaryExp_func_ == node->type)
     {
-        // std::cout<<"UnaryExp_func "<<node->str<<std::endl;
         if(node->son.size() == 2)
         {
             //有实参的函数调用
@@ -1358,6 +1357,7 @@ Value* UnaryExpNode(GrammaNode* node,LinearIR *IR)
                 bbNow = GetPresentBlock(FuncN,BasicBlock::Basic);
             }
             Instruction* ins_new = new Instruction(IR->getInstCnt(),Instruction::Call,1);
+            
             ins_new->addOperand(called);
             ins_new->setResult(ret);
             IR->InsertInstr(ins_new);

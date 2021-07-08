@@ -366,7 +366,7 @@ IntegerValue *semantic_UnaryExp_(GrammaNode *root, int needConst, int needCond)
 {
     if (UnaryExp_func_ == root->type)
     {
-        GrammaNode *tempGn = idList[make_pair(root->son[0]->str, root->son[0]->var_scope)]; // 从idList找原来的书上的结点
+        GrammaNode *tempGn = idList[make_pair(root->son[0]->str, root->son[0]->var_scope)]; // 从idList找原来的树上的结点
         FunctionValue *val = (FunctionValue *)SymbolTable->askItem(tempGn);
         // 函数调用语义检查 √error：这里先只检查参数个数
         int call_param_number = 0;
