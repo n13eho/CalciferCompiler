@@ -1,4 +1,4 @@
-->node string:ROOT	 son numbers:3
+->node string:ROOT	 son numbers:3
    ->node string:VarDefs	 son numbers:1
       ->node string:VarDef_single_init_	 son numbers:3
          ->node string:p	 son numbers:0
@@ -33,8 +33,58 @@
                ->node string:i	 son numbers:0
                ->node string:1	 son numbers:0
 *****7 t0
-0x7ffff7c15ef0 VarDef_single_init_**** p
+0x7fffdca3cee0 VarDef_single_init_**** p
 *****7 t1
-0x7ffff7c16720 VarDef_single_init_**** a
+0x7fffdca3d710 VarDef_single_init_**** a
 *****7 t2
-0x7ffff7c171c0 VarDef_single_init_**** i
+0x7fffdca3e1b0 VarDef_single_init_**** i
+*****10 t3
+*****7 t4
+*****13 t5
+0x7fffdca3e1b0 *****5 t6
+
+SymbolTable指针地址：0x7fffdca37a90 符号表大小：17
+GNType: 300	scope:	1	GN Name: p		lineNumber:33
+GNType: 302	scope:		GN Name: 0		lineNumber:33
+GNType: 436	scope:		GN Name: VarDef_single_init_		lineNumber:33
+GNType: 300	scope:	1	GN Name: add		lineNumber:34
+GNType: 300	scope:	11	GN Name: a		lineNumber:36
+GNType: 302	scope:		GN Name: 10		lineNumber:36
+GNType: 436	scope:		GN Name: VarDef_single_init_		lineNumber:36
+GNType: 441	scope:		GN Name: FuncDef_void_		lineNumber:38
+GNType: 300	scope:	1	GN Name: main		lineNumber:40
+GNType: 300	scope:	12	GN Name: i		lineNumber:43
+GNType: 302	scope:		GN Name: 3		lineNumber:43
+GNType: 436	scope:		GN Name: VarDef_single_init_		lineNumber:43
+GNType: 431	scope:		GN Name: UnaryExp_func_		lineNumber:45
+GNType: 302	scope:		GN Name: 1		lineNumber:46
+GNType: 424	scope:		GN Name: AddExp_Add		lineNumber:46
+GNType: 414	scope:		GN Name: Stmt_Assign		lineNumber:46
+GNType: 440	scope:		GN Name: FuncDef_int_		lineNumber:47
+
+line 33	GNType: 436	变量single名称：p	初值：0	isConst：0	作用域：1
+line 36	GNType: 436	变量single名称：a	初值：10	isConst：0	作用域：11
+line 38	GNType: 441	函数名称：add	作用域：1	返回类型：0	参数个数：0
+line 43	GNType: 436	变量single名称：i	初值：3	isConst：0	作用域：12
+line 47	GNType: 440	函数名称：main	作用域：1	返回类型：1	参数个数：0
+
+start VisitAST
+0x7fffdca3cee0 VL p
+Instruction id:0 type:8 Operator nums:1
+0x7fffdca3d710 VL a
+Instruction id:1 type:8 Operator nums:1
+Instruction id:2 type:20 Operator nums:0
+0x7fffdca3e1b0 VL i
+Instruction id:3 type:8 Operator nums:1
+Instruction id:4 type:19 Operator nums:1
+Instruction id:5 type:0 Operator nums:2
+Instruction id:6 type:8 Operator nums:1
+
+id	OP	arg1	arg2	result
+0	=	t0		p
+1	=	t1		a
+2	return	
+3	=	t2		i
+4	Call	add		t3
+5	+	i	t4	t5
+6	=	t5		i

@@ -365,10 +365,10 @@ IntegerValue *semantic_UnaryExp_(GrammaNode *root, int needConst, int needCond)
 {
     if (UnaryExp_func_ == root->type)
     {
-        GrammaNode *tempGn = idList[make_pair(root->son[0]->str, root->son[0]->var_scope)]; // 从idList找原来的书上的结点
+        GrammaNode *tempGn = idList[make_pair(root->son[0]->str, root->son[0]->var_scope)]; // 从idList找原来的树上的结点
         FunctionValue *val = (FunctionValue *)SymbolTable->askItem(tempGn);
         // 函数调用语义检查 √error：这里先只检查参数个数
-        if(root->son[1]->son.size() != val->getParams().size())
+        if(root->son.size()>1&&root->son[1]->son.size() != val->getParams().size())
         {// 个数不匹配
             //----------------语义检查【3.1】----------------
             throw SemanticError(root->lineno, root->son[0]->str, "函数参数个数不匹配");
@@ -378,7 +378,7 @@ IntegerValue *semantic_UnaryExp_(GrammaNode *root, int needConst, int needCond)
         SymbolTable->addItem(root->son[0], val);
 
         //映射参数
-        for(int i=0; i<root->son[1]->son.size(); i++)
+        for(int i=0; root->son.size()>1&&i<root->son[1]->son.size(); i++)
         {
             IntegerValue *param_i = semantic_Exp_(root->son[1]->son[i], needConst, needCond);
             SymbolTable->addItem(root->son[1]->son[i], param_i);
