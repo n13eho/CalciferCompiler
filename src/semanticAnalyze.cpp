@@ -116,7 +116,7 @@ IntegerValue *semantic_AndExp_(GrammaNode *root)
 IntegerValue *semantic_LOrExp_(GrammaNode *root)
 {
     IntegerValue *ret = new IntegerValue(name + to_string(cnt++), root->lineno, root->var_scope, 0);
-    cout<<"***** "<<ret->VName<<endl;
+    // cout<<"*****4 "<<ret->VName<<endl;
     ret->RealValue = 1;
     for (int i = 0; i < root->son.size(); i++)
     {
@@ -141,12 +141,13 @@ void semantic_stmt_(GrammaNode *root)
         IntegerValue *you = semantic_Exp_(root->son[1], 0, 0);
         // cout<< you->RealValue <<endl;
         IntegerValue *tem = new IntegerValue(name + to_string(cnt++), root->lineno, root->var_scope, you->RealValue, 0);
-        cout<< root->son[0] <<" *****5 "<<tem->VName<<endl;
+        // cout<< root->son[0] <<" *****5 "<<tem->VName<<endl;
         SymbolTable->addItem(root->son[0], zuo);
         SymbolTable->addItem(root, tem);
     }
     else if (root->type == Stmt_Exp_)
     {
+//        cout<<"at stmt_exp\n";
         semantic_Exp_(root->son[0], 0, 0);
     }
     else if (root->type == Stmt_If_)
@@ -304,7 +305,7 @@ IntegerValue *semantic_PrimaryExp_(GrammaNode *root, int needConst, int needCond
     {
         constval = stoi(root->str, 0, 10);
         IntegerValue *ret = new IntegerValue(name + to_string(cnt++), root->lineno, root->var_scope, constval, 1);
-        cout<<"*****7 "<<ret->VName<<endl;
+        // cout<<"*****7 "<<ret->VName<<endl;
         SymbolTable->addItem(root,ret); // 这样的纯数字就不需要映射了
         // cout<<"AAAA "<<constval<<endl;
         return ret;
@@ -313,7 +314,7 @@ IntegerValue *semantic_PrimaryExp_(GrammaNode *root, int needConst, int needCond
     {
         constval = stoi(root->str, 0, 8);
         IntegerValue *ret = new IntegerValue(name + to_string(cnt++), root->lineno, root->var_scope, constval, 1);
-        cout<<"*****8 "<<ret->VName<<endl;
+        // cout<<"*****8 "<<ret->VName<<endl;
         SymbolTable->addItem(root,ret); // 这样的纯数字就不需要映射了
         return ret;
     }
@@ -321,7 +322,7 @@ IntegerValue *semantic_PrimaryExp_(GrammaNode *root, int needConst, int needCond
     {
         constval = stoi(root->str, 0, 16);
         IntegerValue *ret = new IntegerValue(name + to_string(cnt++), root->lineno, root->var_scope, constval, 1);
-        cout<<"*****9 "<<ret->VName<<endl;
+        // cout<<"*****9 "<<ret->VName<<endl;
         SymbolTable->addItem(root,ret); // 这样的纯数字就不需要映射了
         return ret;
     }
@@ -368,7 +369,12 @@ IntegerValue *semantic_UnaryExp_(GrammaNode *root, int needConst, int needCond)
         GrammaNode *tempGn = idList[make_pair(root->son[0]->str, root->son[0]->var_scope)]; // 从idList找原来的书上的结点
         FunctionValue *val = (FunctionValue *)SymbolTable->askItem(tempGn);
         // 函数调用语义检查 √error：这里先只检查参数个数
-        if(root->son[1]->son.size() != val->getParams().size())
+        int call_param_number = 0;
+        if(root->son.size() > 1)
+        {// 有参数
+            call_param_number = root->son[1]->son.size();
+        }
+        if(call_param_number != val->getParams().size())
         {// 个数不匹配
             //----------------语义检查【3.1】----------------
             throw SemanticError(root->lineno, root->son[0]->str, "函数参数个数不匹配");
@@ -378,7 +384,7 @@ IntegerValue *semantic_UnaryExp_(GrammaNode *root, int needConst, int needCond)
         SymbolTable->addItem(root->son[0], val);
 
         //映射参数
-        for(int i=0; i<root->son[1]->son.size(); i++)
+        for(int i=0; i<call_param_number; i++)
         {
             IntegerValue *param_i = semantic_Exp_(root->son[1]->son[i], needConst, needCond);
             SymbolTable->addItem(root->son[1]->son[i], param_i);
@@ -400,7 +406,7 @@ IntegerValue *semantic_UnaryExp_(GrammaNode *root, int needConst, int needCond)
         }
 
         IntegerValue *tem = new IntegerValue(name + to_string(cnt++), root->lineno, root->son[1]->var_scope, sonval->isConst);
-        cout<<"*****11 "<<tem->VName<<endl;
+        // cout<<"*****11 "<<tem->VName<<endl;
 
         if (root->son[0]->str == "+")
             tem->RealValue = sonval->RealValue;
@@ -439,7 +445,7 @@ IntegerValue *semantic_MulExp_(GrammaNode *root, int needConst, int needCond)
             throw SemanticError(root->lineno, "不是常量");
         }
         IntegerValue *temp = new IntegerValue(name + to_string(cnt++), root->lineno, root->var_scope, thisconst);
-        cout<<"*****12 "<<temp->VName<<endl;
+        // cout<<"*****12 "<<temp->VName<<endl;
 
         //这里同样需要赋初始值
         if (root->type == MulExp_Mul_)
@@ -460,6 +466,7 @@ IntegerValue *semantic_Exp_(GrammaNode *root, int needConst, int needCond)
     // 来源可以是 InitVal_Exp->son[i] ConstExps->son[i]
     if (root->type != AddExp_Add_ && root->type != AddExp_Sub_)
     { // 对应没有一个孩子的
+//        cout<<"at if UnaryExp_func_\n";
         return semantic_MulExp_(root, needConst, needCond);
     }
     else
@@ -473,7 +480,7 @@ IntegerValue *semantic_Exp_(GrammaNode *root, int needConst, int needCond)
             throw SemanticError(root->lineno, "不是常量");
         }
         IntegerValue *temp = new IntegerValue(name + to_string(cnt++), root->lineno, root->var_scope, thisconst);
-        cout<<"*****13 "<<temp->VName<<endl;
+        // cout<<"*****13 "<<temp->VName<<endl;
 
         // 把两个儿子的计算结果求出来
         temp->RealValue = (root->type == AddExp_Add_) ? (add->RealValue + mul->RealValue) : (add->RealValue - mul->RealValue);
@@ -567,7 +574,7 @@ ArrayValue *semantic_initVal_Son(GrammaNode *root, int isConst, int dimen = 0, v
     //base: 当前填充到数组的第几个
     //tot：当前需要填充的数组总共多大
     ArrayValue *ret = new ArrayValue(name + to_string(cnt++), root->lineno, root->var_scope, isConst);
-    cout<<"*****14 "<<ret->VName<<endl;
+    // cout<<"*****14 "<<ret->VName<<endl;
     //创建带返回的value
     batchsize = dimen_std[dimen_std.size() - 1];
     //batchsize：当前填充维度大小
@@ -755,7 +762,7 @@ void semantic_VarDefSon(GrammaNode *root)
         IntegerValue *single_init = new IntegerValue(root->son[0]->str, root->son[0]->lineno, root->son[0]->var_scope, initValue, 0);
         SymbolTable->addItem(root, single_init);
         SymbolTable->addItem(root->son[0], single_init);
-        cout<<root->son[0]<<" VarDef_single_init_**** "<<single_init->VName<<endl;
+        // cout<<root->son[0]<<" VarDef_single_init_**** "<<single_init->VName<<endl;
     }
     else if (root->type == VarDef_array_)
     { // 没有初始值的数组，算维度，new结点，建立映射
@@ -828,6 +835,7 @@ void semanticAnalyzer(GrammaNode *root)
         GrammaNode *son = root->son[i];
         if (son->type == FuncDef_int_)
         {
+            cout<<"at int main\n";
             funcType = 0;
             semantic_FuncDef_int_(son); // 函数声明 int 无参数
         }

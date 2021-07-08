@@ -30,7 +30,7 @@
 //     int w = b+c;
 //     return 5;
 // }
-int p = 0;
+int pp = 0;
 void add()
 {
     int a = 10;
@@ -39,9 +39,7 @@ void add()
 
 int main()
 {
-
     int i=3;
-    // int p = 0;
     add();
     i = i+1;
 }

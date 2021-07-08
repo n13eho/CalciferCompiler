@@ -231,7 +231,7 @@ void VarDefNode(GrammaNode* node,LinearIR *IR)
             //左值
             // std::cout<<"VarDef_single_init_"<<p_node->type<<std::endl;
             Value* VL=SymbolTable->askItem(p_node->son[0]);
-            cout<<p_node->son[0]<<" VL "<< VL->VName <<endl;
+            // cout<<p_node->son[0]<<" VL "<< VL->VName <<endl;
 
             //右值必为单值
             Value* VR=nullptr;
@@ -1631,4 +1631,5 @@ void show_IR_ins(LinearIR *IR)
             cout << presenIns->getResult()->VName << endl;
         }
     }
+    cout<<"\n\n";
 }

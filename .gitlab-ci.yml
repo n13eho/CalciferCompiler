@@ -1,11 +1,12 @@
-image: "tico/docker:latest"
+# image: "tico/docker:latest"
+image: "debian:stretch"
 
 
 before_script:
   - echo "install pakages"
   - echo "deb http://mirrors.tuna.tsinghua.edu.cn/debian bullseye main" >> /etc/apt/sources.list
   - apt-get update
-  - apt-get install -y make cmake g++
+  - apt-get install -y make cmake g++ git
   
   - cp .gitmodules-ci .gitmodules # path issue
   - echo "init the git submodule"
@@ -24,9 +25,6 @@ build-job:
   stage: build
   script:
     - echo "start building..."
-    - echo "deb http://mirrors.tuna.tsinghua.edu.cn/debian bullseye main" >> /etc/apt/sources.list
-    - apt-get update
-    - apt-get install -y make cmake g++
     - mkdir build
     - cd build
     - cmake ..
