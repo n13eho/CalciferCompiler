@@ -22,7 +22,7 @@ stages:
 build-and-test:
   tags:
     - taag
-  stage: build
+  stage: build&test
   script:
     - pwd
     - echo "start building..."
