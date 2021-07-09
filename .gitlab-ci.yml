@@ -1,12 +1,13 @@
 # image: "tico/docker:latest"
-image: "debian:stretch"
+# image: "debian:stretch"
+image: "debian:bullseye"
 
 
 before_script:
-  - echo "install pakages"
-  - echo "deb http://mirrors.tuna.tsinghua.edu.cn/debian bullseye main" >> /etc/apt/sources.list
+  - echo "deb http://mirrors.tuna.tsinghua.edu.cn/debian bullseye main" > /etc/apt/sources.list &&
+    echo "deb http://mirrors.tuna.tsinghua.edu.cn/debian bullseye-updates main" >> /etc/apt/sources.list
   - apt-get update
-  - apt-get install -y make cmake g++ git
+  - env DEBIAN_FRONTEND=noninteractive apt-get install -y make cmake g++ git
   
   - cp .gitmodules-ci .gitmodules # path issue
   - echo "init the git submodule"
@@ -29,6 +30,7 @@ build-job:
     - cd build
     - cmake ..
     - make
+    - pwd
 
 
 test-job:
@@ -36,5 +38,8 @@ test-job:
     - taag
   stage: test
   script:
+    - pwd
     - echo "test starts"
+    - cd build
+    - pwd
     - make test

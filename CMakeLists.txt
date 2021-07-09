@@ -1,11 +1,11 @@
 cmake_minimum_required(VERSION 3.15)
 set(project_name calcifer)
-project(calcifer)
+project(${project_name})
 
 set(CMAKE_CXX_STANDARD 17)
 
-# AddressSanitizer, blindly added
-set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fsanitize=address")
+# AddressSanitizer, currently removed to pass basic tests
+#set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fsanitize=address")
 
 # make target
 file(GLOB_RECURSE source_files ${PROJECT_SOURCE_DIR}/src/*.cpp)

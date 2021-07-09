@@ -23,7 +23,6 @@ stack<pair<BasicBlock*,BasicBlock*>> LoopNext;
 
 BasicBlock* GetPresentBlock(BasicBlock* funcP,BasicBlock::BlockType t)
 {
-    // std::cout<<"GetPresentBlock"<<std::endl;
     bbNow = CreateBlock(t);
     //若当前函数已有基本块，更新前驱后继
     if(0 != funcP->domBlock.size())
@@ -37,7 +36,6 @@ BasicBlock* GetPresentBlock(BasicBlock* funcP,BasicBlock::BlockType t)
 
 BasicBlock* CreateBlock(BasicBlock::BlockType t)
 {
-    // std::cout<<"CreateBlock"<<std::endl;
     BasicBlock* b = new BasicBlock(t);
     return b;
 }
@@ -46,7 +44,7 @@ void VisitAST(GrammaNode* DRoot,LinearIR *IR)
 {
     //全局基本块
     IR->AddBlock(globalBlock);
-    std::cout<<"\nstart VisitAST"<<std::endl;
+    dbg("start VisitAST");
     
     for(int i=0;i<DRoot->son.size();i++)
     {
@@ -110,7 +108,6 @@ void ConstDefNode(GrammaNode* node,LinearIR *IR)
                 {
                     //赋值四元式，复杂情况仍需讨论
                     Instruction* ins_new = new Instruction(IR->getInstCnt(),Instruction::Assign,1);
-                    // std::cout<<"Instruction id:"<<IR->getInstCnt()<<" type:"<<"Assign"<<"Operator nums:"<<1<<std::endl;
                     ins_new->addOperand(VR);
                     ins_new->setResult(VL);
                     //属于某个函数且该指令为首指令，新建一个基本块，并建立联系
@@ -229,9 +226,7 @@ void VarDefNode(GrammaNode* node,LinearIR *IR)
         else if(VarDef_single_init_ ==  p_node->type)
         {
             //左值
-            // std::cout<<"VarDef_single_init_"<<p_node->type<<std::endl;
             Value* VL=SymbolTable->askItem(p_node->son[0]);
-            // cout<<p_node->son[0]<<" VL "<< VL->VName <<endl;
 
             //右值必为单值
             Value* VR=nullptr;
@@ -462,7 +457,6 @@ void IfNode(GrammaNode* node,LinearIR *IR)
 {
     if(node->son.size() == 2)
     {
-        // std::cout<<"IfNode..."<<std::endl;
         if(nullptr == FuncN)
         {
             return ;
@@ -501,7 +495,6 @@ void IfNode(GrammaNode* node,LinearIR *IR)
         bbNow = next;
         //update jmp address
         ins_br->setResult(new IntegerValue("jmpAddress0",node->lineno,node->var_scope,IR->getInstCnt(),1));
-        cout<<ins_br->getResult()<<endl;
     }
     else
     {
@@ -635,14 +628,12 @@ void WhileNode(GrammaNode* node,LinearIR *IR)
         Instruction* ins_br2 = new Instruction(IR->getInstCnt(),Instruction::Jmp,0);
         ImmValue* jmpIns = new ImmValue("jmpaddress",condInsId);
         ins_br2->setResult(jmpIns);
-        cout<<ins_br->getResult()<<endl;
         IR->InsertInstr(ins_br2);
         bbNow->Addins(ins_br2->getId());
         ins_br2->setParent(bbNow);
 
         //caseT body的无条件跳转指令的下一条指令就是 update while的条件跳转目的地址
         ins_br->setResult(new IntegerValue("jmpAddress0",node->lineno,node->var_scope,IR->getInstCnt(),1));
-        cout<<ins_br->getResult()<<endl;
         //next
         bbNow = next;
         LoopNext.pop();
@@ -756,14 +747,12 @@ void ReturnValueNode(GrammaNode* node,LinearIR *IR)
 
 void CondNode(GrammaNode* node,LinearIR *IR)
 {
-    // std::cout<<"CondNode..."<<node->type<<std::endl;
     if(node->son.size()>=1)
         LOrExpNode(node->son[0],IR);
 }
 
 void LOrExpNode(GrammaNode* node,LinearIR *IR)
 {
-    // std::cout<<"LOrExpNode..."<<node->type<<std::endl;
     //前一个条件value
     Value* Condpre = LAndExpNode(node->son[0],IR);
     if(node->son.size()==1)
@@ -821,7 +810,6 @@ void LOrExpNode(GrammaNode* node,LinearIR *IR)
 
 Value* LAndExpNode(GrammaNode* node,LinearIR *IR)
 {
-    // std::cout<<"LAndExpNode..."<<node->type<<std::endl;
     //前一个条件value
     Value* Condpre = EqExpNode(node->son[0],IR);
     for(int i=1;i<node->son.size();i++)
@@ -877,7 +865,6 @@ Value* LAndExpNode(GrammaNode* node,LinearIR *IR)
 
 Value* EqExpNode(GrammaNode* node,LinearIR *IR)
 {
-    // std::cout<<"EqExpNode..."<<node->type<<std::endl;
     if(EqExp_EQ_ == node->type)
     {
         Value* VL = EqExpNode(node->son[0],IR);
@@ -934,11 +921,6 @@ Value* EqExpNode(GrammaNode* node,LinearIR *IR)
 
 Value* RelExpNode(GrammaNode* node,LinearIR *IR)
 {
-    // std::cout<<"RelExpNode..."<<node->type<<std::endl;
-    // for(int i=0;i<node->son.size();i++)
-    // {
-    //     std::cout<<node->son[i]->type<<std::endl;
-    // }
     if(RelExp_LT_ == node->type)
     {
         Value* VL = RelExpNode(node->son[0],IR);
@@ -965,7 +947,6 @@ Value* RelExpNode(GrammaNode* node,LinearIR *IR)
     }
     else if(RelExp_BG_ == node->type)
     {
-        // std::cout<<"RelExp_BG_..."<<node->type<<std::endl;
         Value* VL = RelExpNode(node->son[0],IR);
         Value* RL = AddExpNode(node->son[1],IR);
         Value* ret = SymbolTable->askItem(node);// new Value("t1",node->lineno,node->var_scope);
@@ -980,7 +961,6 @@ Value* RelExpNode(GrammaNode* node,LinearIR *IR)
         {
             bbNow = GetPresentBlock(FuncN,BasicBlock::Basic);
         }
-        // std::cout<<"CreateIns"<<std::endl;
         Instruction* ins_bg = new Instruction(IR->getInstCnt(),Instruction::ArithBG,2);
         ins_bg->addOperand(VL);
         ins_bg->addOperand(RL);
@@ -1041,7 +1021,6 @@ Value* RelExpNode(GrammaNode* node,LinearIR *IR)
     else
     {
         //RelExp:AddExp
-        // std::cout<<"AddExp"<<node->type<<std::endl;
         return AddExpNode(node,IR);
         return nullptr;
     }
@@ -1497,7 +1476,6 @@ Value* PrimaryExpNode(GrammaNode* node,LinearIR *IR)
     }
     else if(IntConst_O_ == node->type || IntConst_D_ == node->type || IntConst_H_ == node->type)
     {
-        // cout<<"AAAAAa"<<endl;
         return SymbolTable->askItem(node);
     }
     else
@@ -1601,8 +1579,7 @@ Value* LValArrayNode(GrammaNode* node,LinearIR *IR)
 // 打印当前IR中的所有指令
 void show_IR_ins(LinearIR *IR)
 {
-    cout<<"\nid\tOP\targ1\targ2\tresult\n";
-    // cout<<"1111"<<endl;///
+    cout<<"\nInsID\tOP\targ1\targ2\tresult\n";
     Instruction* presenIns;
     
     for(int i=0; i<IR->InstList.size(); i++)

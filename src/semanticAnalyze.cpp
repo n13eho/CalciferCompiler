@@ -1,5 +1,6 @@
 #include "../include/semanticAnalyze.h" //语义检查
 #include "../include/sysy_node.hpp"
+#include "../include/dbg.h"
 #include <string>
 #include <map>
 #include <stdexcept>
@@ -60,7 +61,6 @@ IntegerValue *semantic_RelExp_(GrammaNode *root)
         IntegerValue *rel = semantic_EqExp_(root->son[0]);
         IntegerValue *add = semantic_RelExp_(root->son[1]);
         IntegerValue *ret = new IntegerValue(name + to_string(cnt++), root->lineno, root->var_scope, 0);
-        // cout<<"*****1 "<<ret->VName<<endl;
         if (root->type == RelExp_BG_)
             ret->RealValue = (rel->RealValue > add->RealValue);
         else if (root->type == RelExp_BQ_)
@@ -85,7 +85,6 @@ IntegerValue *semantic_EqExp_(GrammaNode *root)
         IntegerValue *eq = semantic_EqExp_(root->son[0]);
         IntegerValue *rel = semantic_RelExp_(root->son[1]);
         IntegerValue *ret = new IntegerValue(name + to_string(cnt++), root->lineno, root->var_scope, 0);
-        // cout<<"*****2 "<<ret->VName<<endl;
         if (root->type == EqExp_NEQ_)
             ret->RealValue = (eq->RealValue != rel->RealValue);
         else if (root->type == EqExp_EQ_)
@@ -102,7 +101,6 @@ IntegerValue *semantic_EqExp_(GrammaNode *root)
 IntegerValue *semantic_AndExp_(GrammaNode *root)
 {
     IntegerValue *ret = new IntegerValue(name + to_string(cnt++), root->lineno, root->var_scope, 0);
-    // cout<<"*****3 "<<ret->VName<<endl;
     ret->RealValue = 1;
     for (int i = 0; i < root->son.size(); i++)
     {
@@ -116,7 +114,6 @@ IntegerValue *semantic_AndExp_(GrammaNode *root)
 IntegerValue *semantic_LOrExp_(GrammaNode *root)
 {
     IntegerValue *ret = new IntegerValue(name + to_string(cnt++), root->lineno, root->var_scope, 0);
-    // cout<<"*****4 "<<ret->VName<<endl;
     ret->RealValue = 1;
     for (int i = 0; i < root->son.size(); i++)
     {
@@ -139,9 +136,7 @@ void semantic_stmt_(GrammaNode *root)
     {
         IntegerValue *zuo = semantic_LVal_(root->son[0]);
         IntegerValue *you = semantic_Exp_(root->son[1], 0, 0);
-        // cout<< you->RealValue <<endl;
         IntegerValue *tem = new IntegerValue(name + to_string(cnt++), root->lineno, root->var_scope, you->RealValue, 0);
-        // cout<< root->son[0] <<" *****5 "<<tem->VName<<endl;
         SymbolTable->addItem(root->son[0], zuo);
         SymbolTable->addItem(root, tem);
     }
@@ -290,7 +285,6 @@ IntegerValue *semantic_LVal_Array_(GrammaNode *root, int needConst, int needCond
     int indexVal = val->ArrayElement[index];
    
     IntegerValue *ret = new IntegerValue(name + to_string(cnt++), root->lineno, root->var_scope, indexVal, val->isConst);
-    cout<<"****6* "<<ret->VName<<endl;
     // 建立映射
     SymbolTable->addItem(root, ret);
 
@@ -305,16 +299,13 @@ IntegerValue *semantic_PrimaryExp_(GrammaNode *root, int needConst, int needCond
     {
         constval = stoi(root->str, 0, 10);
         IntegerValue *ret = new IntegerValue(name + to_string(cnt++), root->lineno, root->var_scope, constval, 1);
-        // cout<<"*****7 "<<ret->VName<<endl;
         SymbolTable->addItem(root,ret); // 这样的纯数字就不需要映射了
-        // cout<<"AAAA "<<constval<<endl;
         return ret;
     }
     else if (root->type == IntConst_O_&& needConst!=-1)
     {
         constval = stoi(root->str, 0, 8);
         IntegerValue *ret = new IntegerValue(name + to_string(cnt++), root->lineno, root->var_scope, constval, 1);
-        // cout<<"*****8 "<<ret->VName<<endl;
         SymbolTable->addItem(root,ret); // 这样的纯数字就不需要映射了
         return ret;
     }
@@ -322,7 +313,6 @@ IntegerValue *semantic_PrimaryExp_(GrammaNode *root, int needConst, int needCond
     {
         constval = stoi(root->str, 0, 16);
         IntegerValue *ret = new IntegerValue(name + to_string(cnt++), root->lineno, root->var_scope, constval, 1);
-        // cout<<"*****9 "<<ret->VName<<endl;
         SymbolTable->addItem(root,ret); // 这样的纯数字就不需要映射了
         return ret;
     }
@@ -392,7 +382,6 @@ IntegerValue *semantic_UnaryExp_(GrammaNode *root, int needConst, int needCond)
 
         // 这里好像不能return一个IntegerValue了，还是会warning，先warning住吧。随便返回一个临时变量，初始值为0
         IntegerValue *lsbl = new IntegerValue(name + to_string(cnt++), root->lineno, root->var_scope, 0);
-        cout<<"*****10 "<<lsbl->VName<<endl;
         SymbolTable->addItem(root, lsbl);
         return lsbl;
     }
@@ -406,7 +395,6 @@ IntegerValue *semantic_UnaryExp_(GrammaNode *root, int needConst, int needCond)
         }
 
         IntegerValue *tem = new IntegerValue(name + to_string(cnt++), root->lineno, root->son[1]->var_scope, sonval->isConst);
-        // cout<<"*****11 "<<tem->VName<<endl;
 
         if (root->son[0]->str == "+")
             tem->RealValue = sonval->RealValue;
@@ -445,7 +433,6 @@ IntegerValue *semantic_MulExp_(GrammaNode *root, int needConst, int needCond)
             throw SemanticError(root->lineno, "不是常量");
         }
         IntegerValue *temp = new IntegerValue(name + to_string(cnt++), root->lineno, root->var_scope, thisconst);
-        // cout<<"*****12 "<<temp->VName<<endl;
 
         //这里同样需要赋初始值
         if (root->type == MulExp_Mul_)
@@ -480,7 +467,6 @@ IntegerValue *semantic_Exp_(GrammaNode *root, int needConst, int needCond)
             throw SemanticError(root->lineno, "不是常量");
         }
         IntegerValue *temp = new IntegerValue(name + to_string(cnt++), root->lineno, root->var_scope, thisconst);
-        // cout<<"*****13 "<<temp->VName<<endl;
 
         // 把两个儿子的计算结果求出来
         temp->RealValue = (root->type == AddExp_Add_) ? (add->RealValue + mul->RealValue) : (add->RealValue - mul->RealValue);
@@ -574,7 +560,6 @@ ArrayValue *semantic_initVal_Son(GrammaNode *root, int isConst, int dimen = 0, v
     //base: 当前填充到数组的第几个
     //tot：当前需要填充的数组总共多大
     ArrayValue *ret = new ArrayValue(name + to_string(cnt++), root->lineno, root->var_scope, isConst);
-    // cout<<"*****14 "<<ret->VName<<endl;
     //创建带返回的value
     batchsize = dimen_std[dimen_std.size() - 1];
     //batchsize：当前填充维度大小
@@ -762,7 +747,6 @@ void semantic_VarDefSon(GrammaNode *root)
         IntegerValue *single_init = new IntegerValue(root->son[0]->str, root->son[0]->lineno, root->son[0]->var_scope, initValue, 0);
         SymbolTable->addItem(root, single_init);
         SymbolTable->addItem(root->son[0], single_init);
-        // cout<<root->son[0]<<" VarDef_single_init_**** "<<single_init->VName<<endl;
     }
     else if (root->type == VarDef_array_)
     { // 没有初始值的数组，算维度，new结点，建立映射
@@ -835,7 +819,6 @@ void semanticAnalyzer(GrammaNode *root)
         GrammaNode *son = root->son[i];
         if (son->type == FuncDef_int_)
         {
-            cout<<"at int main\n";
             funcType = 0;
             semantic_FuncDef_int_(son); // 函数声明 int 无参数
         }
@@ -906,15 +889,17 @@ void printVector(vector<unsigned> v)
 
 void show_SymbleTable(idTable_struct *SymbolTable)
 {
+    // 一长串，with info not likely to be used
+//    int count = 0;
+//    cout << "\nSymbolTable指针地址：" << SymbolTable << " 符号表大小：" << SymbolTable->table.size() << endl;
+//    for (auto iter = SymbolTable->table.begin(); iter != SymbolTable->table.end(); iter++)
+//    {
+//        cout << "GNType: " << iter->first->type << "\tscope:\t" << iter->first->var_scope
+//             << "\tGN Name: " << iter->first->str << "\t\tlineNumber:" << iter->first->lineno << endl;
+//    }
+//    cout << endl;
 
-    int count = 0;
-    cout << "\nSymbolTable指针地址：" << SymbolTable << " 符号表大小：" << SymbolTable->table.size() << endl;
-    for (auto iter = SymbolTable->table.begin(); iter != SymbolTable->table.end(); iter++)
-    {
-        cout << "GNType: " << iter->first->type << "\tscope:\t" << iter->first->var_scope
-             << "\tGN Name: " << iter->first->str << "\t\tlineNumber:" << iter->first->lineno << endl;
-    }
-    cout << endl;
+    dbg("SymbolTable(partly)");
     for (auto iter = SymbolTable->table.begin(); iter != SymbolTable->table.end(); iter++)
     {
         // cout << "[" << count++ << "]: ";

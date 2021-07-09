@@ -7,13 +7,17 @@ map<BasicBlock*,int> vis;
 map<int,string> DEBUG_blkOP={{BasicBlock::While,"while"},{BasicBlock::If,"if"},{BasicBlock::Basic,"basic"},{BasicBlock::Continue,"continue"},{BasicBlock::Break,"break"}};
 
 std::map<int, std::string> DEBUG_insOP = {{Instruction::InsType::Add, "+"}, {Instruction::InsType::Sub, "-"}, 
-{Instruction::InsType::Mul, "*"}, {Instruction::InsType::Div, "/"}, {Instruction::InsType::Mod, "%"}, {Instruction::InsType::UnaryPos, "single+"}, 
-{Instruction::InsType::UnaryNeg, "single-"}, {Instruction::InsType::UnaryNot, "single!"}, {Instruction::InsType::Assign, "="}, 
-{Instruction::InsType::LogicAnd, "logic&&"}, {Instruction::InsType::LogicOr, "logic||"}, {Instruction::InsType::ArithEq, "算数等于"}, 
-{Instruction::InsType::ArithNeq, "!="}, {Instruction::InsType::ArithLT, "<"}, {Instruction::InsType::ArithBG, "算术大于"}, 
-{Instruction::InsType::ArithLQ, "<="}, {Instruction::InsType::ArithGQ, ">="}, {Instruction::InsType::Jmp, "跳转"}, 
-{Instruction::InsType::ConBr, "条件跳转"}, {Instruction::InsType::Call, "Call"}, {Instruction::InsType::Ret, "return"}, 
-{Instruction::InsType::Load, "Load"}, {Instruction::InsType::Store, "Store"}, {Instruction::InsType::Break, "break"}};
+{Instruction::InsType::Mul, "*"}, {Instruction::InsType::Div, "/"}, {Instruction::InsType::Mod, "%"},
+{Instruction::InsType::UnaryPos, "single+"}, {Instruction::InsType::UnaryNeg, "single-"},
+{Instruction::InsType::UnaryNot, "single!"}, {Instruction::InsType::Assign, "="},
+{Instruction::InsType::LogicAnd, "&&"}, {Instruction::InsType::LogicOr, "||"},
+{Instruction::InsType::ArithEq, "=="}, {Instruction::InsType::ArithNeq, "!="},
+{Instruction::InsType::ArithLT, "<"}, {Instruction::InsType::ArithBG, ">"},
+{Instruction::InsType::ArithLQ, "<="}, {Instruction::InsType::ArithGQ, ">="},
+{Instruction::InsType::Jmp, "J"}, {Instruction::InsType::ConBr, "Br"},
+{Instruction::InsType::Call, "Call"}, {Instruction::InsType::Ret, "return"},
+{Instruction::InsType::Load, "Load"}, {Instruction::InsType::Store, "Store"},
+{Instruction::InsType::Break, "break"}};
 
 void printIns(int id)
 {

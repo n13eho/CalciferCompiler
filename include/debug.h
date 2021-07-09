@@ -5,6 +5,8 @@
 #include"Instruction.h"
 #include"Value.h"
 #include"../include/semanticAnalyze.h"
+#include "dbg.h"
+
 using namespace std;
 
 extern map<int,string> DEBUG_blkOP;

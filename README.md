@@ -7,7 +7,7 @@
 managing IR >> arm assembly.
 
 
-## make
+## build
 
 ```bash
 mkdir build && cd build
@@ -24,7 +24,7 @@ make
     ./calcifer
     ```
 
-- run sysy function test
+- run sysy function tests
 
     ```bash
     cd build
@@ -36,4 +36,4 @@ make
     ctest
     ```
 
-    same for the sysy performance test
+    same for the sysy performance tests
