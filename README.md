@@ -27,11 +27,11 @@ make
 - run sysy function tests
 
     ```bash
-    cd build
+    cd build/
     ctest
     
     # if the FUNC_TEST is OFF and you wanna activate it...
-    cd build
+    cd build/
     cmake .. -D FUNC_TEST=ON
     ctest
     ```

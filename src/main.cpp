@@ -23,7 +23,7 @@ int main(int argc, char *argv[])
     int ret = yyparse(); // 词法语法分析，无误返回0
     if(ret == 0)
     {
-        show_node(Droot, 0); //打印AST
+//        show_node(Droot, 0); //打印AST
         semanticAnalyzer(Droot); // 语义检查 + 构建符号表
         show_SymbleTable(SymbolTable); // 打印符号表
         VisitAST(Droot, IR1); // 建立四元式

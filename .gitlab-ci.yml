@@ -16,30 +16,22 @@ before_script:
 
 
 stages:
-  - build
-  - test
+  - build&test
 
 
-build-job:
+build-and-test:
   tags:
     - taag
   stage: build
   script:
+    - pwd
     - echo "start building..."
     - mkdir build
     - cd build
     - cmake ..
     - make
     - pwd
-
-
-test-job:
-  tags:
-    - taag
-  stage: test
-  script:
-    - pwd
-    - echo "test starts"
-    - cd build
-    - pwd
+    - echo "start testing..."
     - make test
+
+

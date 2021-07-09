@@ -15,7 +15,7 @@ add_executable(${project_name} ${source_files})
 # option for test
 option(CUSTOM_TEST "Run custom test cases" ON)
 option(FUNC_TEST "Run functional test cases" ON)
-option(PERF_TEST "Run performance test cases" OFF)
+option(PERF_TEST "Run performance test cases" ON)
 
 message("Custom test: ${CUSTOM_TEST}")
 message("Functional test: ${FUNC_TEST}")
