@@ -3,11 +3,12 @@
 */
 #include<bits/stdc++.h>
 #include"../include/register.h"
+#include"BuildIR.h"
+#include"semanticAnalyze.h"
 using namespace std;
 
-vector<int>R(12); 
-//12个通用寄存器
-// R0~R3 存函数的前4个参数
+vector<int>R(13);//每个寄存器存的的值。
+map<Value*,int> VReg;//符号表的每一个变量都应该有一个对应的寄存器。
 
 void getRister(Value* val, int &Rid)
 {
