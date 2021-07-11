@@ -11,7 +11,7 @@
 */
 class Instruction
 {
-    public:
+public:
     enum InsType{
         Add,// add
         Sub,
@@ -59,7 +59,7 @@ class Instruction
 
     Instruction(int id,Instruction::InsType ins_type,unsigned oprands_num):InstrId(id),OpType(ins_type),OpNums(oprands_num)
     {
-        std::cout<<"InsID:"<<id<<" type:"<<ins_type<<" Operator nums:"<<oprands_num<<std::endl;
+//        std::cout<<"InsID:"<<id<<" type:"<<ins_type<<" Operator nums:"<<oprands_num<<std::endl;
     }
     void setId(int id){InstrId=id;}
     void addOperand(Value* opd){Operands.push_back(opd);}
@@ -71,7 +71,7 @@ class Instruction
     Value* getResult(){return Result;}
     BasicBlock* getParent(){return ParentBasicblock;}
 
-    private:
+private:
     //instruction id
     int InstrId;
     //（OP，arg1，arg2，result）

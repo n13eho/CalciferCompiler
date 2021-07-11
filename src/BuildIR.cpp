@@ -44,7 +44,7 @@ void VisitAST(GrammaNode* DRoot,LinearIR *IR)
 {
     //全局基本块
     IR->AddBlock(globalBlock);
-    dbg("start VisitAST");
+//    dbg("start VisitAST");
     
     for(int i=0;i<DRoot->son.size();i++)
     {
@@ -1579,7 +1579,9 @@ Value* LValArrayNode(GrammaNode* node,LinearIR *IR)
 // 打印当前IR中的所有指令
 void show_IR_ins(LinearIR *IR)
 {
-    cout<<"\nInsID\tOP\targ1\targ2\tresult\n";
+    cout<<"\n\n";
+    dbg("Instruction List:");
+    cout<<"InsID\tOP\targ1\targ2\tresult\n";
     Instruction* presenIns;
     
     for(int i=0; i<IR->InstList.size(); i++)

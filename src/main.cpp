@@ -28,6 +28,9 @@ int main(int argc, char *argv[])
         show_SymbleTable(SymbolTable); // 打印符号表
         VisitAST(Droot, IR1); // 建立四元式
         show_IR_ins(IR1); // 打印指令
+
+
+        dbg("Blocks:");
         show_block(globalBlock,0); // 打印基本块 （写注释啊啊啊啊啊啊 --neho
     }
     return 0;
