@@ -2,7 +2,9 @@
 #include "../include/semanticAnalyze.h" //语义检查
 #include "../include/BuildIR.h"
 #include "part.tab.hpp"
+#include"register.h"
 #include "../include/debug.h"
+#include"CodeGeneration.h"
 
 //外部的lineno，行号信息
 extern int lineno;
@@ -25,10 +27,12 @@ int main(int argc, char *argv[])
     {
 //        show_node(Droot, 0); //打印AST
         semanticAnalyzer(Droot); // 语义检查 + 构建符号表
-        show_SymbleTable(SymbolTable); // 打印符号表
+        // show_SymbleTable(SymbolTable); // 打印符号表
         VisitAST(Droot, IR1); // 建立四元式
-        show_IR_ins(IR1); // 打印指令
-        show_block(globalBlock,0); // 打印基本块 （写注释啊啊啊啊啊啊 --neho
+        RegisterDistr(); //尝试分配寄存器
+        codegeneration();
+        // show_IR_ins(IR1); // 打印指令
+        // show_block(globalBlock,0); // 打印基本块 （写注释啊啊啊啊啊啊 --neho  (I'm sorry. --Hsyy04
     }
     return 0;
 }

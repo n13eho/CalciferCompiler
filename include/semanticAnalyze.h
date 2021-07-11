@@ -52,3 +52,4 @@ void printIdMap();
 
 // 打印符号表
 void show_SymbleTable(idTable_struct* SymbolTable);
+extern idTable_struct* SymbolTable; 
