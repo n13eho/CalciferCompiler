@@ -2,12 +2,12 @@
 // const int b[4][2] ={0, 2, 3, {4, 5}, 6}; // 应该摆错
 // const int c[2][2] = {{0},{2}}; // 0 0 2 0
 // const int d[4][2] ={0, 2, 3, {4}, 5, 6}; // 0 2 3 4 5 6 0 0
- const int e[4][2] ={{0}, 2, 3, {4}, 5, {6}}; // 0 0 2 3 4 0 5 6
+// const int e[4][2] ={{0}, 2, 3, {4}, 5, {6}}; // 0 0 2 3 4 0 5 6
 // const int today = 9/8+7, to = 12 + 3;
 // const int mondy = today + 1 + c[2]; // 11, but should be wrong
 
 
-const int p = 17;
+int p[10][2] = {1, 2, {3, 4}};
 
 int func(int c,int b)
 {
@@ -18,10 +18,18 @@ int func(int c,int b)
     return w;
 }
 
+int asz = 0;
+int sss = 12;
+int add(int a, int b)
+{
+    return a + b;
+}
+
 int main()
 {
 //     int a=c[1][1], b=0, c;
     int a=10, b=0, c;
+    sss = 12;
 //     c = getint();
     while (1)
     {

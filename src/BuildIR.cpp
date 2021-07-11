@@ -1611,4 +1611,8 @@ void show_IR_ins(LinearIR *IR)
         }
     }
     cout<<"\n\n";
+
+//    for(auto i: IR->Blocks)
+//        cout<<i<<" ";
+//    cout<<"\n\n";
 }

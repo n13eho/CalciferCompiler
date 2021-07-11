@@ -6,9 +6,10 @@
 
 //四元式的具体指令
 /*
-* return 类语句都没有result
-
-*/
+ * return 类语句都没有result
+ * Call 参数存放在操作数当中，返回值存放在value当中
+ *
+ * */
 class Instruction
 {
 public:

@@ -512,8 +512,8 @@ int lineno = 1; // 行号
 #include <stdio.h>
 #include <string>
 #include <typeinfo>
-#include "../include/sysy_node.hpp"
-#include "part.tab.hpp"
+#include "sysy_node.hpp"
+#include "../part.tab.hpp"
 
 #line 519 "lex.yy.c"
 /*数值常量*/
