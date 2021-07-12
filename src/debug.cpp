@@ -27,10 +27,13 @@ void printIns(int id)
 
     if(presenIns->getOpType() == Instruction::Jmp|| presenIns->getOpType() == Instruction::ConBr)
     {
-        cout<<endl;
-        return;
+        if(nullptr!=presenIns->getResult())
+            cout<<((IntegerValue*)presenIns->getResult())->RealValue<<endl;
+        else
+            cout<<endl;
+        return ;
     }
-    for(int i = 0; i < presenIns->getOp().size(); i++)std::cout << presenIns->getOp()[i]->VName << "\t";
+    for(int i = 0; i < presenIns->getOp().size(); i++)std::cout << presenIns->getOp()[i]->VName << " "<<((IntegerValue*)presenIns->getOp()[i])->RealValue<< "\t";
     if(presenIns->getOp().size() == 1) cout << "\t";
 
     // ready to try template of casting
@@ -47,8 +50,8 @@ void show_block(BasicBlock* node,int dep)
 
     vis[node]=1;
     for(int i=1;i<=dep*4;i++)cout<<' ';
-    cout<<DEBUG_blkOP[node->bType] << " " << node <<endl;
-//    cout<<DEBUG_blkOP[node->bType] <<endl;
+    // cout<<DEBUG_blkOP[node->bType]<<endl;
+    cout<<node->BlockName<<endl;
     for(auto i : node->InstrList){
         for(int i=1;i<=dep*4;i++)cout<<' ';
         printIns(i);
