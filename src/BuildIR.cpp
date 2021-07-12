@@ -55,11 +55,11 @@ void VisitAST(GrammaNode* DRoot,LinearIR *IR)
             //     globalBlock = new BasicBlock(BasicBlock::Basic);
             //     IR->AddBlock(globalBlock);
             // }
-            // bbNow = globalBlock;
-            // global = 1;
-            // ConstDefNode(DRoot->son[i],IR);
-            // bbNow = nullptr;
-            // global = 0;
+            bbNow = globalBlock;
+            global = 1;
+            ConstDefNode(DRoot->son[i],IR);
+            bbNow = nullptr;
+            global = 0;
         }
         else if(VarDefs_ ==  DRoot->son[i]->type)
         {
@@ -89,90 +89,108 @@ void ConstDefNode(GrammaNode* node,LinearIR *IR)
     for(int i=0;i<node->son.size();i++)
     {
         GrammaNode* p_node = node->son[i];
-        if(ConstDef_array_ == p_node->type)
-        {
-            //左值
-            Value* VL= SymbolTable->askItem(p_node->son[0]);
-            
-            //右值
-            Value* VR=nullptr;
-            //递归第三个孩子，即初值
-            if(p_node->son.size() == 3)
-            {
-                VR = InitValNode(p_node->son[2],IR);
-                if(VR == nullptr)
-                {
-                    //符号表阶段填充0
-                }
-                else
-                {
-                    //赋值四元式，复杂情况仍需讨论
-                    Instruction* ins_new = new Instruction(IR->getInstCnt(),Instruction::Assign,1);
-                    ins_new->addOperand(VR);
-                    ins_new->setResult(VL);
-                    //属于某个函数且该指令为首指令，新建一个基本块，并建立联系
-                    if(0 == global && nullptr == bbNow)
-                    {
-                        bbNow = GetPresentBlock(FuncN,BasicBlock::Basic);
-                    }
-                    //向基本块加入指令
-                    bbNow->Addins(ins_new->getId());
-                    ins_new->setParent(bbNow);
 
-                    IR->InsertInstr(ins_new);
-                }
-            }
-            else
-            {
-                throw BuildIRError(VL->lineno, VL->VName, "错误1");
-                //error
-            }
+        Value* VL=SymbolTable->askItem(p_node->son[0]);
+        Instruction* ins_new = new Instruction(IR->getInstCnt(),Instruction::Assign,0);
+        ins_new->setResult(VL);
+        
+        //属于某个函数且该指令为首指令，新建一个基本块，并建立联系
+        if(0 == global && nullptr == bbNow)
+        {
+            bbNow = GetPresentBlock(FuncN,BasicBlock::Basic);
+        }
+        //向基本块加入指令
+        bbNow->Addins(ins_new->getId());
+        ins_new->setParent(bbNow);
 
-        }
-        else if(ConstDef_single_ == p_node->type)
-        {
-            //左值
-            Value* VL=SymbolTable->askItem(p_node->son[0]);;
+        IR->InsertInstr(ins_new);
             
-            //右值必为单值
-            Value* VR=nullptr;
-            //ConstDef:Ident ASSIGN InitVal
-            if(p_node->son.size()==2)
-            {
-                VR = InitValNode(p_node->son[1],IR);
-                if(VR == nullptr)
-                {
-                    throw BuildIRError(VL->lineno, VL->VName, "错误2");
-                    //error，不符合语义约束
-                }
-                else
-                {
-                    Instruction* ins_new = new Instruction(IR->getInstCnt(),Instruction::Assign,1);
-                    ins_new->addOperand(VR);
-                    ins_new->setResult(VL);
-                    //属于某个函数且该指令为首指令，新建一个基本块，并建立联系
-                    if(0 == global && nullptr == bbNow)
-                    {
-                        bbNow = GetPresentBlock(FuncN,BasicBlock::Basic);
-                    }
-                    //向基本块加入指令
-                    bbNow->Addins(ins_new->getId());
-                    ins_new->setParent(bbNow);
-                    IR->InsertInstr(ins_new);
-                }
-            }
-            else
-            {
-                throw BuildIRError(VL->lineno, VL->VName, "错误3");
-                //error
-            }
+        
+
+        // if(ConstDef_array_ == p_node->type)
+        // {
+        //     //左值
+        //     Value* VL= SymbolTable->askItem(p_node->son[0]);
             
-        }
-        else
-        {
-            // throw BuildIRError(VL->lineno, VL->VName, "错误4");
-            //error
-        }
+        //     //右值
+        //     Value* VR=nullptr;
+        //     //递归第三个孩子，即初值
+        //     if(p_node->son.size() == 3)
+        //     {
+        //         VR = InitValNode(p_node->son[2],IR);
+        //         if(VR == nullptr)
+        //         {
+        //             //符号表阶段填充0
+        //         }
+        //         else
+        //         {
+        //             //赋值四元式，复杂情况仍需讨论
+        //             Instruction* ins_new = new Instruction(IR->getInstCnt(),Instruction::Assign,1);
+        //             ins_new->addOperand(VR);
+        //             ins_new->setResult(VL);
+        //             //属于某个函数且该指令为首指令，新建一个基本块，并建立联系
+        //             if(0 == global && nullptr == bbNow)
+        //             {
+        //                 bbNow = GetPresentBlock(FuncN,BasicBlock::Basic);
+        //             }
+        //             //向基本块加入指令
+        //             bbNow->Addins(ins_new->getId());
+        //             ins_new->setParent(bbNow);
+
+        //             IR->InsertInstr(ins_new);
+        //         }
+        //     }
+        //     else
+        //     {
+        //         throw BuildIRError(VL->lineno, VL->VName, "错误1");
+        //         //error
+        //     }
+
+        // }
+        // else if(ConstDef_single_ == p_node->type)
+        // {
+        //     //左值
+        //     Value* VL=SymbolTable->askItem(p_node->son[0]);;
+            
+        //     //右值必为单值
+        //     Value* VR=nullptr;
+        //     //ConstDef:Ident ASSIGN InitVal
+        //     if(p_node->son.size()==2)
+        //     {
+        //         VR = InitValNode(p_node->son[1],IR);
+        //         if(VR == nullptr)
+        //         {
+        //             throw BuildIRError(VL->lineno, VL->VName, "错误2");
+        //             //error，不符合语义约束
+        //         }
+        //         else
+        //         {
+        //             Instruction* ins_new = new Instruction(IR->getInstCnt(),Instruction::Assign,1);
+        //             ins_new->addOperand(VR);
+        //             ins_new->setResult(VL);
+        //             //属于某个函数且该指令为首指令，新建一个基本块，并建立联系
+        //             if(0 == global && nullptr == bbNow)
+        //             {
+        //                 bbNow = GetPresentBlock(FuncN,BasicBlock::Basic);
+        //             }
+        //             //向基本块加入指令
+        //             bbNow->Addins(ins_new->getId());
+        //             ins_new->setParent(bbNow);
+        //             IR->InsertInstr(ins_new);
+        //         }
+        //     }
+        //     else
+        //     {
+        //         throw BuildIRError(VL->lineno, VL->VName, "错误3");
+        //         //error
+        //     }
+            
+        // }
+        // else
+        // {
+        //     // throw BuildIRError(VL->lineno, VL->VName, "错误4");
+        //     //error
+        // }
     }
 }
 
@@ -257,6 +275,23 @@ void VarDefNode(GrammaNode* node,LinearIR *IR)
                 //2. 其他
                 //error
             }
+        }
+        else
+        {
+            Value* VL=SymbolTable->askItem(p_node->son[0]);
+            Instruction* ins_new = new Instruction(IR->getInstCnt(),Instruction::Assign,0);
+            ins_new->setResult(VL);
+            
+            //属于某个函数且该指令为首指令，新建一个基本块，并建立联系
+            if(0 == global && nullptr == bbNow)
+            {
+                bbNow = GetPresentBlock(FuncN,BasicBlock::Basic);
+            }
+            //向基本块加入指令
+            bbNow->Addins(ins_new->getId());
+            ins_new->setParent(bbNow);
+
+            IR->InsertInstr(ins_new);
         }
     }
 }
