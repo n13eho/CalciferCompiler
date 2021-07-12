@@ -10,9 +10,6 @@
 using namespace std;
 
 extern vector<int> R;
-
+extern map<Value*,int> VReg;
 void getRister(Value* val, int &Rid);
 void RegisterDistr();
-
-//12个通用寄存器
-// R0~R3 存函数的前4个参数
