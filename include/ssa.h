@@ -49,10 +49,10 @@ struct IrProgram {
 //    IrFunc *findFunc(Func *func);
 
     // 用于打印整个IrProgram，重载至ostream，最后输入到ir_file
-    friend std::ostream& operator<<(std::ostream& os, const IrProgram& dt);
+    friend std::ostream& operator<<(std::ostream& os, const IrProgram& p);
 };
 
-std::ostream& operator<<(std::ostream& os, const IrProgram& dt);
+std::ostream& operator<<(std::ostream& os, const IrProgram& p);
 
 
 IrProgram *convert_ssa(LinearIR*, BasicBlock*);

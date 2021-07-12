@@ -7,21 +7,16 @@
 // const int mondy = today + 1 + c[2]; // 11, but should be wrong
 
 
-const int p = 17;
+//const int p = 17;
 int rtyu;
 int p[3][2][4] = {1, 2, 3, 4};
-//int p[2][4] = {1, 2, 3, 4};
 
 int func(int c,int b)
 {
     int w = b+c;
-//    if(c > b)w = b + c;
-//    else if(c == b) w = b;
-//    else w = b - c;
     return w;
 }
 
-int noinit;
 int sss = 12;
 int add(int a, int b)
 {
@@ -30,17 +25,23 @@ int add(int a, int b)
 
 int main()
 {
-//     int a=c[1][1], b=0, c;
     int a=10, b=0, c;
     const int ppp=5;
     sss = 12;
-//     c = getint();
     while (1)
     {
         a = a + 1;
         b = b + 2;
         c = func(a, b);
-        if(b > a)break;
+        int w = a+3;
+        if(b > a)
+        {
+            break;
+        }
+        else if(w>b)
+        {
+            break;
+        }
     }
     return c;
 }

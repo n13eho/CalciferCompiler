@@ -724,17 +724,17 @@ void BreakNode(GrammaNode* node,LinearIR *IR)
 
     bbNow->Link(breakB);
 
+
     //根据语义信息，break一定出现在while中
     Instruction* ins_bk = new Instruction(IR->getInstCnt(),Instruction::Jmp,0);
     //operand todo
-
+    breakB->Addins(ins_bk->getId());
     IR->InsertInstr(ins_bk);
     if(!LoopNext.empty())
     {
         BasicBlock* next = LoopNext.top().second;
-        next->Addins(ins_bk->getId());
+        //next->Addins(ins_bk->getId());
         ins_bk->setParent(next);
-
         breakB->Link(next);
         bbNow = next;
     }

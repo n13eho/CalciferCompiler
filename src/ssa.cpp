@@ -121,6 +121,7 @@ std::ostream &operator<<(std::ostream &os, const IrProgram &p)
         }
         os << std::endl;
     }
+    os << std::endl << std::endl;
 
 
 
