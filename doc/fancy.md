@@ -2,7 +2,7 @@
 
 
 - [x] AddressSanitizer
-- [x] CI
-- [ ] std::string_view
+- [x] CI/CD
+- [ ] std::string_view 内存回收
 - [ ] munmap in C
 

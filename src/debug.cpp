@@ -41,9 +41,10 @@ void printIns(int id)
 
 void show_block(BasicBlock* node,int dep)
 {
+
     vis[node]=1;
     for(int i=1;i<=dep*4;i++)cout<<' ';
-    cout<<DEBUG_blkOP[node->bType]<<":"<<endl;
+    cout<<DEBUG_blkOP[node->bType]<<endl;
     for(auto i : node->InstrList){
         for(int i=1;i<=dep*4;i++)cout<<' ';
         printIns(i);
@@ -57,4 +58,3 @@ void show_block(BasicBlock* node,int dep)
         if(!vis[i])show_block(i,dep);
     }
 }
-

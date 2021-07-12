@@ -29,6 +29,8 @@ License (MIT):
 #ifndef DBG_MACRO_DBG_H
 #define DBG_MACRO_DBG_H
 
+#define DBG_MACRO_NO_WARNING
+
 #if defined(__unix__) || (defined(__APPLE__) && defined(__MACH__))
 #define DBG_MACRO_UNIX
 #elif defined(_MSC_VER)

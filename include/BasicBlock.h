@@ -3,8 +3,7 @@
 #include "Value.h"
 #include<list>
 //基本块
-class BasicBlock
-{
+class BasicBlock{
 public:
     enum BlockType {
     Basic,

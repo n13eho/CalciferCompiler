@@ -871,18 +871,18 @@ void printFuncParam(vector<Value *> params)
 void printVector(vector<int> v)
 {
     cout << " -->初值：";
-    for (int i = 0; i < v.size(); i++)
+    for (int i : v)
     {
-        cout << v[i] << " ";
+        cout << i << " ";
     }
     cout << endl;
 }
 void printVector(vector<unsigned> v)
 {
     cout << " -->维度：";
-    for (int i = 0; i < v.size(); i++)
+    for (unsigned int i : v)
     {
-        cout << v[i] << " ";
+        cout << i << " ";
     }
     cout << endl;
 }
@@ -899,10 +899,9 @@ void show_SymbleTable(idTable_struct *SymbolTable)
 //    }
 //    cout << endl;
 
-    dbg("SymbolTable(partly)");
+    dbg("SymbolTable(partly):");
     for (auto iter = SymbolTable->table.begin(); iter != SymbolTable->table.end(); iter++)
     {
-        // cout << "[" << count++ << "]: ";
         /// 函数声明
         if (iter->first->type == FuncDef_int_ || iter->first->type == FuncDef_void_) // 函数声明-int无参数 和 函数声明-void无参数
             printFuncInfo(iter->first->type, (FunctionValue *)iter->second);

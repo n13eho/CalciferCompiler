@@ -42,5 +42,7 @@ if (CUSTOM_TEST)
 endif()
 # test start, officially
 foreach(file ${all_test_cases})
-    add_test(NAME ${file} COMMAND calcifer ${file})
+    get_filename_component(file_name "${file}" NAME_WE)
+    add_test(NAME ${file_name}
+            COMMAND ./${project_name} ${file})
 endforeach()
