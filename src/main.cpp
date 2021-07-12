@@ -2,8 +2,10 @@
 #include "../include/semanticAnalyze.h" //语义检查
 #include "../include/BuildIR.h"
 #include "part.tab.hpp"
+#include"register.h"
 #include "../include/debug.h"
 #include "../include/ssa.h"
+#include"CodeGeneration.h"
 
 //外部的lineno，行号信息
 extern int lineno;

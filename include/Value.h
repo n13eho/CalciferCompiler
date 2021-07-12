@@ -17,6 +17,10 @@ class Value
 {
     public:
     //考虑立即数不需要scope
+    virtual int getType(){return 0;}
+    //1.整数
+    //2.数组
+    //3.函数 
     Value(std::string name_){VName=name_;}
     Value(std::string name_,int line,std::string scope)
     {
@@ -46,6 +50,7 @@ class IntegerValue:public Value
 {
     public:
     DEFINE_CLASSOF(Value, p->valueType == VType::VInteger);
+    virtual int getType(){return 1;}
     IntegerValue(std::string name_,int line,std::string scope,int _isConst):Value(name_,line,scope){isConst=_isConst;}
     IntegerValue(std::string name_,int line,std::string scope,int intValue,int _isConst):Value(name_,line,scope)
     {
@@ -66,6 +71,7 @@ class ArrayValue:public Value
 {
     public:
     DEFINE_CLASSOF(Value, p->valueType == VType::VArray);
+    virtual int getType(){return 2;}
     ArrayValue(std::string name_,int line,std::string scope, int isConst_):Value(name_,line,scope)
     {
         isConst = isConst_;
@@ -96,6 +102,7 @@ class FunctionValue:public Value
 {
     public:
     DEFINE_CLASSOF(Value, p->valueType == VType::VFunction);
+    virtual int getType(){return 3;}
     //int returnType是返回值的类型，1为int，0为void
     FunctionValue(std::string name_,int line,std::string scope,int paramcnt, int returnType)
     :Value(name_,line,scope)
@@ -127,6 +134,7 @@ class ImmValue:public Value
 {
     public:
     DEFINE_CLASSOF(Value, p->valueType == VType::VImm);
+    virtual int getType(){return 4;}
     //立即数必须给值,行号和scope没必要？---要的吧。。
     ImmValue(std::string name_,int intValue):Value(name_)
     {
