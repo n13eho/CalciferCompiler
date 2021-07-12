@@ -66,6 +66,8 @@ BasicBlock* GetPresentBlock(BasicBlock* funcP,BasicBlock::BlockType t);
 
 BasicBlock* CreateBlock(BasicBlock::BlockType t);
 
+bool linkNext(BasicBlock* node,LinearIR *IR);
+
 //error
 class BuildIRError : public std::exception {
 public:

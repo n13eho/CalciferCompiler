@@ -36,12 +36,17 @@ int main()
         int w = a+3;
         if(b > a)
         {
+            int www = a+b;
             break;
         }
-        else if(w>b)
+        else 
         {
-            break;
+            if(w>b)
+            {
+                break;
+            }
         }
+        w = w+1;
     }
     return c;
 }

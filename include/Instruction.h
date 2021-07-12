@@ -71,7 +71,8 @@ public:
     std::vector<Value *> getOp(){return Operands;}
     Value* getResult(){return Result;}
     BasicBlock* getParent(){return ParentBasicblock;}
-
+    
+    BasicBlock* jmpDestBlock=nullptr;
 private:
     //instruction id
     int InstrId;

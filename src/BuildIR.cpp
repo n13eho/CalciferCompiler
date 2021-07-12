@@ -21,6 +21,7 @@ BasicBlock* FuncN = nullptr;
 //若在while body中，表示while的下一个基本块
 stack<pair<BasicBlock*,BasicBlock*>> LoopNext;
 
+
 BasicBlock* GetPresentBlock(BasicBlock* funcP,BasicBlock::BlockType t)
 {
     bbNow = CreateBlock(t);
@@ -522,11 +523,19 @@ void IfNode(GrammaNode* node,LinearIR *IR)
         FuncN->AddDom(next);    
         
 
-        //条件跳转指令
+        //条件成立跳转指令
         Instruction* ins_br = new Instruction(IR->getInstCnt(),Instruction::ConBr,0);
         IR->InsertInstr(ins_br);
         bbNow->Addins(ins_br->getId());
         ins_br->setParent(bbNow);
+        ins_br->jmpDestBlock = caseT;
+
+        //条件不成立跳转指令
+        Instruction* ins_jmp = new Instruction(IR->getInstCnt(),Instruction::Jmp,0);
+        IR->InsertInstr(ins_jmp);
+        bbNow->Addins(ins_jmp->getId());
+        ins_br->setParent(bbNow);
+        ins_jmp->jmpDestBlock = next;
 
         bbNow = caseT;
         StmtNode(node->son[1],IR);
@@ -534,6 +543,7 @@ void IfNode(GrammaNode* node,LinearIR *IR)
         bbNow->Link(next);
         bbNow = next;
         //update jmp address
+        //后面删除该结果value
         ins_br->setResult(new IntegerValue("jmpAddress0",node->lineno,node->var_scope,IR->getInstCnt(),1));
     }
     else
@@ -577,25 +587,42 @@ void IfElseNode(GrammaNode* node,LinearIR *IR)
         bbNow->Link(caseT);
         bbNow->Link(caseF);
 
+        //条件成立，跳转至caseT
+        Instruction* ins_br1 = new Instruction(IR->getInstCnt(),Instruction::ConBr,0);
+        IR->InsertInstr(ins_br1);
+        bbNow->Addins(ins_br1->getId());
+        ins_br1->setParent(bbNow); 
+        ins_br1->jmpDestBlock = caseT;
+
         //条件不成立，跳转至caseF
-        Instruction* ins_br2 = new Instruction(IR->getInstCnt(),Instruction::ConBr,0);
+        Instruction* ins_br2 = new Instruction(IR->getInstCnt(),Instruction::Jmp,0);
         IR->InsertInstr(ins_br2);
         bbNow->Addins(ins_br2->getId());
-        ins_br2->setParent(bbNow);    
+        ins_br2->setParent(bbNow);
+        ins_br2->jmpDestBlock = caseF;
+
+        
 
         //T
         bbNow = caseT;
         StmtNode(node->son[1],IR);
-        //此时bbNow不一定是caseT
-        bbNow->Link(next);
-        //T跳转至next
-        Instruction* ins_br = new Instruction(IR->getInstCnt(),Instruction::Jmp,0);
-        IR->InsertInstr(ins_br);
-        caseT->Addins(ins_br->getId());
-        ins_br->setParent(caseT);
+        //如果此分支不存在break、continue、ret
+        if(linkNext(bbNow,IR))
+        {
+            //此时bbNow不一定是caseT
+            bbNow->Link(next);
+            //T跳转至next
+            Instruction* ins_br = new Instruction(IR->getInstCnt(),Instruction::Jmp,0);
+            IR->InsertInstr(ins_br);
+            caseT->Addins(ins_br->getId());
+            ins_br->setParent(caseT);
+            ins_br->jmpDestBlock = next;
 
-        //update if条件跳转地址
-        ins_br2->setResult(new IntegerValue("jmpAddress0",node->lineno,node->var_scope,IR->getInstCnt(),1));
+            cout<<"case T "<<bbNow->BlockName<<"link next"<<endl;
+        }
+        //后面删除
+        //if条件跳转地址
+        // ins_br2->setResult(new IntegerValue("jmpAddress0",node->lineno,node->var_scope,IR->getInstCnt(),1));
         // cout<<"ifelse 中if跳转地址："<<ins_br2->getResult()<<endl;
 
         //F
@@ -606,8 +633,9 @@ void IfElseNode(GrammaNode* node,LinearIR *IR)
         //更新ins_br2参数，todo
         bbNow = next;
 
+        //后面删除
         //update caseT最后一条无条件跳转指令的地址
-        ins_br->setResult(new IntegerValue("jmpAddress0",node->lineno,node->var_scope,IR->getInstCnt(),1));
+        // ins_br->setResult(new IntegerValue("jmpAddress0",node->lineno,node->var_scope,IR->getInstCnt(),1));
         // cout<<"ifelse 中caseT跳转地址："<<ins_br->getResult()<<endl;
     }
     else
@@ -624,6 +652,7 @@ void WhileNode(GrammaNode* node,LinearIR *IR)
             return ;
         }
         //属于某个函数且该指令为首指令，新建一个基本块，并建立联系
+        //while的条件单独拎出来成为一个基本块
         if(nullptr == bbNow)
         {
             bbNow = GetPresentBlock(FuncN,BasicBlock::While);
@@ -639,13 +668,15 @@ void WhileNode(GrammaNode* node,LinearIR *IR)
 
             bbNow = condBlock;
         }
-        //while的条件单独拎出来成为一个基本块
+        BasicBlock* whileHead = bbNow;
+        
         BasicBlock* caseT = new BasicBlock(BasicBlock::Basic);
         caseT->BlockName = "whileTrue";
         //while body下一个基本块
         BasicBlock* next = new BasicBlock(BasicBlock::Basic);
         next->BlockName = "whileFalse";
         LoopNext.push(make_pair(bbNow,next));
+
         CondNode(node->son[0],IR);
 
         //函数控制的基本块更新
@@ -659,11 +690,22 @@ void WhileNode(GrammaNode* node,LinearIR *IR)
         //循环
         caseT->Link(bbNow);
 
+        //条件成立，跳转至caseT，该指令属于bbNow
+        Instruction* ins_br2 = new Instruction(IR->getInstCnt(),Instruction::ConBr,0);
+        IR->InsertInstr(ins_br2);
+        ins_br2->jmpDestBlock = caseT;
+        bbNow->Addins(ins_br2->getId());
+        ins_br2->setParent(bbNow);
+
         //条件不成立，跳转至next,该指令属于bbNow
-        Instruction* ins_br = new Instruction(IR->getInstCnt(),Instruction::ConBr,0);
+        Instruction* ins_br = new Instruction(IR->getInstCnt(),Instruction::Jmp,0);
         IR->InsertInstr(ins_br);
+        ins_br->jmpDestBlock = next;
+        
         bbNow->Addins(ins_br->getId());
         ins_br->setParent(bbNow);
+
+        
         int condInsId = bbNow->getFirstIns();
         
         //T
@@ -671,15 +713,18 @@ void WhileNode(GrammaNode* node,LinearIR *IR)
         StmtNode(node->son[1],IR);
 
         //插入跳转到cond语句的跳转语句
-        Instruction* ins_br2 = new Instruction(IR->getInstCnt(),Instruction::Jmp,0);
+        Instruction* ins_br3 = new Instruction(IR->getInstCnt(),Instruction::Jmp,0);
         ImmValue* jmpIns = new ImmValue("jmpaddress",condInsId);
-        ins_br2->setResult(jmpIns);
-        IR->InsertInstr(ins_br2);
-        bbNow->Addins(ins_br2->getId());
-        ins_br2->setParent(bbNow);
+        // ins_br3->setResult(jmpIns);
+        IR->InsertInstr(ins_br3);
+        ins_br3->jmpDestBlock = whileHead;
 
-        //caseT body的无条件跳转指令的下一条指令就是 update while的条件跳转目的地址
-        ins_br->setResult(new IntegerValue("jmpAddress0",node->lineno,node->var_scope,IR->getInstCnt(),1));
+        bbNow->Addins(ins_br3->getId());
+        ins_br3->setParent(bbNow);
+        
+        //后面删除
+        //caseT body的无条件跳转指令的下一条指令就是while的条件跳转目的地址
+        // ins_br->setResult(new IntegerValue("jmpAddress0",node->lineno,node->var_scope,IR->getInstCnt(),1));
         //next
         bbNow = next;
         LoopNext.pop();
@@ -705,6 +750,7 @@ void ReturnNode(GrammaNode* node,LinearIR *IR)
     IR->InsertInstr(ins_ret);
     bbNow->Addins(ins_ret->getId());
     ins_ret->setParent(bbNow);
+    
 }
 void BreakNode(GrammaNode* node,LinearIR *IR)
 {
@@ -721,22 +767,26 @@ void BreakNode(GrammaNode* node,LinearIR *IR)
     breakB->BlockName = "break";
     FuncN->AddDom(breakB);
     breakB->setParnt(FuncN);
-
+    
     bbNow->Link(breakB);
+    
 
 
     //根据语义信息，break一定出现在while中
     Instruction* ins_bk = new Instruction(IR->getInstCnt(),Instruction::Jmp,0);
+
     //operand todo
     breakB->Addins(ins_bk->getId());
+    ins_bk->setParent(breakB);
     IR->InsertInstr(ins_bk);
+
     if(!LoopNext.empty())
     {
         BasicBlock* next = LoopNext.top().second;
+        ins_bk->jmpDestBlock = next;
         //next->Addins(ins_bk->getId());
-        ins_bk->setParent(next);
         breakB->Link(next);
-        bbNow = next;
+        bbNow = breakB;
     }
     
 }
@@ -768,6 +818,7 @@ void ContinueNode(GrammaNode* node,LinearIR *IR)
     {
         BasicBlock* whileB = LoopNext.top().first;
         continueB->Link(whileB);
+        ins_jmp->jmpDestBlock = whileB;
         bbNow = continueB;
     }
     
@@ -1623,7 +1674,25 @@ Value* LValArrayNode(GrammaNode* node,LinearIR *IR)
 }
 
 
-
+bool linkNext(BasicBlock* node,LinearIR *IR)
+{
+    if(BasicBlock::Break ==node->bType||BasicBlock::Continue ==node->bType)
+    {
+        return false;
+    }
+    else
+    {
+        list<int>::iterator it = node->InstrList.begin();
+        for(;it!=node->InstrList.end();++it)
+        {
+            if(IR->getIns(*it)->getOpType() ==Instruction::Ret)
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+}
 
 
 // 打印当前IR中的所有指令
@@ -1642,7 +1711,14 @@ void show_IR_ins(LinearIR *IR)
     
         if(presenIns->getOpType() == Instruction::Jmp|| presenIns->getOpType() == Instruction::ConBr)
         {
-            cout<<endl;
+            if(nullptr != presenIns->jmpDestBlock)
+            {
+                cout<<presenIns->jmpDestBlock->BlockName<< presenIns->jmpDestBlock->getFirstIns()<<endl;
+            }
+            // if(nullptr!=presenIns->getResult())
+                // cout<<((IntegerValue*)presenIns->getResult())->RealValue<<endl;
+            else
+                cout<<endl;
             continue;
         }
         for(int i = 0; i < presenIns->getOp().size(); i++)

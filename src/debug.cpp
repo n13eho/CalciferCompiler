@@ -27,13 +27,17 @@ void printIns(int id)
 
     if(presenIns->getOpType() == Instruction::Jmp|| presenIns->getOpType() == Instruction::ConBr)
     {
-        if(nullptr!=presenIns->getResult())
-            cout<<((IntegerValue*)presenIns->getResult())->RealValue<<endl;
+        if(nullptr != presenIns->jmpDestBlock)
+        {
+            cout<<presenIns->jmpDestBlock->BlockName << presenIns->jmpDestBlock->getFirstIns()<<endl;
+        }
+        // if(nullptr!=presenIns->getResult())
+            // cout<<((IntegerValue*)presenIns->getResult())->RealValue<<endl;
         else
             cout<<endl;
         return ;
     }
-    for(int i = 0; i < presenIns->getOp().size(); i++)std::cout << presenIns->getOp()[i]->VName << " "<<((IntegerValue*)presenIns->getOp()[i])->RealValue<< "\t";
+    for(int i = 0; i < presenIns->getOp().size(); i++)std::cout << presenIns->getOp()[i]->VName << ":"<<((IntegerValue*)presenIns->getOp()[i])->RealValue<< "\t";
     if(presenIns->getOp().size() == 1) cout << "\t";
 
     // ready to try template of casting
