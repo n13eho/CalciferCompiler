@@ -24,6 +24,7 @@ stack<pair<BasicBlock*,BasicBlock*>> LoopNext;
 BasicBlock* GetPresentBlock(BasicBlock* funcP,BasicBlock::BlockType t)
 {
     bbNow = CreateBlock(t);
+    bbNow->BlockName = "basic";
     //若当前函数已有基本块，更新前驱后继
     if(0 != funcP->domBlock.size())
     {
@@ -327,6 +328,8 @@ void FuncDefNode(GrammaNode* node,LinearIR *IR)
     if(nullptr != block_)
     {    
         BasicBlock* NewFunc = new BasicBlock(BasicBlock::Basic);
+        NewFunc->BlockName = "basic";
+
         FunctionValue* fcNode = (FunctionValue*)SymbolTable->askItem(node);
         NewFunc->setFuncV(fcNode);
         IR->AddBlock(NewFunc);
@@ -505,8 +508,10 @@ void IfNode(GrammaNode* node,LinearIR *IR)
 
         //条件成立后转移的基本块
         BasicBlock* caseT = new BasicBlock(BasicBlock::Basic);
+        caseT->BlockName = "ifTrue";
         //if下一条转移的基本块
         BasicBlock* next = new BasicBlock(BasicBlock::Basic);
+        next->BlockName = "ifNext";
         //条件所在基本块建立与caseT、next的联系
         bbNow->Link(caseT);
         bbNow->Link(next);
@@ -553,10 +558,13 @@ void IfElseNode(GrammaNode* node,LinearIR *IR)
         
         //条件成立后转移的基本块
         BasicBlock* caseT = new BasicBlock(BasicBlock::Basic);
+        caseT->BlockName = "ifTrue";
         //条件不成立转移的基本块
         BasicBlock* caseF = new BasicBlock(BasicBlock::Basic);
+        caseF->BlockName = "ifFalse";
         //if下一条转移的基本块
         BasicBlock* next = new BasicBlock(BasicBlock::Basic);
+        next->BlockName = "ifNext";
         //更新函数控制的基本块
         FuncN->AddDom(caseT);
         FuncN->AddDom(caseF);
@@ -588,7 +596,7 @@ void IfElseNode(GrammaNode* node,LinearIR *IR)
 
         //update if条件跳转地址
         ins_br2->setResult(new IntegerValue("jmpAddress0",node->lineno,node->var_scope,IR->getInstCnt(),1));
-        cout<<"ifelse 中if跳转地址："<<ins_br2->getResult()<<endl;
+        // cout<<"ifelse 中if跳转地址："<<ins_br2->getResult()<<endl;
 
         //F
         bbNow = caseF;
@@ -600,7 +608,7 @@ void IfElseNode(GrammaNode* node,LinearIR *IR)
 
         //update caseT最后一条无条件跳转指令的地址
         ins_br->setResult(new IntegerValue("jmpAddress0",node->lineno,node->var_scope,IR->getInstCnt(),1));
-        cout<<"ifelse 中caseT跳转地址："<<ins_br->getResult()<<endl;
+        // cout<<"ifelse 中caseT跳转地址："<<ins_br->getResult()<<endl;
     }
     else
     {
@@ -623,6 +631,7 @@ void WhileNode(GrammaNode* node,LinearIR *IR)
         else
         {
             BasicBlock* condBlock = new BasicBlock(BasicBlock::While);
+            condBlock->BlockName = "while";
             condBlock->setParnt(FuncN);
             FuncN->AddDom(condBlock);
 
@@ -632,8 +641,10 @@ void WhileNode(GrammaNode* node,LinearIR *IR)
         }
         //while的条件单独拎出来成为一个基本块
         BasicBlock* caseT = new BasicBlock(BasicBlock::Basic);
+        caseT->BlockName = "whileTrue";
         //while body下一个基本块
         BasicBlock* next = new BasicBlock(BasicBlock::Basic);
+        next->BlockName = "whileFalse";
         LoopNext.push(make_pair(bbNow,next));
         CondNode(node->son[0],IR);
 
@@ -707,6 +718,7 @@ void BreakNode(GrammaNode* node,LinearIR *IR)
         return;
     }
     BasicBlock* breakB = CreateBlock(BasicBlock::Break);
+    breakB->BlockName = "break";
     FuncN->AddDom(breakB);
     breakB->setParnt(FuncN);
 
@@ -741,6 +753,7 @@ void ContinueNode(GrammaNode* node,LinearIR *IR)
     }   
     
     BasicBlock* continueB = CreateBlock(BasicBlock::Continue);
+    continueB->BlockName = "continue";
     FuncN->AddDom(continueB);
     continueB->setParnt(FuncN);
 
@@ -1348,6 +1361,7 @@ Value* UnaryExpNode(GrammaNode* node,LinearIR *IR)
             bbNow->Link(funcCalled);
 
             BasicBlock* next = CreateBlock(BasicBlock::Basic);
+            next->BlockName = "basic";
 
             funcCalled->Link(next);
 
@@ -1384,6 +1398,7 @@ Value* UnaryExpNode(GrammaNode* node,LinearIR *IR)
 
             //call指令下一条指令作为首指令的基本块
             BasicBlock* next = CreateBlock(BasicBlock::Basic);
+            next->BlockName = "basic";
             funcCalled->Link(next);
 
             bbNow = next;

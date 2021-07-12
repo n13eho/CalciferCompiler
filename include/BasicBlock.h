@@ -16,7 +16,7 @@ public:
 
     BasicBlock(BasicBlock::BlockType t){bType = t;}
 
-    void setFuncV(FunctionValue* f){FuncV = f;}
+    void setFuncV(FunctionValue* f){FuncV = f;BlockName = f->VName;}
     void Addins(int id){InstrList.push_back(id);}
 
     //this作为前驱、succ作为后继
@@ -84,5 +84,7 @@ public:
     BlockType bType;
     //对应符号表中的函数
     FunctionValue* FuncV;
+    //用于可视化基本块关系
+    std::string BlockName = "basic";
 };
 
