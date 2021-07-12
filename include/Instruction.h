@@ -6,9 +6,10 @@
 
 //四元式的具体指令
 /*
-* return 类语句都没有result
-
-*/
+ * return 类语句都没有result
+ * Call 参数存放在操作数当中，返回值存放在value当中
+ *
+ * */
 class Instruction
 {
 public:
@@ -75,7 +76,7 @@ private:
     //instruction id
     int InstrId;
     //（OP，arg1，arg2，result）
-    //操作符
+    //操作符 ins_type
     InsType OpType;
     //操作数列表
     std::vector<Value *> Operands;

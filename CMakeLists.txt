@@ -8,7 +8,7 @@ set(CMAKE_CXX_STANDARD 17)
 #set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fsanitize=address")
 
 # make target
-file(GLOB_RECURSE source_files ${PROJECT_SOURCE_DIR}/src/*.cpp)
+file(GLOB_RECURSE source_files ${PROJECT_SOURCE_DIR}/src/*.cpp ${PROJECT_SOURCE_DIR}/src/front/*.cpp)
 include_directories(${PROJECT_SOURCE_DIR}/include)
 add_executable(${project_name} ${source_files})
 

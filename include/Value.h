@@ -1,5 +1,7 @@
 #pragma once
 
+#include "util.h"
+
 #include <string>
 #include <vector>
 enum VType{
@@ -35,17 +37,21 @@ class Value
     int lineno;
     // 变量作用域标识符
     std::string var_scope;
+    // Value类型
+    int valueType;
     
 };
 
 class IntegerValue:public Value
 {
     public:
+    DEFINE_CLASSOF(Value, p->valueType == VType::VInteger);
     IntegerValue(std::string name_,int line,std::string scope,int _isConst):Value(name_,line,scope){isConst=_isConst;}
     IntegerValue(std::string name_,int line,std::string scope,int intValue,int _isConst):Value(name_,line,scope)
     {
         isConst = _isConst;
         RealValue=intValue;
+        valueType = VType::VInteger;
     }
 
     int getValue(){return RealValue;}
@@ -56,13 +62,14 @@ class IntegerValue:public Value
 
 };
 
-
 class ArrayValue:public Value
 {
     public:
+    DEFINE_CLASSOF(Value, p->valueType == VType::VArray);
     ArrayValue(std::string name_,int line,std::string scope, int isConst_):Value(name_,line,scope)
     {
         isConst = isConst_;
+        valueType = VType::VArray;
     }
 
     void setDimen(std::vector<unsigned> dimen){NumOfDimension.assign(dimen.begin(), dimen.end());}
@@ -88,12 +95,14 @@ class ArrayValue:public Value
 class FunctionValue:public Value
 {
     public:
+    DEFINE_CLASSOF(Value, p->valueType == VType::VFunction);
     //int returnType是返回值的类型，1为int，0为void
     FunctionValue(std::string name_,int line,std::string scope,int paramcnt, int returnType)
     :Value(name_,line,scope)
     {
         Result=returnType;
         ParamsNum=paramcnt;
+        valueType = VType::VFunction;
     }
 
     //设置函数参数列表
@@ -114,14 +123,15 @@ class FunctionValue:public Value
     std::vector<Value *> FuncParams;
 };
 
-// 即将废弃
 class ImmValue:public Value
 {
     public:
+    DEFINE_CLASSOF(Value, p->valueType == VType::VImm);
     //立即数必须给值,行号和scope没必要？---要的吧。。
     ImmValue(std::string name_,int intValue):Value(name_)
     {
         RealValue=intValue;
+        valueType = VType::VImm;
     }
     //获取立即数的值
     int getValue(){return RealValue;}
