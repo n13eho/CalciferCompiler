@@ -7,7 +7,8 @@
 // const int mondy = today + 1 + c[2]; // 11, but should be wrong
 
 
-int p[10][2] = {1, 2, {3, 4}};
+int p[3][2][4] = {1, 2, 3, 4};
+//int p[2][4] = {1, 2, 3, 4};
 
 int func(int c,int b)
 {
