@@ -18,7 +18,7 @@ int func(int c,int b)
     return w;
 }
 
-int asz = 0;
+int noinit;
 int sss = 12;
 int add(int a, int b)
 {

@@ -11,7 +11,7 @@
 #include "ilist.h"
 #include "util.h"
 #include "Value.h"
-#include <string_view>
+#include <string>
 #include <map>
 
 #include "BuildIR.h" // for LinearIR
@@ -22,10 +22,10 @@ struct Decl {
     bool is_array; // ?
     bool is_const; // 是否是常量
     bool is_glob; // 是否是全局变量
-    std::string_view name;
+    std::string name;
 
     // their value, can be decided by is_array
-    std::variant<int, std::vector<unsigned>> value;
+    std::variant<int, std::vector<int>> value;
 
     // int array special
     std::vector<unsigned> dims; // store the dimension of array

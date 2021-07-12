@@ -890,45 +890,45 @@ void printVector(vector<unsigned> v)
 void show_SymbleTable(idTable_struct *SymbolTable)
 {
     // 一长串，with info not likely to be used
-//    int count = 0;
-//    cout << "\nSymbolTable指针地址：" << SymbolTable << " 符号表大小：" << SymbolTable->table.size() << endl;
-//    for (auto iter = SymbolTable->table.begin(); iter != SymbolTable->table.end(); iter++)
-//    {
-//        cout << "GNType: " << iter->first->type << "\tscope:\t" << iter->first->var_scope
-//             << "\tGN Name: " << iter->first->str << "\t\tlineNumber:" << iter->first->lineno << endl;
-//    }
-//    cout << endl;
+    int count = 0;
+    cout << "\nSymbolTable指针地址：" << SymbolTable << " 符号表大小：" << SymbolTable->table.size() << endl;
+    for (auto & iter : SymbolTable->table)
+    {
+        cout << "GNType: " << iter.first->type << "\tscope:\t" << iter.first->var_scope
+             << "\tGN Name: " << iter.first->str << "\t\tlineNumber:" << iter.first->lineno << endl;
+    }
+    cout << endl;
 
     dbg("SymbolTable(partly):");
-    for (auto iter = SymbolTable->table.begin(); iter != SymbolTable->table.end(); iter++)
+    for (auto & iter : SymbolTable->table)
     {
         /// 函数声明
-        if (iter->first->type == FuncDef_int_ || iter->first->type == FuncDef_void_) // 函数声明-int无参数 和 函数声明-void无参数
-            printFuncInfo(iter->first->type, (FunctionValue *)iter->second);
-        else if (iter->first->type == FuncDef_int_para_)
+        if (iter.first->type == FuncDef_int_ || iter.first->type == FuncDef_void_) // 函数声明-int无参数 和 函数声明-void无参数
+            printFuncInfo(iter.first->type, (FunctionValue *)iter.second);
+        else if (iter.first->type == FuncDef_int_para_)
         { // 函数声明  int 有参数
-            printFuncInfo(FuncDef_int_para_, (FunctionValue *)iter->second);
-            printFuncParam(((FunctionValue *)iter->second)->getParams());
+            printFuncInfo(FuncDef_int_para_, (FunctionValue *)iter.second);
+            printFuncParam(((FunctionValue *)iter.second)->getParams());
         }
-        else if (iter->first->type == FuncDef_void_para_)
+        else if (iter.first->type == FuncDef_void_para_)
         { // 函数声明  void 有参数
-            printFuncInfo(FuncDef_void_para_, (FunctionValue *)iter->second);
-            printFuncParam(((FunctionValue *)iter->second)->getParams());
+            printFuncInfo(FuncDef_void_para_, (FunctionValue *)iter.second);
+            printFuncParam(((FunctionValue *)iter.second)->getParams());
         }
 
         // 常量声明-single
-        else if (iter->first->type == ConstDef_single_)
+        else if (iter.first->type == ConstDef_single_)
         {
-            IntegerValue *IV = (IntegerValue *)iter->second;
-            cout << "line " << IV->lineno << "\tGNType: " << iter->first->type << "\t常量single名称：" << IV->VName
+            IntegerValue *IV = (IntegerValue *)iter.second;
+            cout << "line " << IV->lineno << "\tGNType: " << iter.first->type << "\t常量single名称：" << IV->VName
                  << "\t初值：" << IV->RealValue << "\tisConst：" << IV->isConst << "\t作用域：" << IV->var_scope << endl;
         }
 
         // 常量声明-array
-        else if (iter->first->type == ConstDef_array_)
+        else if (iter.first->type == ConstDef_array_)
         {
-            ArrayValue *AV = (ArrayValue *)iter->second;
-            cout << "line " << AV->lineno << "\tGNType: " << iter->first->type << "\t常量array名称：" << AV->VName
+            ArrayValue *AV = (ArrayValue *)iter.second;
+            cout << "line " << AV->lineno << "\tGNType: " << iter.first->type << "\t常量array名称：" << AV->VName
                  << "\tisConst：" << AV->isConst << "\t作用域：" << AV->var_scope << endl;
 
             printVector(AV->NumOfDimension);
@@ -936,18 +936,18 @@ void show_SymbleTable(idTable_struct *SymbolTable)
         }
 
         // 变量声明-single-noInit 变量声明-single-Init
-        else if (iter->first->type == VarDef_single_ || iter->first->type == VarDef_single_init_)
+        else if (iter.first->type == VarDef_single_ || iter.first->type == VarDef_single_init_)
         {
-            IntegerValue *IV = (IntegerValue *)iter->second;
-            cout << "line " << IV->lineno << "\tGNType: " << iter->first->type << "\t变量single名称：" << IV->VName
+            IntegerValue *IV = (IntegerValue *)iter.second;
+            cout << "line " << IV->lineno << "\tGNType: " << iter.first->type << "\t变量single名称：" << IV->VName
                  << "\t初值：" << IV->RealValue << "\tisConst：" << IV->isConst << "\t作用域：" << IV->var_scope << endl;
         }
 
         // 变量声明-array-noInit 变量声明-array-Init
-        else if (iter->first->type == VarDef_array_ || iter->first->type == VarDef_array_init_)
+        else if (iter.first->type == VarDef_array_ || iter.first->type == VarDef_array_init_)
         {
-            ArrayValue *AV = (ArrayValue *)iter->second;
-            cout << "line " << AV->lineno << "\tGNType: " << iter->first->type << "\t变量array名称：" << AV->VName
+            ArrayValue *AV = (ArrayValue *)iter.second;
+            cout << "line " << AV->lineno << "\tGNType: " << iter.first->type << "\t变量array名称：" << AV->VName
                  << "\tisConst：" << AV->isConst << "\t作用域：" << AV->var_scope << endl;
 
             printVector(AV->NumOfDimension);

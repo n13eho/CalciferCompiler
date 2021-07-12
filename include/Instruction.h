@@ -76,7 +76,7 @@ private:
     //instruction id
     int InstrId;
     //（OP，arg1，arg2，result）
-    //操作符
+    //操作符 ins_type
     InsType OpType;
     //操作数列表
     std::vector<Value *> Operands;
