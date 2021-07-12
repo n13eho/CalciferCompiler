@@ -8,6 +8,7 @@
 
 
 const int p = 17;
+int rtyu;
 
 int func(int c,int b)
 {
@@ -22,6 +23,7 @@ int main()
 {
 //     int a=c[1][1], b=0, c;
     int a=10, b=0, c;
+    const int ppp=5;
 //     c = getint();
     while (1)
     {
