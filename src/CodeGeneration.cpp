@@ -1,10 +1,6 @@
 #include "../include/CodeGeneration.h"
 #include"register.h"
 #include"semanticAnalyze.h"
-<<<<<<< Updated upstream
-=======
-#include"util.h"
->>>>>>> Stashed changes
 
 using namespace std;
 
