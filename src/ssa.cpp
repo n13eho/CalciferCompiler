@@ -52,9 +52,16 @@ IrProgram *convert_ssa(LinearIR* ir1, BasicBlock* bb)
             ret_Irp->glob_decls.push_back(d);
         }
     }
-    dbg(ret_Irp->glob_decls.size());
 
+    //先扫一遍ir1当中的blocklist
+    for(auto sonb: ir1->Blocks)
+    {
+        if(sonb->BlockName != "basic" && !sonb->pioneerBlock.empty())
+        {
+            dbg(sonb->BlockName);
+        }
 
+    }
 
 
     return ret_Irp;
