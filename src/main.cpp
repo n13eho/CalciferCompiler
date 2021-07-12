@@ -32,7 +32,7 @@ int main(int argc, char *argv[])
         RegisterDistr(); //尝试分配寄存器
         codegeneration();
         // show_IR_ins(IR1); // 打印指令
-        // show_block(globalBlock,0); // 打印基本块 （写注释啊啊啊啊啊啊 --neho  (I'm sorry. --Hsyy04
+        show_block(globalBlock,0); // 打印基本块 （写注释啊啊啊啊啊啊 --neho  (I'm sorry. --Hsyy04
     }
     return 0;
 }

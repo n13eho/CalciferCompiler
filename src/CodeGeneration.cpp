@@ -6,12 +6,16 @@ using namespace std;
 
 ofstream calout;
 extern LinearIR* IR1;
-string s="func";
-int cntfunc=0;
+// string s="func";
+// int cntfunc=0;
+string s = "lb";
+int cntlb=0;
 map<Value*,bool> visval;
+map<BasicBlock*,string> blockid;    //防止重复输出
+extern BasicBlock* globalBlock;
 
 void transGlobal(BasicBlock* node);
-void transBlock(BasicBlock* node);
+void transFuncBlock(BasicBlock* node);
 //翻译每个四元式
 void transAdd(Instruction* instr);
 void transSub(Instruction* instr);
@@ -46,25 +50,54 @@ void transGlobal(BasicBlock* node)
     {
         if(i->bType == BasicBlock::Basic)
         {
-            // transBlock(i);
-            
+            transFuncBlock(i);
 
         }
     }   
 }
-
-void transFuncBlock(BasicBlock* node)
+void transIns(Instruction* ins)
 {
-    calout<<"\t\t.global "<<node->FuncV->VName<<"\n\t\t.type "<<node->FuncV->VName<<",\%function\n"<<node->FuncV->VName<<":\n";
-    cout<<"\t.fnstart\n";
-    for(auto i : node->InstrList)
+    // if(ins->getOpType() == Instruction::Add)transAdd(ins);
+    // else if(ins->getOpType() == Instruction::Sub)transSub(ins);
+    // else if(ins->getOpType() == Instruction::LogicAnd)transLogicAnd(ins);
+}
+void transBlock(BasicBlock* node)
+{
+    //我想把每一个block都加一个标签，这样简单不过可能有些冗余
+    calout<<s+to_string(cntlb)<<":\n";
+    blockid[node]=s+to_string(cntlb++);
+    for(auto i: node->InstrList)
     {
         Instruction* instr = IR1->InstList[i];
-        // 这里分类讨论
+        transIns(instr);
     }
     for(auto i : node->succBlock)
     {
-        //还没想好
+        if(!blockid.count(i))transBlock(i);
+    }
+}
+
+void transFuncBlock(BasicBlock* node)
+{
+    calout<<"\t\t.global "<<node->FuncV->VName<<"\n\t\t.type "<<node->FuncV->VName<<", \%function\n"<<node->FuncV->VName<<":\n";
+    calout<<"\t.fnstart\n";
+    calout<<s+to_string(cntlb)<<":\n";
+    blockid[node]=s+to_string(cntlb++);
+    for(auto i : node->InstrList)
+    {
+        Instruction* instr = IR1->InstList[i];
+        transIns(instr);
+    }
+    calout<<node->succBlock.size()<<endl;
+    for(auto i : node->succBlock)
+    {
+    calout<<"win"<<endl;
+        // if(!blockid.count(i))transBlock(i);
+    }
+    calout<<"\t.fnend\n";
+    for(auto i : node->domBlock)
+    {
+        // if(!blockid.count(i))transFuncBlock(i);
     }
 }
 
@@ -90,6 +123,6 @@ void codegeneration()
             calout<<endl;
         }
     }
-
+    transGlobal(globalBlock);
     calout.close();
 }
