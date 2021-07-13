@@ -93,12 +93,6 @@ void Visitblock(LinearIR *IR)
                     {
                         if (IR->InstList[*it]->getOpType() == Instruction::Jmp && *it != IR->Blocks[i]->domBlock[j]->InstrList.back()) //找到jmp指令
                         {
-                            // //cout << *it << endl;
-                            // for (; it != IR->Blocks[i]->domBlock[j]->InstrList.end(); it++)
-                            // {
-                            //     cout << *it << endl;
-                            //     IR->Blocks[i]->domBlock[j]->InstrList.erase(it);
-                            // }
                             it++;
                             while (it != IR->Blocks[i]->domBlock[j]->InstrList.end())
                             {
@@ -115,6 +109,7 @@ void Visitblock(LinearIR *IR)
                     if (IR->InstList[*it]->getOpType() == Instruction::Ret && *it != IR->Blocks[i]->domBlock[j]->InstrList.back())
                     {
                         it++;
+                        cout << *it << endl;
                         while (it != IR->Blocks[i]->domBlock[j]->InstrList.end())
                         {
                             it = IR->Blocks[i]->domBlock[j]->InstrList.erase(it);
