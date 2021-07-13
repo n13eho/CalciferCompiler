@@ -56,6 +56,7 @@ void AllocCreate(GrammaNode* node,LinearIR *IR,Value* VL,int space_size)
 
     //向基本块加入指令
     bbNow->Addins(ins_alloc->getId());
+
     ins_alloc->setParent(bbNow);
 }
 
@@ -324,10 +325,7 @@ void VarDefNode(GrammaNode* node,LinearIR *IR)
         }
         else
         {
-            Value* VL=SymbolTable->askItem(p_node->son[0]);
-            Instruction* ins_new = new Instruction(IR->getInstCnt(),Instruction::Assign,0);
-            ins_new->setResult(VL);
-            
+            Value* VL=SymbolTable->askItem(p_node->son[0]);            
             //属于某个函数且该指令为首指令，新建一个基本块，并建立联系
             if(0 == global && nullptr == bbNow)
             {
@@ -347,7 +345,8 @@ void VarDefNode(GrammaNode* node,LinearIR *IR)
                 AllocCreate(p_node,IR,VL,total);
 
             }
-
+            Instruction* ins_new = new Instruction(IR->getInstCnt(),Instruction::Assign,0);
+            ins_new->setResult(VL);
             //向基本块加入指令
             bbNow->Addins(ins_new->getId());
             ins_new->setParent(bbNow);
