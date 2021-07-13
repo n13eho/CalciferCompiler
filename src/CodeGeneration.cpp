@@ -128,24 +128,6 @@ void transAdd(Instruction* instr)
 
 }
 
-void transMul(Instruction* instr)
-{
-    calout<<"\tmul ";
-    IntegerValue* res=(IntegerValue*)instr->getResult();
-    IntegerValue* r0=(IntegerValue*)instr->getOp()[0];
-    IntegerValue* r1=(IntegerValue*)instr->getOp()[1];
-    if(res->isConst == 0)calout<<"r"+to_string(VReg[res])<<" ";
-    else calout<<res->RealValue<<" ";
-    if(r0->isConst == 0)calout<<"r"+to_string(VReg[r0])<<" ";
-    else 
-    {
-        calout<<"r"+to_string(VReg[r1])<<" ";
-        calout<<r0->RealValue<<endl;
-        return ;
-    }
-    if(r1->isConst == 0)calout<<"r"+to_string(VReg[r1])<<endl;
-    else calout<<r1->RealValue<<endl;
-}
 
 void transGlobal(BasicBlock* node)
 {

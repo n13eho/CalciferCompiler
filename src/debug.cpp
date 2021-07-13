@@ -17,7 +17,7 @@ std::map<int, string> DEBUG_insOP = {{Instruction::InsType::Add, "+"}, {Instruct
 {Instruction::InsType::Jmp, "J"}, {Instruction::InsType::ConBr, "Br"},
 {Instruction::InsType::Call, "Call"}, {Instruction::InsType::Ret, "return"},
 {Instruction::InsType::Load, "Load"}, {Instruction::InsType::Store, "Store"},
-{Instruction::InsType::Break, "break"}};
+{Instruction::InsType::Break, "break"},{Instruction::InsType::Alloc,"Allocate"}};
 
 void printIns(int id)
 {
@@ -60,10 +60,10 @@ void show_block(BasicBlock* node,int dep)
         for(int i=1;i<=dep*4;i++)cout<<' ';
         printIns(i);
     }
-    // for(auto i : node->succBlock)
-    // {
-    //     if(!vis[i])show_block(i,dep);
-    // }
+     for(auto i : node->succBlock)
+     {
+         if(!vis[i])show_block(i,dep);
+     }
     for(auto i : node->domBlock)
     {
         if(!vis[i])show_block(i,dep+1);
