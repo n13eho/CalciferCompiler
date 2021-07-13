@@ -51,24 +51,22 @@ void transAssign(Instruction* instr)
     
 }
 
+void stk2reg(Value* val)
+{
+    IntegerValue* intval=(IntegerValue*)val;
+    if(intval->isConst==0)
+    {
+        calout<<"\tldr ";
+    }
+}
+
 void transAdd(Instruction* instr)
 {//add rs r0 r1
 //能不能保证 r0 和 r1 至少有一个不是立即数？  TODO!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    calout<<"\tadd ";
     IntegerValue* res=(IntegerValue*)instr->getResult();
     IntegerValue* r0=(IntegerValue*)instr->getOp()[0];
     IntegerValue* r1=(IntegerValue*)instr->getOp()[1];
-    if(res->isConst == 0)calout<<"r"+to_string(VReg[res])<<" ";
-    else calout<<res->RealValue<<" ";
-    if(r0->isConst == 0)calout<<"r"+to_string(VReg[r0])<<" ";
-    else 
-    {
-        calout<<"r"+to_string(VReg[r1])<<" ";
-        calout<<r0->RealValue<<endl;
-        return ;
-    }
-    if(r1->isConst == 0)calout<<"r"+to_string(VReg[r1])<<endl;
-    else calout<<r1->RealValue<<endl;
+    
 }
 
 void transMul(Instruction* instr)
@@ -92,7 +90,7 @@ void transMul(Instruction* instr)
 
 void transGlobal(BasicBlock* node)
 {
-    calout<<"\t\t.text\n";
+    calout<<"\t.text\n";
     int f=0;
     for(auto func : IR1->Blocks)
     {
@@ -120,13 +118,13 @@ void transBlock(BasicBlock* node)
 
 void transFuncBlock(BasicBlock* node)
 {
-    calout<<"\t\t.global "<<node->FuncV->VName<<"\n\t\t.type "<<node->FuncV->VName<<", \%function\n"<<node->FuncV->VName<<":\n";
+    calout<<"\t.global "<<node->FuncV->VName<<"\n\t.type "<<node->FuncV->VName<<", \%function\n"<<node->FuncV->VName<<":\n";
     calout<<"\t.fnstart\n";
     for(auto i : node->domBlock)
     {
         if(!blockid.count(i))transBlock(i);
     }
-    calout<<"\t.fnend\n";
+    calout<<"bx lr\n\t.fnend\n";
 }
 
 void codegeneration()
@@ -135,7 +133,7 @@ void codegeneration()
     //1. 遍历符号表, 写全局信息..data段和.bss段;
     //2. transBlock, 写.text段
     calout.open("test.s",std::ifstream::out);
-    calout<<"\t\t.data\n";
+    calout<<"\t.data\n";
     for(auto fuhao : SymbolTable->table)
     {
         //这里写.data
@@ -146,7 +144,7 @@ void codegeneration()
             IntegerValue* val=(IntegerValue*)fuhao.second;
             if(val->var_scope!="1"||val->isConst==1)continue;
             calout<<val->VName.data();
-            calout<<":\t.word ";
+            calout<<":\n\t.word ";
             calout<<to_string(val->RealValue).data();
             calout<<endl;
         }

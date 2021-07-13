@@ -42,6 +42,19 @@ BasicBlock* CreateBlock(BasicBlock::BlockType t)
     return b;
 }
 
+void AllocCreate(GrammaNode* node,LinearIR *IR,Value* VL,int space_size)
+{
+    Instruction* ins_alloc = new Instruction(IR->getInstCnt(),Instruction::Alloc,2);
+    ins_alloc->addOperand(VL);
+    IntegerValue* space  = new IntegerValue("space",node->lineno,node->var_scope,space_size,1);
+    ins_alloc->addOperand((Value*)space);
+    IR->InsertInstr(ins_alloc);
+
+    //向基本块加入指令
+    bbNow->Addins(ins_alloc->getId());
+    ins_alloc->setParent(bbNow);
+}
+
 void VisitAST(GrammaNode* DRoot,LinearIR *IR)
 {
     //全局基本块
@@ -93,14 +106,17 @@ void ConstDefNode(GrammaNode* node,LinearIR *IR)
         GrammaNode* p_node = node->son[i];
 
         Value* VL=SymbolTable->askItem(p_node->son[0]);
-        Instruction* ins_new = new Instruction(IR->getInstCnt(),Instruction::Assign,0);
-        ins_new->setResult(VL);
+        
         
         //属于某个函数且该指令为首指令，新建一个基本块，并建立联系
         if(0 == global && nullptr == bbNow)
         {
             bbNow = GetPresentBlock(FuncN,BasicBlock::Basic);
         }
+
+        Instruction* ins_new = new Instruction(IR->getInstCnt(),Instruction::Assign,0);
+        ins_new->setResult(VL);
+
         //向基本块加入指令
         bbNow->Addins(ins_new->getId());
         ins_new->setParent(bbNow);
@@ -206,6 +222,11 @@ void VarDefNode(GrammaNode* node,LinearIR *IR)
         {
             //左值
             Value* VL=SymbolTable->askItem(p_node->son[0]);
+            int total = 1;
+            for(int j = 0;j<((ArrayValue*)VL)->NumOfDimension.size();j++)
+            {
+                total*=((ArrayValue*)VL)->NumOfDimension[j];
+            }
 
             //右值
             Value* VR=nullptr;
@@ -213,6 +234,15 @@ void VarDefNode(GrammaNode* node,LinearIR *IR)
             if(p_node->son.size() == 3)
             {
                 VR = InitValNode(p_node->son[2],IR);
+
+                //属于某个函数且该指令为首指令，新建一个基本块，并建立联系
+                if(0 == global && nullptr == bbNow)
+                {
+                    bbNow = GetPresentBlock(FuncN,BasicBlock::Basic);
+                }
+                if(0 == global)
+                    AllocCreate(p_node,IR,VL,total);
+
                 if(VR == nullptr)
                 {
                     //int a[2] = {}
@@ -225,11 +255,6 @@ void VarDefNode(GrammaNode* node,LinearIR *IR)
                     ins_new->addOperand(VR);
                     ins_new->setResult(VL);
                     
-                    //属于某个函数且该指令为首指令，新建一个基本块，并建立联系
-                    if(0 == global && nullptr == bbNow)
-                    {
-                        bbNow = GetPresentBlock(FuncN,BasicBlock::Basic);
-                    }
                     //向基本块加入指令
                     bbNow->Addins(ins_new->getId());
                     ins_new->setParent(bbNow);
@@ -254,15 +279,16 @@ void VarDefNode(GrammaNode* node,LinearIR *IR)
             if(p_node->son.size()==3)
             {
                 VR = InitValNode(p_node->son[2],IR);
-                Instruction* ins_new = new Instruction(IR->getInstCnt(),Instruction::Assign,1);
-                ins_new->addOperand(VR);
-                ins_new->setResult(VL);
-                
                 //属于某个函数且该指令为首指令，新建一个基本块，并建立联系
                 if(0 == global && nullptr == bbNow)
                 {
                     bbNow = GetPresentBlock(FuncN,BasicBlock::Basic);
                 }
+                if(0 == global)
+                    AllocCreate(p_node,IR,VL,1);
+                Instruction* ins_new = new Instruction(IR->getInstCnt(),Instruction::Assign,1);
+                ins_new->addOperand(VR);
+                ins_new->setResult(VL);
                 //向基本块加入指令
                 bbNow->Addins(ins_new->getId());
                 // 标识该条指令所属的基本块

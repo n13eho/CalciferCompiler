@@ -55,7 +55,9 @@ public:
         Load,
         //存入数组
         Store,
-        Break
+        Break,
+        //变量空间申请
+        Alloc
     };
 
     Instruction(int id,Instruction::InsType ins_type,unsigned oprands_num):InstrId(id),OpType(ins_type),OpNums(oprands_num)

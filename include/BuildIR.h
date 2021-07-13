@@ -67,6 +67,7 @@ BasicBlock* GetPresentBlock(BasicBlock* funcP,BasicBlock::BlockType t);
 BasicBlock* CreateBlock(BasicBlock::BlockType t);
 
 bool linkNext(BasicBlock* node,LinearIR *IR);
+void AllocCreate(GrammaNode* node,LinearIR *IR,Value* VL,int space_size);
 
 //error
 class BuildIRError : public std::exception {
