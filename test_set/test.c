@@ -15,10 +15,20 @@
 //     rtyu = 100 + a;
 // }
 
+// int g = 1;
+// int main()
+// {
+//     int a=10;
+//     a = g + a;
+//     return a;
+// }
+
 int g = 1;
+// const int p[3][2] = {5, {}, {2, 3}};
 int main()
 {
     int a=10;
+    int b[3][2] ={{2},{a,0}};
     a = g + a;
     return a;
 }

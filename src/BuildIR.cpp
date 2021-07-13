@@ -23,7 +23,7 @@ stack<pair<BasicBlock*,BasicBlock*>> LoopNext;
 
 //用于数组初始化
 std::vector<Value *> array_init;
-std::vector<int> array_dimen;
+std::vector<unsigned> array_dimen;
 int dimen_dpeth;
 
 BasicBlock* GetPresentBlock(BasicBlock* funcP,BasicBlock::BlockType t)
@@ -57,6 +57,24 @@ void AllocCreate(GrammaNode* node,LinearIR *IR,Value* VL,int space_size)
     //向基本块加入指令
     bbNow->Addins(ins_alloc->getId());
     ins_alloc->setParent(bbNow);
+}
+
+void CreateIns(GrammaNode* node,LinearIR *IR,Instruction::InsType ins_type,unsigned oprands_num,std::vector<Value*>op,Value* res)
+{
+    Instruction* ins = new Instruction(IR->getInstCnt(),ins_type,oprands_num);
+    for(int i=0;i<op.size();i++)
+    {
+        ins->addOperand(op[i]);
+    }
+    if(nullptr!=res)
+    {
+        ins->setResult(res);
+    }
+    //向基本块加入指令
+    bbNow->Addins(ins->getId());
+    ins->setParent(bbNow);
+    IR->InsertInstr(ins);
+
 }
 
 void VisitAST(GrammaNode* DRoot,LinearIR *IR)
@@ -227,10 +245,12 @@ void VarDefNode(GrammaNode* node,LinearIR *IR)
             //左值
             Value* VL=SymbolTable->askItem(p_node->son[0]);
             int total = 1;
+            array_dimen = ((ArrayValue*)VL)->NumOfDimension;
             for(int j = 0;j<((ArrayValue*)VL)->NumOfDimension.size();j++)
             {
                 total*=((ArrayValue*)VL)->NumOfDimension[j];
             }
+            cout<<"array allocate space:"<<total<<endl;
 
             //右值
             Value* VR=nullptr;
@@ -238,6 +258,7 @@ void VarDefNode(GrammaNode* node,LinearIR *IR)
             if(p_node->son.size() == 3)
             {
                 VR = InitValNode(p_node->son[2],IR);
+                cout<<"finish array initvals compute"<<endl;
 
                 //属于某个函数且该指令为首指令，新建一个基本块，并建立联系
                 if(0 == global && nullptr == bbNow)
@@ -247,23 +268,16 @@ void VarDefNode(GrammaNode* node,LinearIR *IR)
                 if(0 == global)
                     AllocCreate(p_node,IR,VL,total);
 
-                if(VR == nullptr)
+                if(VR != nullptr)
                 {
-                    //int a[2] = {}
-                    //分全局、局部，全局设为0，局部未定义，应于符号表建立阶段更新
-                }
-                else
-                {
-                    //赋值四元式
-                    Instruction* ins_new = new Instruction(IR->getInstCnt(),Instruction::Assign,1);
-                    ins_new->addOperand(VR);
-                    ins_new->setResult(VL);
+                    for(int j=0;j<array_init.size();j++)
+                    {
+                        IntegerValue* index = new IntegerValue("index",node->lineno,node->var_scope,j,1);
+                        std::vector<Value*> op = {VL,index,array_init[j]};
+                        cout<<"store "<<array_init[j]->getName()<<" to index "<<j<<endl;
+                        CreateIns(node,IR,Instruction::Store,3,op,nullptr);
+                    }
                     
-                    //向基本块加入指令
-                    bbNow->Addins(ins_new->getId());
-                    ins_new->setParent(bbNow);
-
-                    IR->InsertInstr(ins_new);
                 }
                 
             }
@@ -1172,15 +1186,28 @@ Value* InitValNode(GrammaNode* node,LinearIR *IR)
             return nullptr;
         }
     }
-    else if(InitVal_NULL == node->type)
+    
+    int cur_dimen = array_dimen[dimen_dpeth];
+    int total_len = 1;
+    for(int i=dimen_dpeth+1;i<array_dimen.size();i++)
+    {
+        total_len*=array_dimen[i];
+    }
+    std::vector<Value *> init_list;
+
+    if(InitVal_NULL == node->type)
     {//空{}
-        int cur_dimen = array_dimen[dimen_dpeth];
-        int total_len = 1;
-        for(int i=dimen_dpeth+1;i<array_dimen.size();i++)
+        //用于 int a[5][2] = {}; 
+        //填充多少个，后面再改，todo
+        for(int j=0; j < total_len;j++)
         {
-            total_len*=array_dimen[i];
+            IntegerValue* const0 = new IntegerValue("const0",node->lineno,node->var_scope,0,1);
+            array_init.push_back((Value*)const0);
+            init_list.push_back((Value*)const0);
         }
-        return nullptr;
+
+        IntegerValue* ret = new IntegerValue("sub matrix size",node->lineno,node->var_scope,init_list.size(),1);
+        return (Value*) ret;
     }
     else if(InitVal_ == node->type)
     {//多个初值
@@ -1188,14 +1215,53 @@ Value* InitValNode(GrammaNode* node,LinearIR *IR)
         {
             //InitVals_
             GrammaNode* p_node = node->son[0];
-            //临时变量需要一个全局变量记录对应序号
-            ArrayValue* ret= new ArrayValue("t1",p_node->lineno,p_node->var_scope,0);
+            IntegerValue* ret= new IntegerValue("t1",p_node->lineno,p_node->var_scope,total_len,1);
+            int cnt = 0;
+            cout<<"初值son个数:"<<p_node->son.size()<<endl;
             for(int i=0;i<p_node->son.size();i++)
             {
-                Value* arrayV = InitValNode(p_node->son[i],IR);
-                //ret 插入arrayV
-                //todo
+                if(InitVal_EXP == p_node->son[i]->type)
+                {
+                    Value* ExpV = InitValNode(p_node->son[i],IR);
+                    // init_list.push_back(ExpV);
+                    array_init.push_back(ExpV);
+                    cnt++;
+                }
+                else if(InitVal_NULL == p_node->son[i]->type)
+                {
+                    //位置再看
+                    // int pos = init_list.size();
+                    // for(int j=0; j < (total_len - (pos % total_len)%total_len);j++)
+                    // {
+                    //     IntegerValue* const0 = new IntegerValue("const0",p_node->lineno,p_node->var_scope,0,1);
+                    //     array_init.push_back((Value*)const0);
+                    //     init_list.push_back((Value*)const0);
+                    // }
+                    IntegerValue* ExpV = (IntegerValue*)InitValNode(p_node->son[i],IR);
+                    cnt+=(ExpV->getValue());
+                }
+                else
+                {//InitVal_
+                    dimen_dpeth++;
+                    //递归
+                    IntegerValue* ExpV = (IntegerValue*)InitValNode(p_node->son[i],IR);
+                    cnt+=(ExpV->getValue());
+                    //递归出来后，数值已经压入array_init，但是为保证init_List pos正确，向init_list压入同样数量的0
+                    dimen_dpeth--;
+                }
             }
+            cout<<"数组右值列表：";
+            for(int j = 0;j<array_init.size();j++)
+            {
+                cout<<((IntegerValue*)array_init[j])->getName()<<" ";
+            }
+            cout<<endl;
+            // for(int j = cnt;j<total_len*cur_dimen;j++)
+            // {
+            //     IntegerValue* const0 = new IntegerValue("const0",p_node->lineno,p_node->var_scope,0,1);
+            //     array_init.push_back((Value*)const0);
+            // }
+
             return ret;
         }
         else
@@ -1760,6 +1826,11 @@ void show_IR_ins(LinearIR *IR)
         if(presenIns->getOpType() == Instruction::Alloc)
         {
             std::cout <<presenIns->getOp()[0]->VName<<" space size:"<<((IntegerValue*)(presenIns->getOp()[1]))->getValue()<<endl;
+            continue;
+        }
+        if(presenIns->getOpType() == Instruction::Store)
+        {
+            std::cout<<presenIns->getOp()[0]->VName<<" ["<<((IntegerValue*)presenIns->getOp()[1])->getValue()<<"]: "<<(presenIns->getOp()[2])->getName()<<endl;
             continue;
         }
         for(int i = 0; i < presenIns->getOp().size(); i++)
