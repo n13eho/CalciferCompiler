@@ -7,13 +7,6 @@
 // const int mondy = today + 1 + c[2]; // 11, but should be wrong
 
 
-// //const int p = 17;
-// int rtyu;
-// int a=10;
-// int main()
-// {
-//     rtyu = 100 + a;
-// }
 
 // int g = 1;
 // int main()

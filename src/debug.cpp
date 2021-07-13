@@ -60,10 +60,10 @@ void show_block(BasicBlock* node,int dep)
         for(int i=1;i<=dep*4;i++)cout<<' ';
         printIns(i);
     }
-    // for(auto i : node->succBlock)
-    // {
-    //     if(!vis[i])show_block(i,dep);
-    // }
+     for(auto i : node->succBlock)
+     {
+         if(!vis[i])show_block(i,dep);
+     }
     for(auto i : node->domBlock)
     {
         if(!vis[i])show_block(i,dep+1);
