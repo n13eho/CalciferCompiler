@@ -12,5 +12,6 @@ int rtyu;
 int a=10;
 int main()
 {
+    rtyu = a + a;
     rtyu = 100 + a;
 }

@@ -13,7 +13,15 @@ string s = "lb";
 int cntlb=0;
 map<Value*,bool> visval;
 map<BasicBlock*,string> blockid;    //防止重复输出
+
+int memshift;
+map<Value*, int> loc2mem;//ldr r0 [sp,#-4]
+
+Value* reg2val[13];//寄存器i中存了什么value
+map<Value*, int> val2reg;//value_i的值目前存在哪个寄存器。
 extern BasicBlock* globalBlock;
+
+int lastusedRn=-1;
 
 void transGlobal(BasicBlock* node);
 void transFuncBlock(BasicBlock* node);
@@ -45,9 +53,7 @@ void transBreak(Instruction* instr);
 
 void transAssign(Instruction* instr)
 {
-    calout<<"\tmov ";
-    IntegerValue* res=(IntegerValue*)instr->getResult();
-    IntegerValue* r1=(IntegerValue*)instr->getOp()[1];
+    
     
 }
 
@@ -60,13 +66,66 @@ void stk2reg(Value* val)
     }
 }
 
+void integerfreeRn(int rn)
+{
+    Value* val=reg2val[rn];
+    if(val==NULL)return ;
+    reg2val[rn]=NULL;
+    // val2reg[val]=-1;
+    auto it =val2reg.find(val);
+    val2reg.erase(it);
+}
+
+int integergetRn(Value* val)
+{
+    if(val2reg.count(val))return val2reg[val];
+    for(int i=0;i<12;i++)
+    {
+        if(reg2val[i]==NULL)
+        {
+            reg2val[i]=val;
+            val2reg[val]=i;
+            if(val->getScope()=="1")
+            {
+                calout<<"\tldr "<<"r"<<to_string(i)<<", ="<<val->getName()<<endl;
+                calout<<"\tldr r"<<to_string(i)<<", [r"+to_string(i)<<"]"<<endl;
+            }
+            // else if(val->get)
+            else if(val->getScope().size())
+            {
+                int shift = loc2mem[val];
+                calout<<"\tldr "<<"r"<<to_string(i)<<", [sp, #"<<shift<<"]"<<endl;
+                calout<<"\tldr r"<<to_string(i)<<"[r"+to_string(i)<<"]"<<endl;
+            }
+            return i;
+        }
+    }
+    return -1;
+    //TODO: 启发式的把一个寄存器里存的值移入内存，记得更新reg2val,val2reg,loc2mem,memshift
+}
+
 void transAdd(Instruction* instr)
 {//add rs r0 r1
 //能不能保证 r0 和 r1 至少有一个不是立即数？  TODO!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IntegerValue* res=(IntegerValue*)instr->getResult();
     IntegerValue* r0=(IntegerValue*)instr->getOp()[0];
     IntegerValue* r1=(IntegerValue*)instr->getOp()[1];
-    
+    if(r0->isConst==1)swap(r0,r1);
+    int R_res = integergetRn(res); 
+    lastusedRn=R_res;   
+    int R_r0 = integergetRn(r0);  
+    if(r1->isConst==1)
+    {
+        calout<<"\tadd r"+to_string(R_res)+", r"+to_string(R_r0)+", #"<<r1->RealValue<<endl;
+    }
+    else
+    {
+        int R_1 = integergetRn(r1);
+        calout<<"\tadd r"+to_string(R_res)+", r"+to_string(R_r0)+", r"<<to_string(R_1)<<endl;
+        integerfreeRn(R_1);
+    }
+    integerfreeRn(R_r0);
+
 }
 
 void transMul(Instruction* instr)
@@ -124,7 +183,11 @@ void transFuncBlock(BasicBlock* node)
     {
         if(!blockid.count(i))transBlock(i);
     }
-    calout<<"bx lr\n\t.fnend\n";
+    if(node->FuncV->VName=="main")
+    {
+        calout<<"\tmov r0, r"+to_string(lastusedRn)<<endl;
+    }
+    calout<<"\tbx lr\n\t.fnend\n";
 }
 
 void codegeneration()
@@ -132,6 +195,7 @@ void codegeneration()
     // 外部接口
     //1. 遍历符号表, 写全局信息..data段和.bss段;
     //2. transBlock, 写.text段
+
     calout.open("test.s",std::ifstream::out);
     calout<<"\t.data\n";
     for(auto fuhao : SymbolTable->table)
