@@ -12,8 +12,7 @@ map<Value*,int> VReg;//符号表的每一个变量都应该有一个对应的寄
 int VReg_cnt;
 void getRister(Value* val, int &Rid)
 {
-    // 先这样吧,每次用的时候都给第6号寄存器
-    Rid = 6;
+    //看不到~
 }
 
 void RegisterDistr()

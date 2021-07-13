@@ -9,44 +9,8 @@
 
 //const int p = 17;
 int rtyu;
-int p[3][2][4] = {1, 2, 3, 4};
-
-int func(int c,int b)
-{
-    int w = b+c;
-    return w;
-}
-
-int sss = 12;
-int add(int a, int b)
-{
-    return a + b;
-}
-
+int a=10;
 int main()
 {
-    int a=10, b=0, c;
-    const int ppp=5;
-    sss = 12;
-    while (1)
-    {
-        a = a + 1;
-        b = b + 2;
-        c = func(a, b);
-        int w = a+3;
-        if(b > a)
-        {
-            int www = a+b;
-            break;
-        }
-        else 
-        {
-            if(w>b)
-            {
-                break;
-            }
-        }
-        w = w+1;
-    }
-    return c;
+    rtyu = 100 + a;
 }

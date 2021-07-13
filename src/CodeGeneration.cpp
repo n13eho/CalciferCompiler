@@ -1,5 +1,6 @@
 #include "../include/CodeGeneration.h"
 #include"register.h"
+#include"BuildIR.h"
 #include"semanticAnalyze.h"
 
 using namespace std;
@@ -42,22 +43,66 @@ void transLoad(Instruction* instr);
 void transStore(Instruction* instr);
 void transBreak(Instruction* instr);
 
-// 这里为什么会报链接错误？？-----neho
+void transAssign(Instruction* instr)
+{
+    calout<<"\tmov ";
+    IntegerValue* res=(IntegerValue*)instr->getResult();
+    IntegerValue* r1=(IntegerValue*)instr->getOp()[1];
+    
+}
+
+void transAdd(Instruction* instr)
+{//add rs r0 r1
+//能不能保证 r0 和 r1 至少有一个不是立即数？  TODO!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    calout<<"\tadd ";
+    IntegerValue* res=(IntegerValue*)instr->getResult();
+    IntegerValue* r0=(IntegerValue*)instr->getOp()[0];
+    IntegerValue* r1=(IntegerValue*)instr->getOp()[1];
+    if(res->isConst == 0)calout<<"r"+to_string(VReg[res])<<" ";
+    else calout<<res->RealValue<<" ";
+    if(r0->isConst == 0)calout<<"r"+to_string(VReg[r0])<<" ";
+    else 
+    {
+        calout<<"r"+to_string(VReg[r1])<<" ";
+        calout<<r0->RealValue<<endl;
+        return ;
+    }
+    if(r1->isConst == 0)calout<<"r"+to_string(VReg[r1])<<endl;
+    else calout<<r1->RealValue<<endl;
+}
+
+void transMul(Instruction* instr)
+{
+    calout<<"\tmul ";
+    IntegerValue* res=(IntegerValue*)instr->getResult();
+    IntegerValue* r0=(IntegerValue*)instr->getOp()[0];
+    IntegerValue* r1=(IntegerValue*)instr->getOp()[1];
+    if(res->isConst == 0)calout<<"r"+to_string(VReg[res])<<" ";
+    else calout<<res->RealValue<<" ";
+    if(r0->isConst == 0)calout<<"r"+to_string(VReg[r0])<<" ";
+    else 
+    {
+        calout<<"r"+to_string(VReg[r1])<<" ";
+        calout<<r0->RealValue<<endl;
+        return ;
+    }
+    if(r1->isConst == 0)calout<<"r"+to_string(VReg[r1])<<endl;
+    else calout<<r1->RealValue<<endl;
+}
+
 void transGlobal(BasicBlock* node)
 {
     calout<<"\t\t.text\n";
-    for(auto i: node->succBlock)
+    int f=0;
+    for(auto func : IR1->Blocks)
     {
-        if(i->bType == BasicBlock::Basic)
-        {
-            transFuncBlock(i);
-
-        }
-    }   
+        if(f==0){f=1;continue;}
+        transFuncBlock(func);
+    }
 }
 void transIns(Instruction* ins)
 {
-    // if(ins->getOpType() == Instruction::Add)transAdd(ins);
+    if(ins->getOpType() == Instruction::Add)transAdd(ins);
     // else if(ins->getOpType() == Instruction::Sub)transSub(ins);
     // else if(ins->getOpType() == Instruction::LogicAnd)transLogicAnd(ins);
 }
@@ -71,34 +116,17 @@ void transBlock(BasicBlock* node)
         Instruction* instr = IR1->InstList[i];
         transIns(instr);
     }
-    for(auto i : node->succBlock)
-    {
-        if(!blockid.count(i))transBlock(i);
-    }
 }
 
 void transFuncBlock(BasicBlock* node)
 {
     calout<<"\t\t.global "<<node->FuncV->VName<<"\n\t\t.type "<<node->FuncV->VName<<", \%function\n"<<node->FuncV->VName<<":\n";
     calout<<"\t.fnstart\n";
-    calout<<s+to_string(cntlb)<<":\n";
-    blockid[node]=s+to_string(cntlb++);
-    for(auto i : node->InstrList)
-    {
-        Instruction* instr = IR1->InstList[i];
-        transIns(instr);
-    }
-    calout<<node->succBlock.size()<<endl;
-    for(auto i : node->succBlock)
-    {
-    calout<<"win"<<endl;
-        // if(!blockid.count(i))transBlock(i);
-    }
-    calout<<"\t.fnend\n";
     for(auto i : node->domBlock)
     {
-        // if(!blockid.count(i))transFuncBlock(i);
+        if(!blockid.count(i))transBlock(i);
     }
+    calout<<"\t.fnend\n";
 }
 
 void codegeneration()
