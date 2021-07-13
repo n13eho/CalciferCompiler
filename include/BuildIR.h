@@ -68,6 +68,7 @@ BasicBlock* CreateBlock(BasicBlock::BlockType t);
 
 bool linkNext(BasicBlock* node,LinearIR *IR);
 void AllocCreate(GrammaNode* node,LinearIR *IR,Value* VL,int space_size);
+void CreateIns(GrammaNode* node,LinearIR *IR,Instruction::InsType ins_type,unsigned oprands_num,std::vector<Value*>op,Value* res);
 
 //error
 class BuildIRError : public std::exception {

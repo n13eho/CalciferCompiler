@@ -15,13 +15,17 @@
 // int a=10;
 // int main()
 // {
-//     rtyu = 100 + a;
+//     int a=10;
+//     a = g + a;
+//     return a;
 // }
 
 int rtyu = 1;
 int a=1;
 int main()
 {
-    rtyu = a + a;
-    rtyu = 100 + a;
+    int a=10;
+    int b[3][2] ={{2},{a,0}};
+    a = a + a;
+    return a;
 }

@@ -39,7 +39,7 @@ int main(int argc, char *argv[])
         VisitAST(Droot, IR1);
         show_IR_ins(IR1); // 打印指令
         show_block(globalBlock,0); // 打印基本块 （写注释啊啊啊啊啊啊 --neho
-        RegisterDistr();
+//        RegisterDistr();
         codegeneration();
         // 利用四元式和bb信息得出ssa_0
         dbg("convert to ssa");
