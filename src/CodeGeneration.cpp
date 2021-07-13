@@ -124,7 +124,7 @@ int integergetRn(Value* val,int needAddr)
             {
                 int shift = loc2mem[val];
                 calout<<"\tldr "<<"r"<<to_string(i)<<", [sp, #-"<<shift*4<<"]"<<endl;
-                if(!needAddr)calout<<"\tldr r"<<to_string(i)<<", [r"+to_string(i)<<"]"<<endl;
+                // if(!needAddr)calout<<"\tldr r"<<to_string(i)<<", [r"+to_string(i)<<"]"<<endl;
             }
             return i;
         }

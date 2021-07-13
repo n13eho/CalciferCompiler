@@ -25,7 +25,7 @@ int main()
 {
     int b = 12;
     int a=10;
-    if(a < 10)
+    if(a == 19)
         a = a + 1;
     return a;
 }
