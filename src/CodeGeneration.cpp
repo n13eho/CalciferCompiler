@@ -2,6 +2,7 @@
 #include"register.h"
 #include"BuildIR.h"
 #include"semanticAnalyze.h"
+#include"dbg.h"
 
 using namespace std;
 
@@ -9,7 +10,7 @@ ofstream calout;
 extern LinearIR* IR1;
 // string s="func";
 // int cntfunc=0;
-string s = "lb";
+string s = ".lb";
 int cntlb=0;
 map<Value*,bool> visval;
 map<BasicBlock*,string> blockid;    //防止重复输出
@@ -22,6 +23,7 @@ map<Value*, int> val2reg;//value_i的值目前存在哪个寄存器。
 extern BasicBlock* globalBlock;
 
 int lastusedRn=-1;
+int lastLogicUsedRn=-1;
 
 void transGlobal(BasicBlock* node);
 void transFuncBlock(BasicBlock* node);
@@ -37,7 +39,6 @@ void transUnaryNot(Instruction* instr);
 void transAssign(Instruction* instr);
 void transLogicAnd(Instruction* instr);
 void transLogicOr(Instruction* instr);
-void transLogicEq(Instruction* instr);
 void transLogicNeq(Instruction* instr);
 void transLogicLT(Instruction* instr);
 void transLogicBG(Instruction* instr);
@@ -53,6 +54,7 @@ void transBreak(Instruction* instr);
 void transAlloc(Instruction* instr);
 void integerfreeRn(int rn);
 int integergetRn(Value* val,int needAddr=0);
+void transArithEq(Instruction* instr);
 
 void transAlloc(Instruction* instr)
 {
@@ -81,14 +83,6 @@ void transAssign(Instruction* instr)
     }
 }
 
-void stk2reg(Value* val)
-{
-    IntegerValue* intval=(IntegerValue*)val;
-    if(intval->isConst==0)
-    {
-        calout<<"\tldr ";
-    }
-}
 
 void integerfreeRn(int rn)
 {
@@ -104,7 +98,7 @@ void integerfreeRn(int rn)
     }
     else if(loc2mem.count(val))
     {
-        calout<<"\tstr r"+to_string(rn)<<", [sp, #-"<<loc2mem[val]<<"]"<<endl;
+        calout<<"\tstr r"+to_string(rn)<<", [sp, #-"<<loc2mem[val] * 4<<"]"<<endl;
     }
     reg2val[rn]=NULL;
     auto it =val2reg.find(val);
@@ -129,8 +123,8 @@ int integergetRn(Value* val,int needAddr)
             else if(loc2mem.count(val))
             {
                 int shift = loc2mem[val];
-                calout<<"\tldr "<<"r"<<to_string(i)<<", [sp, #"<<shift<<"]"<<endl;
-                if(!needAddr)calout<<"\tldr r"<<to_string(i)<<"[r"+to_string(i)<<"]"<<endl;
+                calout<<"\tldr "<<"r"<<to_string(i)<<", [sp, #-"<<shift*4<<"]"<<endl;
+                if(!needAddr)calout<<"\tldr r"<<to_string(i)<<", [r"+to_string(i)<<"]"<<endl;
             }
             return i;
         }
@@ -173,17 +167,92 @@ void transGlobal(BasicBlock* node)
         transFuncBlock(func);
     }
 }
+
+void transArithEq(Instruction* instr)
+{
+    //获取2个操作数
+    IntegerValue* res=(IntegerValue*)instr->getResult();
+    IntegerValue* r0=(IntegerValue*)instr->getOp()[0];
+    IntegerValue* r1=(IntegerValue*)instr->getOp()[1];
+    if(r0->isConst == 1)swap(r0, r1);
+    int R_r0 = integergetRn(r0);
+    int R_res = integergetRn(res);
+
+
+    if(r1->isConst == 1)
+    {
+        calout<<"\tcmp r"<<R_r0<<", #"<<r1->RealValue << endl;
+
+    }
+    else
+    {
+        int R_r1 = integergetRn(r1);
+        calout<<"\tcmp r"<<R_r0<<", r"<<R_r1 << endl;
+        integerfreeRn(R_r1);
+    }
+    integerfreeRn(R_r0);
+
+    calout<<"\tmoveq r"<<R_res<<", #1" << endl;
+    calout<<"\tmovne r"<<R_res<<", #0" << endl;
+    lastLogicUsedRn = R_res;
+}
+
+void transConBr(Instruction* instr)
+{
+    BasicBlock* bbjump = instr->jmpDestBlock;
+
+    calout<<"\tcmp r"<<lastLogicUsedRn<<", #1" << endl;
+    calout<<"\tbeq " << blockid[bbjump] << endl;
+    dbg(bbjump);
+    dbg(blockid[bbjump]);
+}
+
+void transJmp(Instruction* instr)
+{
+    BasicBlock* bbjump = instr->jmpDestBlock;
+    calout << "\tb "<< blockid[bbjump] << endl;
+}
+
+
+
 void transIns(Instruction* ins)
 {
-    if(ins->getOpType() == Instruction::Add)transAdd(ins);
-    else if(ins->getOpType() == Instruction::Assign)transAssign(ins);
-    // else if(ins->getOpType() == Instruction::LogicAnd)transLogicAnd(ins);
+    if(ins->getOpType() == Instruction::Add)
+    {
+        calout<<"@ " << ins->getId() << endl;
+        transAdd(ins);
+    }
+    else if(ins->getOpType() == Instruction::Assign)
+    {
+        calout<<"@ " << ins->getId() << endl;
+        transAssign(ins);
+    }
+    else if(ins->getOpType() == Instruction::Alloc)
+    {
+        calout<<"@ " << ins->getId() << endl;
+        transAlloc(ins);
+    }
+    else if(ins->getOpType() == Instruction::ArithEq)
+    {
+        calout<<"@ " << ins->getId() << endl;
+        transArithEq(ins);
+    }
+    else if(ins->getOpType() == Instruction::ConBr)
+    {
+        calout<<"@ " << ins->getId() << endl;
+        transConBr(ins);
+    }
+    else if(ins->getOpType() == Instruction::Jmp)
+    {
+        calout<<"@ " << ins->getId() << endl;
+        transJmp(ins);
+    }
 }
 void transBlock(BasicBlock* node)
 {
     //我想把每一个block都加一个标签，这样简单不过可能有些冗余
-    calout<<s+to_string(cntlb)<<":\n";
-    blockid[node]=s+to_string(cntlb++);
+    calout<<blockid[node]<<":\n";
+
     for(auto i: node->InstrList)
     {
         Instruction* instr = IR1->InstList[i];
@@ -196,9 +265,14 @@ void transFuncBlock(BasicBlock* node)
     calout<<"\t.global "<<node->FuncV->VName<<"\n\t.type "<<node->FuncV->VName<<", \%function\n"<<node->FuncV->VName<<":\n";
     calout<<"\t.fnstart\n";
     memshift=0;
+    for(auto i: node->domBlock)
+    {
+        blockid[i]=s+to_string(cntlb++);
+    }
     for(auto i : node->domBlock)
     {
-        if(!blockid.count(i))transBlock(i);
+        dbg(node->domBlock.size());
+        transBlock(i);
     }
     if(node->FuncV->VName=="main")
     {

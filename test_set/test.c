@@ -23,10 +23,9 @@
 int p = 1;
 int main()
 {
+    int b = 12;
     int a=10;
-    if(p > 2)
-        a = a + 1;
-    if(!a)
+    if(a < 10)
         a = a + 1;
     return a;
 }
