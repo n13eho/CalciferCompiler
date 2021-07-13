@@ -26,7 +26,7 @@ int lastusedRn=-1;
 void transGlobal(BasicBlock* node);
 void transFuncBlock(BasicBlock* node);
 //翻译每个四元式
-void transAdd(Instruction* instr);
+void transAdd(Instruction* instr);//√
 void transSub(Instruction* instr);
 void transMul(Instruction* instr);
 void transDiv(Instruction* instr);
@@ -50,8 +50,14 @@ void transRet(Instruction* instr);
 void transLoad(Instruction* instr);
 void transStore(Instruction* instr);
 void transBreak(Instruction* instr);
+void transAlloc(Instruction* instr);
 void integerfreeRn(int rn);
-int integergetRn(Value* val);
+int integergetRn(Value* val,int needAddr=0);
+
+void transAlloc(Instruction* instr)
+{
+    
+}
 
 void transAssign(Instruction* instr)
 {
@@ -85,24 +91,26 @@ void integerfreeRn(int rn)
 {
     Value* val=reg2val[rn];
     if(val==NULL)return ;
-    reg2val[rn]=NULL;
     //把寄存器中在内存有映射的值存回去.
     if(val->getScope()=="1")
     {
-        calout<<"\tstr r"+to_string(rn)<<", ="<<val->VName<<endl;
+        int glb=integergetRn(val,1);
+        calout<<"\tstr r"+to_string(rn)<<", [r"<<to_string(glb)<<", #0]"<<endl;
+        //free掉free产生的额外寄存器
+        reg2val[glb]=NULL;
     }
     else if(loc2mem.count(val))
     {
         calout<<"\tstr r"+to_string(rn)<<", [sp, #-"<<loc2mem[val]<<"]"<<endl;
     }
-    // val2reg[val]=-1;
+    reg2val[rn]=NULL;
     auto it =val2reg.find(val);
     val2reg.erase(it);
 }
 
-int integergetRn(Value* val)
+int integergetRn(Value* val,int needAddr)
 {
-    if(val2reg.count(val))return val2reg[val];
+    if(needAddr==0&&val2reg.count(val))return val2reg[val];
     for(int i=0;i<12;i++)
     {
         if(reg2val[i]==NULL)
@@ -113,13 +121,13 @@ int integergetRn(Value* val)
             if(val->getScope()=="1")
             {
                 calout<<"\tldr "<<"r"<<to_string(i)<<", ="<<val->getName()<<endl;
-                calout<<"\tldr r"<<to_string(i)<<", [r"+to_string(i)<<"]"<<endl;
+                if(!needAddr)calout<<"\tldr r"<<to_string(i)<<", [r"+to_string(i)<<"]"<<endl;
             }
             else if(loc2mem.count(val))
             {
                 int shift = loc2mem[val];
                 calout<<"\tldr "<<"r"<<to_string(i)<<", [sp, #"<<shift<<"]"<<endl;
-                calout<<"\tldr r"<<to_string(i)<<"[r"+to_string(i)<<"]"<<endl;
+                if(!needAddr)calout<<"\tldr r"<<to_string(i)<<"[r"+to_string(i)<<"]"<<endl;
             }
             return i;
         }
@@ -151,7 +159,6 @@ void transAdd(Instruction* instr)
     integerfreeRn(R_r0);
 
 }
-
 
 void transGlobal(BasicBlock* node)
 {
