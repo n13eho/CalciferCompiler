@@ -10,6 +10,15 @@
 //const int p = 17;
 int g = 1;
 //const int p[3][2] = {5, {}, {2, 3}};
+// //const int p = 17;
+// int rtyu;
+// int a=10;
+// int main()
+// {
+//     rtyu = 100 + a;
+// }
+
+int g = 1;
 int main()
 {
     int a=10;
