@@ -20,12 +20,13 @@
 //     return a;
 // }
 
-int rtyu = 1;
-int a=1;
+int p = 1;
 int main()
 {
     int a=10;
-    int b;
-    a = a + a;
+    if(p > 2)
+        a = a + 1;
+    if(!a)
+        a = a + 1;
     return a;
 }

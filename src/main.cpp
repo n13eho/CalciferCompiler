@@ -31,7 +31,7 @@ int main(int argc, char *argv[])
     int ret = yyparse();
     if(ret == 0)
     {
-        // show_node(Droot, 0); //打印AST
+         show_node(Droot, 0); //打印AST
         // 从ast语义检查 + 构建符号表
         semanticAnalyzer(Droot);
         show_SymbleTable(SymbolTable); // 打印符号表

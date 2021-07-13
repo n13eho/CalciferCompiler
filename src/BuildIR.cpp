@@ -954,14 +954,14 @@ void LOrExpNode(GrammaNode* node,LinearIR *IR)
     }
 
     //条件value和立即数0比较
-    Instruction* ins_neq = new Instruction(IR->getInstCnt(),Instruction::ArithNeq,2);
-    ins_neq->addOperand(Condpre);
-    ins_neq->addOperand(const0);
-    ins_neq->setResult(ret);
-    IR->InsertInstr(ins_neq);
-
-    bbNow->Addins(ins_neq->getId());
-    ins_neq->setParent(bbNow);
+//    Instruction* ins_neq = new Instruction(IR->getInstCnt(),Instruction::ArithNeq,2);
+//    ins_neq->addOperand(Condpre);
+//    ins_neq->addOperand(const0);
+//    ins_neq->setResult(ret);
+//    IR->InsertInstr(ins_neq);
+//
+//    bbNow->Addins(ins_neq->getId());
+//    ins_neq->setParent(bbNow);
     // return ret;
 }
 
@@ -1010,13 +1010,13 @@ Value* LAndExpNode(GrammaNode* node,LinearIR *IR)
         bbNow = GetPresentBlock(FuncN,BasicBlock::Basic);
     }
     //条件value和立即数0比较
-    Instruction* ins_neq = new Instruction(IR->getInstCnt(),Instruction::ArithNeq,2);
-    ins_neq->addOperand(Condpre);
-    ins_neq->addOperand(const0);
-    ins_neq->setResult(ret);
-    IR->InsertInstr(ins_neq);
-    bbNow->Addins(ins_neq->getId());
-    ins_neq->setParent(bbNow);
+//    Instruction* ins_neq = new Instruction(IR->getInstCnt(),Instruction::ArithNeq,2);
+//    ins_neq->addOperand(Condpre);
+//    ins_neq->addOperand(const0);
+//    ins_neq->setResult(ret);
+//    IR->InsertInstr(ins_neq);
+//    bbNow->Addins(ins_neq->getId());
+//    ins_neq->setParent(bbNow);
     return ret;
 }
 
@@ -1583,6 +1583,7 @@ Value* UnaryExpNode(GrammaNode* node,LinearIR *IR)
         {
             //UnaryPos等
             Value* arg1 = UnaryExpNode(node->son[1],IR);
+            dbg(arg1->getName());
             Value* ret = nullptr;
             Instruction* ins_new = nullptr;
             if(ADD_ == node->son[0]->type)
@@ -1598,7 +1599,7 @@ Value* UnaryExpNode(GrammaNode* node,LinearIR *IR)
             }
             else if(SUB_ == node->son[0]->type)
             {
-                ret = SymbolTable->askItem(node->son[0]);//new IntegerValue("t3",node->lineno,node->var_scope,0);
+                ret = SymbolTable->askItem(node);//new IntegerValue("t3",node->lineno,node->var_scope,0);
                 if(nullptr == FuncN)
                 {
                     throw BuildIRError(node->lineno, ret->VName, "错误17");
@@ -1619,8 +1620,8 @@ Value* UnaryExpNode(GrammaNode* node,LinearIR *IR)
             }
             else if(NOT_ == node->son[0]->type)
             {
-                ret = SymbolTable->askItem(node->son[0]);//new Value("t3",node->lineno,node->var_scope);
-
+                ret = SymbolTable->askItem(node);//new Value("t3",node->lineno,node->var_scope);
+                dbg(ret->getName());
                 if(nullptr == FuncN)
                 {
                     throw BuildIRError(node->lineno, ret->VName, "错误18");
