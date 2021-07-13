@@ -37,6 +37,16 @@ void printIns(int id)
             cout<<endl;
         return ;
     }
+    if(presenIns->getOpType() == Instruction::Alloc)
+    {
+        std::cout <<presenIns->getOp()[0]->VName<<" space size:"<<((IntegerValue*)(presenIns->getOp()[1]))->getValue()<<endl;
+        return;
+    }
+    if(presenIns->getOpType() == Instruction::Store)
+    {
+        std::cout<<presenIns->getOp()[0]->VName<<" ["<<((IntegerValue*)presenIns->getOp()[1])->getValue()<<"]: "<<(presenIns->getOp()[2])->getName()<<endl;
+        return;
+    }
     for(int i = 0; i < presenIns->getOp().size(); i++)std::cout << presenIns->getOp()[i]->VName << ":"<<((IntegerValue*)presenIns->getOp()[i])->RealValue<< "\t";
     if(presenIns->getOp().size() == 1) cout << "\t";
 
