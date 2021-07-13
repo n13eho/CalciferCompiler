@@ -24,9 +24,11 @@ int p = 1;
 int main()
 {
     int a=10;
-    if(p > 2)
-        a = a + 1;
-    if(!a)
-        a = a + 1;
+    int b[3][2]  = {2,3};
+    int c = 10+2;
+    // if(p > 2)
+    //     a = a + 1;
+    // if(!a)
+    //     a = a + 1;
     return a;
 }
