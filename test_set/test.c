@@ -6,7 +6,6 @@
 // const int today = 9/8+7, to = 12 + 3;
 // const int mondy = today + 1 + c[2]; // 11, but should be wrong
 
-
 //const int p = 17;
 // int g = 1;
 //const int p[3][2] = {5, {}, {2, 3}};
@@ -20,12 +19,38 @@
 //     return a;
 // }
 
-int rtyu = 1;
-int a=1;
+// int rtyu = 1;
+// // int kong[10]={};
+// int a=1;
+// int main()
+// {
+//     rtyu = a+a;
+//     rtyu = a+100;
+
+// }
+
+void add()
+{
+}
+
 int main()
 {
-    int a=10;
-    int b;
-    a = a + a;
-    return a;
+    int a = 10, b = 1, c = 0;
+    while (1)
+    {
+        return 0;
+        if (a > b)
+        {
+
+            break;
+            a = a + 1;
+            b = b + 1;
+            c = c + 1;
+        }
+    }
+    if (1)
+    {
+    }
+
+    return c;
 }
