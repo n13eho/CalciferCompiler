@@ -56,7 +56,10 @@ int integergetRn(Value* val,int needAddr=0);
 
 void transAlloc(Instruction* instr)
 {
-    
+    Value* r0=instr->getOp()[0];
+    IntegerValue* r1=(IntegerValue*)instr->getOp()[1];
+    loc2mem[r0]=memshift;
+    memshift+=r1->RealValue;
 }
 
 void transAssign(Instruction* instr)
@@ -192,6 +195,7 @@ void transFuncBlock(BasicBlock* node)
 {
     calout<<"\t.global "<<node->FuncV->VName<<"\n\t.type "<<node->FuncV->VName<<", \%function\n"<<node->FuncV->VName<<":\n";
     calout<<"\t.fnstart\n";
+    memshift=0;
     for(auto i : node->domBlock)
     {
         if(!blockid.count(i))transBlock(i);

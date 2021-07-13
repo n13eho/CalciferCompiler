@@ -25,7 +25,7 @@ int a=1;
 int main()
 {
     int a=10;
-    int b[3][2] ={{2},{a,0}};
+    int b;
     a = a + a;
     return a;
 }
