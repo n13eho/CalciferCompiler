@@ -7,20 +7,13 @@
 // const int mondy = today + 1 + c[2]; // 11, but should be wrong
 
 
-//const int p = 17;
-int g = 1;
-//const int p[3][2] = {5, {}, {2, 3}};
-// //const int p = 17;
-// int rtyu;
-// int a=10;
-// int main()
-// {
-//     rtyu = 100 + a;
-// }
 
-int g = 1;
+int a = 1;
+int b[5] = {};
 int main()
 {
-    rtyu = a + a;
-    rtyu = 100 + a;
+    int g = 0;
+    g = a + a;
+    g = 100 + a;
+    return g;
 }

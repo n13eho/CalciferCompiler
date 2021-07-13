@@ -319,6 +319,21 @@ void VarDefNode(GrammaNode* node,LinearIR *IR)
             {
                 bbNow = GetPresentBlock(FuncN,BasicBlock::Basic);
             }
+            if(0 == global)
+            {
+
+                int total = 1;
+                if(VarDef_array_ == p_node->type)
+                {
+                    for(int j = 0;j<((ArrayValue*)VL)->NumOfDimension.size();j++)
+                    {
+                        total*=((ArrayValue*)VL)->NumOfDimension[j];
+                    }
+                }
+                AllocCreate(p_node,IR,VL,total);
+
+            }
+
             //向基本块加入指令
             bbNow->Addins(ins_new->getId());
             ins_new->setParent(bbNow);
