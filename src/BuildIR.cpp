@@ -4,12 +4,6 @@
 #include <stack>
 using namespace std;
 
-/*
-每次进入表达式，判断is_const
-constdef 剪枝
-vardef 左值剪枝
-*/
-
 extern idTable_struct* SymbolTable;
 extern BasicBlock* globalBlock;
 //当前是否在全局基本块中，加入顶层所有的变量定义相关指令加
@@ -1202,10 +1196,10 @@ Value* InitValNode(GrammaNode* node,LinearIR *IR)
     }
     
     int cur_dimen = array_dimen[dimen_dpeth];
-    int total_len = 1;
+    int d_len = 1;
     for(int i=dimen_dpeth+1;i<array_dimen.size();i++)
     {
-        total_len*=array_dimen[i];
+        d_len*=array_dimen[i];
     }
     std::vector<Value *> init_list;
 
@@ -1213,11 +1207,10 @@ Value* InitValNode(GrammaNode* node,LinearIR *IR)
     {//空{}
         //用于 int a[5][2] = {}; 
         //填充多少个，后面再改，todo
-        for(int j=0; j < total_len;j++)
+        for(int j=0; j < d_len*cur_dimen;j++)
         {
             IntegerValue* const0 = new IntegerValue("const0",node->lineno,node->var_scope,0,1);
             array_init.push_back((Value*)const0);
-            init_list.push_back((Value*)const0);
         }
 
         IntegerValue* ret = new IntegerValue("sub matrix size",node->lineno,node->var_scope,init_list.size(),1);
@@ -1229,9 +1222,9 @@ Value* InitValNode(GrammaNode* node,LinearIR *IR)
         {
             //InitVals_
             GrammaNode* p_node = node->son[0];
-            IntegerValue* ret= new IntegerValue("t1",p_node->lineno,p_node->var_scope,total_len,1);
+            IntegerValue* ret= new IntegerValue("t1",p_node->lineno,p_node->var_scope,d_len*cur_dimen,1);
             int cnt = 0;
-            cout<<"初值son个数:"<<p_node->son.size()<<endl;
+            // cout<<"初值son个数:"<<p_node->son.size()<<endl;
             for(int i=0;i<p_node->son.size();i++)
             {
                 if(InitVal_EXP == p_node->son[i]->type)
@@ -1241,7 +1234,7 @@ Value* InitValNode(GrammaNode* node,LinearIR *IR)
                     array_init.push_back(ExpV);
                     cnt++;
                 }
-                else if(InitVal_NULL == p_node->son[i]->type)
+                else// if(InitVal_NULL == p_node->son[i]->type )
                 {
                     //位置再看
                     // int pos = init_list.size();
@@ -1251,30 +1244,35 @@ Value* InitValNode(GrammaNode* node,LinearIR *IR)
                     //     array_init.push_back((Value*)const0);
                     //     init_list.push_back((Value*)const0);
                     // }
-                    IntegerValue* ExpV = (IntegerValue*)InitValNode(p_node->son[i],IR);
-                    cnt+=(ExpV->getValue());
-                }
-                else
-                {//InitVal_
-                    dimen_dpeth++;
-                    //递归
-                    IntegerValue* ExpV = (IntegerValue*)InitValNode(p_node->son[i],IR);
-                    cnt+=(ExpV->getValue());
-                    //递归出来后，数值已经压入array_init，但是为保证init_List pos正确，向init_list压入同样数量的0
-                    dimen_dpeth--;
+
+                   //InitVal_
+                    int pos = cnt;//init_list.size();
+                    for(int j=0;j < (d_len - (pos % d_len)) % d_len ;j++)
+                    {
+                        IntegerValue* const0 = new IntegerValue("const0",p_node->lineno,p_node->var_scope,0,1);
+                        array_init.push_back((Value*)const0);
+                        // init_list.push_back((Value*)const0);
+                        cnt++;
+                    }
+                    if(InitVals_ == p_node->son[i]->type)
+                    {
+                        dimen_dpeth++;
+                        //递归
+                        IntegerValue* ExpV = (IntegerValue*)InitValNode(p_node->son[i],IR);
+                        //递归出来后，数值已经压入array_init，但是为保证init_List pos正确，向init_list压入同样数量的0
+                        dimen_dpeth--;
+                        cnt+=(ExpV->getValue());
+
+                    }
+                    
                 }
             }
-            cout<<"数组右值列表：";
-            for(int j = 0;j<array_init.size();j++)
+            // int pos = init_list.size();
+            for(int j = cnt;j<d_len*cur_dimen;j++)
             {
-                cout<<((IntegerValue*)array_init[j])->getName()<<" ";
+                IntegerValue* const0 = new IntegerValue("const0",p_node->lineno,p_node->var_scope,0,1);
+                array_init.push_back((Value*)const0);
             }
-            cout<<endl;
-            // for(int j = cnt;j<total_len*cur_dimen;j++)
-            // {
-            //     IntegerValue* const0 = new IntegerValue("const0",p_node->lineno,p_node->var_scope,0,1);
-            //     array_init.push_back((Value*)const0);
-            // }
 
             return ret;
         }
@@ -1293,6 +1291,12 @@ Value* InitValNode(GrammaNode* node,LinearIR *IR)
 
 Value* AddExpNode(GrammaNode* node,LinearIR *IR)
 {
+    IntegerValue* nn = (IntegerValue*)SymbolTable->askItem(node);
+    if(nn->isConst == 1)
+    {//是一个常数
+        return (Value*)nn;
+    }
+
     if(AddExp_Add_ == node->type)
     {
         //ret = arg1 + arg2
@@ -1373,6 +1377,11 @@ Value* AddExpNode(GrammaNode* node,LinearIR *IR)
 
 Value* MulExpNode(GrammaNode* node,LinearIR *IR)
 {
+    IntegerValue* nn = (IntegerValue*)SymbolTable->askItem(node);
+    if(nn->isConst == 1)
+    {//是一个常数
+        return (Value*)nn;
+    }
     if(MulExp_Mul_ == node->type)
     {
         //ret = arg1 * arg2
@@ -1490,6 +1499,11 @@ Value* MulExpNode(GrammaNode* node,LinearIR *IR)
 
 Value* UnaryExpNode(GrammaNode* node,LinearIR *IR)
 {
+    IntegerValue* nn = (IntegerValue*)SymbolTable->askItem(node);
+    if(nn->isConst == 1)
+    {//是一个常数
+        return (Value*)nn;
+    }
     if(UnaryExp_func_ == node->type)
     {
         if(node->son.size() == 2)
@@ -1661,6 +1675,12 @@ Value* UnaryExpNode(GrammaNode* node,LinearIR *IR)
 
 Value* PrimaryExpNode(GrammaNode* node,LinearIR *IR)
 {
+    IntegerValue* nn = (IntegerValue*)SymbolTable->askItem(node);
+    if(nn->isConst == 1)
+    {//是一个常数
+        return (Value*)nn;
+    }
+
     if(Ident_ == node->type)
     {
         //左值
