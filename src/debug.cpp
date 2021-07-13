@@ -17,7 +17,7 @@ std::map<int, string> DEBUG_insOP = {{Instruction::InsType::Add, "+"}, {Instruct
 {Instruction::InsType::Jmp, "J"}, {Instruction::InsType::ConBr, "Br"},
 {Instruction::InsType::Call, "Call"}, {Instruction::InsType::Ret, "return"},
 {Instruction::InsType::Load, "Load"}, {Instruction::InsType::Store, "Store"},
-{Instruction::InsType::Break, "break"}};
+{Instruction::InsType::Break, "break"},{Instruction::InsType::Alloc,"Allocate"}};
 
 void printIns(int id)
 {

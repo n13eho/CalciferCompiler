@@ -21,6 +21,10 @@ BasicBlock* FuncN = nullptr;
 //若在while body中，表示while的下一个基本块
 stack<pair<BasicBlock*,BasicBlock*>> LoopNext;
 
+//用于数组初始化
+std::vector<Value *> array_init;
+std::vector<int> array_dimen;
+int dimen_dpeth;
 
 BasicBlock* GetPresentBlock(BasicBlock* funcP,BasicBlock::BlockType t)
 {
@@ -1170,6 +1174,12 @@ Value* InitValNode(GrammaNode* node,LinearIR *IR)
     }
     else if(InitVal_NULL == node->type)
     {//空{}
+        int cur_dimen = array_dimen[dimen_dpeth];
+        int total_len = 1;
+        for(int i=dimen_dpeth+1;i<array_dimen.size();i++)
+        {
+            total_len*=array_dimen[i];
+        }
         return nullptr;
     }
     else if(InitVal_ == node->type)
@@ -1745,6 +1755,11 @@ void show_IR_ins(LinearIR *IR)
                 // cout<<((IntegerValue*)presenIns->getResult())->RealValue<<endl;
             else
                 cout<<endl;
+            continue;
+        }
+        if(presenIns->getOpType() == Instruction::Alloc)
+        {
+            std::cout <<presenIns->getOp()[0]->VName<<" space size:"<<((IntegerValue*)(presenIns->getOp()[1]))->getValue()<<endl;
             continue;
         }
         for(int i = 0; i < presenIns->getOp().size(); i++)
