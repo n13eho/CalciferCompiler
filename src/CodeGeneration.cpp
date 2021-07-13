@@ -50,11 +50,26 @@ void transRet(Instruction* instr);
 void transLoad(Instruction* instr);
 void transStore(Instruction* instr);
 void transBreak(Instruction* instr);
+void integerfreeRn(int rn);
+int integergetRn(Value* val);
 
 void transAssign(Instruction* instr)
 {
-    
-    
+    IntegerValue* res=(IntegerValue* )instr->getResult();
+    IntegerValue* r0 = (IntegerValue* )instr->getOp()[0];
+    //获取左值
+    int R_res=integergetRn(res);
+    lastusedRn=R_res;
+    if(r0->isConst==1)
+    {
+        calout<<"\tmov r"+to_string(R_res)<<", #"<<r0->RealValue<<endl;
+    }
+    else
+    {
+        int R_0 = integergetRn(r0);
+        calout<<"\tmov r"+to_string(R_res)<<", r"<<to_string(R_0)<<endl;
+        integerfreeRn(R_0);
+    }
 }
 
 void stk2reg(Value* val)
@@ -71,6 +86,15 @@ void integerfreeRn(int rn)
     Value* val=reg2val[rn];
     if(val==NULL)return ;
     reg2val[rn]=NULL;
+    //把寄存器中在内存有映射的值存回去.
+    if(val->getScope()=="1")
+    {
+        calout<<"\tstr r"+to_string(rn)<<", ="<<val->VName<<endl;
+    }
+    else if(loc2mem.count(val))
+    {
+        calout<<"\tstr r"+to_string(rn)<<", [sp, #-"<<loc2mem[val]<<"]"<<endl;
+    }
     // val2reg[val]=-1;
     auto it =val2reg.find(val);
     val2reg.erase(it);
@@ -85,13 +109,13 @@ int integergetRn(Value* val)
         {
             reg2val[i]=val;
             val2reg[val]=i;
+            //加载内存中的值
             if(val->getScope()=="1")
             {
                 calout<<"\tldr "<<"r"<<to_string(i)<<", ="<<val->getName()<<endl;
                 calout<<"\tldr r"<<to_string(i)<<", [r"+to_string(i)<<"]"<<endl;
             }
-            // else if(val->get)
-            else if(val->getScope().size())
+            else if(loc2mem.count(val))
             {
                 int shift = loc2mem[val];
                 calout<<"\tldr "<<"r"<<to_string(i)<<", [sp, #"<<shift<<"]"<<endl;
@@ -142,7 +166,7 @@ void transGlobal(BasicBlock* node)
 void transIns(Instruction* ins)
 {
     if(ins->getOpType() == Instruction::Add)transAdd(ins);
-    // else if(ins->getOpType() == Instruction::Sub)transSub(ins);
+    else if(ins->getOpType() == Instruction::Assign)transAssign(ins);
     // else if(ins->getOpType() == Instruction::LogicAnd)transLogicAnd(ins);
 }
 void transBlock(BasicBlock* node)

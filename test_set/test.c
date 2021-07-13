@@ -8,7 +8,7 @@
 
 
 //const int p = 17;
-int g = 1;
+// int g = 1;
 //const int p[3][2] = {5, {}, {2, 3}};
 // //const int p = 17;
 // int rtyu;
@@ -18,7 +18,8 @@ int g = 1;
 //     rtyu = 100 + a;
 // }
 
-int g = 1;
+int rtyu = 1;
+int a=1;
 int main()
 {
     rtyu = a + a;

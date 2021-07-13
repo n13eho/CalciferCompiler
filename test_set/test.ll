@@ -1,5 +1,6 @@
 declare i32 @getint()
 declare void @putint(i32)
-@g = global i32 1
+@rtyu = global i32 1
+@a = global i32 1
 
 
