@@ -68,16 +68,34 @@ void transRet(Instruction* instr)
     }
 }
 
+void transLoad(Instruction* instr)
+{
+    if(instr->getOp().size() == 2)
+    {
+        Value* r0 = instr->getOp()[0];
+        IntegerValue* r1=(IntegerValue*)instr->getOp()[1];
+        Value* r2 = instr->getResult();
+        int baseLoc = loc2mem[r0];
+        int offsetLoc = r1->getValue()*-4;
+
+        int registerNum1 = integergetRn(r2);
+        int registerNum2 = integergetRn(r0,1);
+        //ldr	v4, [v3, #4]
+        calout<<"\tldr\tr"<<registerNum1<<",\t[r"<<registerNum2<<",#"<<offsetLoc<<"]"<<endl;
+    }
+}
+
 void transStore(Instruction* instr)
 {
     //store VL index value*
+
     //获取mem地址
     Value* r0 = instr->getOp()[0];
     IntegerValue* r1=(IntegerValue*)instr->getOp()[1];
     Value* r2 = instr->getOp()[2];
     int baseLoc = loc2mem[r0];
     //数组从高地址向低地址存
-    int offsetLoc = r1->getValue()*4;
+    int offsetLoc = r1->getValue()*-4;
     int registerNum1 = integergetRn(r2);
     int registerNum2 = integergetRn(r0,1);
 
@@ -601,6 +619,11 @@ void transIns(Instruction* ins)
     {
         calout<<"@str " << ins->getId() << endl;
         transStore(ins);
+    }
+    else if(ins->getOpType()==Instruction::Load)
+    {
+        calout<<"@ldr " << ins->getId() << endl;
+        transLoad(ins);
     }
 }
 void transBlock(BasicBlock* node)
