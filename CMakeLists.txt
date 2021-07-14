@@ -27,7 +27,7 @@ enable_testing()
 file(GLOB preliminary_func_test_cases "sysyruntimelibrary/section1/functional_test/*.sy")
 file(GLOB preliminary_perf_test_cases "sysyruntimelibrary/section1/performance_test/*.sy")
 file(GLOB final_perf_test_cases "sysyruntimelibrary/section2/performance_test/*.sy")
-file(GLOB custom_test_cases "test_set/*.sy")
+file(GLOB custom_test_cases "test_sets/*.sy")
 
 # test which cases
 set(all_test_cases "")
