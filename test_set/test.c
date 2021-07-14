@@ -34,7 +34,7 @@ int main()
 {
 int b=2;
 
-
+int shuzu[3] = {5,5,5};
 // add(w);
 
 // b = w[0][1][1];
