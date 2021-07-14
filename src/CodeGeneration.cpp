@@ -68,12 +68,30 @@ void transRet(Instruction* instr)
     }
 }
 
+void transStore(Instruction* instr)
+{
+    //store VL index value*
+    //获取mem地址
+    Value* r0 = instr->getOp()[0];
+    IntegerValue* r1=(IntegerValue*)instr->getOp()[1];
+    Value* r2 = instr->getOp()[2];
+    int baseLoc = loc2mem[r0];
+    //数组从高地址向低地址存
+    int offsetLoc = r1->getValue()*4;
+    int registerNum1 = integergetRn(r2);
+    int registerNum2 = integergetRn(r0,1);
+
+    //str	v1, [v0, #0]
+    calout<<"\tstr\tr"<<registerNum1<<",\t[r"<<registerNum2<<",#"<<offsetLoc<<"]"<<endl;
+}
+
 void transAlloc(Instruction* instr)
 {
     Value* r0=instr->getOp()[0];
     IntegerValue* r1=(IntegerValue*)instr->getOp()[1];
-    loc2mem[r0]=memshift;
-    memshift+=1;
+    loc2mem[r0] = memshift;
+    memshift+=r1->getValue();
+
 }
 
 void transAssign(Instruction* instr)
@@ -151,7 +169,7 @@ int integergetRn(Value* val,int needAddr)
             }
             else if(val->getType()==1&&((IntegerValue*)val)->isConst==1)
             {
-                cout<<"\tmov r"<<i<<", #"<<((IntegerValue*)val)->RealValue<<endl;
+                calout<<"\tmov r"<<i<<", #"<<((IntegerValue*)val)->RealValue<<endl;
             }
             return i;
         }
@@ -376,7 +394,6 @@ void storeUsedR()
 {// 如果这个寄存器当前值，就把它str到内存
     for(int i=0;i<totalUsedRegister;i++)
     {// 扫一遍
-        dbg(reg2val[i]);
         if(reg2val[i]!=NULL)
         {
             integerfreeRn(i);
@@ -390,6 +407,7 @@ void storeExtraParam(unsigned param_size, Instruction* instr)
     {
         //前几个参数
         Value* val = instr->getOp()[i];
+        dbg(((IntegerValue*)val)->isConst);
         int src= integergetRn(val);
         calout<<"\tmov r"<<i-1<<", r"<<src<<endl;
         if(src!=i-1)integerfreeRn(src);
@@ -579,8 +597,10 @@ void transIns(Instruction* ins)
         calout<<"@ret " << ins->getId() << endl;
         transRet(ins);
     }
-    else
+    else if(ins->getOpType()==Instruction::Store)
     {
+        calout<<"@str " << ins->getId() << endl;
+        transStore(ins);
     }
 }
 void transBlock(BasicBlock* node)

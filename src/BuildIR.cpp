@@ -240,6 +240,8 @@ void VarDefNode(GrammaNode* node,LinearIR *IR)
             //左值
             Value* VL=SymbolTable->askItem(p_node->son[0]);
             int total = 1;
+            array_init.clear();
+            dimen_dpeth = 0;
             array_dimen = ((ArrayValue*)VL)->NumOfDimension;
             for(int j = 0;j<((ArrayValue*)VL)->NumOfDimension.size();j++)
             {
@@ -252,6 +254,7 @@ void VarDefNode(GrammaNode* node,LinearIR *IR)
             //递归第三个孩子，即初值
             if(p_node->son.size() == 3)
             {
+                
                 VR = InitValNode(p_node->son[2],IR);
                 // cout<<"finish array initvals compute"<<endl;
 
@@ -265,16 +268,19 @@ void VarDefNode(GrammaNode* node,LinearIR *IR)
 
                 if(VR != nullptr)
                 {
-                    // for(int j=0;j<array_init.size();j++)
-                    // {
-                    //     IntegerValue* index = new IntegerValue("index",node->lineno,node->var_scope,j,1);
-                    //     std::vector<Value*> op = {VL,index,array_init[j]};
-                    //     cout<<"store "<<array_init[j]->getName()<<" to index "<<j<<endl;
-                    //     CreateIns(node,IR,Instruction::Store,3,op,nullptr);
-                    // }
+                    if(0 == global)
+                    {
+                        for(int j=0;j<array_init.size();j++)
+                        {
+                            IntegerValue* index = new IntegerValue("index",node->lineno,node->var_scope,j,1);
+                            std::vector<Value*> op = {VL,index,array_init[j]};
+                            cout<<"store "<<array_init[j]->getName()<<" to index "<<j<<endl;
+                            CreateIns(node,IR,Instruction::Store,3,op,nullptr);
+                        }
+                    }
                     //变量数组 初始值存于该结构中，在代码生成时，直接遍历该结构
                     ((ArrayValue*)VL)->ArrayInitList.assign(array_init.begin(),array_init.end());
-                    
+                    array_init.clear();
                 }
                 
             }
