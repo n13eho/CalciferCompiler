@@ -653,6 +653,37 @@ void codegeneration()
             calout<<to_string(val->RealValue).data();
             calout<<endl;
         }
+        else if(fuhao.second->getType() == 2 && fuhao.second->var_scope=="1")
+        {//全局变量数组
+            //判断是否为const int 数组
+            ArrayValue* val=(ArrayValue*)fuhao.second;
+            if(val->isConst == 1)
+            {
+                //常量数组
+                visval[fuhao.second]=1;
+                calout<<val->VName.data()<<":";
+                for(int j = 0;j<val->ArrayElement.size();j++)
+                {
+                    calout<<"\n\t.word ";
+                    calout<<to_string(val->ArrayElement[j]).data();
+                }
+                //后续多个0 采用.fill cnt 4 0格式 todo
+                calout<<endl;
+            }
+            else
+            {
+                //变量数组
+                visval[fuhao.second]=1;
+                calout<<val->VName.data()<<":";
+                std::vector<Value*> ele = val->ArrayInitList;
+                for(auto vv : ele)
+                {
+                    calout<<"\n\t.word ";
+                    calout<<to_string(((IntegerValue*)vv)->getValue()).data();
+                }
+                calout<<endl;
+            }
+        }
     }
     // 依次便利IR中的顶层BB
     transGlobal();
