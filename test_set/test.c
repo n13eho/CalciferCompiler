@@ -18,39 +18,11 @@
 //     a = g + a;
 //     return a;
 // }
-
-// int rtyu = 1;
-// // int kong[10]={};
-// int a=1;
-// int main()
-// {
-//     rtyu = a+a;
-//     rtyu = a+100;
-
-// }
-
-void add()
-{
-}
-
+int kong[10] = {};
+int p = 1;
 int main()
 {
-    int a = 10, b = 1, c = 0;
-    while (1)
-    {
-        return 0;
-        if (a > b)
-        {
-
-            break;
-            a = a + 1;
-            b = b + 1;
-            c = c + 1;
-        }
-    }
-    if (1)
-    {
-    }
-
-    return c;
+    if (!p && 1)
+        p = 1;
+    return p;
 }
