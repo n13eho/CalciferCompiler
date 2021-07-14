@@ -65,6 +65,7 @@ void transAssign(Instruction* instr)
     IntegerValue* r0 = (IntegerValue* )instr->getOp()[0];
     //获取左值
     int R_res=integergetRn(res);
+    // update
     lastusedRn=R_res;
     if(r0->isConst==1)
     {
@@ -135,8 +136,9 @@ void transAdd(Instruction* instr)
     IntegerValue* r0=(IntegerValue*)instr->getOp()[0];
     IntegerValue* r1=(IntegerValue*)instr->getOp()[1];
     if(r0->isConst==1)swap(r0,r1);
-    int R_res = integergetRn(res); 
-    lastusedRn=R_res;   
+    int R_res = integergetRn(res);
+    // update
+    lastusedRn=R_res;
     int R_r0 = integergetRn(r0);  
     if(r1->isConst==1)
     {
@@ -160,6 +162,8 @@ void transSub(Instruction* instr)
     IntegerValue* r1=(IntegerValue*)instr->getOp()[1];
     // if r0 is an imm
     int R_res = integergetRn(res);
+    // update
+    lastusedRn=R_res;
     if(r0->isConst == 1)
     {
         swap(r0, r1);
@@ -177,7 +181,7 @@ void transSub(Instruction* instr)
         integerfreeRn(R_r0);
         integerfreeRn(R_r1);
     }
-    integerfreeRn(R_res);
+//    integerfreeRn(R_res);
 }
 
 void transMul(Instruction* instr)
@@ -188,6 +192,8 @@ void transMul(Instruction* instr)
     IntegerValue* r1=(IntegerValue*)instr->getOp()[1];
     // register numbers are needed anyway
     int R_res = integergetRn(res);
+    // update
+    lastusedRn=R_res;
     int R_r0 = integergetRn(r0);
     int R_r1 = integergetRn(r1);
     // if any of r0 and r1 is CONST, mov it into their register
@@ -203,7 +209,7 @@ void transMul(Instruction* instr)
     // the final mul
     calout << "\tsmul r" << R_res << ", r" << R_r0 << ", r" << R_r1 << endl;
     // free
-    integerfreeRn(R_res);
+//    integerfreeRn(R_res);
     integerfreeRn(R_r0);
     integerfreeRn(R_r1);
 }
@@ -216,6 +222,8 @@ void transDiv(Instruction* instr)
     IntegerValue* r1=(IntegerValue*)instr->getOp()[1];
     // register numbers are needed anyway
     int R_res = integergetRn(res);
+    // update
+    lastusedRn=R_res;
     int R_r0 = integergetRn(r0);
     int R_r1 = integergetRn(r1);
     // if any of r0 and r1 is CONST, mov it into their register
@@ -232,7 +240,7 @@ void transDiv(Instruction* instr)
     calout << "\tsdiv r" << R_res << ", r" << R_r0 << ", r" << R_r1 << endl;
 
     // free
-    integerfreeRn(R_res);
+//    integerfreeRn(R_res);
     integerfreeRn(R_r0);
     integerfreeRn(R_r1);
 
@@ -245,12 +253,34 @@ void transUnaryNeg(Instruction* instr)
     IntegerValue* r0=(IntegerValue*)instr->getOp()[0];
     // ask integer number
     int R_res = integergetRn(res);
+    // update
+    lastusedRn=R_res;
     int R_r0 = integergetRn(r0);
     // use rsb
     calout << "\trsb r" << R_res << ", r" << R_r0 << ", #0";
     // free Rnum
-    integerfreeRn(R_res);
     integerfreeRn(R_r0);
+}
+
+void transUnaryNot(Instruction* instr)
+{
+    // get res and r0
+    IntegerValue* res=(IntegerValue*)instr->getResult();
+    IntegerValue* r0=(IntegerValue*)instr->getOp()[0];
+    // ask integer number
+    int R_res = integergetRn(res);
+    int R_r0 = integergetRn(r0);
+    // use cmp
+    calout << "\tcmp r" << R_r0 << ", #0" << endl; // 和0比
+    calout << "\tmoveq r" << R_res << ", #1" << endl; // 和0相同，取非为1
+    calout << "\tmovne r" << R_res << ", #0" << endl;
+
+    //udate
+    lastLogicUsedRn = R_res;
+
+    // free Rnum
+    integerfreeRn(R_r0);
+
 }
 
 void transGlobal()
@@ -286,6 +316,7 @@ void transLogicOr(Instruction* instr)
     calout<<"\tcmp r"<<R_res<<", #0"<<endl;
     calout<<"\tmoveq r"<<R_res<<", #0" << endl;
     calout<<"\tmovne r"<<R_res<<", #1" << endl;
+    // update
     lastLogicUsedRn = R_res;
 }
 
@@ -311,6 +342,7 @@ void transLogicAnd(Instruction* instr)
     calout<<"\tcmp r"<<R_res<<", #0"<<endl;
     calout<<"\tmoveq r"<<R_res<<", #0" << endl;
     calout<<"\tmovne r"<<R_res<<", #1" << endl;
+    // update
     lastLogicUsedRn = R_res;
 }
 
@@ -363,6 +395,7 @@ void transLogic(Instruction* instr)
         calout<<"\tmovge r"<<R_res<<", #1" << endl;
         calout<<"\tmovlt r"<<R_res<<", #0" << endl;
     }
+    // update
     lastLogicUsedRn = R_res;
 }
 
@@ -402,6 +435,11 @@ void transIns(Instruction* ins)
     {
         calout<<"@div " << ins->getId() << endl;
         transDiv(ins);
+    }
+    else if(ins->getOpType() == Instruction::UnaryNot)
+    {
+        calout<<"@not " << ins->getId() << endl;
+        transUnaryNot(ins);
     }
     else if(ins->getOpType() == Instruction::UnaryNeg)
     {

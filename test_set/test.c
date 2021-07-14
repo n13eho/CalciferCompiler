@@ -23,7 +23,7 @@ int kong[10]={};
 int p = 1;
 int main()
 {
-    int b = -1;
-    int a = b / 2;
-    return a;
+    if(!p && 1)
+        p = 1;
+    return p;
 }
