@@ -13,6 +13,7 @@ extern int lineno;
 
 using namespace std;
 extern FILE *yyin;
+char *testfilename;
 char *ir_file = strdup("../test_set/test.ll");
 
 GrammaNode *Droot = new GrammaNode(lineno, 0, "ROOT");
@@ -22,9 +23,16 @@ BasicBlock *globalBlock = new BasicBlock(BasicBlock::Basic);
 
 int main(int argc, char *argv[])
 {
-    FILE *f1 = fopen("../test_set/test.c", "r");
     if (argc == 2)
-        f1 = fopen(argv[1], "r");
+    {
+        testfilename = argv[1];
+    }
+    else
+    {
+        testfilename = "../test_set/test.sy";
+    }
+    FILE *f1 = fopen(testfilename, "r");
+
 
     yyin = f1;
 
@@ -41,7 +49,6 @@ int main(int argc, char *argv[])
         Visitblock(IR1);
         show_IR_ins(IR1);           // 打印指令
         show_block(globalBlock, 0); // 打印基本块 （写注释啊啊啊啊啊啊 --neho
-                                    //        RegisterDistr();
         codegeneration();
         // 利用四元式和bb信息得出ssa_0
         dbg("convert to ssa");

@@ -4,6 +4,8 @@
 #include"semanticAnalyze.h"
 #include"dbg.h"
 
+#include <stdlib.h>
+
 using namespace std;
 
 ofstream calout;
@@ -19,7 +21,7 @@ int memshift;
 map<Value*, int> loc2mem;//ldr r0 [sp,#-4]
 
 int totalUsedRegister = 11; // 我们使用多少个寄存器
-Value* reg2val[1];//寄存器i中存了什么value
+Value* reg2val[12];//寄存器i中存了什么value
 map<Value*, int> val2reg;//value_i的值目前存在哪个寄存器。
 extern BasicBlock* globalBlock;
 
@@ -383,6 +385,7 @@ void storeUsedR()
 {// 如果这个寄存器当前值，就把它str到内存
     for(int i=0;i<totalUsedRegister;i++)
     {// 扫一遍
+        dbg(reg2val[i]);
         if(reg2val[i]!=NULL)
         {
             integerfreeRn(i);
@@ -397,11 +400,7 @@ void storeExtraParam(unsigned param_size, Instruction* instr)
     {
         //前几个参数
         Value* val = instr->getOp()[i];
-        dbg(val);
-        dbg(val->getScope());
-        dbg(val->isPara);
         int src= integergetRn(val);
-        dbg(src);
         calout<<"\tmov r"<<i-1<<", r"<<src<<endl;
         if(src!=i-1)integerfreeRn(src);
     }
@@ -425,21 +424,25 @@ void transCall(Instruction* instr)
     string destination = instr->getOp()[0]->VName;
     // get param size and param
     int param_size = instr->getOp().size() - 1;
+
     // 1.str 存用过的寄存器
+
     storeUsedR();
+    dbg("chulaile");
+
     // 2.参数传递：前4个放在寄存器，其余放内存
     storeExtraParam(param_size, instr);
 
-    // .跳转
+    // 3.跳转
     calout << "\tbl " << destination << endl;
 
-    // .（已经回来了）把r11中的值放回sp: mov sp, r11
+    // 4.（已经回来了）把r11中的值放回sp: mov sp, r11
     calout<<"\tpop {lr}"<<endl;
     calout << "\tmov sp, r11" << endl;
 
-    // .把rest映射到R_res
+    // 5.把rest映射到R_res
     int R_res = integergetRn(res);
-    // 结果放入R_res中
+    // 6.结果放入R_res中
     calout << "\tmov r" << R_res <<  ", r0" << endl;
 }
 
@@ -634,13 +637,21 @@ void transFuncBlock(BasicBlock* node)
     calout<<"\tbx lr\n\t.fnend\n";
 }
 
+#include <libgen.h>
+extern char *testfilename;
+
 void codegeneration()
 {
     // 外部接口
     //1. 遍历符号表, 写全局信息.data段;
     //2. transBlock, 写.text段
+    string outputfile = basename(testfilename);
+    outputfile = outputfile.substr(0, outputfile.length()-2);
+    outputfile  = "../test_set/outputS/" + outputfile;
+    outputfile = outputfile + "S";
+//    dbg(outputfile);
 
-    calout.open("test.s",std::ifstream::out);
+    calout.open(outputfile, std::ifstream::out);
     calout<<"\t.data\n";
     for(auto fuhao : SymbolTable->table)
     {

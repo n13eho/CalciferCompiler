@@ -18,6 +18,7 @@
 //     a = g + a;
 //     return a;
 // }
+
 int func(int c, int b)
 {
     return c+b;
@@ -26,3 +27,15 @@ int main()
 {
     int b = func(10, 12);
 }
+
+///bug to fix
+//void add(int tmp[][2][2])
+//{
+//    int kkk = tmp[0][1][1];
+//}
+//int main()
+//{
+//    int b=2;
+//    return 0;
+//}
+

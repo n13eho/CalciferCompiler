@@ -5,7 +5,7 @@ project(${project_name})
 set(CMAKE_CXX_STANDARD 17)
 
 # AddressSanitizer, currently removed to pass basic tests
-#set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fsanitize=address")
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fsanitize=address")
 
 # make target
 file(GLOB_RECURSE source_files ${PROJECT_SOURCE_DIR}/src/*.cpp ${PROJECT_SOURCE_DIR}/src/front/*.cpp)
@@ -27,7 +27,7 @@ enable_testing()
 file(GLOB preliminary_func_test_cases "sysyruntimelibrary/section1/functional_test/*.sy")
 file(GLOB preliminary_perf_test_cases "sysyruntimelibrary/section1/performance_test/*.sy")
 file(GLOB final_perf_test_cases "sysyruntimelibrary/section2/performance_test/*.sy")
-file(GLOB custom_test_cases "test_set/*.c")
+file(GLOB custom_test_cases "test_set/*.sy")
 
 # test which cases
 set(all_test_cases "")
