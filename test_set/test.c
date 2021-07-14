@@ -19,7 +19,7 @@
 //     a = g + a;
 //     return a;
 // }
-
+int kong[10]={};
 int p = 1;
 int main()
 {

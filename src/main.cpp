@@ -42,9 +42,9 @@ int main(int argc, char *argv[])
 //        RegisterDistr();
         codegeneration();
         // 利用四元式和bb信息得出ssa_0
-        dbg("convert to ssa");
-        auto *ssa_0 = convert_ssa(IR1, globalBlock);
-        std::ofstream(ir_file) << *ssa_0;
+        // dbg("convert to ssa");
+        // auto *ssa_0 = convert_ssa(IR1, globalBlock);
+        // std::ofstream(ir_file) << *ssa_0;
 
 
     }
