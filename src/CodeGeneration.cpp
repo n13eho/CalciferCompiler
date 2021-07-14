@@ -33,7 +33,6 @@ void transSub(Instruction* instr);
 void transMul(Instruction* instr);
 void transDiv(Instruction* instr);
 void transMod(Instruction* instr);
-void transUnaryPos(Instruction* instr);
 void transUnaryNeg(Instruction* instr);
 void transUnaryNot(Instruction* instr);
 void transAssign(Instruction* instr);
@@ -375,8 +374,6 @@ void transConBr(Instruction* instr)
 
     calout<<"\tcmp r"<<lastLogicUsedRn<<", #1" << endl;
     calout<<"\tbeq " << blockid[bbjump] << endl;
-    dbg(bbjump);
-    dbg(blockid[bbjump]);
 }
 
 void transJmp(Instruction* instr)
@@ -471,7 +468,6 @@ void transFuncBlock(BasicBlock* node)
     }
     for(auto i : node->domBlock)
     { // 2.再翻译每一个函数体
-//        dbg(node->domBlock.size());
         transBlock(i);
     }
     if(node->FuncV->VName=="main")
