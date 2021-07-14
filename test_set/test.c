@@ -25,4 +25,5 @@ int func(int c, int b)
 int main()
 {
     int b = func(10, 12);
+    return 0;
 }

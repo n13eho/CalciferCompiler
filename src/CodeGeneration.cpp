@@ -18,8 +18,8 @@ map<BasicBlock*,string> blockid;    //防止重复输出
 int memshift;
 map<Value*, int> loc2mem;//ldr r0 [sp,#-4]
 
-int totalUsedRegister = 11; // 我们使用多少个寄存器
-Value* reg2val[1];//寄存器i中存了什么value
+const int totalUsedRegister = 11; // 我们使用多少个寄存器
+Value* reg2val[12];//寄存器i中存了什么value
 map<Value*, int> val2reg;//value_i的值目前存在哪个寄存器。
 extern BasicBlock* globalBlock;
 
@@ -49,7 +49,7 @@ void transStore(Instruction* instr);
 
 void transAlloc(Instruction* instr);
 void integerfreeRn(int rn);
-int integergetRn(Value* val,int needAddr=0);
+int integergetRn(Value* val,int needAddr=0);//allocrn
 
 void transRet(Instruction* instr)
 {
@@ -128,14 +128,7 @@ int integergetRn(Value* val,int needAddr)
         if(reg2val[i]==NULL)
         {
             reg2val[i]=val;
-            // from online, map insert segument fault
-            // pair<map::iterator, bool> insert_result = val2reg.insert(std::make_pair(val, i));
-            // if(insert.second) {insert_result.first->second.swap(vector_read_in);}
-            // val2reg.insert(std::make_pair(val, i));
-            // val2reg.insert(pair<Value*, int>(val, i));
-
             val2reg[val]=i;
-            dbg(i);
             //加载内存中的值
             if(val->getScope()=="1")
             {
@@ -146,7 +139,6 @@ int integergetRn(Value* val,int needAddr)
             {
                 int shift = loc2mem[val];
                 calout<<"\tldr "<<"r"<<to_string(i)<<", [sp, #-"<<shift*4<<"]"<<endl;
-                // if(!needAddr)calout<<"\tldr r"<<to_string(i)<<", [r"+to_string(i)<<"]"<<endl;
             }
             else if(loc2mem.count(val)&&val->isPara==1)
             {
@@ -321,7 +313,7 @@ void transGlobal()
     //     transFuncBlock(func); // 依次翻译顶层bb（fcuntion）
     // }
 
-    for(int i = IR1->Blocks.size() - 1; i > 1; i--)
+    for(int i = IR1->Blocks.size() - 1; i >= 1; i--)
     {
         transFuncBlock(IR1->Blocks[i]);
     }
@@ -392,16 +384,11 @@ void storeUsedR()
 
 void storeExtraParam(unsigned param_size, Instruction* instr)
 {
-    dbg((int)instr->getOp().size());
     for(int i=1;i<min(5,(int)instr->getOp().size()-1);i++)
     {
         //前几个参数
         Value* val = instr->getOp()[i];
-        dbg(val);
-        dbg(val->getScope());
-        dbg(val->isPara);
         int src= integergetRn(val);
-        dbg(src);
         calout<<"\tmov r"<<i-1<<", r"<<src<<endl;
         if(src!=i-1)integerfreeRn(src);
     }
@@ -582,6 +569,11 @@ void transIns(Instruction* ins)
         calout<<"@call " << ins->getId() << endl;
         transCall(ins);
     }
+    else if(ins->getOpType()==Instruction::Ret)
+    {
+        calout<<"@ret " << ins->getId() << endl;
+        transRet(ins);
+    }
 }
 void transBlock(BasicBlock* node)
 {
@@ -615,8 +607,8 @@ void transFuncBlock(BasicBlock* node)
 {
     calout<<"\t.global "<<node->FuncV->VName<<"\n\t.type "<<node->FuncV->VName<<", \%function\n"<<node->FuncV->VName<<":\n";
     calout<<"\t.fnstart\n";
-    calout << "\tsub sp, sp, #" << memshift * 4 << endl;
-    calout << "\tpush lr" <<endl;
+    if(memshift)calout << "\tsub sp, sp, #" << memshift * 4 << endl;
+    calout << "\tpush {lr}" <<endl;//把调用它的函数的lr存入内存
     allocParam(node->FuncV);//建立函数形参存放映射
     memshift=0; // 在每个函数的开头，将memshift置为0
     for(auto i: node->domBlock)
@@ -631,6 +623,7 @@ void transFuncBlock(BasicBlock* node)
     // { // 如果是main，这个在main函数结尾固定输出（没有翻译return，暂且这样处理）
     //     calout<<"\tmov r0, r"+to_string(lastusedRn)<<endl;
     // }
+    calout<<"@ end of one func\n";
     calout<<"\tbx lr\n\t.fnend\n";
 }
 
@@ -658,12 +651,6 @@ void codegeneration()
         }
     }
     // 依次便利IR中的顶层BB
-    for(int i=0;i<11;i++)reg2val[i]=NULL;
-    val2reg.clear();
-    // for(int i=0;i<11;i++)
-    // {
-    //     dbg(reg2val[i]);
-    // }
     transGlobal();
     calout.close();
 }
