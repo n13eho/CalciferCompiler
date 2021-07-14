@@ -51,9 +51,9 @@ int main(int argc, char *argv[])
         show_block(globalBlock, 0); // 打印基本块 （写注释啊啊啊啊啊啊 --neho
         codegeneration();
         // 利用四元式和bb信息得出ssa_0
-        dbg("convert to ssa");
-        auto *ssa_0 = convert_ssa(IR1, globalBlock);
-        std::ofstream(ir_file) << *ssa_0;
+        // dbg("convert to ssa");
+        // auto *ssa_0 = convert_ssa(IR1, globalBlock);
+        // std::ofstream(ir_file) << *ssa_0;
     }
 
     // post-precess

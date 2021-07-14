@@ -93,7 +93,9 @@ class ArrayValue:public Value
     std::vector<unsigned> NumOfDimension;
     //具体值
     std::vector<int> ArrayElement;
-    //
+    
+    //变量数组的初始值
+    std::vector<Value*> ArrayInitList;
     int isConst;
 
 };

@@ -245,7 +245,7 @@ void VarDefNode(GrammaNode* node,LinearIR *IR)
             {
                 total*=((ArrayValue*)VL)->NumOfDimension[j];
             }
-            cout<<"array allocate space:"<<total<<endl;
+            // cout<<"array allocate space:"<<total<<endl;
 
             //右值
             Value* VR=nullptr;
@@ -253,7 +253,7 @@ void VarDefNode(GrammaNode* node,LinearIR *IR)
             if(p_node->son.size() == 3)
             {
                 VR = InitValNode(p_node->son[2],IR);
-                cout<<"finish array initvals compute"<<endl;
+                // cout<<"finish array initvals compute"<<endl;
 
                 //属于某个函数且该指令为首指令，新建一个基本块，并建立联系
                 if(0 == global && nullptr == bbNow)
@@ -265,13 +265,15 @@ void VarDefNode(GrammaNode* node,LinearIR *IR)
 
                 if(VR != nullptr)
                 {
-                    for(int j=0;j<array_init.size();j++)
-                    {
-                        IntegerValue* index = new IntegerValue("index",node->lineno,node->var_scope,j,1);
-                        std::vector<Value*> op = {VL,index,array_init[j]};
-                        cout<<"store "<<array_init[j]->getName()<<" to index "<<j<<endl;
-                        CreateIns(node,IR,Instruction::Store,3,op,nullptr);
-                    }
+                    // for(int j=0;j<array_init.size();j++)
+                    // {
+                    //     IntegerValue* index = new IntegerValue("index",node->lineno,node->var_scope,j,1);
+                    //     std::vector<Value*> op = {VL,index,array_init[j]};
+                    //     cout<<"store "<<array_init[j]->getName()<<" to index "<<j<<endl;
+                    //     CreateIns(node,IR,Instruction::Store,3,op,nullptr);
+                    // }
+                    //变量数组 初始值存于该结构中，在代码生成时，直接遍历该结构
+                    ((ArrayValue*)VL)->ArrayInitList.assign(array_init.begin(),array_init.end());
                     
                 }
                 
@@ -295,8 +297,10 @@ void VarDefNode(GrammaNode* node,LinearIR *IR)
                 //属于某个函数且该指令为首指令，新建一个基本块，并建立联系
                 if(0 == global && nullptr == bbNow)
                 {
+                    // cout<<"*********"<<FuncN->BlockName<<endl;
                     bbNow = GetPresentBlock(FuncN,BasicBlock::Basic);
                 }
+                // cout<<"*********"<<FuncN->BlockName<<endl;
                 if(0 == global)
                     AllocCreate(p_node,IR,VL,1);
                 Instruction* ins_new = new Instruction(IR->getInstCnt(),Instruction::Assign,1);
@@ -489,7 +493,7 @@ void AssignNode(GrammaNode* node,LinearIR *IR)
             ins_new->addOperand(RV);
             ins_new->setResult(LV);
 
-            if(nullptr == FuncN)
+            if(nullptr == FuncN && 0 == global)
             {
                 //error
                 return;
@@ -516,7 +520,7 @@ void AssignNode(GrammaNode* node,LinearIR *IR)
             ins_store->addOperand(index);
             ins_store->addOperand(RV);
 
-            if(nullptr == FuncN)
+            if(nullptr == FuncN && 0 == global)
             {
                 //error
                 return;
@@ -548,7 +552,7 @@ void IfNode(GrammaNode* node,LinearIR *IR)
 {
     if(node->son.size() == 2)
     {
-        if(nullptr == FuncN)
+        if(nullptr == FuncN && 0 == global)
         {
             return ;
         }
@@ -607,7 +611,7 @@ void IfElseNode(GrammaNode* node,LinearIR *IR)
 {
     if(node->son.size() == 3)
     {
-        if(nullptr == FuncN)
+        if(nullptr == FuncN && 0 == global)
         {
             return ;
         }
@@ -699,7 +703,7 @@ void WhileNode(GrammaNode* node,LinearIR *IR)
 {
     if(node->son.size() == 2)
     {
-        if(nullptr == FuncN)
+        if(nullptr == FuncN && 0 == global)
         {
             return ;
         }
@@ -789,7 +793,7 @@ void WhileNode(GrammaNode* node,LinearIR *IR)
 }
 void ReturnNode(GrammaNode* node,LinearIR *IR)
 {
-    if(nullptr == FuncN)
+    if(nullptr == FuncN && 0 == global)
     {
         return ;
     }
@@ -806,7 +810,7 @@ void ReturnNode(GrammaNode* node,LinearIR *IR)
 }
 void BreakNode(GrammaNode* node,LinearIR *IR)
 {
-    if(nullptr == FuncN)
+    if(nullptr == FuncN && 0 == global)
     {
         return;
     }
@@ -844,7 +848,7 @@ void BreakNode(GrammaNode* node,LinearIR *IR)
 }
 void ContinueNode(GrammaNode* node,LinearIR *IR)
 {
-    if(nullptr == FuncN)
+    if(nullptr == FuncN && 0 == global)
     {
         return;
     }
@@ -878,7 +882,7 @@ void ContinueNode(GrammaNode* node,LinearIR *IR)
 }
 void ReturnValueNode(GrammaNode* node,LinearIR *IR)
 {
-    if(nullptr == FuncN)
+    if(nullptr == FuncN && 0 == global)
     {
         return ;
     }
@@ -915,7 +919,7 @@ void LOrExpNode(GrammaNode* node,LinearIR *IR)
         //当前a or b计算结果
         Value* ret = new Value("t"+std::to_string(i),node->lineno,node->var_scope);
 
-        if(nullptr == FuncN)
+        if(nullptr == FuncN && 0 == global)
         {
             return ;
         }
@@ -937,7 +941,7 @@ void LOrExpNode(GrammaNode* node,LinearIR *IR)
     //立即数0
     ImmValue* const0 = new ImmValue("0",0);
     Value* ret = new Value("tr",node->lineno,node->var_scope);
-    if(nullptr == FuncN)
+    if(nullptr == FuncN && 0 == global)
     {
         return ;
     }
@@ -970,7 +974,7 @@ Value* LAndExpNode(GrammaNode* node,LinearIR *IR)
         //当前a or b计算结果
         Value* ret = new Value("t"+std::to_string(i),node->lineno,node->var_scope);
 
-        if(nullptr == FuncN)
+        if(nullptr == FuncN && 0 == global)
         {
             throw BuildIRError(ret->lineno,ret->VName,"error");
             // return ;
@@ -993,7 +997,7 @@ Value* LAndExpNode(GrammaNode* node,LinearIR *IR)
     //立即数0
     ImmValue* const0 = new ImmValue("0",0);
     Value* ret = new Value("tr",node->lineno,node->var_scope);
-    if(nullptr == FuncN)
+    if(nullptr == FuncN&& 0 == global)
     {
         throw BuildIRError(ret->lineno,ret->VName,"error");
         // return ;
@@ -1021,7 +1025,7 @@ Value* EqExpNode(GrammaNode* node,LinearIR *IR)
         Value* VL = EqExpNode(node->son[0],IR);
         Value* RL = RelExpNode(node->son[1],IR);
         Value* ret = SymbolTable->askItem(node);//new Value("t1",node->lineno,node->var_scope);
-        if(nullptr == FuncN)
+        if(nullptr == FuncN&& 0 == global)
         {
             throw BuildIRError(VL->lineno, VL->VName, "错误5");
             // return ;
@@ -1045,7 +1049,7 @@ Value* EqExpNode(GrammaNode* node,LinearIR *IR)
         Value* VL = EqExpNode(node->son[0],IR);
         Value* RL = RelExpNode(node->son[1],IR);
         Value* ret = SymbolTable->askItem(node);//new Value("t1",node->lineno,node->var_scope);
-        if(nullptr == FuncN)
+        if(nullptr == FuncN && 0 == global)
         {
             throw BuildIRError(VL->lineno, VL->VName, "错误6");
             // return ;
@@ -1077,7 +1081,7 @@ Value* RelExpNode(GrammaNode* node,LinearIR *IR)
         Value* VL = RelExpNode(node->son[0],IR);
         Value* RL = AddExpNode(node->son[1],IR);
         Value* ret = SymbolTable->askItem(node);//new Value("t1",node->lineno,node->var_scope);
-        if(nullptr == FuncN)
+        if(nullptr == FuncN && 0 == global)
         {
             throw BuildIRError(ret->lineno,ret->VName,"error");
             // return ;
@@ -1102,7 +1106,7 @@ Value* RelExpNode(GrammaNode* node,LinearIR *IR)
         Value* RL = AddExpNode(node->son[1],IR);
         Value* ret = SymbolTable->askItem(node);// new Value("t1",node->lineno,node->var_scope);
 
-        if(nullptr == FuncN)
+        if(nullptr == FuncN && 0 == global)
         {
             throw BuildIRError(VL->lineno, VL->VName, "错误7");
             // return ;
@@ -1126,7 +1130,7 @@ Value* RelExpNode(GrammaNode* node,LinearIR *IR)
         Value* VL = RelExpNode(node->son[0],IR);
         Value* RL = AddExpNode(node->son[1],IR);
         Value* ret = SymbolTable->askItem(node);//new Value("t1",node->lineno,node->var_scope);
-        if(nullptr == FuncN)
+        if(nullptr == FuncN && 0 == global)
         {
             throw BuildIRError(VL->lineno, VL->VName, "错误8");
             // return ;
@@ -1150,7 +1154,7 @@ Value* RelExpNode(GrammaNode* node,LinearIR *IR)
         Value* VL = RelExpNode(node->son[0],IR);
         Value* RL = AddExpNode(node->son[1],IR);
         Value* ret = SymbolTable->askItem(node);//new Value("t1",node->lineno,node->var_scope);
-        if(nullptr == FuncN)
+        if(nullptr == FuncN && 0 == global)
         {
             throw BuildIRError(VL->lineno, VL->VName, "错误9");
             // return ;
@@ -1185,7 +1189,12 @@ Value* InitValNode(GrammaNode* node,LinearIR *IR)
         Value* ret=nullptr;
         if(node->son.size() == 1)
         {
+            // cout<<"InitVal_EXP"<<endl;
             ret = AddExpNode(node->son[0],IR);
+            // if(((IntegerValue*)ret)->isConst == 1)
+            // {
+            //     cout<<"计算为常数："<<((IntegerValue*)ret)->getValue()<<endl;
+            // }
             return ret;
         }
         else
@@ -1229,7 +1238,12 @@ Value* InitValNode(GrammaNode* node,LinearIR *IR)
             {
                 if(InitVal_EXP == p_node->son[i]->type)
                 {
+                    
                     Value* ExpV = InitValNode(p_node->son[i],IR);
+                    // if(((IntegerValue*)ExpV)->isConst == 1)
+                    // {
+                    //     cout<<"初值ExpV:"<<((IntegerValue*)ExpV)->getValue()<<endl;
+                    // }
                     // init_list.push_back(ExpV);
                     array_init.push_back(ExpV);
                     cnt++;
@@ -1307,7 +1321,7 @@ Value* AddExpNode(GrammaNode* node,LinearIR *IR)
             Value* arg2 = MulExpNode(node->son[1],IR);
             //本表达式结果
             Value* ret = SymbolTable->askItem(node);//new IntegerValue("t3",node->lineno,node->var_scope,0);
-            if(nullptr == FuncN)
+            if(nullptr == FuncN && 0 == global)
             {
                 throw BuildIRError(arg1->lineno, arg1->VName, "错误10");
                 // return ;
@@ -1342,7 +1356,7 @@ Value* AddExpNode(GrammaNode* node,LinearIR *IR)
             Value* arg2 = MulExpNode(node->son[1],IR);
             Value* ret = SymbolTable->askItem(node);//erValue("t3",node->lineno,node->var_scope,0);
 
-            if(nullptr == FuncN)
+            if(nullptr == FuncN && 0 == global)
             {
                 throw BuildIRError(arg1->lineno, arg1->VName, "错误11");
                 // return ;
@@ -1392,7 +1406,7 @@ Value* MulExpNode(GrammaNode* node,LinearIR *IR)
             Value* arg2 = UnaryExpNode(node->son[1],IR);
             //临时变量名待改
             Value* ret = SymbolTable->askItem(node);//new IntegerValue("t3",node->lineno,node->var_scope,0);
-            if(nullptr == FuncN)
+            if(nullptr == FuncN && 0 == global)
             {
                 throw BuildIRError(arg1->lineno, arg1->VName, "错误12");
                 // return ;
@@ -1428,7 +1442,7 @@ Value* MulExpNode(GrammaNode* node,LinearIR *IR)
             //临时变量名待改
             Value* ret = SymbolTable->askItem(node);//new IntegerValue("t3",node->lineno,node->var_scope,0);
 
-            if(nullptr == FuncN)
+            if(nullptr == FuncN && 0 == global)
             {
                 throw BuildIRError(arg1->lineno, arg1->VName, "错误13");
                 // return ;
@@ -1464,7 +1478,7 @@ Value* MulExpNode(GrammaNode* node,LinearIR *IR)
             Value* arg2 = UnaryExpNode(node->son[1],IR);
             //临时变量名待改
             Value* ret = SymbolTable->askItem(node);//new IntegerValue("t3",node->lineno,node->var_scope,0);
-            if(nullptr == FuncN)
+            if(nullptr == FuncN && 0 == global)
             {
                 throw BuildIRError(arg1->lineno, arg1->VName, "错误14");
                 // return ;
@@ -1514,7 +1528,7 @@ Value* UnaryExpNode(GrammaNode* node,LinearIR *IR)
             Value* ret=SymbolTable->askItem(node);//new Value("t1",node->lineno,node->var_scope);
             int para_num = node->son[1]->son.size();
 
-            if(nullptr == FuncN)
+            if(nullptr == FuncN && 0 == global)
             {
                 throw BuildIRError(ret->lineno, ret->VName, "错误15");
                 // return ;
@@ -1541,8 +1555,7 @@ Value* UnaryExpNode(GrammaNode* node,LinearIR *IR)
             BasicBlock* funcCalled = IR->FuncMap[called];
             bbNow->Link(funcCalled);
 
-            BasicBlock* next = CreateBlock(BasicBlock::Basic);
-            next->BlockName = "basic";
+            BasicBlock* next = GetPresentBlock(FuncN,BasicBlock::Basic);
 
             funcCalled->Link(next);
 
@@ -1555,7 +1568,7 @@ Value* UnaryExpNode(GrammaNode* node,LinearIR *IR)
             FunctionValue* called=(FunctionValue*)SymbolTable->askItem(node->son[0]);
             //根据函数返回值，若为int，建立返回值
             Value* ret=SymbolTable->askItem(node);//new Value("t1",node->lineno,node->var_scope);
-            if(nullptr == FuncN)
+            if(nullptr == FuncN && 0 == global)
             {
                 throw BuildIRError(ret->lineno, ret->VName, "错误16");
                 // return ;
@@ -1614,7 +1627,7 @@ Value* UnaryExpNode(GrammaNode* node,LinearIR *IR)
             else if(SUB_ == node->son[0]->type)
             {
                 ret = SymbolTable->askItem(node);//new IntegerValue("t3",node->lineno,node->var_scope,0);
-                if(nullptr == FuncN)
+                if(nullptr == FuncN && 0 == global)
                 {
                     throw BuildIRError(node->lineno, ret->VName, "错误17");
                     // return ;
@@ -1636,7 +1649,7 @@ Value* UnaryExpNode(GrammaNode* node,LinearIR *IR)
             {
                 ret = SymbolTable->askItem(node);//new Value("t3",node->lineno,node->var_scope);
                 dbg(ret->getName());
-                if(nullptr == FuncN)
+                if(nullptr == FuncN && 0 == global)
                 {
                     throw BuildIRError(node->lineno, ret->VName, "错误18");
                     // return ;
@@ -1692,7 +1705,7 @@ Value* PrimaryExpNode(GrammaNode* node,LinearIR *IR)
         Value* index = LValArrayNode(node,IR);
         Value* ret = SymbolTable->askItem(node);//new IntegerValue("tx",node->lineno,node->var_scope,0);
 
-        if(nullptr == FuncN)
+        if(nullptr == FuncN && 0 == global)
         {
             throw BuildIRError((int)node->lineno, (string&)ret->VName, (string&)"错误19");
             // return ;
@@ -1755,7 +1768,7 @@ Value* LValArrayNode(GrammaNode* node,LinearIR *IR)
                 Value* present_index = AddExpNode(p_node->son[i],IR);
                 Value* arg3 = new IntegerValue("t"+std::to_string(i),node->lineno,node->var_scope,0);
 
-                if(nullptr == FuncN)
+                if(nullptr == FuncN && 0 == global)
                 {
                     throw BuildIRError(arg3->lineno, arg3->VName, "错误20");
                     // return ;
@@ -1845,7 +1858,7 @@ void show_IR_ins(LinearIR *IR)
         // 当前指令
         presenIns = IR->InstList[i];
         cout << presenIns->getId() << "\t" << DEBUG_insOP[presenIns->getOpType()] << "\t";
-    
+        cout<<presenIns->getParent()<<"\t";
         if(presenIns->getOpType() == Instruction::Jmp|| presenIns->getOpType() == Instruction::ConBr)
         {
             if(nullptr != presenIns->jmpDestBlock)
