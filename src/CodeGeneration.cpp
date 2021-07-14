@@ -90,7 +90,7 @@ void transAlloc(Instruction* instr)
     Value* r0=instr->getOp()[0];
     IntegerValue* r1=(IntegerValue*)instr->getOp()[1];
     loc2mem[r0] = memshift;
-    memshift+=r1->getValue();
+    memshift+=1;
 
 }
 
