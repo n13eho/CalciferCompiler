@@ -39,7 +39,6 @@ void transUnaryNot(Instruction* instr);
 void transAssign(Instruction* instr);
 void transLogicAnd(Instruction* instr);
 void transLogicOr(Instruction* instr);
-void transLogicNeq(Instruction* instr);
 void transLogicLT(Instruction* instr);
 void transLogicBG(Instruction* instr);
 void transLogicLQ(Instruction* instr);
@@ -55,6 +54,7 @@ void transAlloc(Instruction* instr);
 void integerfreeRn(int rn);
 int integergetRn(Value* val,int needAddr=0);
 void transArithEq(Instruction* instr);
+void transArithNeq(Instruction* instr);
 
 void transAlloc(Instruction* instr)
 {
@@ -168,6 +168,42 @@ void transGlobal(BasicBlock* node)
     }
 }
 
+void transLogicAnd(Instruction* instr)
+{
+    IntegerValue* res=(IntegerValue*)instr->getResult();
+    IntegerValue* r0=(IntegerValue*)instr->getOp()[0];
+    IntegerValue* r1=(IntegerValue*)instr->getOp()[1];
+    if(r0->isConst == 1)swap(r0, r1);
+    int R_r0 = integergetRn(r0);
+    int R_res = integergetRn(res);
+}
+
+
+void transArithNeq(Instruction* instr)
+{
+    //获取2个操作数
+    IntegerValue* res=(IntegerValue*)instr->getResult();
+    IntegerValue* r0=(IntegerValue*)instr->getOp()[0];
+    IntegerValue* r1=(IntegerValue*)instr->getOp()[1];
+    if(r0->isConst == 1)swap(r0, r1);
+    int R_r0 = integergetRn(r0);
+    int R_res = integergetRn(res);
+    if(r1->isConst == 1)
+    {
+        calout<<"\tcmp r"<<R_r0<<", #"<<r1->RealValue << endl;
+    }
+    else
+    {
+        int R_r1 = integergetRn(r1);
+        calout<<"\tcmp r"<<R_r0<<", r"<<R_r1 << endl;
+        integerfreeRn(R_r1);
+    }
+    integerfreeRn(R_r0);
+    calout<<"\tmovne r"<<R_res<<", #1" << endl;
+    calout<<"\tmoveq r"<<R_res<<", #0" << endl;
+    lastLogicUsedRn = R_res;
+}
+
 void transArithEq(Instruction* instr)
 {
     //获取2个操作数
@@ -177,12 +213,9 @@ void transArithEq(Instruction* instr)
     if(r0->isConst == 1)swap(r0, r1);
     int R_r0 = integergetRn(r0);
     int R_res = integergetRn(res);
-
-
     if(r1->isConst == 1)
     {
         calout<<"\tcmp r"<<R_r0<<", #"<<r1->RealValue << endl;
-
     }
     else
     {
@@ -191,7 +224,6 @@ void transArithEq(Instruction* instr)
         integerfreeRn(R_r1);
     }
     integerfreeRn(R_r0);
-
     calout<<"\tmoveq r"<<R_res<<", #1" << endl;
     calout<<"\tmovne r"<<R_res<<", #0" << endl;
     lastLogicUsedRn = R_res;
@@ -212,8 +244,6 @@ void transJmp(Instruction* instr)
     BasicBlock* bbjump = instr->jmpDestBlock;
     calout << "\tb "<< blockid[bbjump] << endl;
 }
-
-
 
 void transIns(Instruction* ins)
 {
@@ -236,6 +266,11 @@ void transIns(Instruction* ins)
     {
         calout<<"@ " << ins->getId() << endl;
         transArithEq(ins);
+    }
+    else if(ins->getOpType() == Instruction::ArithNeq)
+    {
+        calout<<"@ " << ins->getId() << endl;
+        transArithNeq(ins);
     }
     else if(ins->getOpType() == Instruction::ConBr)
     {

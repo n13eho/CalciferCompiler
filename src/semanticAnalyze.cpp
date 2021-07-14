@@ -648,7 +648,9 @@ Value *semantic_InitVal3_(GrammaNode *root, int isConst, int dimen, vector<unsig
         for (int i = 0; i < dimen_std.size(); i++)
             x *= dimen_std[i];
         vector<int> valzero(x, 0); //初值全设为0
-        ArrayValue *ret = semantic_initVal_Son(root->son[0], isConst, 0, dimen_std);
+        ArrayValue *ret = new ArrayValue(name + to_string(cnt++), root->lineno, root->var_scope, isConst);
+        ret->setDimen(dimen_std);
+        ret->setArray(valzero);
         SymbolTable->addItem(root, ret);
         return ret;
     }
