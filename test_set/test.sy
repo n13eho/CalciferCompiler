@@ -7,10 +7,10 @@ const int c[2][2] = {{0},{2}}; // 0 0 2 0
 // const int mondy = today + 1 + c[2]; // 11, but should be wrong
 
 
-const int p = 17;
-int g = 2;
-int wa;
-int re[3] = {g*g,g,g};
+//const int p = 17;
+//int g = 2;
+//int wa;
+//int re[3] = {g*g,g,g};
 //const int p[3][2] = {5, {}, {2, 3}};
 // //const int p = 17;
 // int rtyu;
@@ -36,11 +36,11 @@ int func(int c, int b)
 
 int main()
 {
-int b=2;
+//int b=2;
 
 
 // add(w);
-
+func(10,12);
 // b = w[0][1][1];
 return 0;
 

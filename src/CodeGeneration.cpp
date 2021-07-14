@@ -151,7 +151,7 @@ int integergetRn(Value* val,int needAddr)
             }
             else if(val->getType()==1&&((IntegerValue*)val)->isConst==1)
             {
-                cout<<"\tmov r"<<i<<", #"<<((IntegerValue*)val)->RealValue<<endl;
+                calout<<"\tmov r"<<i<<", #"<<((IntegerValue*)val)->RealValue<<endl;
             }
             return i;
         }
@@ -376,7 +376,6 @@ void storeUsedR()
 {// 如果这个寄存器当前值，就把它str到内存
     for(int i=0;i<totalUsedRegister;i++)
     {// 扫一遍
-        dbg(reg2val[i]);
         if(reg2val[i]!=NULL)
         {
             integerfreeRn(i);
@@ -390,6 +389,7 @@ void storeExtraParam(unsigned param_size, Instruction* instr)
     {
         //前几个参数
         Value* val = instr->getOp()[i];
+        dbg(((IntegerValue*)val)->isConst);
         int src= integergetRn(val);
         calout<<"\tmov r"<<i-1<<", r"<<src<<endl;
         if(src!=i-1)integerfreeRn(src);
