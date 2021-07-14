@@ -39,13 +39,12 @@ void transAssign(Instruction* instr);
 void transLogicAnd(Instruction* instr);
 void transLogicOr(Instruction* instr);
 void transLogic(Instruction* instr);
-void transLogicJmp(Instruction* instr);
+void transJmp(Instruction* instr);
 void transConBr(Instruction* instr);
 void transCall(Instruction* instr);
 void transRet(Instruction* instr);
 void transLoad(Instruction* instr);
 void transStore(Instruction* instr);
-void transBreak(Instruction* instr);
 
 void transAlloc(Instruction* instr);
 void integerfreeRn(int rn);
@@ -386,62 +385,62 @@ void transIns(Instruction* ins)
 {//依照不同类型的指令，进行翻译
     if(ins->getOpType() == Instruction::Add)
     {
-        calout<<"@ " << ins->getId() << endl;
+        calout<<"@add " << ins->getId() << endl;
         transAdd(ins);
     }
     else if(ins->getOpType() == Instruction::Sub)
     {
-        calout<<"@ " << ins->getId() << endl;
+        calout<<"@sub " << ins->getId() << endl;
         transSub(ins);
     }
     else if(ins->getOpType() == Instruction::Mul)
     {
-        calout<<"@ " << ins->getId() << endl;
+        calout<<"@mul " << ins->getId() << endl;
         transMul(ins);
     }
     else if(ins->getOpType() == Instruction::Div)
     {
-        calout<<"@ " << ins->getId() << endl;
+        calout<<"@div " << ins->getId() << endl;
         transDiv(ins);
     }
     else if(ins->getOpType() == Instruction::UnaryNeg)
     {
-        calout<<"@ " << ins->getId() << endl;
+        calout<<"@neg " << ins->getId() << endl;
         transUnaryNeg(ins);
     }
     else if(ins->getOpType() == Instruction::Assign)
     {
-        calout<<"@ " << ins->getId() << endl;
+        calout<<"@ass " << ins->getId() << endl;
         transAssign(ins);
     }
     else if(ins->getOpType() == Instruction::Alloc)
     {
-        calout<<"@ " << ins->getId() << endl;
+        calout<<"@alloc " << ins->getId() << endl;
         transAlloc(ins);
     }
     else if(ins->getOpType() >= Instruction::ArithEq && ins->getOpType()<=Instruction::ArithGQ)
     {
-        calout<<"@ " << ins->getId() << endl;
+        calout<<"@logic " << ins->getId() << endl;
         transLogic(ins);
     }
-    else if(ins->getOpType() >= Instruction::LogicAnd)
+    else if(ins->getOpType() == Instruction::LogicAnd)
     {
-        calout<<"@ " << ins->getId() << endl;
+        calout<<"@and " << ins->getId() << endl;
         transLogicAnd(ins);
     }
-    else if(ins->getOpType() >= Instruction::LogicOr)
+    else if(ins->getOpType() == Instruction::LogicOr)
     {
-        calout<<"@ " << ins->getId() << endl;
+        calout<<"@or " << ins->getId() << endl;
         transLogicOr(ins);
     }
     else if(ins->getOpType() == Instruction::ConBr)
     {
-        calout<<"@ " << ins->getId() << endl;
+        calout<<"@br " << ins->getId() << endl;
         transConBr(ins);
     }
     else if(ins->getOpType() == Instruction::Jmp)
     {
-        calout<<"@ " << ins->getId() << endl;
+        calout<<"@jmp " << ins->getId() << endl;
         transJmp(ins);
     }
 }
@@ -449,7 +448,6 @@ void transBlock(BasicBlock* node)
 {
     // 1.先输出这个block的编号
     calout<<blockid[node]<<":\n";
-
     for(auto i: node->InstrList)
     {// 2.逐条访问block中的每条指令进行翻译
         Instruction* instr = IR1->InstList[i];
