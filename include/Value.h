@@ -43,7 +43,7 @@ class Value
     std::string var_scope;
     // Value类型
     int valueType;
-    
+    int isPara=0;
 };
 
 class IntegerValue:public Value

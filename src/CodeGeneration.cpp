@@ -18,7 +18,8 @@ map<BasicBlock*,string> blockid;    //防止重复输出
 int memshift;
 map<Value*, int> loc2mem;//ldr r0 [sp,#-4]
 
-Value* reg2val[13];//寄存器i中存了什么value
+const int totalUsedRegister = 11; // 我们使用多少个寄存器
+Value* reg2val[12];//寄存器i中存了什么value
 map<Value*, int> val2reg;//value_i的值目前存在哪个寄存器。
 extern BasicBlock* globalBlock;
 
@@ -48,8 +49,21 @@ void transStore(Instruction* instr);
 
 void transAlloc(Instruction* instr);
 void integerfreeRn(int rn);
-int integergetRn(Value* val,int needAddr=0);
+int integergetRn(Value* val,int needAddr=0);//allocrn
 
+void transRet(Instruction* instr)
+{
+    if(instr->getOp().size()==0)
+    {
+        calout<<"\tmov r0, #0"<<endl;
+    }
+    else
+    {
+        int R_ret=integergetRn(instr->getOp()[0]);
+        calout<<"\tmov r0, r"<<R_ret<<endl;
+        integerfreeRn(R_ret);
+    }
+}
 
 void transAlloc(Instruction* instr)
 {
@@ -79,7 +93,6 @@ void transAssign(Instruction* instr)
     }
 }
 
-
 void integerfreeRn(int rn)
 {
     Value* val=reg2val[rn];
@@ -92,9 +105,15 @@ void integerfreeRn(int rn)
         //free掉free产生的额外寄存器
         reg2val[glb]=NULL;
     }
-    else if(loc2mem.count(val))
+    else if(loc2mem.count(val)&&val->isPara==0)
     {
+        //存在内存的局部变量
         calout<<"\tstr r"+to_string(rn)<<", [sp, #-"<<loc2mem[val] * 4<<"]"<<endl;
+    }
+    else if(loc2mem.count(val)&&val->isPara==1)
+    {
+        //存在内存里的参数
+        calout<<"\tstr r"<<rn<<", [sp, #"<<loc2mem[val]*4<<"]"<<endl;
     }
     reg2val[rn]=NULL;
     auto it =val2reg.find(val);
@@ -104,7 +123,7 @@ void integerfreeRn(int rn)
 int integergetRn(Value* val,int needAddr)
 {
     if(needAddr==0&&val2reg.count(val))return val2reg[val];
-    for(int i=0;i<12;i++)
+    for(int i=0;i<totalUsedRegister;i++)
     {
         if(reg2val[i]==NULL)
         {
@@ -116,11 +135,15 @@ int integergetRn(Value* val,int needAddr)
                 calout<<"\tldr "<<"r"<<to_string(i)<<", ="<<val->getName()<<endl;
                 if(!needAddr)calout<<"\tldr r"<<to_string(i)<<", [r"+to_string(i)<<"]"<<endl;
             }
-            else if(loc2mem.count(val))
+            else if(loc2mem.count(val)&&val->isPara==0)
             {
                 int shift = loc2mem[val];
                 calout<<"\tldr "<<"r"<<to_string(i)<<", [sp, #-"<<shift*4<<"]"<<endl;
-                // if(!needAddr)calout<<"\tldr r"<<to_string(i)<<", [r"+to_string(i)<<"]"<<endl;
+            }
+            else if(loc2mem.count(val)&&val->isPara==1)
+            {
+                //存在内存里的参数
+                calout<<"\tldr "<<"r"<<i<<", [sp, #"<<loc2mem[val]*4<<"]"<<endl;
             }
             return i;
         }
@@ -181,7 +204,6 @@ void transSub(Instruction* instr)
         integerfreeRn(R_r0);
         integerfreeRn(R_r1);
     }
-//    integerfreeRn(R_res);
 }
 
 void transMul(Instruction* instr)
@@ -209,7 +231,6 @@ void transMul(Instruction* instr)
     // the final mul
     calout << "\tsmul r" << R_res << ", r" << R_r0 << ", r" << R_r1 << endl;
     // free
-//    integerfreeRn(R_res);
     integerfreeRn(R_r0);
     integerfreeRn(R_r1);
 }
@@ -240,7 +261,6 @@ void transDiv(Instruction* instr)
     calout << "\tsdiv r" << R_res << ", r" << R_r0 << ", r" << R_r1 << endl;
 
     // free
-//    integerfreeRn(R_res);
     integerfreeRn(R_r0);
     integerfreeRn(R_r1);
 
@@ -286,11 +306,16 @@ void transUnaryNot(Instruction* instr)
 void transGlobal()
 {
     calout<<"\t.text\n";
-    int f=0; // 跳过第一个全局的block，它已经被翻译过了
-    for(auto func : IR1->Blocks)
+    // int f=0; // 跳过第一个全局的block，它已经被翻译过了
+    // for(auto func : IR1->Blocks)
+    // {
+    //     if(f==0){f=1;continue;}
+    //     transFuncBlock(func); // 依次翻译顶层bb（fcuntion）
+    // }
+
+    for(int i = IR1->Blocks.size() - 1; i >= 1; i--)
     {
-        if(f==0){f=1;continue;}
-        transFuncBlock(func); // 依次翻译顶层bb（fcuntion）
+        transFuncBlock(IR1->Blocks[i]);
     }
 }
 
@@ -346,6 +371,65 @@ void transLogicAnd(Instruction* instr)
     lastLogicUsedRn = R_res;
 }
 
+void storeUsedR()
+{// 如果这个寄存器当前值，就把它str到内存
+    for(int i=0;i<totalUsedRegister;i++)
+    {// 扫一遍
+        if(reg2val[i]!=NULL)
+        {
+            integerfreeRn(i);
+        }
+    }
+}
+
+void storeExtraParam(unsigned param_size, Instruction* instr)
+{
+    for(int i=1;i<min(5,(int)instr->getOp().size()-1);i++)
+    {
+        //前几个参数
+        Value* val = instr->getOp()[i];
+        int src= integergetRn(val);
+        calout<<"\tmov r"<<i-1<<", r"<<src<<endl;
+        if(src!=i-1)integerfreeRn(src);
+    }
+    for(int i=5;i<instr->getOp().size()-1;i++)
+    {
+        //多余参数
+        Value* val = instr->getOp()[i];
+        int src= integergetRn(val);
+        calout<<"\tstr r"<<src<<", [sp, #-"<<memshift*4<<"]"<<endl;
+        //修改映射
+        loc2mem[val]=memshift++;
+        reg2val[src]=NULL;
+        auto it=val2reg.find(val);val2reg.erase(it);
+    }
+}
+
+void transCall(Instruction* instr)
+{   // get result
+    IntegerValue* res=(IntegerValue*)instr->getResult();
+    // get destination
+    string destination = instr->getOp()[0]->VName;
+    // get param size and param
+    int param_size = instr->getOp().size() - 1;
+    // 1.str 存用过的寄存器
+    storeUsedR();
+    // 2.参数传递：前4个放在寄存器，其余放内存
+    storeExtraParam(param_size, instr);
+
+    // .跳转
+    calout << "\tbl " << destination << endl;
+
+    // .（已经回来了）把r11中的值放回sp: mov sp, r11
+    calout<<"\tpop {lr}"<<endl;
+    calout << "\tmov sp, r11" << endl;
+
+    // .把rest映射到R_res
+    int R_res = integergetRn(res);
+    // 结果放入R_res中
+    calout << "\tmov r" << R_res <<  ", r0" << endl;
+}
+
 void transLogic(Instruction* instr)
 {
     IntegerValue* res=(IntegerValue*)instr->getResult();
@@ -398,7 +482,6 @@ void transLogic(Instruction* instr)
     // update
     lastLogicUsedRn = R_res;
 }
-
 
 void transConBr(Instruction* instr)
 {
@@ -481,6 +564,16 @@ void transIns(Instruction* ins)
         calout<<"@jmp " << ins->getId() << endl;
         transJmp(ins);
     }
+    else if(ins->getOpType() == Instruction::Call)
+    {
+        calout<<"@call " << ins->getId() << endl;
+        transCall(ins);
+    }
+    else if(ins->getOpType()==Instruction::Ret)
+    {
+        calout<<"@ret " << ins->getId() << endl;
+        transRet(ins);
+    }
 }
 void transBlock(BasicBlock* node)
 {
@@ -493,10 +586,30 @@ void transBlock(BasicBlock* node)
     }
 }
 
+void allocParam(FunctionValue* func)
+{
+    for(int i=0;i<min(4,func->getParamCnt());i++)
+    {
+        //形参和寄存器建立映射
+        Value* val=func->getParams()[i];
+        val2reg[val]=i;
+        reg2val[i]=val;
+    }
+    for(int i=4;i<func->getParamCnt();i++)
+    {
+        //形参和传入多于参数建立映射
+        Value* val = func->getParams()[i];
+        loc2mem[val]=func->getParamCnt()-i+1;//倒数的某一个参数
+    }
+}
+
 void transFuncBlock(BasicBlock* node)
 {
     calout<<"\t.global "<<node->FuncV->VName<<"\n\t.type "<<node->FuncV->VName<<", \%function\n"<<node->FuncV->VName<<":\n";
     calout<<"\t.fnstart\n";
+    if(memshift)calout << "\tsub sp, sp, #" << memshift * 4 << endl;
+    calout << "\tpush {lr}" <<endl;//把调用它的函数的lr存入内存
+    allocParam(node->FuncV);//建立函数形参存放映射
     memshift=0; // 在每个函数的开头，将memshift置为0
     for(auto i: node->domBlock)
     { // 1.先对它控制的每个block进行编号，建立起来映射
@@ -506,10 +619,11 @@ void transFuncBlock(BasicBlock* node)
     { // 2.再翻译每一个函数体
         transBlock(i);
     }
-    if(node->FuncV->VName=="main")
-    { // 如果是main，这个在main函数结尾固定输出（没有翻译return，暂且这样处理）
-        calout<<"\tmov r0, r"+to_string(lastusedRn)<<endl;
-    }
+    // if(node->FuncV->VName=="main")
+    // { // 如果是main，这个在main函数结尾固定输出（没有翻译return，暂且这样处理）
+    //     calout<<"\tmov r0, r"+to_string(lastusedRn)<<endl;
+    // }
+    calout<<"@ end of one func\n";
     calout<<"\tbx lr\n\t.fnend\n";
 }
 

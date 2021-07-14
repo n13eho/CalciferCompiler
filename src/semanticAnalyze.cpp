@@ -527,6 +527,7 @@ vector<Value *> semantic_Func_Fparam(GrammaNode *root)
     {
         // 由于参数自己本身是一个节点，所以还要对son进行处理
         Value *ParamSon = semantic_Func_FparamSon(root->son[i]);
+        ParamSon->isPara=1;
         ret.push_back(ParamSon);
     }
     return ret;
