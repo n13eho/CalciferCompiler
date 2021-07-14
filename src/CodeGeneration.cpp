@@ -128,7 +128,14 @@ int integergetRn(Value* val,int needAddr)
         if(reg2val[i]==NULL)
         {
             reg2val[i]=val;
+            // from online, map insert segument fault
+            // pair<map::iterator, bool> insert_result = val2reg.insert(std::make_pair(val, i));
+            // if(insert.second) {insert_result.first->second.swap(vector_read_in);}
+            // val2reg.insert(std::make_pair(val, i));
+            // val2reg.insert(pair<Value*, int>(val, i));
+
             val2reg[val]=i;
+            dbg(i);
             //加载内存中的值
             if(val->getScope()=="1")
             {
@@ -378,22 +385,23 @@ void storeUsedR()
     {// 扫一遍
         if(reg2val[i]!=NULL)
         {
-            dbg("111111");
-            dbg(i);
-            dbg(reg2val[i]->VName);
             integerfreeRn(i);
-
         }
     }
 }
 
 void storeExtraParam(unsigned param_size, Instruction* instr)
 {
+    dbg((int)instr->getOp().size());
     for(int i=1;i<min(5,(int)instr->getOp().size()-1);i++)
     {
         //前几个参数
         Value* val = instr->getOp()[i];
+        dbg(val);
+        dbg(val->getScope());
+        dbg(val->isPara);
         int src= integergetRn(val);
+        dbg(src);
         calout<<"\tmov r"<<i-1<<", r"<<src<<endl;
         if(src!=i-1)integerfreeRn(src);
     }
@@ -417,7 +425,6 @@ void transCall(Instruction* instr)
     string destination = instr->getOp()[0]->VName;
     // get param size and param
     int param_size = instr->getOp().size() - 1;
-
     // 1.str 存用过的寄存器
     storeUsedR();
     // 2.参数传递：前4个放在寄存器，其余放内存
@@ -651,6 +658,12 @@ void codegeneration()
         }
     }
     // 依次便利IR中的顶层BB
+    for(int i=0;i<11;i++)reg2val[i]=NULL;
+    val2reg.clear();
+    // for(int i=0;i<11;i++)
+    // {
+    //     dbg(reg2val[i]);
+    // }
     transGlobal();
     calout.close();
 }
