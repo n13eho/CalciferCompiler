@@ -239,7 +239,6 @@ IntegerValue *semantic_LVal_Array_(GrammaNode *root, int needConst, int needCond
     // 建立映射
     SymbolTable->addItem(root, val);
     // SymbolTable->addItem(root->son[0], val);
-
     // 求索引
     vector<int> indexVector;
     int dimensionSize = 1, index = 0;
@@ -282,8 +281,15 @@ IntegerValue *semantic_LVal_Array_(GrammaNode *root, int needConst, int needCond
         index += indexVector[i] * dimensionSize;
     }
     //根据索引求值
+    //probbbbbbbbbbbbbbbbblemhere
+    //zyh 问题
+    dbg("gggggg");
+    dbg(index);
+    dbg(root->str);
+    dbg(val->ArrayElement.size());
     int indexVal = val->ArrayElement[index];
-   
+
+    dbg("g");
     IntegerValue *ret = new IntegerValue(name + to_string(cnt++), root->lineno, root->var_scope, indexVal, val->isConst);
     // 建立映射
     SymbolTable->addItem(root, ret);
@@ -342,6 +348,7 @@ IntegerValue *semantic_PrimaryExp_(GrammaNode *root, int needConst, int needCond
     }
     else if (root->type == LVal_Array_)
     {
+        dbg("what " + root->str);
         return semantic_LVal_Array_(root, needConst, needCond);
     }
     else
@@ -453,7 +460,6 @@ IntegerValue *semantic_Exp_(GrammaNode *root, int needConst, int needCond)
     // 来源可以是 InitVal_Exp->son[i] ConstExps->son[i]
     if (root->type != AddExp_Add_ && root->type != AddExp_Sub_)
     { // 对应没有一个孩子的
-//        cout<<"at if UnaryExp_func_\n";
         return semantic_MulExp_(root, needConst, needCond);
     }
     else
@@ -733,6 +739,7 @@ void semantic_ConstDef_(GrammaNode *root)
 
 void semantic_VarDefSon(GrammaNode *root)
 { // 有四种情况：VarDef_array_ VarDef_array_init_ VarDef_single_ VarDef_single_init_
+
     if (root->type == VarDef_single_)
     { // 单值变量，无初始参数（默认都为0）
         //只需要new结点，建立映射即可
@@ -744,7 +751,9 @@ void semantic_VarDefSon(GrammaNode *root)
     else if (root->type == VarDef_single_init_)
     { // 单值变量，有初始参数
         //先算出初值 initValue
+        dbg("1");
         IntegerValue *initValueObj = (IntegerValue *)semantic_InitVal3_(root->son[2], 0);
+        dbg("outoutout");
         int initValue = initValueObj->RealValue;
         //new出新的结点
         IntegerValue *single_init = new IntegerValue(root->son[0]->str, root->son[0]->lineno, root->son[0]->var_scope, initValue, 0);
@@ -806,8 +815,8 @@ void semantic_VarDefSon(GrammaNode *root)
 
 void semantic_VarDefs_(GrammaNode *root)
 {
-    for (int i = 0; i < root->son.size(); i++)
-        semantic_VarDefSon(root->son[i]);
+    for (auto & i : root->son)
+        semantic_VarDefSon(i);
 }
 
 void semanticAnalyzer(GrammaNode *root)

@@ -4,6 +4,8 @@
 #include"semanticAnalyze.h"
 #include"dbg.h"
 
+#include <stdlib.h>
+
 using namespace std;
 
 ofstream calout;
@@ -60,6 +62,7 @@ void transRet(Instruction* instr)
     else
     {
         int R_ret=integergetRn(instr->getOp()[0]);
+        dbg(R_ret);
         calout<<"\tmov r0, r"<<R_ret<<endl;
         integerfreeRn(R_ret);
     }
@@ -107,6 +110,7 @@ void transAssign(Instruction* instr)
     {
         int R_0 = integergetRn(r0);
         calout<<"\tmov r"+to_string(R_res)<<", r"<<to_string(R_0)<<endl;
+        dbg(R_0);
         integerfreeRn(R_0);
     }
 }
@@ -162,6 +166,10 @@ int integergetRn(Value* val,int needAddr)
             {
                 //存在内存里的参数
                 calout<<"\tldr "<<"r"<<i<<", [sp, #"<<loc2mem[val]*4<<"]"<<endl;
+            }
+            else if(val->getType()==1&&((IntegerValue*)val)->isConst==1)
+            {
+                calout<<"\tmov r"<<i<<", #"<<((IntegerValue*)val)->RealValue<<endl;
             }
             return i;
         }
@@ -324,13 +332,6 @@ void transUnaryNot(Instruction* instr)
 void transGlobal()
 {
     calout<<"\t.text\n";
-    // int f=0; // 跳过第一个全局的block，它已经被翻译过了
-    // for(auto func : IR1->Blocks)
-    // {
-    //     if(f==0){f=1;continue;}
-    //     transFuncBlock(func); // 依次翻译顶层bb（fcuntion）
-    // }
-
     for(int i = IR1->Blocks.size() - 1; i >= 1; i--)
     {
         transFuncBlock(IR1->Blocks[i]);
@@ -402,15 +403,16 @@ void storeUsedR()
 
 void storeExtraParam(unsigned param_size, Instruction* instr)
 {
-    for(int i=1;i<min(5,(int)instr->getOp().size()-1);i++)
+    for(int i=1;i<min(5,(int)instr->getOp().size());i++)
     {
         //前几个参数
         Value* val = instr->getOp()[i];
+        dbg(((IntegerValue*)val)->isConst);
         int src= integergetRn(val);
         calout<<"\tmov r"<<i-1<<", r"<<src<<endl;
         if(src!=i-1)integerfreeRn(src);
     }
-    for(int i=5;i<instr->getOp().size()-1;i++)
+    for(int i=5;i<instr->getOp().size();i++)
     {
         //多余参数
         Value* val = instr->getOp()[i];
@@ -430,21 +432,24 @@ void transCall(Instruction* instr)
     string destination = instr->getOp()[0]->VName;
     // get param size and param
     int param_size = instr->getOp().size() - 1;
+
     // 1.str 存用过的寄存器
+
     storeUsedR();
+    //1.1存sp寄存器
+    calout<<"\tmov r11, sp"<<endl;
     // 2.参数传递：前4个放在寄存器，其余放内存
     storeExtraParam(param_size, instr);
 
-    // .跳转
+    // 3.跳转
     calout << "\tbl " << destination << endl;
 
-    // .（已经回来了）把r11中的值放回sp: mov sp, r11
-    calout<<"\tpop {lr}"<<endl;
+    // 4.（已经回来了）把r11中的值放回sp: mov sp, r11
     calout << "\tmov sp, r11" << endl;
 
-    // .把rest映射到R_res
+    // 5.把rest映射到R_res
     int R_res = integergetRn(res);
-    // 结果放入R_res中
+    // 6.结果放入R_res中
     calout << "\tmov r" << R_res <<  ", r0" << endl;
 }
 
@@ -631,7 +636,7 @@ void transFuncBlock(BasicBlock* node)
     calout<<"\t.global "<<node->FuncV->VName<<"\n\t.type "<<node->FuncV->VName<<", \%function\n"<<node->FuncV->VName<<":\n";
     calout<<"\t.fnstart\n";
     if(memshift)calout << "\tsub sp, sp, #" << memshift * 4 << endl;
-    calout << "\tpush {lr}" <<endl;//把调用它的函数的lr存入内存
+    calout << "\tpush {r11,lr}" <<endl;//把调用它的函数的lr存入内存
     allocParam(node->FuncV);//建立函数形参存放映射
     memshift=0; // 在每个函数的开头，将memshift置为0
     for(auto i: node->domBlock)
@@ -647,16 +652,25 @@ void transFuncBlock(BasicBlock* node)
     //     calout<<"\tmov r0, r"+to_string(lastusedRn)<<endl;
     // }
     calout<<"@ end of one func\n";
+    calout<<"\tpop {r11,lr}"<<endl;
     calout<<"\tbx lr\n\t.fnend\n";
 }
+
+#include <libgen.h>
+extern char *testfilename;
 
 void codegeneration()
 {
     // 外部接口
     //1. 遍历符号表, 写全局信息.data段;
     //2. transBlock, 写.text段
+    string outputfile = basename(testfilename);
+    outputfile = outputfile.substr(0, outputfile.length()-2);
+    outputfile  = "../test_set/outputS/" + outputfile;
+    outputfile = outputfile + "S";
+//    dbg(outputfile);
 
-    calout.open("test.s",std::ifstream::out);
+    calout.open(outputfile, std::ifstream::out);
     calout<<"\t.data\n";
     for(auto fuhao : SymbolTable->table)
     {

@@ -303,9 +303,10 @@ void VarDefNode(GrammaNode* node,LinearIR *IR)
                 //属于某个函数且该指令为首指令，新建一个基本块，并建立联系
                 if(0 == global && nullptr == bbNow)
                 {
-                    
+                    // cout<<"*********"<<FuncN->BlockName<<endl;
                     bbNow = GetPresentBlock(FuncN,BasicBlock::Basic);
                 }
+                // cout<<"*********"<<FuncN->BlockName<<endl;
                 if(0 == global)
                     AllocCreate(p_node,IR,VL,1);
                 Instruction* ins_new = new Instruction(IR->getInstCnt(),Instruction::Assign,1);
@@ -1560,8 +1561,7 @@ Value* UnaryExpNode(GrammaNode* node,LinearIR *IR)
             BasicBlock* funcCalled = IR->FuncMap[called];
             bbNow->Link(funcCalled);
 
-            BasicBlock* next = CreateBlock(BasicBlock::Basic);
-            next->BlockName = "basic";
+            BasicBlock* next = GetPresentBlock(FuncN,BasicBlock::Basic);
 
             funcCalled->Link(next);
 
@@ -1864,7 +1864,7 @@ void show_IR_ins(LinearIR *IR)
         // 当前指令
         presenIns = IR->InstList[i];
         cout << presenIns->getId() << "\t" << DEBUG_insOP[presenIns->getOpType()] << "\t";
-    
+        cout<<presenIns->getParent()<<"\t";
         if(presenIns->getOpType() == Instruction::Jmp|| presenIns->getOpType() == Instruction::ConBr)
         {
             if(nullptr != presenIns->jmpDestBlock)
