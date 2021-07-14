@@ -18,7 +18,8 @@ map<BasicBlock*,string> blockid;    //防止重复输出
 int memshift;
 map<Value*, int> loc2mem;//ldr r0 [sp,#-4]
 
-Value* reg2val[13];//寄存器i中存了什么value
+int totalUsedRegister = 11; // 我们使用多少个寄存器
+Value* reg2val[1];//寄存器i中存了什么value
 map<Value*, int> val2reg;//value_i的值目前存在哪个寄存器。
 extern BasicBlock* globalBlock;
 
@@ -104,7 +105,7 @@ void integerfreeRn(int rn)
 int integergetRn(Value* val,int needAddr)
 {
     if(needAddr==0&&val2reg.count(val))return val2reg[val];
-    for(int i=0;i<12;i++)
+    for(int i=0;i<totalUsedRegister;i++)
     {
         if(reg2val[i]==NULL)
         {
@@ -181,7 +182,6 @@ void transSub(Instruction* instr)
         integerfreeRn(R_r0);
         integerfreeRn(R_r1);
     }
-//    integerfreeRn(R_res);
 }
 
 void transMul(Instruction* instr)
@@ -209,7 +209,6 @@ void transMul(Instruction* instr)
     // the final mul
     calout << "\tsmul r" << R_res << ", r" << R_r0 << ", r" << R_r1 << endl;
     // free
-//    integerfreeRn(R_res);
     integerfreeRn(R_r0);
     integerfreeRn(R_r1);
 }
@@ -240,7 +239,6 @@ void transDiv(Instruction* instr)
     calout << "\tsdiv r" << R_res << ", r" << R_r0 << ", r" << R_r1 << endl;
 
     // free
-//    integerfreeRn(R_res);
     integerfreeRn(R_r0);
     integerfreeRn(R_r1);
 
@@ -344,6 +342,49 @@ void transLogicAnd(Instruction* instr)
     calout<<"\tmovne r"<<R_res<<", #1" << endl;
     // update
     lastLogicUsedRn = R_res;
+}
+
+void storeUsedR()
+{// 如果这个寄存器当前值，就把它str到内存
+    for(int i=0;i<totalUsedRegister;i++)
+    {// 扫一遍
+        if(reg2val[i]!=NULL)
+        {
+            integerfreeRn(i);
+        }
+    }
+
+}
+
+void storeExtraParam(unsigned param_size, Instruction* instr)
+{
+    ;
+}
+
+void transCall(Instruction* instr)
+{   // get result
+    IntegerValue* res=(IntegerValue*)instr->getResult();
+    // get destination
+    string destination = instr->getOp()[0]->VName;
+    // get param size and param
+    int param_size = instr->getOp().size() - 1;
+
+    // 1.str 存用过的寄存器
+    storeUsedR();
+    // 2.参数传递：前4个放在寄存器，其余放内存
+    storeExtraParam(param_size, instr);
+
+    // .跳转
+    calout << "bl " << destination << endl;
+
+    // .（已经回来了）把r11中的值放回sp: mov sp, r11
+    calout<<"pop {lr}"<<endl;
+    calout << "mov sp, r11" << endl;
+
+    // .把rest映射到R_res
+    int R_res = integergetRn(res);
+    // 结果放入R_res中
+    calout << "mov r" << R_res <<  ", r0" << endl;
 }
 
 void transLogic(Instruction* instr)
@@ -481,6 +522,11 @@ void transIns(Instruction* ins)
         calout<<"@jmp " << ins->getId() << endl;
         transJmp(ins);
     }
+    else if(ins->getOpType() == Instruction::Call)
+    {
+        calout<<"@call " << ins->getId() << endl;
+        transCall(ins);
+    }
 }
 void transBlock(BasicBlock* node)
 {
@@ -497,6 +543,8 @@ void transFuncBlock(BasicBlock* node)
 {
     calout<<"\t.global "<<node->FuncV->VName<<"\n\t.type "<<node->FuncV->VName<<", \%function\n"<<node->FuncV->VName<<":\n";
     calout<<"\t.fnstart\n";
+    calout << "sub sp, sp, #" << memshift * 4 << endl;
+    calout << "push lr" <<endl;
     memshift=0; // 在每个函数的开头，将memshift置为0
     for(auto i: node->domBlock)
     { // 1.先对它控制的每个block进行编号，建立起来映射

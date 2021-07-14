@@ -19,11 +19,11 @@
 //     a = g + a;
 //     return a;
 // }
-int kong[10]={};
-int p = 1;
+int func(int c, int b)
+{
+    return c+b;
+}
 int main()
 {
-    if(!p && 1)
-        p = 1;
-    return p;
+    int b = func(10, 12);
 }
