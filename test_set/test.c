@@ -23,9 +23,7 @@
 int p = 1;
 int main()
 {
-    int b = 12;
-    int a=10;
-    if(a == 19)
-        a = a + 1;
+    int b = -1;
+    int a = b / 2;
     return a;
 }
