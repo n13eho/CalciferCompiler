@@ -6,7 +6,6 @@
 // const int today = 9/8+7, to = 12 + 3;
 // const int mondy = today + 1 + c[2]; // 11, but should be wrong
 
-
 //const int p = 17;
 // int g = 1;
 //const int p[3][2] = {5, {}, {2, 3}};
