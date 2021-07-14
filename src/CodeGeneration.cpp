@@ -646,7 +646,7 @@ void codegeneration()
     //2. transBlock, 写.text段
     string outputfile = basename(testfilename);
     outputfile = outputfile.substr(0, outputfile.length()-2);
-    outputfile  = "../test_set/outputS/" + outputfile;
+    outputfile  = "../test_sets/outputS/" + outputfile;
     outputfile = outputfile + "S";
 //    dbg(outputfile);
 

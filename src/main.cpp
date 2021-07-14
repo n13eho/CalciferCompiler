@@ -29,7 +29,7 @@ int main(int argc, char *argv[])
     }
     else
     {
-        testfilename = "../test_set/test.sy";
+        testfilename = "../test_sets/test.sy";
     }
     FILE *f1 = fopen(testfilename, "r");
 
@@ -61,7 +61,6 @@ int main(int argc, char *argv[])
     free(SymbolTable);
     free(IR1);
     free(globalBlock);
-    free(ir_file);
 
     return 0;
 }
