@@ -15,6 +15,7 @@ extern LinearIR* IR1;
 string s = ".lb";
 int cntlb=0;
 map<Value*,bool> visval;
+map<BasicBlock*, bool>visblock;
 map<BasicBlock*,string> blockid;    //防止重复输出
 
 int memshift;
@@ -629,11 +630,22 @@ void transIns(Instruction* ins)
 void transBlock(BasicBlock* node)
 {
     // 1.先输出这个block的编号
+    visblock[node]=1;
+    // if(node->InstrList)
     calout<<blockid[node]<<":\n";
     for(auto i: node->InstrList)
     {// 2.逐条访问block中的每条指令进行翻译
         Instruction* instr = IR1->InstList[i];
         transIns(instr);
+    }
+    for(auto i: node->succBlock){
+        if(!visblock[i])
+        {
+            dbg(blockid[node]);
+            dbg(blockid[i]);
+            dbg(i->InstrList.size());
+        }
+        if(!visblock[i])transBlock(i);
     }
 }
 
@@ -654,6 +666,12 @@ void allocParam(FunctionValue* func)
     }
 }
 
+void givelb(BasicBlock* node)
+{
+    blockid[node]=s+to_string(cntlb++);
+    for(auto i: node->succBlock)if(blockid.count(i)==0)givelb(i);
+}
+
 void transFuncBlock(BasicBlock* node)
 {
     calout<<"\t.global "<<node->FuncV->VName<<"\n\t.type "<<node->FuncV->VName<<", \%function\n"<<node->FuncV->VName<<":\n";
@@ -662,14 +680,16 @@ void transFuncBlock(BasicBlock* node)
     calout << "\tpush {r11,lr}" <<endl;//把调用它的函数的lr存入内存
     allocParam(node->FuncV);//建立函数形参存放映射
     memshift=0; // 在每个函数的开头，将memshift置为0
-    for(auto i: node->domBlock)
-    { // 1.先对它控制的每个block进行编号，建立起来映射
-        blockid[i]=s+to_string(cntlb++);
-    }
-    for(auto i : node->domBlock)
-    { // 2.再翻译每一个函数体
-        transBlock(i);
-    }
+    // for(auto i: node->domBlock)
+    // { // 1.先对它控制的每个block进行编号，建立起来映射
+    //     blockid[i]=s+to_string(cntlb++);
+    // }
+    // for(auto i : node->domBlock)
+    // { // 2.再翻译每一个函数体
+    //     transBlock(i);
+    // }
+    givelb(node->domBlock[0]);
+    transBlock(node->domBlock[0]);
     // if(node->FuncV->VName=="main")
     // { // 如果是main，这个在main函数结尾固定输出（没有翻译return，暂且这样处理）
     //     calout<<"\tmov r0, r"+to_string(lastusedRn)<<endl;
@@ -741,7 +761,7 @@ void codegeneration()
             }
         }
     }
-    // 依次便利IR中的顶层BB
+    // 依次遍历IR中的顶层BB
     transGlobal();
     calout.close();
 }
