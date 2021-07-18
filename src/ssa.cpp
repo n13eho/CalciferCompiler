@@ -1,139 +1,265 @@
-//
-// Created by Neho on 2021/7/11.
-//
+/*
+input: CFG with lowIR
+output: CFG with newIR
 
-#include "../include/ssa.h"
-#include "../include/semanticAnalyze.h"
-#include "../include/Instruction.h"
-#include "../include/casting.h"
-#include "../include/dbg.h"
+note:
+    1. What is newIR?
+    ----将之前四元式中的指令替换为汇编指令，暂不处理寄存器，使用decel（每一个变量被赋值都会多一个decel，在多个变量合并的时候，需要插入phi节点）
+*/
+
+#include "ssa.h"
+#include "decl.h"
+#include "armInstruciton.h"
+#include "semanticAnalyze.h"
+#include "Instruction.h"
+#include"BuildIR.h"
+#include "dbg.h"
+#include<bits/stdc++.h>
+using namespace std;
+
+map<BasicBlock*, int>ssa_vis;
+ssa* ssaIR=new ssa();
+int Rcnt;
+
+///
+ostream & operator << (ostream &out,const Decl *A)
+{
+    out<<"@ NULL";
+    return out;
+}
+ostream & operator << (ostream &out,const constDecl *A)
+{
+    out<<"#"<<A->value;
+    return out;
+}
+ostream & operator << (ostream &out,const varDecl *A)
+{
+    out<<"r"<<A->Vreg;
+    return out;
+}
 
 
-extern idTable_struct* SymbolTable; // 符号表
-extern LinearIR* IR1; // 四元式指令
+////
 
+void assignMov(Instruction* instr, BasicBlock* node)
+{
+    
+}
 
-Decl* Ins2Decl(int id)
-{// 没有初值的都当成0（暴民发言；都有一个操作数；
-    Instruction* presenIns = IR1->InstList[id];
-    Decl *d = new Decl;
-    d->name = presenIns->getResult()->VName;
-//    cout << isa<IntegerValue>(presenIns->getResult())<<endl;
-    d->is_array = isa<ArrayValue>(presenIns->getResult());
-    d->is_glob = true;
-    if(d->is_array)
-    {
-        d->dims = ((ArrayValue*)(presenIns->getResult()))->NumOfDimension;
-        d->value = ((ArrayValue*)(presenIns->getResult()))->ArrayElement;
+void assignAdd(Instruction* instr,BasicBlock *node)
+{
+    armAdd *ins=new armAdd();
+    IntegerValue* res=(IntegerValue*)instr->getResult();
+    IntegerValue* r0=(IntegerValue*)instr->getOp()[0];
+    IntegerValue* r1=(IntegerValue*)instr->getOp()[1];
+
+    if(r0->isConst==1)swap(r1,r0);
+    //目的value多了一次赋值记录
+    varDecl *resd = new varDecl(res,node,(armInstr*)ins,Rcnt++);
+    ins->rd = (Decl*)resd;
+
+    ssaIR->Assign_rec[res].push_back((Decl*)resd);
+    //第一个操作数转换为赋值
+    varDecl *r0d = (varDecl *)ssaIR->Assign_rec[r0].back();
+    r0d->usesd.push_back(ins);//这个decl用了一次
+    ins->r0 = (Decl*)r0d;
+    if (r1->isConst)
+    {//如果是常量,也搞成一个赋值,不过没什么意义
+        constDecl *r1d = new constDecl((Value*)r1,node,(armInstr*)ins,r1->RealValue);
+        ins->r1 = (Decl*)r1d;
     }
     else
-    {
-        d->value = ((IntegerValue*)(presenIns->getResult()))->RealValue;
+    {//第二个操作数转换为赋值
+        varDecl *r1d = (varDecl *)ssaIR->Assign_rec[r1].back();
+        r1d->usesd.push_back(ins);
+        ins->r1 = (Decl*)r1d;
     }
-    return d;
+    cout<<ins<<endl;
 }
 
-IrProgram *convert_ssa(LinearIR* ir1, BasicBlock* bb)
-{
-    auto *ret_Irp = new IrProgram;
-    /*
-     * 先来处理全局变量
-     * - 全局变量声明这里都在第一个block里面（整个结构都只有两个大的block，第一个是可能为空的全局变量块，第二个是）
-     * - 因此先把第一个block里面的instruction翻进行处理，放入成员glob_decl中
-     * - 如果没有声明全局变量，那么第一个block中的InstrList这个vector的长度为0，因此第一个block可以放心处理
-     * -- 若第一个block中的InstrList这个vector的长度为不为0：挨个访问这些指令，放到它的Decl中去
-     * */
-    //第一个block
-    if(!bb->InstrList.empty())
+void assignIns(Instruction* ins,BasicBlock* node)
+{//依照不同类型的指令，进行转换IR
+    if(ins->getOpType() == Instruction::Add)
     {
-        for(auto glob_decl_ins: bb->InstrList)
-        {
-            Decl *d = Ins2Decl(glob_decl_ins);
-            ret_Irp->glob_decls.push_back(d);
-        }
+        assignAdd(ins,node);
     }
-
-    //先扫一遍ir1当中的blocklist
-    for(auto sonb: ir1->Blocks)
-    {
-        if(sonb->BlockName != "basic" && !sonb->pioneerBlock.empty())
-        {
-            dbg(sonb->BlockName);
-        }
-
-    }
-
-
-    return ret_Irp;
+    
 }
 
-void arrayDim2llvmIr(std::ostream &os, const vector<unsigned>& dim, unsigned dep, int num)
+void DeclBlock(BasicBlock *node)
 {
-    if(dep == dim.size())
-    {//stop
-        os << "i32";
-        for(int i=0; i<num; i++)os<<"]";
-        os << " ";
-    }
-    else
+    if(ssa_vis[node])ssa_vis[node]++;
+    else ssa_vis[node]=1;
+    if(ssa_vis[node]<node->pioneerBlock.size())return;
+    for(auto i : node->InstrList)
     {
-        os << "[" << dim[dep] << " x ";
-        arrayDim2llvmIr(os, dim, dep + 1, num);
+        //转换IR
+        //修改Assign_rec
+        assignIns(IR1->InstList[i],node);
+    }
+}
+void setDecl()
+{
+    for(auto i : IR1->Blocks)
+    {
+        if(i->domBlock.size())DeclBlock(i->domBlock[0]);
+        else{dbg("error");}
     }
 }
 
-void arrayValue2llvmIr(std::ostream &os, const vector<unsigned>& dim, const vector<int>& value, unsigned dep, unsigned& vaIn)
+struct DomTreenode
 {
-    if(dep == dim.size())
-    {// stop
-        os << "i32 " << value[vaIn];
-        vaIn++;
-    }
-    else
+    set<DomTreenode*> son;
+    BasicBlock* block;
+    DomTreenode *fa;
+};
+vector<DomTreenode*> DomRoot;
+map<BasicBlock*,bool>visDomTree;
+set<BasicBlock*>DomSon;
+map<BasicBlock*,DomTreenode*> block2dom;
+
+void dfsinit(BasicBlock *s)
+{
+    DomSon.insert(s);
+    for(auto i : s->succBlock)
     {
-        os << "[";
-        for(int i=0; i<dim[dep]; i++)
-        {
-            if(dep != dim.size() - 1)arrayDim2llvmIr(os, dim, dep+1, dim.size() - dep - 1);
-            arrayValue2llvmIr(os, dim, value, dep+1, vaIn);
-            if(i < dim[dep] - 1) os << ", ";
-        }
-        os << "]";
+        if(DomSon.count(i))continue;
+        dfsinit(s);
     }
 }
 
-// 打印IR
-std::ostream &operator<<(std::ostream &os, const IrProgram &p)
+void dfsbuild(BasicBlock *s)
 {
+    if(visDomTree[s])return ;
+    DomSon.erase(DomSon.find(s));
+    visDomTree[s]=1;
+    for(auto i:s->succBlock)dfsbuild(i);
+}
 
+void del(DomTreenode *root)
+{
+    set<DomTreenode*> tem;
+    tem.clear();
+    for(auto i : root->son)
+        set_difference(root->son.begin(),root->son.end(),i->son.begin(),i->son.end(),tem,tem.end());
+    root->son=tem;
+    for(auto i : root->son){i->fa=root;del(i);}
+}
 
-    //内置函数
-    os << "declare i32 @getint()" << endl;
-    os << "declare void @putint(i32)" << endl;
-
-    //全局变量
-    for(auto &d: p.glob_decls)
+void buildDomTree(BasicBlock *s)
+{
+    for(int i=0;i<s->domBlock.size();i++)
     {
-        os << "@" << d->name << " = global ";
-        if(d->is_array)
-        {
-            unsigned valueIndex = 0;
-            //需要特殊处理一下来迎合llvm ir 的语法
-            arrayDim2llvmIr(os, d->dims, 0, d->dims.size());
-            arrayValue2llvmIr(os, d->dims, std::get<1>(d->value), 0, valueIndex);
+        //init
+        dfsinit(s->domBlock[0]);//假设控制点为全局
+        visDomTree.clear();//vis清空
+        visDomTree[s->domBlock[i]]=1;//这个点不可达
+        DomSon.erase(DomSon.find(s->domBlock[i]));
+        dfsbuild(s->domBlock[0]);//去掉可达点
+        DomTreenode* sub=new DomTreenode();//子树的根
+        block2dom[s->domBlock[i]]=sub;
+        sub->block=s->domBlock[i];
+        for( auto son : DomSon)
+        {//建立子树
+            DomTreenode *soni = new DomTreenode();
+            soni->block=son;
+            sub->son.insert(soni);
         }
-        else
-        {
-            os << "i32 "<< std::get<int>(d->value);
-        }
-        os << std::endl;
+        if(i==0)DomRoot.push_back(sub);//要记住每一棵控制树的根
     }
-    os << std::endl << std::endl;
+    del(DomRoot.back());//删除多余边
+    return ;
+}
+
+void calDF(BasicBlock *b)
+{
+    
+    if(b->pioneerBlock.size()>=2){
+        for(auto i : b->pioneerBlock){
+            auto runner=i;
+            while(runner!=block2dom[b]->fa->block){
+                set<BasicBlock*> tem;
+                if(ssaIR->DF.count(i)==0)ssaIR->DF.insert(make_pair(i,tem));
+                ssaIR->DF[i].insert(b);
+                runner=block2dom[i]->fa->block;
+            }
+        }
+    }
+}
 
 
+set<Value*> allValue;
+
+void getAllValue()
+{
+    for(auto i : SymbolTable->table)
+    {
+        Value *tem = i.second;
+        if(allValue.count(tem))continue;
+        else allValue.insert(tem);
+    }
+}
 
 
+map<BasicBlock*,bool> phiIns;
+map<BasicBlock*,bool> Added;
+queue<BasicBlock*> blist;
 
+void placePhi()
+{
+    for(auto val : allValue){
+        phiIns.clear();
+        Added.clear();
+        //这里是计算blist, 里面存的是对val赋过值的block
+        for(auto b : ssaIR->AssbyBlock[val]){
+            Added[b]=1;
+            blist.push(b);
+        }
+        
+        while(blist.size())
+        {
+            BasicBlock* nowb=blist.front();
+            blist.pop();
+            for(auto d : ssaIR->DF[nowb])
+            {
+                if(!phiIns[d]){
+                    //add d one phi about val;
+                    phiIns[d]=1;
+                    if(!Added[d]){
+                        Added[d]=1;
+                        blist.push(d);
+                    }
+                }
+            }
 
-    return os;
+        }
+    }
+}
+
+void getssa()
+{
+    //计算控制树
+    //纯用定义算的, 目测O(n^3)
+    for(auto i: IR1->Blocks){
+        if(i->domBlock.size())buildDomTree(i);
+    }
+    //计算df;
+    /* 好家伙, 还是抄着快(出处:https://blog.csdn.net/qq_29674357/article/details/78731713)
+        1 for each node b
+        2   if the number of immediate predecessors of b ≥ 2
+        3     for each p in immediate predecessors of b
+        4       runner := p
+        5       while runner ≠ idom(b)
+        6         add b to runner’s dominance frontier set
+        7         runner := idom(runner)
+    */
+    for(auto i : IR1->Blocks){
+        if(i->domBlock.size()){
+            for(auto j : i->domBlock)calDF(j);
+        }
+    }
+    // set decl
+    setDecl();
+    //继续抄!  002_SSA比较清楚的说明_Lecture23.4up.pdf
+    placePhi();
 }

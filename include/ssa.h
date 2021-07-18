@@ -1,58 +1,31 @@
-//
-// Created by Neho on 2021/7/11.
-//
-
-#ifndef CALCIFER_SSA_H
-#define CALCIFER_SSA_H
-
-#endif //CALCIFER_SSA_H
-
-
-#include "ilist.h"
-#include "util.h"
+#pragma once
+#include"decl.h"
+#include"armInstruciton.h"
 #include "Value.h"
-#include <string>
-#include <map>
+#include<bits/stdc++.h>
+using namespace std;
+/*
+input: CFG with lowIR
+output: CFG with newIR
+
+note:
+    1. What is newIR?
+    ----将之前四元式中的指令替换为汇编指令，暂不处理寄存器，使用decel（每一个变量被赋值都会多一个decel，在多个变量合并的时候，需要插入phi节点）
+    2. 是否复用instrion类?
+    ----还是重新来吧.
+*/
 
 #include "BuildIR.h" // for LinearIR
 #include "BasicBlock.h" // for BasicBlock
 
-
-struct Decl {
-    bool is_array; // ?
-    bool is_const; // 是否是常量
-    bool is_glob; // 是否是全局变量
-    std::string name;
-
-    // their value, can be decided by is_array
-    std::variant<int, std::vector<int>> value;
-
-    // int array special
-    std::vector<unsigned> dims; // store the dimension of array
+class ssa
+{
+    public:
+    vector<armInstr*> newIR;
+    map< Value*, vector<Decl*> > Assign_rec;
+    map<Value*, vector<BasicBlock*> > AssbyBlock;
+    map<BasicBlock*, vector<armInstr*> > newBlock;
+    map<BasicBlock*,set<BasicBlock*>> DF;
 };
 
-
-struct IrFunc {
-    DEFINE_ILIST(IrFunc) // 声明其前驱后继指针， 相当于对应IrProgram里的ir_func
-//    Func *func; // 该函数体
-//    ilist<BasicBlock> bbs; // （多个）bbs包含这个函数体内的多个基本块，像什么while, basic, return这些
-
-    // mapping from decl to its value in this function
-    std::map<Decl *, Value *> decls;
-};
-
-struct IrProgram {
-    std::vector<Decl *> glob_decls; // （多个）全局声明declaration
-    ilist<IrFunc> ir_funcs; // （多个）ir_funcs包含所有函数及其内容，从头到尾
-
-    // 通过原来的Func找到现在它所对应的IrFunc
-//    IrFunc *findFunc(Func *func);
-
-    // 用于打印整个IrProgram，重载至ostream，最后输入到ir_file
-    friend std::ostream& operator<<(std::ostream& os, const IrProgram& p);
-};
-
-std::ostream& operator<<(std::ostream& os, const IrProgram& p);
-
-
-IrProgram *convert_ssa(LinearIR*, BasicBlock*);
+extern void getssa();
