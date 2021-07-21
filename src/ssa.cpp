@@ -1,15 +1,5 @@
-/*
-input: CFG with lowIR
-output: CFG with newIR
-
-note:
-    1. What is newIR?
-    ----将之前四元式中的指令替换为汇编指令，暂不处理寄存器，使用decel（每一个变量被赋值都会多一个decel，在多个变量合并的时候，需要插入phi节点）
-*/
-
 #include "ssa.h"
 #include "decl.h"
-#include "armInstruciton.h"
 #include "semanticAnalyze.h"
 #include "Instruction.h"
 #include"BuildIR.h"
@@ -17,176 +7,148 @@ note:
 #include<bits/stdc++.h>
 using namespace std;
 
-map<BasicBlock*, int>ssa_vis;
 ssa* ssaIR=new ssa();
-int Rcnt;
 
-///
-ostream & operator << (ostream &out,const Decl *A)
-{
-    out<<"@ NULL";
-    return out;
-}
-ostream & operator << (ostream &out,const constDecl *A)
-{
-    out<<"#"<<A->value;
-    return out;
-}
-ostream & operator << (ostream &out,const varDecl *A)
-{
-    out<<"r"<<A->Vreg;
-    return out;
-}
-
-
-////
-
-void assignMov(Instruction* instr, BasicBlock* node)
-{
-    
-}
-
-void assignAdd(Instruction* instr,BasicBlock *node)
-{
-    armAdd *ins=new armAdd();
-    IntegerValue* res=(IntegerValue*)instr->getResult();
-    IntegerValue* r0=(IntegerValue*)instr->getOp()[0];
-    IntegerValue* r1=(IntegerValue*)instr->getOp()[1];
-
-    if(r0->isConst==1)swap(r1,r0);
-    //目的value多了一次赋值记录
-    varDecl *resd = new varDecl(res,node,(armInstr*)ins,Rcnt++);
-    ins->rd = (Decl*)resd;
-
-    ssaIR->Assign_rec[res].push_back((Decl*)resd);
-    //第一个操作数转换为赋值
-    varDecl *r0d = (varDecl *)ssaIR->Assign_rec[r0].back();
-    r0d->usesd.push_back(ins);//这个decl用了一次
-    ins->r0 = (Decl*)r0d;
-    if (r1->isConst)
-    {//如果是常量,也搞成一个赋值,不过没什么意义
-        constDecl *r1d = new constDecl((Value*)r1,node,(armInstr*)ins,r1->RealValue);
-        ins->r1 = (Decl*)r1d;
-    }
-    else
-    {//第二个操作数转换为赋值
-        varDecl *r1d = (varDecl *)ssaIR->Assign_rec[r1].back();
-        r1d->usesd.push_back(ins);
-        ins->r1 = (Decl*)r1d;
-    }
-    cout<<ins<<endl;
-}
-
-void assignIns(Instruction* ins,BasicBlock* node)
-{//依照不同类型的指令，进行转换IR
-    if(ins->getOpType() == Instruction::Add)
-    {
-        assignAdd(ins,node);
-    }
-    
-}
-
-void DeclBlock(BasicBlock *node)
-{
-    if(ssa_vis[node])ssa_vis[node]++;
-    else ssa_vis[node]=1;
-    if(ssa_vis[node]<node->pioneerBlock.size())return;
-    for(auto i : node->InstrList)
-    {
-        //转换IR
-        //修改Assign_rec
-        assignIns(IR1->InstList[i],node);
-    }
-}
-void setDecl()
-{
-    for(auto i : IR1->Blocks)
-    {
-        if(i->domBlock.size())DeclBlock(i->domBlock[0]);
-        else{dbg("error");}
-    }
-}
-
-struct DomTreenode
-{
-    set<DomTreenode*> son;
-    BasicBlock* block;
-    DomTreenode *fa;
-};
+/*
+    生成支配树
+*/
 vector<DomTreenode*> DomRoot;
-map<BasicBlock*,bool>visDomTree;
-set<BasicBlock*>DomSon;
 map<BasicBlock*,DomTreenode*> block2dom;
 
-void dfsinit(BasicBlock *s)
+//temperate define
+map<DomTreenode*, int> semi;
+map<DomTreenode*,DomTreenode*> parent;
+map<DomTreenode*, vector<DomTreenode*> > bucket;
+vector<DomTreenode*> vertex;
+map<DomTreenode*,DomTreenode*> ancestor;
+map<DomTreenode*,DomTreenode*> label;
+int dfscnt=0; 
+
+void tarjan_init()
 {
-    DomSon.insert(s);
-    for(auto i : s->succBlock)
-    {
-        if(DomSon.count(i))continue;
-        dfsinit(s);
+    dfscnt=0;
+    semi.clear();
+    parent.clear();
+    bucket.clear();
+    vertex.clear();
+}
+void dfsLT(DomTreenode* dang)
+{
+    semi[dang]=++dfscnt;
+    vertex.push_back(dang);
+    BasicBlock* db=dang->block;
+    for( auto i : db->succBlock){
+        if(!block2dom.count(i)){
+            block2dom[i]=new DomTreenode();
+            block2dom[i]->block=i;
+        }
+        DomTreenode* nx = block2dom[i];
+        if(!semi[nx]){
+            parent[nx]=dang;
+            dfsLT(nx);
+        }
+    }
+}
+void compress(DomTreenode* v)
+{
+    if(ancestor[ancestor[v]]!=0){
+        compress(ancestor[v]);
+        if(semi[label[ancestor[v]]]<semi[label[v]]){
+            label[v]=label[ancestor[v]];
+        }
+        ancestor[v]=ancestor[ancestor[v]];   
+    }
+}
+DomTreenode* eval(DomTreenode* v)
+{
+    if(ancestor[v]==0)return v;
+    else{
+        compress(v);
+        return label[v];
     }
 }
 
-void dfsbuild(BasicBlock *s)
+void step23()
 {
-    if(visDomTree[s])return ;
-    DomSon.erase(DomSon.find(s));
-    visDomTree[s]=1;
-    for(auto i:s->succBlock)dfsbuild(i);
+    for(int i=vertex.size()-1;i>0;i--){
+        auto w=vertex[i];
+        BasicBlock* wb = w->block;
+        for(auto vb: wb->pioneerBlock){
+            DomTreenode* v=block2dom[vb];
+            DomTreenode* u=eval(v);
+            if(semi[u]<semi[w])semi[w]=semi[u];
+        }
+        if(bucket.count(vertex[semi[w]-1])==0){
+            vector<DomTreenode*> tem;
+            bucket[vertex[semi[w]-1]]=tem;
+        }
+        bucket[vertex[semi[w]-1]].push_back(w);
+        ancestor[w]=parent[w];
+        if(bucket.count(parent[w])==0)continue;
+        for(auto i=bucket[parent[w]].begin();i<bucket[parent[w]].end();i++){
+            auto v=*i;
+            bucket[parent[w]].erase(i);
+            --i;
+            DomTreenode* u=eval(v);
+            if(semi[u]<semi[v])v->idom=u;
+            else v->idom=parent[w];
+        }
+    }
 }
 
-void del(DomTreenode *root)
+void step4()
 {
-    set<DomTreenode*> tem;
-    tem.clear();
-    for(auto i : root->son)
-        set_difference(root->son.begin(),root->son.end(),i->son.begin(),i->son.end(),tem,tem.end());
-    root->son=tem;
-    for(auto i : root->son){i->fa=root;del(i);}
+    for(auto w : vertex){
+        if(w==vertex.front())continue;
+        if(w->idom!=vertex[semi[w]-1]){
+            w->idom=w->idom->idom;
+        }
+        w->idom->son.push_back(w);
+    }
+    vertex[0]->idom=nullptr;
 }
 
 void buildDomTree(BasicBlock *s)
 {
-    for(int i=0;i<s->domBlock.size();i++)
-    {
-        //init
-        dfsinit(s->domBlock[0]);//假设控制点为全局
-        visDomTree.clear();//vis清空
-        visDomTree[s->domBlock[i]]=1;//这个点不可达
-        DomSon.erase(DomSon.find(s->domBlock[i]));
-        dfsbuild(s->domBlock[0]);//去掉可达点
-        DomTreenode* sub=new DomTreenode();//子树的根
-        block2dom[s->domBlock[i]]=sub;
-        sub->block=s->domBlock[i];
-        for( auto son : DomSon)
-        {//建立子树
-            DomTreenode *soni = new DomTreenode();
-            soni->block=son;
-            sub->son.insert(soni);
-        }
-        if(i==0)DomRoot.push_back(sub);//要记住每一棵控制树的根
-    }
-    del(DomRoot.back());//删除多余边
-    return ;
+    //step1 求sdom
+    tarjan_init();
+    block2dom[s->domBlock[0]]=new DomTreenode();
+    block2dom[s->domBlock[0]]->block=s->domBlock[0];
+    DomTreenode* root=block2dom[s->domBlock[0]];
+    DomRoot.push_back(root);
+    dfsLT(root);
+
+    //step2\3
+    ancestor[root]==0;
+    for(auto i: vertex)label[i]=i;
+    step23();
+
+    step4();
 }
 
 void calDF(BasicBlock *b)
 {
-    
+    /* 好家伙, 还是抄着快(出处:https://blog.csdn.net/qq_29674357/article/details/78731713)
+        1 for each node b
+        2   if the number of immediate predecessors of b ≥ 2
+        3     for each p in immediate predecessors of b
+        4       runner := p
+        5       while runner ≠ idom(b)
+        6         add b to runner’s dominance frontier set
+        7         runner := idom(runner)
+    */
     if(b->pioneerBlock.size()>=2){
         for(auto i : b->pioneerBlock){
             auto runner=i;
-            while(runner!=block2dom[b]->fa->block){
+            while(runner!=block2dom[b]->idom->block){
                 set<BasicBlock*> tem;
                 if(ssaIR->DF.count(i)==0)ssaIR->DF.insert(make_pair(i,tem));
                 ssaIR->DF[i].insert(b);
-                runner=block2dom[i]->fa->block;
+                runner=block2dom[i]->idom->block;
             }
         }
     }
 }
-
 
 set<Value*> allValue;
 
@@ -200,10 +162,30 @@ void getAllValue()
     }
 }
 
-
 map<BasicBlock*,bool> phiIns;
 map<BasicBlock*,bool> Added;
 queue<BasicBlock*> blist;
+
+void addAssbyBlock(Value* val, BasicBlock* b)
+{
+    if(ssaIR->AssbyBlock.count(val)){
+        vector<BasicBlock*> tem;
+        ssaIR->AssbyBlock[val]=tem;
+    }
+    ssaIR->AssbyBlock[val].push_back(b);
+}
+
+void setAssbyBlock(BasicBlock* s)
+{
+    for(auto i:s->InstrList)
+    {
+        Instruction *ins = IR1->InstList[i];
+        if(ins->getOpType()>=Instruction::Add&&ins->getOpType()<=Instruction::LogicOr)
+            addAssbyBlock(ins->getResult(),s);
+        // else if(ins->getOpType()==)
+        //还没想好load和store怎么处理
+    }
+}
 
 void placePhi()
 {
@@ -216,14 +198,18 @@ void placePhi()
             blist.push(b);
         }
         
-        while(blist.size())
-        {
+        while(blist.size()){
             BasicBlock* nowb=blist.front();
             blist.pop();
             for(auto d : ssaIR->DF[nowb])
             {
                 if(!phiIns[d]){
                     //add d one phi about val;
+                    Instruction* ins=new Instruction(-1,Instruction::Phi,1);
+                    ins->addOperand(val);
+                    IR1->InsertInstr(ins);
+                    d->InstrList.insert(d->InstrList.begin(),IR1->InstList.size()-1);
+
                     phiIns[d]=1;
                     if(!Added[d]){
                         Added[d]=1;
@@ -239,27 +225,25 @@ void placePhi()
 void getssa()
 {
     //计算控制树
-    //纯用定义算的, 目测O(n^3)
+    //Lenguar-Tarjan 稍改...
     for(auto i: IR1->Blocks){
         if(i->domBlock.size())buildDomTree(i);
     }
+
     //计算df;
-    /* 好家伙, 还是抄着快(出处:https://blog.csdn.net/qq_29674357/article/details/78731713)
-        1 for each node b
-        2   if the number of immediate predecessors of b ≥ 2
-        3     for each p in immediate predecessors of b
-        4       runner := p
-        5       while runner ≠ idom(b)
-        6         add b to runner’s dominance frontier set
-        7         runner := idom(runner)
-    */
     for(auto i : IR1->Blocks){
         if(i->domBlock.size()){
             for(auto j : i->domBlock)calDF(j);
         }
     }
-    // set decl
-    setDecl();
-    //继续抄!  002_SSA比较清楚的说明_Lecture23.4up.pdf
+
+    getAllValue();//这里计算每一个块被赋值的变量有哪些,为placePhi做准备;
+    for(auto i : IR1->Blocks){
+        if(i->domBlock.size()){
+            for(auto j : i->domBlock)setAssbyBlock(j);
+        }
+    }
+    //抄它!  002_SSA比较清楚的说明_Lecture23.4up.pdf
     placePhi();
+
 }

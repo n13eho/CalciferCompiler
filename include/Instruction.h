@@ -57,7 +57,8 @@ public:
         Store,
         Break,
         //变量空间申请
-        Alloc
+        Alloc,
+        Phi
     };
 
     Instruction(int id,Instruction::InsType ins_type,unsigned oprands_num):InstrId(id),OpType(ins_type),OpNums(oprands_num)

@@ -1,6 +1,5 @@
 #pragma once
 #include"decl.h"
-#include"armInstruciton.h"
 #include "Value.h"
 #include<bits/stdc++.h>
 using namespace std;
@@ -18,14 +17,25 @@ note:
 #include "BuildIR.h" // for LinearIR
 #include "BasicBlock.h" // for BasicBlock
 
+struct DomTreenode
+{
+    vector<DomTreenode*> son;
+    BasicBlock* block;
+    DomTreenode *idom;
+};
+extern map<BasicBlock*,DomTreenode*> block2dom;
+extern vector<DomTreenode*> DomRoot;
+
 class ssa
 {
     public:
     vector<armInstr*> newIR;
-    map< Value*, vector<Decl*> > Assign_rec;
+    map< pair<Value*,BasicBlock*>, vector<Decl*> > Assign_rec;
     map<Value*, vector<BasicBlock*> > AssbyBlock;
     map<BasicBlock*, vector<armInstr*> > newBlock;
     map<BasicBlock*,set<BasicBlock*>> DF;
 };
 
 extern void getssa();
+extern map<BasicBlock*, string> block2lb;
+extern ssa* ssaIR;
