@@ -30,12 +30,11 @@ class ssa
 {
     public:
     vector<armInstr*> newIR;
-    map< pair<Value*,BasicBlock*>, vector<Decl*> > Assign_rec;
     map<Value*, vector<BasicBlock*> > AssbyBlock;
-    map<BasicBlock*, vector<armInstr*> > newBlock;
     map<BasicBlock*,set<BasicBlock*>> DF;
 };
 
 extern void getssa();
 extern map<BasicBlock*, string> block2lb;
 extern ssa* ssaIR;
+extern set<BasicBlock*> phiPos;

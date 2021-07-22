@@ -8,6 +8,7 @@
 #include "../include/detetedeadblock.h"
 #include "register.h"
 #include"ssa.h"
+#include"liveSet.h"
 
 //外部的lineno，行号信息
 extern int lineno;
@@ -49,8 +50,9 @@ int main(int argc, char *argv[])
         VisitAST(Droot, IR1);
         Visitblock(IR1);
         show_IR_ins(IR1);           // 打印指令
-        getssa();
         show_block(globalBlock, 0); // 打印基本块 （写注释啊啊啊啊啊啊 --neho
+        getssa();
+        liveSets();
         // codegeneration();
         // 利用四元式和bb信息得出ssa_0
         // dbg("convert to ssa");

@@ -165,6 +165,7 @@ void getAllValue()
 map<BasicBlock*,bool> phiIns;
 map<BasicBlock*,bool> Added;
 queue<BasicBlock*> blist;
+set<BasicBlock*> phiPos;
 
 void addAssbyBlock(Value* val, BasicBlock* b)
 {
@@ -209,6 +210,7 @@ void placePhi()
                     ins->addOperand(val);
                     IR1->InsertInstr(ins);
                     d->InstrList.insert(d->InstrList.begin(),IR1->InstList.size()-1);
+                    phiPos.insert(d);
 
                     phiIns[d]=1;
                     if(!Added[d]){

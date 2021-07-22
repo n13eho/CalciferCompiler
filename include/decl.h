@@ -11,11 +11,10 @@ class Decl {
     public:
     Value* rawValue; //which variable
     BasicBlock* rawBlock;//which block
-    armInstr* birth; //which instruction has the value;不知道是不是有用...
     vector<armInstr*> usesd; //which instruction uses it; 不知道是不是有用...
     Decl(){}
     ~Decl(){}
-    Decl(Value *_rawValue, BasicBlock *_rawBlock, armInstr *_birth) : rawValue(_rawValue), rawBlock(_rawBlock), birth(_birth){};
+    Decl(Value *_rawValue, BasicBlock *_rawBlock) : rawValue(_rawValue), rawBlock(_rawBlock){};
     // friend ostream & operator << (ostream &out,const Decl &A){
     //     out<<"@ NULL";
     //     return out;
@@ -32,7 +31,7 @@ ostream& operator<<(ostream&out,const Decl& a);
 class constDecl:public Decl{
     public:    
     int value;
-    constDecl(Value *_rawValue, BasicBlock *_rawBlock, armInstr *_birth,int _value):Decl(_rawValue,_rawBlock,_birth),value(_value){};
+    constDecl(Value *_rawValue, BasicBlock *_rawBlock,int _value):Decl(_rawValue,_rawBlock),value(_value){};
     virtual ostream& output(ostream&out)const{
         out<<"#"<<value;
         return out;
@@ -43,7 +42,7 @@ class constDecl:public Decl{
 class varDecl:public Decl{
     public:
     int Vreg;
-    varDecl(Value *_rawValue, BasicBlock *_rawBlock, armInstr *_birth,int _Vreg):Decl(_rawValue,_rawBlock,_birth),Vreg(_Vreg){};
+    varDecl(Value *_rawValue, BasicBlock *_rawBlock,int _Vreg):Decl(_rawValue,_rawBlock),Vreg(_Vreg){};
     virtual ostream& output(ostream&out)const{
         out<<"r"<<Vreg;
         return out;
@@ -53,7 +52,8 @@ class varDecl:public Decl{
 
 class armInstr{
     public:
-    enum type{add=1,sub,mul,div,mod,andd,orr,mov,ldr,str,push,pop,cmp,beq,blr} ;
+    Decl* rd;
+    enum type{add=1,sub,mul,div,mod,andd,orr,mov,ldr,str,push,pop,cmp,beq,bne,blt,ble,bgt,bge,blr,movlt,movle,movge,movgt,moveq,movne} ;
     virtual ostream& output(ostream&out)const{
         out<<"@ NULL"<<endl;
         return out;
@@ -65,8 +65,7 @@ ostream& operator<<(ostream&out,const armInstr& a);
 class armAdd:public armInstr
 {
     public:
-    Decl *rd,*r0;
-    Decl *r1;
+    Decl *r1,*r0;
     virtual int getType(){return add;}
     virtual ostream& output(ostream&out)const
     {
@@ -81,7 +80,8 @@ class armDiv:armInstr{};
 class armMod:armInstr{};
 class armAnd:armInstr{};
 class armOrr:armInstr{};
-class armBeq:armInstr{
+class armBeq:public armInstr{
+    public:
     string lb;
     virtual int getType(){return beq;}
     virtual ostream& output(ostream&out)const
@@ -90,8 +90,59 @@ class armBeq:armInstr{
         return out;
     }
 };
+class armBne:public armInstr{
+    public:
+    string lb;
+    virtual int getType(){return beq;}
+    virtual ostream& output(ostream&out)const
+    {
+        out<<"bne "<<lb;
+        return out;
+    }
+};
+class armBlt:public armInstr{
+    public:
+    string lb;
+    virtual int getType(){return beq;}
+    virtual ostream& output(ostream&out)const
+    {
+        out<<"blt "<<lb;
+        return out;
+    }
+};
+class armBgt:public armInstr{
+    public:
+    string lb;
+    virtual int getType(){return beq;}
+    virtual ostream& output(ostream&out)const
+    {
+        out<<"bgt "<<lb;
+        return out;
+    }
+};
+class armBle:public armInstr{
+    public:
+    string lb;
+    virtual int getType(){return beq;}
+    virtual ostream& output(ostream&out)const
+    {
+        out<<"ble "<<lb;
+        return out;
+    }
+};
+class armBge:public armInstr{
+    public:
+    string lb;
+    virtual int getType(){return beq;}
+    virtual ostream& output(ostream&out)const
+    {
+        out<<"bge "<<lb;
+        return out;
+    }
+};
 
-class armCmp:armInstr{
+class armCmp:public armInstr{
+    public:
     Decl *r1,*r0;
     virtual int getType(){return cmp;}
     virtual ostream& output(ostream&out)const
@@ -101,9 +152,8 @@ class armCmp:armInstr{
     }
 };
 
-class armMov:armInstr{
+class armMov:public armInstr{
     public:
-    Decl *rd;
     Decl *rs;
     virtual int getType(){return mov;}
     virtual ostream& output(ostream&out)const

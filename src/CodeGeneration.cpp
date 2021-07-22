@@ -513,7 +513,7 @@ void transLogic(Instruction* instr)
     }
     else if(instr->getOpType()==Instruction::ArithBG)
     {
-        calout<<"\tmovbt r"<<R_res<<", #1" << endl;
+        calout<<"\tmovgt r"<<R_res<<", #1" << endl;
         calout<<"\tmovle r"<<R_res<<", #0" << endl;
     }
     else if(instr->getOpType()==Instruction::ArithGQ)
