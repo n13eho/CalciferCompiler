@@ -1,6 +1,12 @@
 #include<bits/stdc++.h>
 #include"decl.h"
 #include"ssa.h"
+#include"liveSet.h"
+
+/*
+input: IR1 with phi
+output: newIR
+*/
 
 map<BasicBlock*, string> block2lb;
 int Bcnt;
@@ -108,7 +114,7 @@ void assignLogicCond(Instruction *instr, BasicBlock* node)
 }
 
 void assignIns(Instruction* ins,BasicBlock* node)
-{//依照不同类型的指令，计算赋值,同时填newblock
+{//依照不同类型的指令，计算赋值,同时填newblock, 分支指令除外
     if(ins->getOpType() == Instruction::Add)
     {
         assignAdd(ins,node);
@@ -230,6 +236,14 @@ void setUsed(BasicBlock* s)
     }
 }
 
+void showDecl(BasicBlock* s)
+{
+    cout<<block2lb[s]<<endl;
+    for(auto ins:newBlock[s]){
+        cout<<ins<<endl;
+    }
+}
+
 void liveSets()
 {
     //1. 转换Decl
@@ -259,5 +273,9 @@ void liveSets()
         for(auto blk : gb->domBlock){
             setUsed(blk);
         }
+    }
+    //4. 输出用
+    for(auto rt:DomRoot){
+        showDecl(rt->block);
     }
 }

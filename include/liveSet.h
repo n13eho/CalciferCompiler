@@ -4,5 +4,5 @@
 #include<bits/stdc++.h>
 using namespace std;
 
-extern map<BasicBlock*, list<armInstr*>> newBlock;
 void liveSets();
+extern map<BasicBlock*, list<armInstr*>> newBlock;

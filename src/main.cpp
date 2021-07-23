@@ -3,7 +3,6 @@
 #include "../include/BuildIR.h"
 #include "part.tab.hpp"
 #include "../include/debug.h"
-#include "../include/ssa.h"
 #include "CodeGeneration.h"
 #include "../include/detetedeadblock.h"
 #include "register.h"
@@ -51,8 +50,8 @@ int main(int argc, char *argv[])
         Visitblock(IR1);
         show_IR_ins(IR1);           // 打印指令
         show_block(globalBlock, 0); // 打印基本块 （写注释啊啊啊啊啊啊 --neho
-        getssa();
-        liveSets();
+        getssa();//建立支配树以及支配边界
+        liveSets();//重命名
         // codegeneration();
         // 利用四元式和bb信息得出ssa_0
         // dbg("convert to ssa");
