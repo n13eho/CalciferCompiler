@@ -49,6 +49,13 @@ void assignPhi(Instruction* instr,BasicBlock*node)
     Value* val=instr->getOp()[0];    
     varDecl* rd = new varDecl(val, node, Rcnt++);
     for(auto pred : node->pioneerBlock){
+        //有phi的block中,前驱不一定都存在着val的decl,先把没有的去掉
+        int fl=0;
+        for(auto b:ssaIR->AssbyBlock[val]){
+            if(b==pred){fl=1;break;}
+        }
+        if(!fl)continue;
+        
         armMov* ins = new armMov();
         ins->rd=rd;
         auto pos = newBlock[pred].end();
@@ -221,15 +228,23 @@ void usedAdd(armAdd* ins,BasicBlock* node)
 
 }
 
-void usedMov(armMov* ins, BasicBlock* node)
+int usedMov(armMov* ins, BasicBlock* node)
 {
     Instruction* raw = trance[ins];
-    dbg(raw->getOp().size());
+
+    //phi可能要特殊处理了...
+    // if(raw->getOpType()==Instruction::Phi){
+    //     dbg("dao zhe le ma?");
+    //     for(auto b:ssaIR->AssbyBlock[ins->rd->rawValue]){
+    //         if(b==node)return -1;
+    //     }
+    // }
     IntegerValue* rs ;
     if(raw->getOp().size())rs= (IntegerValue*)raw->getOp()[0];
     else rs= new IntegerValue("tt",-1,"",1);
     ins->rs = getDecl(rs,node);
     addAssign(ins->rd->rawValue,node,ins->rd);
+    return 0;
 }
 
 void usedCmp(armCmp* ins,BasicBlock* node)
@@ -242,10 +257,10 @@ void usedCmp(armCmp* ins,BasicBlock* node)
     ins->r0 = getDecl(r0,node);
 }
 
-void usedIns(armInstr* ins,BasicBlock* node)
+int usedIns(armInstr* ins,BasicBlock* node)
 {
     if(ins->getType()==armInstr::mov){
-        usedMov((armMov*)ins,node);
+        return usedMov((armMov*)ins,node);
     }
     else if(ins->getType() == armInstr::add){
         usedAdd((armAdd*)ins,node);
@@ -253,6 +268,7 @@ void usedIns(armInstr* ins,BasicBlock* node)
     else if(ins->getType() == armInstr::cmp){
         usedCmp((armCmp*)ins,node);
     }
+    return 0;
 }
 
 void setUsed(BasicBlock* s)
@@ -262,9 +278,10 @@ void setUsed(BasicBlock* s)
         addAssign(dc->rawValue,s,dc);
     } 
     //对于每一条语句填used
-    for(auto ins : newBlock[s]){
-        dbg(ins->getType());
-        usedIns(ins,s);
+    for(auto ins=newBlock[s].begin();ins!=newBlock[s].end();ins++){
+        if(usedIns(*ins,s)==-1){
+            newBlock[s].erase(ins);
+        }
     }
 }
 
