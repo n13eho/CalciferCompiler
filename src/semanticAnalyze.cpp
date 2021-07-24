@@ -749,9 +749,7 @@ void semantic_VarDefSon(GrammaNode *root)
     else if (root->type == VarDef_single_init_)
     { // 单值变量，有初始参数
         //先算出初值 initValue
-        dbg("1");
         IntegerValue *initValueObj = (IntegerValue *)semantic_InitVal3_(root->son[2], 0);
-        dbg("outoutout");
         int initValue = initValueObj->RealValue;
         //new出新的结点
         IntegerValue *single_init = new IntegerValue(root->son[0]->str, root->son[0]->lineno, root->son[0]->var_scope, initValue, 0);

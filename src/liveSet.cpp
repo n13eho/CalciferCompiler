@@ -313,6 +313,7 @@ void liveSets()
         }
     }
     //4. 输出用
+    cout << "\n\n";
     for(auto rt:DomRoot){
         showDecl(rt);
     }
