@@ -61,7 +61,13 @@ void printIns(int id)
     { // Retrun 语句没有reslut，访问空0 segmentation fault
         cout << endl;
     }
-    else{cout << presenIns->getResult()->VName << endl;}
+    else
+    {
+        if(presenIns->getResult()!=nullptr)
+            cout << presenIns->getResult()->VName << endl;
+        else
+            cout<<endl;
+    }
 }
 
 void show_block(BasicBlock* node,int dep)
