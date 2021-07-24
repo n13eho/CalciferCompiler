@@ -25,7 +25,7 @@ class ssa
 {
     public:
     vector<armInstr*> newIR;
-    map<Value*, vector<BasicBlock*> > AssbyBlock;
+    map<Value*, vector<BasicBlock*> > AssbyBlock;//对val赋值过的block
     map<BasicBlock*,set<BasicBlock*>> DF;
 };
 
