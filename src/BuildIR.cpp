@@ -349,13 +349,13 @@ void VarDefNode(GrammaNode* node,LinearIR *IR)
                 AllocCreate(p_node,IR,VL,total);
 
             }
-            // Instruction* ins_new = new Instruction(IR->getInstCnt(),Instruction::Assign,0);
-            // ins_new->setResult(VL);
-            // //向基本块加入指令
-            // bbNow->Addins(ins_new->getId());
-            // ins_new->setParent(bbNow);
+            Instruction* ins_new = new Instruction(IR->getInstCnt(),Instruction::Assign,0);
+            ins_new->setResult(VL);
+            //向基本块加入指令
+            bbNow->Addins(ins_new->getId());
+            ins_new->setParent(bbNow);
 
-            // IR->InsertInstr(ins_new);
+            IR->InsertInstr(ins_new);
         }
     }
 }
