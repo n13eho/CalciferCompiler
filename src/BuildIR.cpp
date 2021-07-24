@@ -24,6 +24,8 @@ stack<BasicBlock*> CaseTBlocks;
 stack<BasicBlock*> CaseFBlocks;
 //记录当前条件是逻辑或、与
 vector<int> CondLogi;
+//当前与或的条件个数
+vector<int> CondCnt;
 
 
 BasicBlock* GetPresentBlock(BasicBlock* funcP,BasicBlock::BlockType t)
@@ -82,7 +84,7 @@ void VisitAST(GrammaNode* DRoot,LinearIR *IR)
 {
     //全局基本块
     IR->AddBlock(globalBlock);
-//    dbg("start VisitAST");
+   dbg("start VisitAST");
     
     for(int i=0;i<DRoot->son.size();i++)
     {
@@ -596,17 +598,17 @@ void IfNode(GrammaNode* node,LinearIR *IR)
         CondNode(node->son[0],IR);
 
         //条件成立跳转指令
-        Instruction* ins_br = new Instruction(IR->getInstCnt(),Instruction::ConBr,0);
-        IR->InsertInstr(ins_br);
-        bbNow->Addins(ins_br->getId());
-        ins_br->setParent(bbNow);
-        ins_br->jmpDestBlock = caseT;
+        // Instruction* ins_br = new Instruction(IR->getInstCnt(),Instruction::ConBr,0);
+        // IR->InsertInstr(ins_br);
+        // bbNow->Addins(ins_br->getId());
+        // ins_br->setParent(bbNow);
+        // ins_br->jmpDestBlock = caseT;
 
         //条件不成立跳转指令
         Instruction* ins_jmp = new Instruction(IR->getInstCnt(),Instruction::Jmp,0);
         IR->InsertInstr(ins_jmp);
         bbNow->Addins(ins_jmp->getId());
-        ins_br->setParent(bbNow);
+        // ins_br->setParent(bbNow);
         ins_jmp->jmpDestBlock = next;
 
         bbNow = caseT;
@@ -616,7 +618,7 @@ void IfNode(GrammaNode* node,LinearIR *IR)
         bbNow = next;
         //update jmp address
         //后面删除该结果value
-        ins_br->setResult(new IntegerValue("jmpAddress0",node->lineno,node->var_scope,IR->getInstCnt(),1));
+        // ins_br->setResult(new IntegerValue("jmpAddress0",node->lineno,node->var_scope,IR->getInstCnt(),1));
 
         CaseFBlocks.pop();
         CaseTBlocks.pop();
@@ -928,6 +930,8 @@ void CondNode(GrammaNode* node,LinearIR *IR)
 void LOrExpNode(GrammaNode* node,LinearIR *IR)
 {
     CondLogi.push_back(Instruction::LogicOr);
+    CondCnt.push_back(node->son.size());
+    cout<<"LOrExpNode cond cnt:"<<node->son.size()<<endl;
     //前一个条件value
     // Value* Condpre = LAndExpNode(node->son[0],IR);
     // if(node->son.size()==1)
@@ -972,6 +976,7 @@ void LOrExpNode(GrammaNode* node,LinearIR *IR)
     }
 
     CondLogi.pop_back();
+    CondCnt.pop_back();
     //条件value和立即数0比较
 //    Instruction* ins_neq = new Instruction(IR->getInstCnt(),Instruction::ArithNeq,2);
 //    ins_neq->addOperand(Condpre);
@@ -987,43 +992,105 @@ void LOrExpNode(GrammaNode* node,LinearIR *IR)
 Value* LAndExpNode(GrammaNode* node,LinearIR *IR)
 {
     CondLogi.push_back(Instruction::LogicAnd);
-    //前一个条件value
-    // Value* Condpre = EqExpNode(node->son[0],IR);
-    for(int i=0;i<node->son.size();i++)
-    {
-        Value* Condi = EqExpNode(node->son[i],IR);
-        if(Ident_ == node->son[i]->type || AddExp_Add_ == node->son[i]->type ||
-        AddExp_Sub_ == node->son[i]->type || MulExp_Mul_ == node->son[i]->type ||
-        MulExp_Div_ == node->son[i]->type || MulExp_Mod_ == node->son[i]->type)
-        {
-            //与常数0比较
-        }
-        //当前a or b计算结果
-        // Value* ret = new Value("t"+std::to_string(i),node->lineno,node->var_scope);
-
-        // if(nullptr == FuncN && 0 == global)
-        // {
-        //     throw BuildIRError(ret->lineno,ret->VName,"error");
-        //     // return ;
-        // }
-        // //属于某个函数且该指令为首指令，新建一个基本块，并建立联系
-        // if(nullptr == bbNow)
-        // {
-        //     bbNow = GetPresentBlock(FuncN,BasicBlock::Basic);
-        // }
-
-        // Instruction* ins_and = new Instruction(IR->getInstCnt(),Instruction::LogicAnd,2);
-        // ins_and->addOperand(Condpre);
-        // ins_and->addOperand(Condi);
-        // ins_and->setResult(ret);
-        // IR->InsertInstr(ins_and);
-        // bbNow->Addins(ins_and->getId());
-        // ins_and->setParent(bbNow);
-        // Condpre=ret;
-    }
-    //立即数0
-    // ImmValue* const0 = new ImmValue("0",0);
     Value* ret = new Value("tr",node->lineno,node->var_scope);
+    CondCnt.push_back(node->son.size());
+    cout<<"LAndExpNode cond cnt:"<<node->son.size()<<endl;
+    if(node->son.size() == 1)
+    {
+        ret = EqExpNode(node->son[0],IR);
+        if(Ident_ == node->son[0]->type || AddExp_Add_ == node->son[0]->type ||
+            AddExp_Sub_ == node->son[0]->type || MulExp_Mul_ == node->son[0]->type ||
+            MulExp_Div_ == node->son[0]->type || MulExp_Mod_ == node->son[0]->type)
+        {
+            Value* VL = ret;
+            IntegerValue* RL = new IntegerValue("const0",node->son[0]->lineno,node->son[0]->var_scope,0,1);
+            if(nullptr == FuncN && 0 == global)
+            {
+                throw BuildIRError(VL->lineno, VL->VName, "错误6");
+                // return ;
+            }
+            //属于某个函数且该指令为首指令，新建一个基本块，并建立联系
+            if(nullptr == bbNow)
+            {
+                bbNow = GetPresentBlock(FuncN,BasicBlock::Basic);
+            }
+            Instruction* ins_neq = new Instruction(IR->getInstCnt(),Instruction::ArithNeq,2);
+            ins_neq->addOperand(VL);
+            ins_neq->addOperand((Value*)RL);
+            IR->InsertInstr(ins_neq);
+            bbNow->Addins(ins_neq->getId());
+            ins_neq->setParent(bbNow);
+            //notequal 0 true jump
+            Instruction* TJ = new Instruction(IR->getInstCnt(),Instruction::ConBr,0);
+            if(CaseTBlocks.empty())
+            {
+                dbg("CaseTBlocks is empty");
+            }
+            TJ->jmpDestBlock = CaseTBlocks.top();
+            IR->InsertInstr(TJ);
+            bbNow->Addins(TJ->getId());
+            TJ->setParent(bbNow);
+
+            // Instruction* FJ = new Instruction(IR->getInstCnt(),Instruction::Jmp,0);
+            // if(CaseFBlocks.empty())
+            // {
+            //     dbg("CaseFBLock empty!");
+            // }
+            // FJ->jmpDestBlock = CaseFBlocks.top();
+            // IR->InsertInstr(FJ);
+            // bbNow->Addins(FJ->getId());
+            // FJ->setParent(bbNow);
+        }
+    }
+    else
+    {
+        //可以短路
+        // cout<<"CondLoig:";
+        // for(auto e:CondLogi)
+        //     cout<<e<<" ";
+        // cout<<endl<<"CondCnt:";
+        // for(auto  e:CondCnt)
+        //     cout<<e<<" ";
+        // cout<<endl;
+        for(int i=0;i<node->son.size();i++)
+        {
+            if(nullptr == FuncN&& 0 == global)
+            {
+                throw BuildIRError(ret->lineno,ret->VName,"error");
+                // return ;
+            }
+            //属于某个函数且该指令为首指令，新建一个基本块，并建立联系
+            if(nullptr == bbNow)
+            {
+                bbNow = GetPresentBlock(FuncN,BasicBlock::Basic);
+            }
+            Value* Condi = EqExpNode(node->son[i],IR);
+            if(Ident_ == node->son[i]->type || AddExp_Add_ == node->son[i]->type ||
+            AddExp_Sub_ == node->son[i]->type || MulExp_Mul_ == node->son[i]->type ||
+            MulExp_Div_ == node->son[i]->type || MulExp_Mod_ == node->son[i]->type)
+            {                
+                //与常数0比较
+                IntegerValue* const0 = new IntegerValue("const0",node->son[i]->lineno,node->son[i]->var_scope,0,1);
+                vector<Value*> ops={Condi,const0};
+                if(CondCnt.back()>1)
+                    CreateIns(node,IR,Instruction::ArithEq,2,ops,nullptr);
+                else
+                    CreateIns(node,IR,Instruction::ArithNeq,2,ops,nullptr);
+                
+                Instruction* conbr = new Instruction(IR->getInstCnt(),Instruction::ConBr,0);
+                // //向基本块加入指令
+                bbNow->Addins(conbr->getId());
+                conbr->setParent(bbNow);
+                IR->InsertInstr(conbr);
+                if(CondCnt.back()>1)
+                    conbr->jmpDestBlock = CaseFBlocks.top();
+                else
+                    conbr->jmpDestBlock = CaseTBlocks.top();
+                CondCnt[CondCnt.size()-1]-=1;
+            }
+        }
+    }
+    
     if(nullptr == FuncN&& 0 == global)
     {
         throw BuildIRError(ret->lineno,ret->VName,"error");
@@ -1043,6 +1110,7 @@ Value* LAndExpNode(GrammaNode* node,LinearIR *IR)
 //    bbNow->Addins(ins_neq->getId());
 //    ins_neq->setParent(bbNow);
     CondLogi.pop_back();
+    CondCnt.pop_back();
     return ret;
 }
 
@@ -1063,13 +1131,51 @@ Value* EqExpNode(GrammaNode* node,LinearIR *IR)
         {
             bbNow = GetPresentBlock(FuncN,BasicBlock::Basic);
         }
-        Instruction* ins_eq = new Instruction(IR->getInstCnt(),Instruction::ArithEq,2);
-        ins_eq->addOperand(VL);
-        ins_eq->addOperand(RL);
-        ins_eq->setResult(ret);
-        IR->InsertInstr(ins_eq);
-        bbNow->Addins(ins_eq->getId());
-        ins_eq->setParent(bbNow);
+        
+        if(CondLogi.back() == Instruction::LogicAnd && CondCnt.back()>1)
+        {
+            //翻转并短路
+            Instruction* ins_neq = new Instruction(IR->getInstCnt(),Instruction::ArithNeq,2);
+            ins_neq->addOperand(VL);
+            ins_neq->addOperand(RL);
+            ins_neq->setResult(ret);
+            IR->InsertInstr(ins_neq);
+            bbNow->Addins(ins_neq->getId());
+            ins_neq->setParent(bbNow);
+
+            Instruction* FJ = new Instruction(IR->getInstCnt(),Instruction::ConBr,0);
+            if(CaseFBlocks.empty())
+            {
+                dbg("CaseFBlocks is empty");
+            }
+            FJ->jmpDestBlock = CaseFBlocks.top();
+            IR->InsertInstr(FJ);
+            bbNow->Addins(FJ->getId());
+            FJ->setParent(bbNow);
+
+            CondCnt[CondCnt.size()-1]-=1;
+
+        }
+        else
+        {
+            Instruction* ins_eq = new Instruction(IR->getInstCnt(),Instruction::ArithEq,2);
+            ins_eq->addOperand(VL);
+            ins_eq->addOperand(RL);
+            ins_eq->setResult(ret);
+            IR->InsertInstr(ins_eq);
+            bbNow->Addins(ins_eq->getId());
+            ins_eq->setParent(bbNow);
+
+            Instruction* TJ = new Instruction(IR->getInstCnt(),Instruction::ConBr,0);
+            if(CaseTBlocks.empty())
+            {
+                dbg("CaseTBlocks is empty");
+            }
+            TJ->jmpDestBlock = CaseTBlocks.top();
+            IR->InsertInstr(TJ);
+            bbNow->Addins(TJ->getId());
+            TJ->setParent(bbNow);
+        }
         return ret;
     }
     else if(EqExp_NEQ_ == node->type)
@@ -1922,7 +2028,10 @@ void show_IR_ins(LinearIR *IR)
         }
         else
         {
+            if(presenIns->getResult()!=nullptr)
             cout << presenIns->getResult()->VName << endl;
+            else
+            cout<<endl;
         }
     }
     cout<<"\n\n";
