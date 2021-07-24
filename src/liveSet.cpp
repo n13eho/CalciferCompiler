@@ -198,10 +198,12 @@ void addAssign(Value* val, BasicBlock* node, Decl* dc)
 Decl* getDecl(IntegerValue* val, BasicBlock* node)
 {
     if(val->isConst){
+        //常数的话,直接新建一个返回
         constDecl* ret=new constDecl(val,node,val->RealValue);
         return ret;
     }
     else{
+        //其他就返回上一次赋值
         return Assign_rec[make_pair(val,node)].back();
     }
 }
@@ -276,6 +278,7 @@ void showDecl(DomTreenode* sd)
 
 void liveSets()
 {
+    //0. 添加label
     for(auto b:IR1->Blocks){
         for(auto eb: b->domBlock){
             block2lb[eb]=lb+to_string(Bcnt++);
