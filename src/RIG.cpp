@@ -1,12 +1,13 @@
-#include<bits/stdc++.h>
 #include"decl.h"
 #include"RIG.h"
 #include"ssa.h"
 #include"liveSet.h"
-using namespace std;
 
-map<Decl*, RIGnode*> decl2node;
-vector<RIGnode*> RIG;
+// input at liveSet.h: map<BasicBlock*, vector<armInstr*>> newBlock;
+
+// output
+//map<Decl*, RIGnode*> decl2node;
+vector<RIGnode*> RIG; // THE graph
 
 void buildRIG()
 {
