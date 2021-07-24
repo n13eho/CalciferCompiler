@@ -322,6 +322,7 @@ void liveSets()
     }
     dbg("add used win!");
     //4. 输出用
+    cout << "\n\n";
     for(auto rt:DomRoot){
         showDecl(rt);
     }
