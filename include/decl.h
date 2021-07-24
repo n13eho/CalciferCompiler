@@ -7,6 +7,13 @@
 using namespace std;
 class armInstr;
 
+/*
+Decl的type:
+1. const
+2. var
+3. global
+4. memory
+*/
 class Decl {
     public:
     Value* rawValue; //which variable
@@ -41,6 +48,27 @@ class varDecl:public Decl{
     varDecl(Value *_rawValue, BasicBlock *_rawBlock,int _Vreg):Decl(_rawValue,_rawBlock),Vreg(_Vreg){};
     virtual ostream& output(ostream&out)const{
         out<<"r"<<Vreg;
+        return out;
+    }
+    virtual int gettype(){return 2;}
+};
+
+class globalDecl: public Decl{
+    public:
+    string dataPos;
+    globalDecl(Value *_rawValue, BasicBlock *_rawBlock, string _dataPos):Decl(_rawValue,_rawBlock),dataPos(_dataPos){};
+    virtual ostream& output(ostream&out)const{
+        out<<"="<<dataPos;
+        return out;
+    }
+    virtual int gettype(){return 2;}
+};
+class memoryDecl: public Decl{
+    public:
+    int bias;//以sp为标准, 有正负, 输出时不乘四...
+    memoryDecl(Value *_rawValue, BasicBlock *_rawBlock,int _bias):Decl(_rawValue,_rawBlock),bias(_bias){};
+    virtual ostream& output(ostream&out)const{
+        out<<"[sp,"<<bias<<']';
         return out;
     }
     virtual int gettype(){return 2;}

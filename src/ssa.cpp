@@ -142,8 +142,8 @@ void calDF(BasicBlock *b)
             auto runner=i;
             while(runner!=block2dom[b]->idom->block){
                 set<BasicBlock*> tem;
-                if(ssaIR->DF.count(i)==0)ssaIR->DF.insert(make_pair(i,tem));
-                ssaIR->DF[i].insert(b);
+                if(ssaIR->DF.count(runner)==0)ssaIR->DF.insert(make_pair(runner,tem));
+                ssaIR->DF[runner].insert(b);
                 runner=block2dom[runner]->idom->block;
             }
         }
@@ -169,6 +169,7 @@ set<BasicBlock*> phiPos;
 
 void addAssbyBlock(Value* val, BasicBlock* b)
 {
+    //块b多了一处对val的赋值
     if(ssaIR->AssbyBlock.count(val)){
         vector<BasicBlock*> tem;
         ssaIR->AssbyBlock[val]=tem;
@@ -231,13 +232,14 @@ void getssa()
     for(auto i: IR1->Blocks){
         if(i->domBlock.size())buildDomTree(i);
     }
-
+    dbg("build tree win!");
     //计算df;
     for(auto i : IR1->Blocks){
         if(i->domBlock.size()){
             for(auto j : i->domBlock)calDF(j);
         }
     }
+    dbg("cal df win!");
 
     getAllValue();//这里计算每一个块被赋值的变量有哪些,为placePhi做准备;
     for(auto i : IR1->Blocks){
@@ -245,7 +247,9 @@ void getssa()
             for(auto j : i->domBlock)setAssbyBlock(j);
         }
     }
+    dbg("get all value win!");
     //抄它!  002_SSA比较清楚的说明_Lecture23.4up.pdf
     placePhi();
+    dbg("place phi win!");
 
 }

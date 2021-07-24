@@ -6,4 +6,4 @@
 // using namespace std;
 
 void liveSets();
-extern map<BasicBlock*, list<armInstr*>> newBlock;
+extern map<BasicBlock*, vector<armInstr*>> newBlock;

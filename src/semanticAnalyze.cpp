@@ -282,15 +282,13 @@ IntegerValue *semantic_LVal_Array_(GrammaNode *root, int needConst, int needCond
     }
     //根据索引求值
     //probbbbbbbbbbbbbbbbblemhere
-    //zyh 问题
-    dbg("gggggg");
-    dbg(index);
-    dbg(root->str);
-    dbg(val->ArrayElement.size());
-    // int indexVal = val->ArrayElement[index];
+    //zyh 给 neho 的问题
+    //暂时的解决方案, 能算出来就算, 算不出来就不算了 ---hsyy04
+    int indexVal;
+    if(index>=val->ArrayElement.size())indexVal = 0;
+    else indexVal = val->ArrayElement[index];
 
-    dbg("g");
-    IntegerValue *ret = new IntegerValue(name + to_string(cnt++), root->lineno, root->var_scope, 0, val->isConst);
+    IntegerValue *ret = new IntegerValue(name + to_string(cnt++), root->lineno, root->var_scope, indexVal, val->isConst);
     // 建立映射
     SymbolTable->addItem(root, ret);
 
@@ -751,9 +749,7 @@ void semantic_VarDefSon(GrammaNode *root)
     else if (root->type == VarDef_single_init_)
     { // 单值变量，有初始参数
         //先算出初值 initValue
-        dbg("1");
         IntegerValue *initValueObj = (IntegerValue *)semantic_InitVal3_(root->son[2], 0);
-        dbg("outoutout");
         int initValue = initValueObj->RealValue;
         //new出新的结点
         IntegerValue *single_init = new IntegerValue(root->son[0]->str, root->son[0]->lineno, root->son[0]->var_scope, initValue, 0);

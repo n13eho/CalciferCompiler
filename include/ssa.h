@@ -33,3 +33,4 @@ void getssa();
 extern map<BasicBlock*, string> block2lb;
 extern ssa* ssaIR;
 extern set<BasicBlock*> phiPos;
+extern set<Value*> allValue;
