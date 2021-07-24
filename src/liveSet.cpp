@@ -224,7 +224,10 @@ void usedAdd(armAdd* ins,BasicBlock* node)
 void usedMov(armMov* ins, BasicBlock* node)
 {
     Instruction* raw = trance[ins];
-    IntegerValue* rs = (IntegerValue*)raw->getOp()[0];
+    dbg(raw->getOp().size());
+    IntegerValue* rs ;
+    if(raw->getOp().size())rs= (IntegerValue*)raw->getOp()[0];
+    else rs= new IntegerValue("tt",-1,"",1);
     ins->rs = getDecl(rs,node);
     addAssign(ins->rd->rawValue,node,ins->rd);
 }
@@ -257,9 +260,10 @@ void setUsed(BasicBlock* s)
     //init:把reachin里的定义建立好
     for(auto dc : reachin[s]){
         addAssign(dc->rawValue,s,dc);
-    }    
+    } 
     //对于每一条语句填used
     for(auto ins : newBlock[s]){
+        dbg(ins->getType());
         usedIns(ins,s);
     }
 }
@@ -284,10 +288,12 @@ void liveSets()
             block2lb[eb]=lb+to_string(Bcnt++);
         }
     }
+    dbg("add label win!");
     // 1. 转换Decl
     for(auto rt:DomRoot){
         setDecl(rt->block);
     }
+    dbg("set Decl win!");
     //1.1 最后才能考虑phi
     for(auto b:phiPos){
         for(auto i:b->InstrList){
@@ -296,6 +302,7 @@ void liveSets()
             }
         }
     }
+    dbg("work phi win!");
     //2. 计算reachin和reachout,这里先迭代5次
     int MAXiter=5;
     while(MAXiter--){
@@ -306,14 +313,17 @@ void liveSets()
             calReach(rt->block);
         }
     }
+    dbg("reach sets win!");
     //3. 填每条语句的used和计算<value,block>到decl的映射...(也不知道有什么用,先算出来吧...)
     for(auto gb:IR1->Blocks){
         for(auto blk : gb->domBlock){
             setUsed(blk);
         }
     }
+    dbg("add used win!");
     //4. 输出用
     for(auto rt:DomRoot){
         showDecl(rt);
     }
+    dbg("show super arm win!");
 }
