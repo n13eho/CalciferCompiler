@@ -1,7 +1,5 @@
-#include<bits/stdc++.h>
-#include"decl.h"
-#include"ssa.h"
-#include"liveSet.h"
+#include"../include/liveSet.h"
+#include"dbg.h"
 
 /*
 input: IR1 with phi
@@ -53,7 +51,9 @@ void assignPhi(Instruction* instr,BasicBlock*node)
     for(auto pred : node->pioneerBlock){
         armMov* ins = new armMov();
         ins->rd=rd;
-        newBlock[pred].push_back(ins);
+        auto pos = newBlock[pred].end();
+        while((*(--pos))->getType()>=14&&(*(--pos))->getType()<=21);
+        newBlock[pred].insert(++pos,ins);
         trance[ins]=instr;
     }
 }
@@ -63,6 +63,7 @@ void assignLogic(Instruction* instr, BasicBlock* node, BasicBlock* nex)
     // 一个cmp指令
     armCmp* ins = new armCmp();
     newBlock[node].push_back(ins);
+    trance[ins]=instr;
 
     // 只要zyh加了短路就可以不赋值了,直接生成跳转指令
     if(instr->getOpType()==Instruction::ArithNeq)
@@ -103,6 +104,13 @@ void assignLogic(Instruction* instr, BasicBlock* node, BasicBlock* nex)
     }
 }
 
+void assignjmp(Instruction* instr, BasicBlock* node)
+{
+    armB* ins = new armB();
+    newBlock[node].push_back(ins);
+    ins->lb = block2lb[instr->jmpDestBlock];
+}
+
 void assignCall(Instruction* instr, BasicBlock* node)
 {
     // 高难度的函数跳转, 还没想好>_<
@@ -123,11 +131,14 @@ void assignIns(Instruction* ins,BasicBlock* node)
     {
         assignMov(ins,node);
     }
+    else if(ins->getOpType() == Instruction::Jmp)
+    {
+        assignjmp(ins,node);
+    }
 }
 
 void setDecl(BasicBlock *s)
 {
-    block2lb[s]=lb+to_string(Bcnt++);
     for(auto id=s->InstrList.begin();id!=s->InstrList.end();++id){
         int i = *id;
         auto ins =IR1->InstList[i];
@@ -154,10 +165,13 @@ void calReach(BasicBlock* s)
     for(auto ins:newBlock[s]){
         //减去这个语句定义的decl对应的val的decl
         Decl* dc=ins->rd;
+        if(dc == nullptr)continue;
         Value* val=dc->rawValue;
-        for(auto dead: reachout[s]){
-            if(dead->rawValue==val){
-                reachout[s].erase(reachout[s].find(dead));
+        for(auto dead=reachout[s].begin();dead!=reachout[s].end();dead++){
+            Decl* deadDc=*dead;
+            if(deadDc->rawValue==val){
+                dead=reachout[s].erase(dead);
+                dead--;
             }
         }
         //加上这个语句定义的decl
@@ -196,31 +210,43 @@ void usedAdd(armAdd* ins,BasicBlock* node)
 {
     Instruction* raw = trance[ins];
 
-    addAssign(ins->rd->rawValue,node,ins->rd);
     IntegerValue* r0 = (IntegerValue*)raw->getOp()[0];
     IntegerValue* r1 = (IntegerValue*)raw->getOp()[1];
     if(r0->isConst)swap(r0,r1);
     ins->r0 = getDecl(r0,node);
     ins->r1 = getDecl(r1,node);
+    addAssign(ins->rd->rawValue,node,ins->rd);
 
 }
 
 void usedMov(armMov* ins, BasicBlock* node)
 {
     Instruction* raw = trance[ins];
-
-    addAssign(ins->rd->rawValue,node,ins->rd);
     IntegerValue* rs = (IntegerValue*)raw->getOp()[0];
     ins->rs = getDecl(rs,node);
+    addAssign(ins->rd->rawValue,node,ins->rd);
+}
+
+void usedCmp(armCmp* ins,BasicBlock* node)
+{
+    Instruction* raw = trance[ins];
+    IntegerValue* r0=(IntegerValue*)raw->getOp()[0];
+    IntegerValue* r1=(IntegerValue*)raw->getOp()[1];
+    if(r0->isConst)swap(r0,r1);
+    ins->r1 = getDecl(r1,node);
+    ins->r0 = getDecl(r0,node);
 }
 
 void usedIns(armInstr* ins,BasicBlock* node)
 {
-    if(ins->getType()==armInstr::add){
+    if(ins->getType()==armInstr::mov){
         usedMov((armMov*)ins,node);
     }
-    else if(ins->getType() == armInstr::mov){
+    else if(ins->getType() == armInstr::add){
         usedAdd((armAdd*)ins,node);
+    }
+    else if(ins->getType() == armInstr::cmp){
+        usedCmp((armCmp*)ins,node);
     }
 }
 
@@ -236,17 +262,26 @@ void setUsed(BasicBlock* s)
     }
 }
 
-void showDecl(BasicBlock* s)
+void showDecl(DomTreenode* sd)
 {
+    BasicBlock* s=sd->block;
     cout<<block2lb[s]<<endl;
     for(auto ins:newBlock[s]){
-        cout<<ins<<endl;
+        cout<<*ins<<endl;
+    }
+    for(auto nx:sd->son){
+        showDecl(nx);
     }
 }
 
 void liveSets()
 {
-    //1. 转换Decl
+    for(auto b:IR1->Blocks){
+        for(auto eb: b->domBlock){
+            block2lb[eb]=lb+to_string(Bcnt++);
+        }
+    }
+    // 1. 转换Decl
     for(auto rt:DomRoot){
         setDecl(rt->block);
     }
@@ -276,6 +311,6 @@ void liveSets()
     }
     //4. 输出用
     for(auto rt:DomRoot){
-        showDecl(rt->block);
+        showDecl(rt);
     }
 }

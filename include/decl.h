@@ -53,7 +53,7 @@ class varDecl:public Decl{
 class armInstr{
     public:
     Decl* rd;
-    enum type{add=1,sub,mul,div,mod,andd,orr,mov,ldr,str,push,pop,cmp,beq,bne,blt,ble,bgt,bge,blr,movlt,movle,movge,movgt,moveq,movne} ;
+    enum type{add=1,sub,mul,div,mod,andd,orr,mov,ldr,str,push,pop,cmp,beq,bne,blt,ble,bgt,bge,blr,b,movlt,movle,movge,movgt,moveq,movne} ;
     virtual ostream& output(ostream&out)const{
         out<<"@ NULL"<<endl;
         return out;
@@ -80,6 +80,16 @@ class armDiv:armInstr{};
 class armMod:armInstr{};
 class armAnd:armInstr{};
 class armOrr:armInstr{};
+class armB:public armInstr{
+    public:
+    string lb;
+    virtual int getType(){return beq;}
+    virtual ostream& output(ostream&out)const
+    {
+        out<<"b "<<lb;
+        return out;
+    }
+};
 class armBeq:public armInstr{
     public:
     string lb;
@@ -147,7 +157,7 @@ class armCmp:public armInstr{
     virtual int getType(){return cmp;}
     virtual ostream& output(ostream&out)const
     {
-        out<<"cmp "<<*r1<<", "<<*r0;
+        out<<"cmp "<<*r0<<", "<<*r1;
         return out;
     }
 };

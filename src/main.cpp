@@ -5,9 +5,9 @@
 #include "../include/debug.h"
 #include "CodeGeneration.h"
 #include "../include/detetedeadblock.h"
-#include "register.h"
-#include"ssa.h"
-#include"liveSet.h"
+#include "../include/register.h"
+#include"../include/ssa.h"
+#include"../include/liveSet.h"
 
 //外部的lineno，行号信息
 extern int lineno;
@@ -49,8 +49,8 @@ int main(int argc, char *argv[])
         VisitAST(Droot, IR1);
         Visitblock(IR1);
         show_IR_ins(IR1);           // 打印指令
-        show_block(globalBlock, 0); // 打印基本块 （写注释啊啊啊啊啊啊 --neho
         getssa();//建立支配树以及支配边界
+        show_block(globalBlock, 0); // 打印基本块 （写注释啊啊啊啊啊啊 --neho
         liveSets();//重命名
         // codegeneration();
         // 利用四元式和bb信息得出ssa_0
