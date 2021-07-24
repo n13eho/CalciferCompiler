@@ -19,7 +19,7 @@ ostream& operator<<(ostream&out,const Decl& a){
 }
 ///////////////
 
-map<BasicBlock*, list<armInstr*>> newBlock;
+map<BasicBlock*, vector<armInstr*>> newBlock;
 map<armInstr*,Instruction*> trance;
 
 void assignMov(Instruction* instr, BasicBlock* node)
