@@ -287,10 +287,10 @@ IntegerValue *semantic_LVal_Array_(GrammaNode *root, int needConst, int needCond
     dbg(index);
     dbg(root->str);
     dbg(val->ArrayElement.size());
-    int indexVal = val->ArrayElement[index];
+    // int indexVal = val->ArrayElement[index];
 
     dbg("g");
-    IntegerValue *ret = new IntegerValue(name + to_string(cnt++), root->lineno, root->var_scope, indexVal, val->isConst);
+    IntegerValue *ret = new IntegerValue(name + to_string(cnt++), root->lineno, root->var_scope, 0, val->isConst);
     // 建立映射
     SymbolTable->addItem(root, ret);
 

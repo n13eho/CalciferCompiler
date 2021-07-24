@@ -144,7 +144,7 @@ void calDF(BasicBlock *b)
                 set<BasicBlock*> tem;
                 if(ssaIR->DF.count(i)==0)ssaIR->DF.insert(make_pair(i,tem));
                 ssaIR->DF[i].insert(b);
-                runner=block2dom[i]->idom->block;
+                runner=block2dom[runner]->idom->block;
             }
         }
     }

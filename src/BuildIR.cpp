@@ -19,6 +19,12 @@ stack<pair<BasicBlock*,BasicBlock*>> LoopNext;
 std::vector<Value *> array_init;
 std::vector<unsigned> array_dimen;
 int dimen_dpeth;
+//记录条件语句的两种跳转位置
+stack<BasicBlock*> CaseTBlocks;
+stack<BasicBlock*> CaseFBlocks;
+//记录当前条件是逻辑或、与
+vector<int> CondLogi;
+
 
 BasicBlock* GetPresentBlock(BasicBlock* funcP,BasicBlock::BlockType t)
 {
@@ -567,7 +573,7 @@ void IfNode(GrammaNode* node,LinearIR *IR)
         {
             bbNow = GetPresentBlock(FuncN,BasicBlock::If);
         }
-        CondNode(node->son[0],IR);
+        
 
         //条件成立后转移的基本块
         BasicBlock* caseT = new BasicBlock(BasicBlock::Basic);
@@ -583,7 +589,11 @@ void IfNode(GrammaNode* node,LinearIR *IR)
         next->setParnt(FuncN);
         FuncN->AddDom(caseT);
         FuncN->AddDom(next);    
-        
+
+        CaseTBlocks.push(caseT);
+        CaseFBlocks.push(next);
+
+        CondNode(node->son[0],IR);
 
         //条件成立跳转指令
         Instruction* ins_br = new Instruction(IR->getInstCnt(),Instruction::ConBr,0);
@@ -607,6 +617,9 @@ void IfNode(GrammaNode* node,LinearIR *IR)
         //update jmp address
         //后面删除该结果value
         ins_br->setResult(new IntegerValue("jmpAddress0",node->lineno,node->var_scope,IR->getInstCnt(),1));
+
+        CaseFBlocks.pop();
+        CaseTBlocks.pop();
     }
     else
     {
@@ -914,39 +927,40 @@ void CondNode(GrammaNode* node,LinearIR *IR)
 
 void LOrExpNode(GrammaNode* node,LinearIR *IR)
 {
+    CondLogi.push_back(Instruction::LogicOr);
     //前一个条件value
-    Value* Condpre = LAndExpNode(node->son[0],IR);
-    if(node->son.size()==1)
-        return;
-    for(int i=1;i<node->son.size();i++)
+    // Value* Condpre = LAndExpNode(node->son[0],IR);
+    // if(node->son.size()==1)
+    //     return;
+    for(int i=0;i<node->son.size();i++)
     {
         //当前条件value
         Value* Condi = LAndExpNode(node->son[i],IR);
         //当前a or b计算结果
-        Value* ret = new Value("t"+std::to_string(i),node->lineno,node->var_scope);
+        // Value* ret = new Value("t"+std::to_string(i),node->lineno,node->var_scope);
 
-        if(nullptr == FuncN && 0 == global)
-        {
-            return ;
-        }
-        //属于某个函数且该指令为首指令，新建一个基本块，并建立联系
-        if(nullptr == bbNow)
-        {
-            bbNow = GetPresentBlock(FuncN,BasicBlock::Basic);
-        }
+        // if(nullptr == FuncN && 0 == global)
+        // {
+        //     return ;
+        // }
+        // //属于某个函数且该指令为首指令，新建一个基本块，并建立联系
+        // if(nullptr == bbNow)
+        // {
+        //     bbNow = GetPresentBlock(FuncN,BasicBlock::Basic);
+        // }
 
-        Instruction* ins_or = new Instruction(IR->getInstCnt(),Instruction::LogicOr,2);
-        ins_or->addOperand(Condpre);
-        ins_or->addOperand(Condi);
-        ins_or->setResult(ret);
-        IR->InsertInstr(ins_or);
-        bbNow->Addins(ins_or->getId());
-        ins_or->setParent(bbNow);
-        Condpre=ret;
+        // Instruction* ins_or = new Instruction(IR->getInstCnt(),Instruction::LogicOr,2);
+        // ins_or->addOperand(Condpre);
+        // ins_or->addOperand(Condi);
+        // ins_or->setResult(ret);
+        // IR->InsertInstr(ins_or);
+        // bbNow->Addins(ins_or->getId());
+        // ins_or->setParent(bbNow);
+        // Condpre=ret;
     }
     //立即数0
-    ImmValue* const0 = new ImmValue("0",0);
-    Value* ret = new Value("tr",node->lineno,node->var_scope);
+    // ImmValue* const0 = new ImmValue("0",0);
+    // Value* ret = new Value("tr",node->lineno,node->var_scope);
     if(nullptr == FuncN && 0 == global)
     {
         return ;
@@ -957,6 +971,7 @@ void LOrExpNode(GrammaNode* node,LinearIR *IR)
         bbNow = GetPresentBlock(FuncN,BasicBlock::Basic);
     }
 
+    CondLogi.pop_back();
     //条件value和立即数0比较
 //    Instruction* ins_neq = new Instruction(IR->getInstCnt(),Instruction::ArithNeq,2);
 //    ins_neq->addOperand(Condpre);
@@ -971,37 +986,43 @@ void LOrExpNode(GrammaNode* node,LinearIR *IR)
 
 Value* LAndExpNode(GrammaNode* node,LinearIR *IR)
 {
+    CondLogi.push_back(Instruction::LogicAnd);
     //前一个条件value
-    Value* Condpre = EqExpNode(node->son[0],IR);
-    for(int i=1;i<node->son.size();i++)
+    // Value* Condpre = EqExpNode(node->son[0],IR);
+    for(int i=0;i<node->son.size();i++)
     {
-        //当前条件value
         Value* Condi = EqExpNode(node->son[i],IR);
+        if(Ident_ == node->son[i]->type || AddExp_Add_ == node->son[i]->type ||
+        AddExp_Sub_ == node->son[i]->type || MulExp_Mul_ == node->son[i]->type ||
+        MulExp_Div_ == node->son[i]->type || MulExp_Mod_ == node->son[i]->type)
+        {
+            //与常数0比较
+        }
         //当前a or b计算结果
-        Value* ret = new Value("t"+std::to_string(i),node->lineno,node->var_scope);
+        // Value* ret = new Value("t"+std::to_string(i),node->lineno,node->var_scope);
 
-        if(nullptr == FuncN && 0 == global)
-        {
-            throw BuildIRError(ret->lineno,ret->VName,"error");
-            // return ;
-        }
-        //属于某个函数且该指令为首指令，新建一个基本块，并建立联系
-        if(nullptr == bbNow)
-        {
-            bbNow = GetPresentBlock(FuncN,BasicBlock::Basic);
-        }
+        // if(nullptr == FuncN && 0 == global)
+        // {
+        //     throw BuildIRError(ret->lineno,ret->VName,"error");
+        //     // return ;
+        // }
+        // //属于某个函数且该指令为首指令，新建一个基本块，并建立联系
+        // if(nullptr == bbNow)
+        // {
+        //     bbNow = GetPresentBlock(FuncN,BasicBlock::Basic);
+        // }
 
-        Instruction* ins_and = new Instruction(IR->getInstCnt(),Instruction::LogicAnd,2);
-        ins_and->addOperand(Condpre);
-        ins_and->addOperand(Condi);
-        ins_and->setResult(ret);
-        IR->InsertInstr(ins_and);
-        bbNow->Addins(ins_and->getId());
-        ins_and->setParent(bbNow);
-        Condpre=ret;
+        // Instruction* ins_and = new Instruction(IR->getInstCnt(),Instruction::LogicAnd,2);
+        // ins_and->addOperand(Condpre);
+        // ins_and->addOperand(Condi);
+        // ins_and->setResult(ret);
+        // IR->InsertInstr(ins_and);
+        // bbNow->Addins(ins_and->getId());
+        // ins_and->setParent(bbNow);
+        // Condpre=ret;
     }
     //立即数0
-    ImmValue* const0 = new ImmValue("0",0);
+    // ImmValue* const0 = new ImmValue("0",0);
     Value* ret = new Value("tr",node->lineno,node->var_scope);
     if(nullptr == FuncN&& 0 == global)
     {
@@ -1021,6 +1042,7 @@ Value* LAndExpNode(GrammaNode* node,LinearIR *IR)
 //    IR->InsertInstr(ins_neq);
 //    bbNow->Addins(ins_neq->getId());
 //    ins_neq->setParent(bbNow);
+    CondLogi.pop_back();
     return ret;
 }
 
@@ -1694,6 +1716,7 @@ Value* UnaryExpNode(GrammaNode* node,LinearIR *IR)
 
 Value* PrimaryExpNode(GrammaNode* node,LinearIR *IR)
 {
+    // cout<<"aaaaaaaaaaaaaaaaaaaaaaaa"<<node->type<<endl;
     IntegerValue* nn = (IntegerValue*)SymbolTable->askItem(node);
     if(nn->isConst == 1)
     {//是一个常数
@@ -1707,7 +1730,7 @@ Value* PrimaryExpNode(GrammaNode* node,LinearIR *IR)
     }
     else if(LVal_Array_ == node->type)
     {
-        ArrayValue* lval = (ArrayValue*)SymbolTable->askItem(node);
+        ArrayValue* lval = (ArrayValue*)SymbolTable->askItem(node->son[0]);
         Value* index = LValArrayNode(node,IR);
         Value* ret = SymbolTable->askItem(node);//new IntegerValue("tx",node->lineno,node->var_scope,0);
 
