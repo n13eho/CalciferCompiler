@@ -15,10 +15,6 @@ class Decl {
     Decl(){}
     ~Decl(){}
     Decl(Value *_rawValue, BasicBlock *_rawBlock) : rawValue(_rawValue), rawBlock(_rawBlock){};
-    // friend ostream & operator << (ostream &out,const Decl &A){
-    //     out<<"@ NULL";
-    //     return out;
-    // }
     virtual ostream& output(ostream&out)const{
         out<<"@NULL"<<endl;
         return out;

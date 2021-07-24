@@ -13,12 +13,13 @@ output: IR1 with phi
 
 struct DomTreenode
 {
-    vector<DomTreenode*> son;
-    BasicBlock* block;
-    DomTreenode *idom;
+    //支配树节点
+    vector<DomTreenode*> son;//son
+    BasicBlock* block;//这个节点对应的block
+    DomTreenode *idom;// 这个节点的直接支配节点
 };
 extern map<BasicBlock*,DomTreenode*> block2dom;
-extern vector<DomTreenode*> DomRoot;
+extern vector<DomTreenode*> DomRoot;//所有支配树的根
 
 class ssa
 {
