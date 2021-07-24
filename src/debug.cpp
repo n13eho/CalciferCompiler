@@ -17,7 +17,7 @@ std::map<int, string> DEBUG_insOP = {{Instruction::InsType::Add, "+"}, {Instruct
 {Instruction::InsType::Jmp, "J"}, {Instruction::InsType::ConBr, "Br"},
 {Instruction::InsType::Call, "Call"}, {Instruction::InsType::Ret, "return"},
 {Instruction::InsType::Load, "Load"}, {Instruction::InsType::Store, "Store"},
-{Instruction::InsType::Break, "break"},{Instruction::InsType::Alloc,"Allocate"}};
+{Instruction::InsType::Break, "break"},{Instruction::InsType::Alloc,"Allocate"},{Instruction::InsType::Phi,"phi"}};
 
 void printIns(int id)
 {
@@ -40,6 +40,11 @@ void printIns(int id)
     if(presenIns->getOpType() == Instruction::Alloc)
     {
         std::cout <<presenIns->getOp()[0]->VName<<" space size:"<<((IntegerValue*)(presenIns->getOp()[1]))->getValue()<<endl;
+        return;
+    }
+    if(presenIns->getOpType() == Instruction::Phi)
+    {
+        std::cout <<presenIns->getOp()[0]->VName<<endl;
         return;
     }
     if(presenIns->getOpType() == Instruction::Store)

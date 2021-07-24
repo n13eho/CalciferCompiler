@@ -84,3 +84,4 @@ private:
 
 // 打印当前IR中的所有指令
 void show_IR_ins(LinearIR *IR);
+extern LinearIR *IR1;
