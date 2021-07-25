@@ -12,8 +12,8 @@ delete dead code and block
 
 void DeleteBlock(std::vector<BasicBlock *> &Blocks, int i)
 {
-    std::cout << "进入删除________" << endl;
-    cout << Blocks[i]->BlockName << endl;
+    // std::cout << "进入删除________" << endl;
+    // cout << Blocks[i]->BlockName << endl;
     //删除后继里的自己
     vector<BasicBlock *>::iterator itr1 = Blocks[i]->succBlock.begin();
     while (itr1 != Blocks[i]->succBlock.end())
@@ -84,9 +84,9 @@ void DeleteBlock(std::vector<BasicBlock *> &Blocks, int i)
         }
         itr1++;
     }
-    dbg(Blocks.size());
+    // dbg(Blocks.size());
     Blocks.erase(Blocks.begin() + i);
-    dbg(Blocks.size());
+    // dbg(Blocks.size());
 }
 
 void Visitblock(LinearIR *IR)
@@ -111,15 +111,16 @@ void Visitblock(LinearIR *IR)
         //domblock中的处理 domblock指令为空、没有前驱和后继的都删除
         for (int j = 0; j < IR->Blocks[i]->domBlock.size(); j++) //遍历所有domblock
         {
-            dbg(IR->Blocks[i]->domBlock.size());
+            // dbg(IR->Blocks[i]->domBlock.size());
             if (IR->Blocks[i]->domBlock[j]->InstrList.empty())
             {
                 DeleteBlock(IR->Blocks[i]->domBlock, j);
-                dbg(IR->Blocks[i]->domBlock.size());
+                // dbg(IR->Blocks[i]->domBlock.size());
             }
 
             else if (IR->Blocks[i]->domBlock[j]->succBlock.size() == 0 && IR->Blocks[i]->domBlock[j]->pioneerBlock.size() == 0) //前驱后继都为0
             {
+                dbg(IR->Blocks[i]->BlockName);
                 DeleteBlock(IR->Blocks[i]->domBlock, j);
             }
 
