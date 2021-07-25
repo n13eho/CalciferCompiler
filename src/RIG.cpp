@@ -13,10 +13,36 @@ map<BasicBlock*, bool> blockVisited;
 
 void ArmI2InOut(armInstr* ai)
 {//根据类型，找出每一条语句的in集合
-    if(ai->getType() == armInstr::type::add)
+    if(ai->getType() == armInstr::armInsType::add)
     {
-
+        armAdd* add_ai = (armAdd*)ai; // 向上塑性
+        // out[s] - kill[s]
+        ins[ai].erase(add_ai->rd);
+        // gen[s] U (out[s] - kill[s])
+        ins[ai].insert(add_ai->r0);
+        // 当它只有是var register的时候才insert，否则就不insert
+        if(add_ai->r1->gettype() == Decl::declType::var_decl)
+            ins[ai].insert(add_ai->r1);
     }
+    else if(ai->getType() == armInstr::armInsType::sub)
+    {
+        armSub* sub_ai = (armSub*)ai;
+        ins[ai].erase(sub_ai->rd);
+        ins[ai].insert(sub_ai->r0);
+        if(sub_ai->r1->gettype() == Decl::declType::var_decl)
+            ins[ai].insert(sub_ai->r1);
+    }
+    else if(ai->getType() == armInstr::armInsType::mul)
+    {
+        armMul* mul_ai = (armMul*)ai;
+        ins[ai].erase(mul_ai->rd);
+        ins[ai].insert(mul_ai->r0);
+        if(mul_ai->r1->gettype() == Decl::declType::var_decl)
+            ins[ai].insert(mul_ai->r1);
+    }
+
+
+
 }
 
 void fillInOut(BasicBlock* bb)
