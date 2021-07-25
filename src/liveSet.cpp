@@ -65,6 +65,43 @@ void assignPhi(Instruction* instr,BasicBlock*node)
     }
 }
 
+void assignLdr(Instruction* instr, BasicBlock* node)
+{
+    Value *rdval = instr->getResult();
+    varDecl *rd = new varDecl(rdval,node,Rcnt++);
+
+    armLdr* ins = new armLdr();
+    ins->rd=rd;
+    trance[ins]=instr;
+
+    //好像load在这里就可以写全了。。。
+    if(rdval->getScope()=="1"){
+        globalDecl* rs = new globalDecl(rdval, node, rdval->VName);
+        ins->rs=rs;
+    }
+    else if(rdval->isPara){
+        memoryDecl* rs = new memoryDecl(rdval, node);
+        //TODO： 如果想好形参怎么存的话记得在这里改bias
+    }
+}
+void assignStr(Instruction* instr, BasicBlock* node)
+{
+    Value *rdval = instr->getResult();
+    armStr* ins = new armStr();
+    trance[ins]=instr;
+
+    //str 比较特殊，创建好写rs就行吧。。。
+    if(rdval->getScope()=="1"){
+        globalDecl* rs = new globalDecl(rdval, node, rdval->VName);
+        ins->rs=rs;
+    }
+    else if(rdval->isPara){
+        memoryDecl* rs = new memoryDecl(rdval, node);
+        ins->rs=rs;
+        //TODO： 如果想好形参怎么存的话记得在这里改bias
+    }
+}
+
 void assignLogic(Instruction* instr, BasicBlock* node, BasicBlock* nex)
 {
     // 一个cmp指令
@@ -137,6 +174,14 @@ void assignIns(Instruction* ins,BasicBlock* node)
     {
         assignjmp(ins,node);
     }
+    else if(ins->getOpType() == Instruction::Load)
+    {
+        assignLdr(ins,node);
+    }
+    else if(ins->getOpType() == Instruction::Store)
+    {
+        assignStr(ins,node);
+    }
 }
 
 void setDecl(BasicBlock *s)
@@ -206,6 +251,7 @@ Decl* getDecl(IntegerValue* val, BasicBlock* node)
     }
     else{
         //其他就返回上一次赋值
+        dbg(Assign_rec.count(make_pair(val,node)));
         return Assign_rec[make_pair(val,node)].back();
     }
 }
@@ -218,7 +264,9 @@ void usedAdd(armAdd* ins,BasicBlock* node)
     IntegerValue* r1 = (IntegerValue*)raw->getOp()[1];
     if(r0->isConst)swap(r0,r1);
     ins->r0 = getDecl(r0,node);
+    dbg("get r0");
     ins->r1 = getDecl(r1,node);
+    dbg("get r1");
     addAssign(ins->rd->rawValue,node,ins->rd);
 
 }
@@ -227,13 +275,6 @@ int usedMov(armMov* ins, BasicBlock* node)
 {
     Instruction* raw = trance[ins];
 
-    //phi可能要特殊处理了...
-    // if(raw->getOpType()==Instruction::Phi){
-    //     dbg("dao zhe le ma?");
-    //     for(auto b:ssaIR->AssbyBlock[ins->rd->rawValue]){
-    //         if(b==node)return -1;
-    //     }
-    // }
     IntegerValue* rs ;
     if(raw->getOp().size())rs= (IntegerValue*)raw->getOp()[0];
     else rs= new IntegerValue("tt",-1,"",1);
@@ -251,6 +292,18 @@ void usedCmp(armCmp* ins,BasicBlock* node)
     ins->r1 = getDecl(r1,node);
     ins->r0 = getDecl(r0,node);
 }
+void usedLdr(armLdr* ins,BasicBlock* node)
+{
+    addAssign(ins->rd->rawValue,node,ins->rd);
+}
+void usedStr(armStr* ins,BasicBlock* node)
+{
+    //str 应该没有需要链接的目的操作数
+    //源操作数是rd！！！！(至少global是这样)
+    Instruction* raw = trance[ins];
+    IntegerValue* r0=(IntegerValue*)raw->getResult();
+    ins->rd = getDecl(r0,node);
+}
 
 int usedIns(armInstr* ins,BasicBlock* node)
 {
@@ -263,6 +316,12 @@ int usedIns(armInstr* ins,BasicBlock* node)
     else if(ins->getType() == armInstr::cmp){
         usedCmp((armCmp*)ins,node);
     }
+    else if(ins->getType() == armInstr::str){
+        usedStr((armStr*)ins,node);
+    }
+    else if(ins->getType() == armInstr::ldr){
+        usedLdr((armLdr*)ins,node);
+    }
     return 0;
 }
 
@@ -273,6 +332,7 @@ void setUsed(BasicBlock* s)
         addAssign(dc->rawValue,s,dc);
     } 
     //对于每一条语句填used
+    dbg("here!");
     for(auto ins=newBlock[s].begin();ins!=newBlock[s].end();ins++){
         if(usedIns(*ins,s)==-1){
             newBlock[s].erase(ins);

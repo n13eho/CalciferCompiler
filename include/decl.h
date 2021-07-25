@@ -66,9 +66,10 @@ class globalDecl: public Decl{
 class memoryDecl: public Decl{
     public:
     int bias;//以sp为标准, 有正负, 输出时不乘四...
+    memoryDecl(Value *_rawValue, BasicBlock *_rawBlock):Decl(_rawValue,_rawBlock){};
     memoryDecl(Value *_rawValue, BasicBlock *_rawBlock,int _bias):Decl(_rawValue,_rawBlock),bias(_bias){};
     virtual ostream& output(ostream&out)const{
-        out<<"[sp,"<<bias<<']';
+        out<<"[sp,#"<<bias<<']';
         return out;
     }
     virtual int gettype(){return 2;}
@@ -77,7 +78,7 @@ class memoryDecl: public Decl{
 class armInstr{
     public:
     Decl* rd;
-    enum type{add=1,sub,mul,div,mod,andd,orr,mov,ldr,str,push,pop,cmp,beq,bne,blt,ble,bgt,bge,blr,b,movlt,movle,movge,movgt,moveq,movne} ;
+    enum type{add=1,sub,mul,div,mod,mov,push,pop,cmp,beq,bne,blt,ble,bgt,bge,blr,b,movlt,movle,movge,movgt,moveq,movne,ldr,str};
     virtual ostream& output(ostream&out)const{
         out<<"@ NULL"<<endl;
         return out;
@@ -98,12 +99,30 @@ class armAdd:public armInstr
     }
 };
 
-class armSub:armInstr{};
-class armMul:armInstr{};
-class armDiv:armInstr{};
-class armMod:armInstr{};
-class armAnd:armInstr{};
-class armOrr:armInstr{};
+class armSub:public armInstr{};
+class armMul:public armInstr{};
+class armDiv:public armInstr{};
+class armMod:public armInstr{};
+class armLdr:public armInstr{
+    public:
+    Decl *rs;
+    virtual int getType(){return ldr;}
+    virtual ostream& output(ostream&out)const
+    {
+        out<<"ldr "<<*rd<<", "<<*rs;
+        return out;
+    }
+};
+class armStr:public armInstr{
+    public:
+    Decl *rs;//str中rs其实是目的位置！！！！！！！！！
+    virtual int getType(){return str;}
+    virtual ostream& output(ostream&out)const
+    {
+        out<<"str "<<*rd<<", "<<*rs;
+        return out;
+    }
+};
 class armB:public armInstr{
     public:
     string lb;
