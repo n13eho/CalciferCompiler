@@ -237,10 +237,10 @@ void calReach(BasicBlock* s)
 void addAssign(Value* val, BasicBlock* node, Decl* dc)
 {
     auto key=make_pair(val,node);
-    if(Assign_rec.count(key)){
-        vector<Decl*> tem;
-        Assign_rec[key]=tem;
-    }
+    // if(Assign_rec.count(key)){
+    //     vector<Decl*> tem;
+    //     Assign_rec[key]=tem;
+    // }
     Assign_rec[key].push_back(dc);
 }
 
@@ -357,6 +357,7 @@ void liveSets()
     for(auto b:IR1->Blocks){
         for(auto eb: b->domBlock){
             block2lb[eb]=lb+to_string(Bcnt++);
+            newBlock[eb]={};
         }
     }
     dbg("syy: add label win!");
@@ -378,8 +379,8 @@ void liveSets()
     int MAXiter=5;
     while(MAXiter--){
         for(auto rt:DomRoot){
-            set<Decl*> tem;
-            reachin[rt->block]=tem;
+            // set<Decl*> tem;
+            // reachin[rt->block]=tem;
             visReach.clear();
             calReach(rt->block);
         }

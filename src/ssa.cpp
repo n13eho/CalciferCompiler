@@ -78,10 +78,10 @@ void step23()
             DomTreenode* u=eval(v);
             if(semi[u]<semi[w])semi[w]=semi[u];
         }
-        if(bucket.count(vertex[semi[w]-1])==0){
-            vector<DomTreenode*> tem;
-            bucket[vertex[semi[w]-1]]=tem;
-        }
+        // if(bucket.count(vertex[semi[w]-1])==0){
+        //     vector<DomTreenode*> tem;
+        //     bucket[vertex[semi[w]-1]]=tem;
+        // }
         bucket[vertex[semi[w]-1]].push_back(w);
         ancestor[w]=parent[w];
         if(bucket.count(parent[w])==0)continue;
@@ -170,10 +170,10 @@ set<BasicBlock*> phiPos;
 void addAssbyBlock(Value* val, BasicBlock* b)
 {
     //块b多了一处对val的赋值
-    if(ssaIR->AssbyBlock.count(val)){
-        vector<BasicBlock*> tem;
-        ssaIR->AssbyBlock[val]=tem;
-    }
+    // if(ssaIR->AssbyBlock.count(val)){
+    //     vector<BasicBlock*> tem;
+    //     ssaIR->AssbyBlock[val]=tem;
+    // }
     ssaIR->AssbyBlock[val].push_back(b);
 }
 
