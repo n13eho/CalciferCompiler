@@ -252,7 +252,7 @@ void getssa()
                             insld->setResult(gbval);
                             insld->addOperand(gbval);
                             //加入这条语句
-                            IR1->InsertInstr(ins);
+                            IR1->InsertInstr(insld);
                             eb->InstrList.insert(it,IR1->InstList.size()-1);
                             break;
                         }
