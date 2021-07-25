@@ -84,7 +84,7 @@ void VisitAST(GrammaNode* DRoot,LinearIR *IR)
 {
     //全局基本块
     IR->AddBlock(globalBlock);
-   dbg("start VisitAST");
+   dbg("start VisitAST建立四元式和cfg");
     
     for(int i=0;i<DRoot->son.size();i++)
     {
@@ -2038,5 +2038,5 @@ void show_IR_ins(LinearIR *IR)
 
     for(auto i: IR->Blocks)
         cout<<i<<" ";
-    cout<<"\n\n";
+    cout<<"\n\n\n";
 }

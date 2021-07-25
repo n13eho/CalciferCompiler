@@ -1,5 +1,4 @@
 #include "../include/CodeGeneration.h"
-#include"register.h"
 #include"BuildIR.h"
 #include"semanticAnalyze.h"
 #include"dbg.h"

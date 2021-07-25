@@ -3,12 +3,15 @@
 #include"decl.h"
 #include"ssa.h"
 #include"liveSet.h"
-using namespace std;
+#include"dbg.h"
 
 struct RIGnode
 {
     Decl* dc;
-    vector<RIGnode*> next;
+    vector<RIGnode*> connect;
 };
+
+
+extern map<BasicBlock*, vector<RIGnode*>> RIG; // THE graph
 
 void buildRIG();
