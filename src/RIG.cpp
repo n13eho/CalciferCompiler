@@ -47,29 +47,23 @@ void ArmI2InOut(armInstr* ai)
 
 void fillInOut(BasicBlock* bb)
 {// 不断访问后继，直到访问到最后一个没有没有后继的block，一步一步算in 和 out
-//    if(bb->succBlock.size() == 0)
-//    { // 再无后继，则从该block的最后一条语句开始添加 in out 集合
-//        // 先处理最后一个block的最后一条指令
-//        outs[newBlock[bb][newBlock[bb].size() - 1]] = {};
-//        for(int i = newBlock[bb].size() - 1; i >= 0; --i)
-//        {
-//            ArmI2InOut(newBlock[bb][i]);
-//            if(i)outs[newBlock[bb][i-1]]=ins[newBlock[bb][i]];
-//        }
-//    }
-//    else
-//    {
 
+//    dbg(block2lb[bb]);
     if(blockVisited[bb]) return; // 若已经访问过，则跳过
     blockVisited[bb] = true; // 标记访问
+
+    // 若根本没有这个block的键值，直接返回（其实是出错了）；若当前block下根本没有指令，直接返回
+    if(newBlock.count(bb) == 0 || newBlock[bb].size() == 0) return;
 
     armInstr * last_b_ins=newBlock[bb][newBlock[bb].size() - 1];
     outs[last_b_ins]={};
     for(auto succ: bb->succBlock)
     {// 先不断访问后继，递归下去
         fillInOut(succ);
-
         // out[s] = U in[p] 把后继的第一条指令对应的 in 集合 放入当前指令的out集合
+
+        // 如果它后继也一行代码也没有，也直接return了，否则core dump
+        if(newBlock.count(succ) == 0 || newBlock[succ].size() == 0) return;
         for (auto i : ins[newBlock[succ][0]])outs[last_b_ins].insert(i);
     }
     // 直到后面没有后继了，开始算
@@ -84,10 +78,28 @@ void fillInOut(BasicBlock* bb)
         if(i)outs[newBlock[bb][i-1]] = ins[newBlock[bb][i]];
     }
 
-
-//    }
 }
 
+void showSets(DomTreenode* dn)
+{
+    BasicBlock* b = dn->block;
+    cout << block2lb[b] << endl;
+    for(auto arm_ins: newBlock[b])
+    {
+        cout << *arm_ins << "\t";
+        dbg(ins[arm_ins].size());
+        for(auto in_decl: ins[arm_ins])
+            cout << *in_decl << " ";
+        for(auto out_decl: outs[arm_ins])
+            cout << *out_decl << " ";
+        cout << "\n";
+    }
+    // 递归打印剩下的
+    for(auto nx: dn->son)
+    {
+        showSets(nx);
+    }
+}
 
 void buildRIG()
 {
@@ -101,15 +113,18 @@ void buildRIG()
         ins.clear();
         outs.clear();
         blockVisited.clear();
+        dbg("neho -- clear sets and graph");
 
         // 2 开始从第一个domblock递归，填满in 和 out 集合
         fillInOut(gb->domBlock[0]);
-//        dbg(newBlock[gb->domBlock[0]].size());
-//        for(auto ains: newBlock[gb->domBlock[0]])
-//        {
-//            cout << *ains << endl;
-//
-//        }
+        dbg("neho -- fill in/out sets");
+
+        // 2.5 for debug 先临时打印一下这些个in 和 out
+        cout << "\n\n";
+        for(auto dr: DomRoot)
+        {
+            showSets(dr);
+        }
 
         // 3 利用填好的in、out集合，建立冲突图
 
