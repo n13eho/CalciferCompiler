@@ -27,7 +27,7 @@ class LinearIR
 
     std::vector<Instruction*> InstList;
     int InstCnt=0;
-    //记录所有的block
+    //记录所有的顶层的block
     std::vector<BasicBlock*> Blocks;
     //将函数的value与对应的basicblock对应
     map<Value*,BasicBlock*> FuncMap;

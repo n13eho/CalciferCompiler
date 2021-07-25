@@ -1,6 +1,6 @@
 # CalciferCompiler
 
-快快上车clion
+don't forget to cmake again after adding of deleting any .cpp/.h file
 
 ## where are we
 
