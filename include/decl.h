@@ -21,6 +21,9 @@ class Decl {
     vector<armInstr*> usesd; //which instruction uses it; 不知道是不是有用...
     Decl(){}
     ~Decl(){}
+
+    enum declType{const_decl=1, var_decl, global_decl, memory_decl};
+
     Decl(Value *_rawValue, BasicBlock *_rawBlock) : rawValue(_rawValue), rawBlock(_rawBlock){};
     virtual ostream& output(ostream&out)const{
         out<<"@NULL"<<endl;
@@ -78,7 +81,7 @@ class memoryDecl: public Decl{
 class armInstr{
     public:
     Decl* rd;
-    enum type{add=1,sub,mul,div,mod,mov,push,pop,cmp,beq,bne,blt,ble,bgt,bge,blr,b,movlt,movle,movge,movgt,moveq,movne,ldr,str};
+    enum armInsType{add=1,sub,mul,div,mod,mov,push,pop,cmp,beq,bne,blt,ble,bgt,bge,blr,b,movlt,movle,movge,movgt,moveq,movne,ldr,str};
     virtual ostream& output(ostream&out)const{
         out<<"@ NULL"<<endl;
         return out;
@@ -99,8 +102,31 @@ class armAdd:public armInstr
     }
 };
 
-class armSub:public armInstr{};
-class armMul:public armInstr{};
+class armSub:public armInstr
+{
+    public:
+    Decl *r0,*r1;
+    virtual int getType(){return sub;}
+    virtual ostream& output(ostream&out)const
+    {
+        out<<"sub "<<*rd<<", "<<*r0<<", "<<*r1;
+        return out;
+    }
+};
+
+class armMul:public armInstr
+{
+    public:
+    Decl *r0,*r1;
+    virtual int getType(){return mul;}
+    virtual ostream& output(ostream&out)const
+    {
+        out<<"mul "<<*rd<<", "<<*r0<<", "<<*r1;
+        return out;
+    }
+
+};
+
 class armDiv:public armInstr{};
 class armMod:public armInstr{};
 class armLdr:public armInstr{
