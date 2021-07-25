@@ -55,7 +55,7 @@ void assignPhi(Instruction* instr,BasicBlock*node)
             if(b==pred){fl=1;break;}
         }
         if(!fl)continue;
-        
+
         armMov* ins = new armMov();
         ins->rd=rd;
         auto pos = newBlock[pred].end();
@@ -121,11 +121,6 @@ void assignjmp(Instruction* instr, BasicBlock* node)
 void assignCall(Instruction* instr, BasicBlock* node)
 {
     // 高难度的函数跳转, 还没想好>_<
-}
-
-void assignLogicCond(Instruction *instr, BasicBlock* node)
-{
-    // 只要zyh加了短路就可以不写啦~~~
 }
 
 void assignIns(Instruction* ins,BasicBlock* node)

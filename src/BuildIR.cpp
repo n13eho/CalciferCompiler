@@ -1045,13 +1045,6 @@ Value* LAndExpNode(GrammaNode* node,LinearIR *IR)
     else
     {
         //可以短路
-        // cout<<"CondLoig:";
-        // for(auto e:CondLogi)
-        //     cout<<e<<" ";
-        // cout<<endl<<"CondCnt:";
-        // for(auto  e:CondCnt)
-        //     cout<<e<<" ";
-        // cout<<endl;
         for(int i=0;i<node->son.size();i++)
         {
             if(nullptr == FuncN&& 0 == global)
@@ -1101,14 +1094,6 @@ Value* LAndExpNode(GrammaNode* node,LinearIR *IR)
     {
         bbNow = GetPresentBlock(FuncN,BasicBlock::Basic);
     }
-    //条件value和立即数0比较
-//    Instruction* ins_neq = new Instruction(IR->getInstCnt(),Instruction::ArithNeq,2);
-//    ins_neq->addOperand(Condpre);
-//    ins_neq->addOperand(const0);
-//    ins_neq->setResult(ret);
-//    IR->InsertInstr(ins_neq);
-//    bbNow->Addins(ins_neq->getId());
-//    ins_neq->setParent(bbNow);
     CondLogi.pop_back();
     CondCnt.pop_back();
     return ret;
@@ -1193,13 +1178,41 @@ Value* EqExpNode(GrammaNode* node,LinearIR *IR)
         {
             bbNow = GetPresentBlock(FuncN,BasicBlock::Basic);
         }
-        Instruction* ins_neq = new Instruction(IR->getInstCnt(),Instruction::ArithNeq,2);
-        ins_neq->addOperand(VL);
-        ins_neq->addOperand(RL);
-        ins_neq->setResult(ret);
-        IR->InsertInstr(ins_neq);
-        bbNow->Addins(ins_neq->getId());
-        ins_neq->setParent(bbNow);
+        
+        if(CondLogi.back() == Instruction::LogicAnd && CondCnt.back()>1)
+        {
+            //翻转并短路
+            vector<Value*> ops = {VL,RL};
+            CreateIns(node,IR,Instruction::ArithEq,2,ops,ret);
+
+            Instruction* FJ = new Instruction(IR->getInstCnt(),Instruction::ConBr,0);
+            if(CaseFBlocks.empty())
+            {
+                dbg("CaseFBlocks is empty");
+            }
+            FJ->jmpDestBlock = CaseFBlocks.top();
+            IR->InsertInstr(FJ);
+            bbNow->Addins(FJ->getId());
+            FJ->setParent(bbNow);
+
+            CondCnt[CondCnt.size()-1]-=1;
+
+        }
+        else
+        {
+            vector<Value*> ops = {VL,RL};
+            CreateIns(node,IR,Instruction::ArithNeq,2,ops,ret);
+
+            Instruction* TJ = new Instruction(IR->getInstCnt(),Instruction::ConBr,0);
+            if(CaseTBlocks.empty())
+            {
+                dbg("CaseTBlocks is empty");
+            }
+            TJ->jmpDestBlock = CaseTBlocks.top();
+            IR->InsertInstr(TJ);
+            bbNow->Addins(TJ->getId());
+            TJ->setParent(bbNow);
+        }
         return ret;
     }
     else
@@ -1225,13 +1238,42 @@ Value* RelExpNode(GrammaNode* node,LinearIR *IR)
         {
             bbNow = GetPresentBlock(FuncN,BasicBlock::Basic);
         }
-        Instruction* ins_lt = new Instruction(IR->getInstCnt(),Instruction::ArithLT,2);
-        ins_lt->addOperand(VL);
-        ins_lt->addOperand(RL);
-        ins_lt->setResult(ret);
-        IR->InsertInstr(ins_lt);
-        bbNow->Addins(ins_lt->getId());
-        ins_lt->setParent(bbNow);
+        
+        
+        if(CondLogi.back() == Instruction::LogicAnd && CondCnt.back()>1)
+        {
+            //翻转并短路
+            vector<Value*> ops = {VL,RL};
+            CreateIns(node,IR,Instruction::ArithGQ,2,ops,ret);
+
+            Instruction* FJ = new Instruction(IR->getInstCnt(),Instruction::ConBr,0);
+            if(CaseFBlocks.empty())
+            {
+                dbg("CaseFBlocks is empty");
+            }
+            FJ->jmpDestBlock = CaseFBlocks.top();
+            IR->InsertInstr(FJ);
+            bbNow->Addins(FJ->getId());
+            FJ->setParent(bbNow);
+
+            CondCnt[CondCnt.size()-1]-=1;
+
+        }
+        else
+        {
+            vector<Value*> ops = {VL,RL};
+            CreateIns(node,IR,Instruction::ArithLT,2,ops,ret);
+
+            Instruction* TJ = new Instruction(IR->getInstCnt(),Instruction::ConBr,0);
+            if(CaseTBlocks.empty())
+            {
+                dbg("CaseTBlocks is empty");
+            }
+            TJ->jmpDestBlock = CaseTBlocks.top();
+            IR->InsertInstr(TJ);
+            bbNow->Addins(TJ->getId());
+            TJ->setParent(bbNow);
+        }
         return ret;
     }
     else if(RelExp_BG_ == node->type)
@@ -1250,13 +1292,42 @@ Value* RelExpNode(GrammaNode* node,LinearIR *IR)
         {
             bbNow = GetPresentBlock(FuncN,BasicBlock::Basic);
         }
-        Instruction* ins_bg = new Instruction(IR->getInstCnt(),Instruction::ArithBG,2);
-        ins_bg->addOperand(VL);
-        ins_bg->addOperand(RL);
-        ins_bg->setResult(ret);
-        IR->InsertInstr(ins_bg);
-        bbNow->Addins(ins_bg->getId());
-        ins_bg->setParent(bbNow);
+        
+        
+        if(CondLogi.back() == Instruction::LogicAnd && CondCnt.back()>1)
+        {
+            //翻转并短路
+            vector<Value*> ops = {VL,RL};
+            CreateIns(node,IR,Instruction::ArithLQ,2,ops,ret);
+
+            Instruction* FJ = new Instruction(IR->getInstCnt(),Instruction::ConBr,0);
+            if(CaseFBlocks.empty())
+            {
+                dbg("CaseFBlocks is empty");
+            }
+            FJ->jmpDestBlock = CaseFBlocks.top();
+            IR->InsertInstr(FJ);
+            bbNow->Addins(FJ->getId());
+            FJ->setParent(bbNow);
+
+            CondCnt[CondCnt.size()-1]-=1;
+
+        }
+        else
+        {
+            vector<Value*> ops = {VL,RL};
+            CreateIns(node,IR,Instruction::ArithBG,2,ops,ret);
+
+            Instruction* TJ = new Instruction(IR->getInstCnt(),Instruction::ConBr,0);
+            if(CaseTBlocks.empty())
+            {
+                dbg("CaseTBlocks is empty");
+            }
+            TJ->jmpDestBlock = CaseTBlocks.top();
+            IR->InsertInstr(TJ);
+            bbNow->Addins(TJ->getId());
+            TJ->setParent(bbNow);
+        }
         return ret;
     }
     else if(RelExp_LQ_ == node->type)
@@ -1274,13 +1345,42 @@ Value* RelExpNode(GrammaNode* node,LinearIR *IR)
         {
             bbNow = GetPresentBlock(FuncN,BasicBlock::Basic);
         }
-        Instruction* ins_lq = new Instruction(IR->getInstCnt(),Instruction::ArithLQ,2);
-        ins_lq->addOperand(VL);
-        ins_lq->addOperand(RL);
-        ins_lq->setResult(ret);
-        IR->InsertInstr(ins_lq);
-        bbNow->Addins(ins_lq->getId());
-        ins_lq->setParent(bbNow);
+        
+        
+        if(CondLogi.back() == Instruction::LogicAnd && CondCnt.back()>1)
+        {
+            //翻转并短路
+            vector<Value*> ops = {VL,RL};
+            CreateIns(node,IR,Instruction::ArithBG,2,ops,ret);
+
+            Instruction* FJ = new Instruction(IR->getInstCnt(),Instruction::ConBr,0);
+            if(CaseFBlocks.empty())
+            {
+                dbg("CaseFBlocks is empty");
+            }
+            FJ->jmpDestBlock = CaseFBlocks.top();
+            IR->InsertInstr(FJ);
+            bbNow->Addins(FJ->getId());
+            FJ->setParent(bbNow);
+
+            CondCnt[CondCnt.size()-1]-=1;
+
+        }
+        else
+        {
+            vector<Value*> ops = {VL,RL};
+            CreateIns(node,IR,Instruction::ArithLQ,2,ops,ret);
+
+            Instruction* TJ = new Instruction(IR->getInstCnt(),Instruction::ConBr,0);
+            if(CaseTBlocks.empty())
+            {
+                dbg("CaseTBlocks is empty");
+            }
+            TJ->jmpDestBlock = CaseTBlocks.top();
+            IR->InsertInstr(TJ);
+            bbNow->Addins(TJ->getId());
+            TJ->setParent(bbNow);
+        }
         return ret;
     }
     else if(RelExp_BQ_ == node->type)
@@ -1298,13 +1398,42 @@ Value* RelExpNode(GrammaNode* node,LinearIR *IR)
         {
             bbNow = GetPresentBlock(FuncN,BasicBlock::Basic);
         }
-        Instruction* ins_bq = new Instruction(IR->getInstCnt(),Instruction::ArithBG,2);
-        ins_bq->addOperand(VL);
-        ins_bq->addOperand(RL);
-        ins_bq->setResult(ret);
-        IR->InsertInstr(ins_bq);
-        bbNow->Addins(ins_bq->getId());
-        ins_bq->setParent(bbNow);
+        
+        
+        if(CondLogi.back() == Instruction::LogicAnd && CondCnt.back()>1)
+        {
+            //翻转并短路
+            vector<Value*> ops = {VL,RL};
+            CreateIns(node,IR,Instruction::ArithLT,2,ops,ret);
+
+            Instruction* FJ = new Instruction(IR->getInstCnt(),Instruction::ConBr,0);
+            if(CaseFBlocks.empty())
+            {
+                dbg("CaseFBlocks is empty");
+            }
+            FJ->jmpDestBlock = CaseFBlocks.top();
+            IR->InsertInstr(FJ);
+            bbNow->Addins(FJ->getId());
+            FJ->setParent(bbNow);
+
+            CondCnt[CondCnt.size()-1]-=1;
+
+        }
+        else
+        {
+            vector<Value*> ops = {VL,RL};
+            CreateIns(node,IR,Instruction::ArithGQ,2,ops,ret);
+
+            Instruction* TJ = new Instruction(IR->getInstCnt(),Instruction::ConBr,0);
+            if(CaseTBlocks.empty())
+            {
+                dbg("CaseTBlocks is empty");
+            }
+            TJ->jmpDestBlock = CaseTBlocks.top();
+            IR->InsertInstr(TJ);
+            bbNow->Addins(TJ->getId());
+            TJ->setParent(bbNow);
+        }
         return ret;
     }
     else
