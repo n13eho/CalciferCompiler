@@ -1,4 +1,5 @@
-#include<bits/stdc++.h>
+/*Register Interference Graph*/
+
 #include"decl.h"
 #include"ssa.h"
 #include"liveSet.h"

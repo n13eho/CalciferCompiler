@@ -5,9 +5,9 @@
 #include "../include/debug.h"
 #include "CodeGeneration.h"
 #include "../include/detetedeadblock.h"
-#include "../include/register.h"
 #include"../include/ssa.h"
 #include"../include/liveSet.h"
+#include "../include/RIG.h"
 
 //外部的lineno，行号信息
 extern int lineno;
@@ -47,11 +47,16 @@ int main(int argc, char *argv[])
         VisitAST(Droot, IR1); // 从ast：建立四元式 + 得出block的信息
         Visitblock(IR1); // 删除空结点
 //        show_IR_ins(IR1); // 打印指令
+//        cout << "\n\n"; show_block(globalBlock, 0); // 打印基本块 （写注释啊啊啊啊啊啊 --neho
 
         // SSA
-        getssa();//建立支配树以及支配边界
-        show_block(globalBlock, 0); // 打印基本块，查看phi结点
+        getssa();//建立支配树以及支配边界 -->
+        cout << "\n\n"; show_block(globalBlock, 0); // 打印基本块，查看phi结点
         liveSets();//重命名
+
+        // 寄存器分配：虚拟寄存器->realj寄存器。变量活性分析，建立冲突图；
+        buildRIG();
+
         // codegeneration();
         // 利用四元式和bb信息得出ssa_0
         // dbg("convert to ssa");
