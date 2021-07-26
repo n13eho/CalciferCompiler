@@ -14,6 +14,7 @@ output: IR1 with phi
 struct DomTreenode
 {
     //支配树节点
+    FunctionValue* func;
     vector<DomTreenode*> son;//son
     BasicBlock* block;//这个节点对应的block
     DomTreenode *idom;// 这个节点的直接支配节点

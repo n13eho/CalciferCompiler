@@ -115,6 +115,7 @@ void buildDomTree(BasicBlock *s)
     block2dom[s->domBlock[0]]=new DomTreenode();
     block2dom[s->domBlock[0]]->block=s->domBlock[0];
     DomTreenode* root=block2dom[s->domBlock[0]];
+    root->func=s->FuncV;
     DomRoot.push_back(root);
     dfsLT(root);
 
