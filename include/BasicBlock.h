@@ -1,5 +1,5 @@
 #pragma once
-
+#include <iostream>
 #include "Value.h"
 #include<list>
 //基本块
@@ -11,7 +11,8 @@ public:
     While,
     //用于部分死代码删除
     Break,
-    Continue
+    Continue,
+    IfNext
     };
 
     BasicBlock(BasicBlock::BlockType t){bType = t;}
@@ -22,6 +23,7 @@ public:
     //this作为前驱、succ作为后继
     void Link(BasicBlock* succ)
     {
+        // std::cout<<this->BlockName<<" link with "<<succ->BlockName<<std::endl;
         this->succBlock.push_back(succ);
         succ->pioneerBlock.push_back(this);
     }
@@ -77,11 +79,16 @@ public:
     //前驱基本块
     std::vector<BasicBlock*> pioneerBlock;
     //属于的函数体
-    BasicBlock* parent_;
+    BasicBlock* parent_=nullptr;
     //函数所控制的基本块
     std::vector<BasicBlock*> domBlock;
     //基本块类型
     BlockType bType;
+    //条件嵌套时，上一层的if的next
+    BasicBlock* LastIfNext;
+    //表示函数顶层基本块，被调用情况
+    int called = 0;
+
     //对应符号表中的函数
     FunctionValue* FuncV;
     //用于可视化基本块关系

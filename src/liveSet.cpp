@@ -31,7 +31,6 @@ void assignMov(Instruction* instr, BasicBlock* node)
     newBlock[node].push_back(ins);
     trance[ins]=instr;
 }
-
 void assignAdd(Instruction* instr,BasicBlock *node)
 {
     armAdd *ins=new armAdd();
@@ -43,7 +42,33 @@ void assignAdd(Instruction* instr,BasicBlock *node)
     newBlock[node].push_back(ins);
     trance[ins]=instr;
 }
-
+void assignMul(Instruction* instr,BasicBlock *node)
+{
+    armMul *ins=new armMul();
+    IntegerValue* res=(IntegerValue*)instr->getResult();
+    varDecl *resd = new varDecl(res,node,Rcnt++);
+    ins->rd = resd;
+    newBlock[node].push_back(ins);
+    trance[ins]=instr;
+}
+void assignSub(Instruction* instr,BasicBlock *node)
+{
+    IntegerValue* res=(IntegerValue*)instr->getResult();
+    IntegerValue* r0=(IntegerValue*)instr->getOp()[0];
+    varDecl *resd = new varDecl(res,node,Rcnt++);
+    if(r0->isConst){
+        armRsb *ins=new armRsb();
+        ins->rd = resd;
+        newBlock[node].push_back(ins);
+        trance[ins]=instr;
+    }
+    else{
+        armSub *ins=new armSub();
+        ins->rd = resd;
+        newBlock[node].push_back(ins);
+        trance[ins]=instr;
+    }
+}
 void assignPhi(Instruction* instr,BasicBlock*node)
 {
     Value* val=instr->getOp()[0];    
@@ -64,7 +89,6 @@ void assignPhi(Instruction* instr,BasicBlock*node)
         trance[ins]=instr;
     }
 }
-
 void assignLdr(Instruction* instr, BasicBlock* node)
 {
     Value *rdval = instr->getResult();
@@ -113,7 +137,6 @@ void assignStr(Instruction* instr, BasicBlock* node)
     }
     newBlock[node].push_back(ins);
 }
-
 void assignLogic(Instruction* instr, BasicBlock* node, BasicBlock* nex)
 {
     // 一个cmp指令
@@ -159,20 +182,23 @@ void assignLogic(Instruction* instr, BasicBlock* node, BasicBlock* nex)
         insb->lb=block2lb[nex];
     }
 }
-
 void assignjmp(Instruction* instr, BasicBlock* node)
 {
     armB* ins = new armB();
     newBlock[node].push_back(ins);
     ins->lb = block2lb[instr->jmpDestBlock];
 }
-
 void assignCall(Instruction* instr, BasicBlock* node)
 {
     //TODO: 目前的想法时甩锅到代码生成, 这里就先沿用四元式的表示;如果发现可以解决记得回来改哦!
     armCall* ins = new armCall();
     newBlock[node].push_back(ins);
     trance[ins]=instr;
+    ins->funcname = instr->getOp()[0]->VName;
+    //返回值.
+    IntegerValue* rd=(IntegerValue*)instr->getResult();
+    varDecl *rdd = new varDecl(rd,node,Rcnt++);
+    ins->rd=rdd;
 }
 void assignRet(Instruction* instr, BasicBlock* node)
 {
@@ -187,6 +213,10 @@ void assignIns(Instruction* ins,BasicBlock* node)
     if(ins->getOpType() == Instruction::Add)
     {
         assignAdd(ins,node);
+    }
+    else if(ins->getOpType() == Instruction::Mul)
+    {
+        assignMul(ins,node);
     }
     else if(ins->getOpType() == Instruction::Assign)
     {
@@ -213,7 +243,6 @@ void assignIns(Instruction* ins,BasicBlock* node)
         assignRet(ins,node);
     }
 }
-
 void setDecl(BasicBlock *s)
 {
     for(auto id=s->InstrList.begin();id!=s->InstrList.end();++id){
@@ -295,9 +324,37 @@ void usedAdd(armAdd* ins,BasicBlock* node)
     ins->r0 = getDecl(r0,node);
     ins->r1 = getDecl(r1,node);
     addAssign(ins->rd->rawValue,node,ins->rd);
-
 }
-
+void usedMul(armMul* ins,BasicBlock* node)
+{
+    Instruction* raw = trance[ins];
+    IntegerValue* r0 = (IntegerValue*)raw->getOp()[0];
+    IntegerValue* r1 = (IntegerValue*)raw->getOp()[1];
+    if(r0->isConst)swap(r0,r1);
+    ins->r0 = getDecl(r0,node);
+    ins->r1 = getDecl(r1,node);
+    addAssign(ins->rd->rawValue,node,ins->rd);
+}
+void usedSub(armSub* ins,BasicBlock* node)
+{
+    Instruction* raw = trance[ins];
+    IntegerValue* r0 = (IntegerValue*)raw->getOp()[0];
+    IntegerValue* r1 = (IntegerValue*)raw->getOp()[1];
+    if(r0->isConst)swap(r0,r1);
+    ins->r0 = getDecl(r0,node);
+    ins->r1 = getDecl(r1,node);
+    addAssign(ins->rd->rawValue,node,ins->rd);
+}
+void usedRsb(armRsb* ins,BasicBlock* node)
+{
+    Instruction* raw = trance[ins];
+    IntegerValue* r0 = (IntegerValue*)raw->getOp()[0];
+    IntegerValue* r1 = (IntegerValue*)raw->getOp()[1];
+    if(r0->isConst)swap(r0,r1);
+    ins->r0 = getDecl(r0,node);
+    ins->r1 = getDecl(r1,node);
+    addAssign(ins->rd->rawValue,node,ins->rd);
+}
 int usedMov(armMov* ins, BasicBlock* node)
 {
     Instruction* raw = trance[ins];
@@ -309,7 +366,6 @@ int usedMov(armMov* ins, BasicBlock* node)
     addAssign(ins->rd->rawValue,node,ins->rd);
     return 0;
 }
-
 void usedCmp(armCmp* ins,BasicBlock* node)
 {
     Instruction* raw = trance[ins];
@@ -331,14 +387,14 @@ void usedStr(armStr* ins,BasicBlock* node)
     IntegerValue* r0=(IntegerValue*)raw->getResult();
     ins->rd = getDecl(r0,node);
 }
-
 void usedCall(armCall* ins, BasicBlock* node)
 {
     Instruction* raw =trance[ins];
     for( auto val :raw->getOp()){
         Decl* r = getDecl(val,node);
-        ins->rs.push_back(r);
+        if(r)ins->rs.push_back(r);
     }
+    addAssign(ins->rd->rawValue,node,ins->rd);
 }
 void usedRet(armRet* ins, BasicBlock* node)
 {
@@ -356,6 +412,15 @@ int usedIns(armInstr* ins,BasicBlock* node)
     else if(ins->getType() == armInstr::add){
         usedAdd((armAdd*)ins,node);
     }
+    else if(ins->getType() == armInstr::mul){
+        usedMul((armMul*)ins,node);
+    }
+    else if(ins->getType() == armInstr::sub){
+        usedSub((armSub*)ins,node);
+    }
+    else if(ins->getType() == armInstr::rsb){
+        usedRsb((armRsb*)ins,node);
+    }
     else if(ins->getType() == armInstr::cmp){
         usedCmp((armCmp*)ins,node);
     }
@@ -371,7 +436,6 @@ int usedIns(armInstr* ins,BasicBlock* node)
     else if(ins->getType() == armInstr::ret){
         usedRet((armRet*)ins,node);
     }
-    cout<<*ins<<endl;
     return 0;
 }
 
@@ -381,9 +445,9 @@ void setUsed(BasicBlock* s)
     for(auto dc : reachin[s]){
         addAssign(dc->rawValue,s,dc);
     } 
-    // dbg("done?");
     //对于每一条语句填used
     for(auto ins=newBlock[s].begin();ins!=newBlock[s].end();ins++){
+        dbg((*ins)->getType());
         if(usedIns(*ins,s)==-1){
             newBlock[s].erase(ins);
         }

@@ -70,23 +70,66 @@ void printIns(int id)
     }
 }
 
-void show_block(BasicBlock* node,int dep)
+void show_block(BasicBlock* node,int dep,BasicBlock* father,int way)
 {
 
     vis[node]=1;
     for(int i=1;i<=dep*4;i++)cout<<' ';
     // cout<<DEBUG_blkOP[node->bType]<<endl;
-    cout<<node->BlockName<<endl;
+    cout<<node;
+    if(father!=nullptr)cout<<"("<<father<<")"<<"["<<way<<"]"<<endl;
+    else cout<<endl;
     for(auto i : node->InstrList){
         for(int i=1;i<=dep*4;i++)cout<<' ';
         printIns(i);
     }
      for(auto i : node->succBlock)
      {
-         if(!vis[i])show_block(i,dep);
+         if(!vis[i])show_block(i,dep,node,1);
      }
     for(auto i : node->domBlock)
     {
-        if(!vis[i])show_block(i,dep+1);
+        if(!vis[i])show_block(i,dep+1,node,2);
+    }
+}
+map<BasicBlock*, bool> viscfg;
+set<BasicBlock*> other;
+
+void outputsuc(BasicBlock* s)
+{
+    viscfg[s]=1;
+    for(auto eb:s->succBlock){
+        cout<<"succ:";
+        dbg(eb);
+        dbg(eb->BlockName);
+        for(auto i : eb->InstrList)
+            printIns(i);
+        other.insert(eb);
+    }
+}
+
+void show_cfg()
+{
+    for(auto gb:IR1->Blocks){
+        dbg(gb);
+        dbg(gb->BlockName);
+        for(auto i : gb->InstrList)
+            printIns(i);
+        for(auto b:gb->domBlock){
+            cout<<"dom:";
+            dbg(b);
+            dbg(b->BlockName);
+            for(auto i : b->InstrList)
+                printIns(i);
+            if(!viscfg[b])outputsuc(b);
+            cout<<endl;
+        }
+        cout<<endl;
+    }
+    dbg("-----------------------------------");
+    for(auto ot:other){
+        if(viscfg[ot])continue;
+        dbg(ot);
+        if(!viscfg[ot])outputsuc(ot);
     }
 }

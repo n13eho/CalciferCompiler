@@ -26,6 +26,11 @@ stack<BasicBlock*> CaseFBlocks;
 vector<int> CondLogi;
 //当前与或的条件个数
 vector<int> CondCnt;
+//条件嵌套
+stack<BasicBlock*> IfNextBlocks;
+
+map<BasicBlock*,int> visited;
+int funCNext = 0;
 
 
 BasicBlock* GetPresentBlock(BasicBlock* funcP,BasicBlock::BlockType t)
@@ -35,7 +40,10 @@ BasicBlock* GetPresentBlock(BasicBlock* funcP,BasicBlock::BlockType t)
     //若当前函数已有基本块，更新前驱后继
     if(0 != funcP->domBlock.size())
     {
-        funcP->domBlock.back()->Link(bbNow);
+        if(!funCNext)
+        {
+            funcP->domBlock.back()->Link(bbNow);
+        }
     }
     funcP->AddDom(bbNow);   
     bbNow->setParnt(funcP);
@@ -121,6 +129,8 @@ void VisitAST(GrammaNode* DRoot,LinearIR *IR)
             bbNow = nullptr;
         }
     }
+
+    fixIfNext(IR,globalBlock,0);
 }
 
 void ConstDefNode(GrammaNode* node,LinearIR *IR)
@@ -584,6 +594,7 @@ void IfNode(GrammaNode* node,LinearIR *IR)
         BasicBlock* next = new BasicBlock(BasicBlock::Basic);
         next->BlockName = "ifNext";
         //条件所在基本块建立与caseT、next的联系
+        // cout<<"cond :bbNow "<<bbNow<<bbNow->BlockName<<endl;
         bbNow->Link(caseT);
         bbNow->Link(next);
 
@@ -594,6 +605,7 @@ void IfNode(GrammaNode* node,LinearIR *IR)
 
         CaseTBlocks.push(caseT);
         CaseFBlocks.push(next);
+        IfNextBlocks.push(next);
 
         CondNode(node->son[0],IR);
 
@@ -614,14 +626,36 @@ void IfNode(GrammaNode* node,LinearIR *IR)
         bbNow = caseT;
         StmtNode(node->son[1],IR);
         //此时的bbNow不一定是caseT
+
+        if(bbNow->getLastIns()>0 && IR->getIns(bbNow->getLastIns())->getOpType() != Instruction::Jmp)
+        {
+            Instruction* ins_jmp2 = new Instruction(IR->getInstCnt(),Instruction::Jmp,0);
+            IR->InsertInstr(ins_jmp2);
+            bbNow->Addins(ins_jmp2->getId());
+            ins_jmp2->jmpDestBlock = next;
+            ins_jmp2->setParent(bbNow);
+        }
+        // cout<<"case T :bbNow "<<bbNow<<bbNow->BlockName<<endl;
         bbNow->Link(next);
         bbNow = next;
+        bbNow->bType = BasicBlock::IfNext;
+        IfNextBlocks.pop();
+        if(IfNextBlocks.empty())
+        {
+            //若前面无嵌套，并且最后ifnext也是空，则加入return
+            bbNow->LastIfNext = nullptr;
+        }
+        else
+        {
+            bbNow->LastIfNext = IfNextBlocks.top();
+        }
         //update jmp address
         //后面删除该结果value
         // ins_br->setResult(new IntegerValue("jmpAddress0",node->lineno,node->var_scope,IR->getInstCnt(),1));
 
         CaseFBlocks.pop();
         CaseTBlocks.pop();
+
     }
     else
     {
@@ -641,7 +675,7 @@ void IfElseNode(GrammaNode* node,LinearIR *IR)
         {
             bbNow = GetPresentBlock(FuncN,BasicBlock::If);
         }
-        CondNode(node->son[0],IR);
+        
         
         //条件成立后转移的基本块
         BasicBlock* caseT = new BasicBlock(BasicBlock::Basic);
@@ -664,12 +698,16 @@ void IfElseNode(GrammaNode* node,LinearIR *IR)
         bbNow->Link(caseT);
         bbNow->Link(caseF);
 
+        CaseTBlocks.push(caseT);
+        CaseFBlocks.push(caseF);
+        IfNextBlocks.push(next);
+        CondNode(node->son[0],IR);
         //条件成立，跳转至caseT
-        Instruction* ins_br1 = new Instruction(IR->getInstCnt(),Instruction::ConBr,0);
-        IR->InsertInstr(ins_br1);
-        bbNow->Addins(ins_br1->getId());
-        ins_br1->setParent(bbNow); 
-        ins_br1->jmpDestBlock = caseT;
+        // Instruction* ins_br1 = new Instruction(IR->getInstCnt(),Instruction::ConBr,0);
+        // IR->InsertInstr(ins_br1);
+        // bbNow->Addins(ins_br1->getId());
+        // ins_br1->setParent(bbNow); 
+        // ins_br1->jmpDestBlock = caseT;
 
         //条件不成立，跳转至caseF
         Instruction* ins_br2 = new Instruction(IR->getInstCnt(),Instruction::Jmp,0);
@@ -695,25 +733,42 @@ void IfElseNode(GrammaNode* node,LinearIR *IR)
             ins_br->setParent(caseT);
             ins_br->jmpDestBlock = next;
 
-            cout<<"case T "<<bbNow->BlockName<<"link next"<<endl;
+            // cout<<"case T "<<bbNow->BlockName<<"link next"<<endl;
         }
-        //后面删除
-        //if条件跳转地址
-        // ins_br2->setResult(new IntegerValue("jmpAddress0",node->lineno,node->var_scope,IR->getInstCnt(),1));
-        // cout<<"ifelse 中if跳转地址："<<ins_br2->getResult()<<endl;
 
         //F
         bbNow = caseF;
         StmtNode(node->son[2],IR);
-        //bbNow不一定是caseF
-        bbNow->Link(next);
-        //更新ins_br2参数，todo
+        //如果此分支不存在break、continue、ret
+        if(linkNext(bbNow,IR))
+        {
+            //此时bbNow不一定是caseF
+            bbNow->Link(next);
+            //T跳转至next
+            Instruction* ins_br = new Instruction(IR->getInstCnt(),Instruction::Jmp,0);
+            IR->InsertInstr(ins_br);
+            caseF->Addins(ins_br->getId());
+            ins_br->setParent(caseF);
+            ins_br->jmpDestBlock = next;
+            
+        }
         bbNow = next;
+        bbNow->bType = BasicBlock::IfNext;
+        IfNextBlocks.pop();
+        if(IfNextBlocks.empty())
+        {
+            //若前面无嵌套，并且最后ifnext也是空，则加入return
+            bbNow->LastIfNext = nullptr;
+        }
+        else
+        {
+            bbNow->LastIfNext = IfNextBlocks.top();  
+        }
 
-        //后面删除
-        //update caseT最后一条无条件跳转指令的地址
-        // ins_br->setResult(new IntegerValue("jmpAddress0",node->lineno,node->var_scope,IR->getInstCnt(),1));
-        // cout<<"ifelse 中caseT跳转地址："<<ins_br->getResult()<<endl;
+        CaseFBlocks.pop();
+        CaseTBlocks.pop();
+        
+
     }
     else
     {
@@ -932,39 +987,39 @@ void LOrExpNode(GrammaNode* node,LinearIR *IR)
     CondLogi.push_back(Instruction::LogicOr);
     CondCnt.push_back(node->son.size());
     cout<<"LOrExpNode cond cnt:"<<node->son.size()<<endl;
-    //前一个条件value
-    // Value* Condpre = LAndExpNode(node->son[0],IR);
-    // if(node->son.size()==1)
-    //     return;
-    for(int i=0;i<node->son.size();i++)
+    if(node->son.size() == 1)
     {
-        //当前条件value
-        Value* Condi = LAndExpNode(node->son[i],IR);
-        //当前a or b计算结果
-        // Value* ret = new Value("t"+std::to_string(i),node->lineno,node->var_scope);
-
-        // if(nullptr == FuncN && 0 == global)
-        // {
-        //     return ;
-        // }
-        // //属于某个函数且该指令为首指令，新建一个基本块，并建立联系
-        // if(nullptr == bbNow)
-        // {
-        //     bbNow = GetPresentBlock(FuncN,BasicBlock::Basic);
-        // }
-
-        // Instruction* ins_or = new Instruction(IR->getInstCnt(),Instruction::LogicOr,2);
-        // ins_or->addOperand(Condpre);
-        // ins_or->addOperand(Condi);
-        // ins_or->setResult(ret);
-        // IR->InsertInstr(ins_or);
-        // bbNow->Addins(ins_or->getId());
-        // ins_or->setParent(bbNow);
-        // Condpre=ret;
+        Value* Condi = LAndExpNode(node->son[0],IR);   
     }
-    //立即数0
-    // ImmValue* const0 = new ImmValue("0",0);
-    // Value* ret = new Value("tr",node->lineno,node->var_scope);
+    else
+    {
+        for(int i=0;i<node->son.size();i++)
+        {
+            //当有'与'条件在'或'条件前，短路需要创建新基本块，如 a&&b&&c || d
+            if(node->son[i]->son.size()>1 && i!=node->son.size()-1)
+            {
+                cout<<"@@@@@@@@@@@@@@@"<<endl;
+                BasicBlock* nextOrCond = new BasicBlock(BasicBlock::If);
+                nextOrCond->BlockName = "condOr";
+                FuncN->AddDom(nextOrCond);
+                CaseFBlocks.push(nextOrCond);
+                Value* Condi = LAndExpNode(node->son[i],IR);
+                bbNow->Link(nextOrCond);
+                CaseFBlocks.pop();
+                Instruction* jmpIns = new Instruction(IR->getInstCnt(),Instruction::Jmp,0);
+                jmpIns->jmpDestBlock = nextOrCond;
+                IR->InsertInstr(jmpIns);
+                bbNow->Addins(jmpIns->getId());
+                jmpIns->setParent(bbNow);
+                bbNow = nextOrCond;
+            }
+            else
+            {
+                Value* Condi = LAndExpNode(node->son[i],IR);
+            }
+        }
+    }
+    
     if(nullptr == FuncN && 0 == global)
     {
         return ;
@@ -1816,13 +1871,15 @@ Value* UnaryExpNode(GrammaNode* node,LinearIR *IR)
 
             //调用函数对应的函数基本块
             BasicBlock* funcCalled = IR->FuncMap[called];
-            bbNow->Link(funcCalled);
-
-            BasicBlock* next = GetPresentBlock(FuncN,BasicBlock::Basic);
-
-            funcCalled->Link(next);
-
-            bbNow = next;
+            funcCalled->called = 1;
+            // cout<<"函数调用所在块:bbNow "<<bbNow<<bbNow->BlockName<<endl;
+            // bbNow->Link(funcCalled);
+            // funCNext = 1;
+            // BasicBlock* next = GetPresentBlock(FuncN,BasicBlock::Basic);
+            // cout<<"funcCalled :"<<funcCalled<<funcCalled->BlockName<<endl;
+            // funcCalled->Link(next);
+            // funCNext = 0;
+            // bbNow = next;
             return ret;
         }
         else if(node->son.size() == 1)
@@ -1851,14 +1908,15 @@ Value* UnaryExpNode(GrammaNode* node,LinearIR *IR)
 
             //调用函数对应的函数基本块
             BasicBlock* funcCalled = IR->FuncMap[called];
-            bbNow->Link(funcCalled);
+            funcCalled->called = 1;
+            // bbNow->Link(funcCalled);
 
             //call指令下一条指令作为首指令的基本块
-            BasicBlock* next = CreateBlock(BasicBlock::Basic);
-            next->BlockName = "basic";
-            funcCalled->Link(next);
+            // BasicBlock* next = CreateBlock(BasicBlock::Basic);
+            // next->BlockName = "basic";
+            // funcCalled->Link(next);
 
-            bbNow = next;
+            // bbNow = next;
             return ret;
         }
         else
@@ -2168,4 +2226,50 @@ void show_IR_ins(LinearIR *IR)
     for(auto i: IR->Blocks)
         cout<<i<<" ";
     cout<<"\n\n\n";
+}
+
+void fixIfNext(LinearIR *IR,BasicBlock* node,int dep)
+{
+    visited[node]=1;
+    // cout<<node->BlockName<<" "<<node->InstrList.size()<<" "<<node->getLastIns()<<endl;
+    int insId = node->getLastIns();
+    
+    if(node->bType == BasicBlock::IfNext&&node->parent_!=nullptr &&(insId == -1 || (IR->getIns(insId)->getOpType() != 17 && IR->getIns(insId)->getOpType() != 20)))
+    {
+        //空基本块
+        if(node->LastIfNext == nullptr)
+        {
+            if(insId>0)
+            {
+                cout<<IR->getIns(insId)->getOpType()<<endl;
+            }
+            Instruction* rets = new Instruction(IR->getInstCnt(),Instruction::Ret,0);
+            node->Addins(rets->getId());
+            rets->setParent(node);
+            IR->InsertInstr(rets);
+        }
+        else
+        {
+            Instruction* jmp = new Instruction(IR->getInstCnt(),Instruction::Jmp,0);
+            jmp->jmpDestBlock = node->LastIfNext;
+            node->Addins(jmp->getId());
+            jmp->setParent(node);
+            IR->InsertInstr(jmp);
+        }
+    }
+    for(auto i : node->succBlock)
+     {
+        if(!visited[i])
+        {
+            fixIfNext(IR,i,dep);
+        }
+     }
+    for(auto i : node->domBlock)
+    {
+        if(!visited[i])
+        {
+            fixIfNext(IR,i,dep+1);
+        }
+    }
+    // vis.clear();
 }

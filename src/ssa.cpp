@@ -142,8 +142,8 @@ void calDF(BasicBlock *b)
         for(auto i : b->pioneerBlock){
             auto runner=i;
             while(runner!=block2dom[b]->idom->block){
-                set<BasicBlock*> tem;
-                if(ssaIR->DF.count(runner)==0)ssaIR->DF.insert(make_pair(runner,tem));
+                // set<BasicBlock*> tem;
+                // if(ssaIR->DF.count(runner)==0)ssaIR->DF.insert(make_pair(runner,tem));
                 ssaIR->DF[runner].insert(b);
                 runner=block2dom[runner]->idom->block;
             }
@@ -185,8 +185,12 @@ void setAssbyBlock(BasicBlock* s)
         Instruction *ins = IR1->InstList[i];
         if(ins->getOpType()>=Instruction::Add&&ins->getOpType()<=Instruction::LogicOr)
             addAssbyBlock(ins->getResult(),s);
-        // else if(ins->getOpType()==)
-        //还没想好load和store怎么处理
+        else if(ins->getOpType()==Instruction::Load){
+            addAssbyBlock(ins->getResult(),s);
+        }
+        else if(ins->getOpType()==Instruction::Call){
+            addAssbyBlock(ins->getResult(),s);
+        }
     }
 }
 
@@ -241,7 +245,7 @@ void getssa()
 
     //0.0 处理全局变量, 在每一个块中, 第一次出现全局变量的地方添加一个ldr指令
     for( auto gbval: allValue){
-        if(gbval->var_scope=="1"){
+        if(gbval->var_scope=="1"&&gbval->getType()==1){
             for(auto b:IR1->Blocks){
                 for(auto eb:b->domBlock){
                     for(auto it = eb->InstrList.begin();it!=eb->InstrList.end();it++){
