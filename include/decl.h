@@ -102,7 +102,7 @@ class armInstr{
 };
 ostream& operator<<(ostream&out,const armInstr& a);
 
-class armAdd:public armInstr
+class armAdd:public armInstr//ok
 {
     public:
     Decl *r1,*r0;
@@ -114,7 +114,7 @@ class armAdd:public armInstr
     }
 };
 
-class armSub:public armInstr
+class armSub:public armInstr//ok
 {
     public:
     Decl *r0,*r1;
@@ -137,7 +137,7 @@ class armRsb:public armInstr
     }
 };
 
-class armMul:public armInstr
+class armMul:public armInstr//ok
 {
     public:
     Decl *r0,*r1;
@@ -152,7 +152,7 @@ class armMul:public armInstr
 
 class armDiv:public armInstr{};
 class armMod:public armInstr{};
-class armRet:public armInstr
+class armRet:public armInstr//TODO
 {
     public:
     Decl *rs;
@@ -166,7 +166,7 @@ class armRet:public armInstr
         return out;
     }
 };
-class armCall:public armInstr{
+class armCall:public armInstr{//TODO
     public:
     vector<Decl*>rs;
     string funcname;
@@ -180,7 +180,7 @@ class armCall:public armInstr{
         return out;
     }
 };
-class armLdr:public armInstr{
+class armLdr:public armInstr{//TODO
     public:
     Decl *rs;
     virtual int getType(){return ldr;}
@@ -190,7 +190,7 @@ class armLdr:public armInstr{
         return out;
     }
 };
-class armStr:public armInstr{
+class armStr:public armInstr{//TODO
     public:
     Decl *rs;//str中rs其实是目的位置！！！！！！！！！
     virtual int getType(){return str;}
@@ -200,7 +200,7 @@ class armStr:public armInstr{
         return out;
     }
 };
-class armB:public armInstr{
+class armB:public armInstr{//no
     public:
     string lb;
     virtual int getType(){return beq;}
@@ -210,7 +210,7 @@ class armB:public armInstr{
         return out;
     }
 };
-class armBeq:public armInstr{
+class armBeq:public armInstr{//no
     public:
     string lb;
     virtual int getType(){return beq;}
@@ -220,7 +220,7 @@ class armBeq:public armInstr{
         return out;
     }
 };
-class armBne:public armInstr{
+class armBne:public armInstr{//no
     public:
     string lb;
     virtual int getType(){return beq;}
@@ -230,7 +230,7 @@ class armBne:public armInstr{
         return out;
     }
 };
-class armBlt:public armInstr{
+class armBlt:public armInstr{//no
     public:
     string lb;
     virtual int getType(){return beq;}
@@ -240,7 +240,7 @@ class armBlt:public armInstr{
         return out;
     }
 };
-class armBgt:public armInstr{
+class armBgt:public armInstr{//no
     public:
     string lb;
     virtual int getType(){return beq;}
@@ -250,7 +250,7 @@ class armBgt:public armInstr{
         return out;
     }
 };
-class armBle:public armInstr{
+class armBle:public armInstr{//no
     public:
     string lb;
     virtual int getType(){return beq;}
@@ -260,7 +260,7 @@ class armBle:public armInstr{
         return out;
     }
 };
-class armBge:public armInstr{
+class armBge:public armInstr{//no
     public:
     string lb;
     virtual int getType(){return beq;}
@@ -271,7 +271,7 @@ class armBge:public armInstr{
     }
 };
 
-class armCmp:public armInstr{
+class armCmp:public armInstr{//ok
     public:
     Decl *r1,*r0;
     virtual int getType(){return cmp;}
@@ -282,7 +282,7 @@ class armCmp:public armInstr{
     }
 };
 
-class armMov:public armInstr{
+class armMov:public armInstr{//ok
     public:
     Decl *rs;
     virtual int getType(){return mov;}

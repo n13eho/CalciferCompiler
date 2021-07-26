@@ -57,6 +57,18 @@ void ArmI2InOut(armInstr* ai)
         if(cmp_ai->r1->gettype() == Decl::declType::var_decl)
             ins[ai].insert(cmp_ai->r1);
     }
+    else if(ai->getType() == armInstr::armInsType::str)
+    {
+        armStr* str_ai = (armStr*)ai;
+        //str指令是的rd是gen集
+        ins[ai].insert(str_ai->rd);
+    }
+    else if(ai->getType() == armInstr::armInsType::ldr)
+    {
+        armLdr* ldr_ai = (armLdr*)ai;
+        //ldr指令是的rd是kill集
+        ins[ai].erase(ldr_ai->rd);
+    }
 
 
 
