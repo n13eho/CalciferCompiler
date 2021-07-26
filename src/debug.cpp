@@ -92,6 +92,18 @@ void show_block(BasicBlock* node,int dep,BasicBlock* father,int way)
         if(!vis[i])show_block(i,dep+1,node,2);
     }
 }
+map<BasicBlock*, bool> viscfg;
+set<BasicBlock*> other;
+
+void outputsuc(BasicBlock* s)
+{
+    viscfg[s]=1;
+    for(auto eb:s->succBlock){
+        cout<<"succ:";
+        dbg(eb);
+        other.insert(eb);
+    }
+}
 
 void show_cfg()
 {
@@ -100,12 +112,15 @@ void show_cfg()
         for(auto b:gb->domBlock){
             cout<<"dom:";
             dbg(b);
-            for(auto eb:b->succBlock){
-                cout<<"succ:";
-                dbg(eb);
-            }
+            if(!viscfg[b])outputsuc(b);
             cout<<endl;
         }
         cout<<endl;
+    }
+    dbg("-----------------------------------");
+    for(auto ot:other){
+        if(viscfg[ot])continue;
+        dbg(ot);
+        if(!viscfg[ot])outputsuc(ot);
     }
 }
