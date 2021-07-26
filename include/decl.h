@@ -158,6 +158,7 @@ class armRet:public armInstr
 class armCall:public armInstr{
     public:
     vector<Decl*>rs;
+    string funcname;
     virtual int getType(){return call;}
     virtual ostream& output(ostream&out)const
     {

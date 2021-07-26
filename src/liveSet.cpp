@@ -173,6 +173,7 @@ void assignCall(Instruction* instr, BasicBlock* node)
     armCall* ins = new armCall();
     newBlock[node].push_back(ins);
     trance[ins]=instr;
+    ins->funcname = instr->getOp()[0]->VName;
 }
 void assignRet(Instruction* instr, BasicBlock* node)
 {
@@ -337,7 +338,7 @@ void usedCall(armCall* ins, BasicBlock* node)
     Instruction* raw =trance[ins];
     for( auto val :raw->getOp()){
         Decl* r = getDecl(val,node);
-        ins->rs.push_back(r);
+        if(r)ins->rs.push_back(r);
     }
 }
 void usedRet(armRet* ins, BasicBlock* node)
@@ -381,7 +382,6 @@ void setUsed(BasicBlock* s)
     for(auto dc : reachin[s]){
         addAssign(dc->rawValue,s,dc);
     } 
-    // dbg("done?");
     //对于每一条语句填used
     for(auto ins=newBlock[s].begin();ins!=newBlock[s].end();ins++){
         if(usedIns(*ins,s)==-1){

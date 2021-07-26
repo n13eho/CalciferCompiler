@@ -70,23 +70,42 @@ void printIns(int id)
     }
 }
 
-void show_block(BasicBlock* node,int dep)
+void show_block(BasicBlock* node,int dep,BasicBlock* father,int way)
 {
 
     vis[node]=1;
     for(int i=1;i<=dep*4;i++)cout<<' ';
     // cout<<DEBUG_blkOP[node->bType]<<endl;
-    cout<<node->BlockName<<endl;
+    cout<<node;
+    if(father!=nullptr)cout<<"("<<father<<")"<<"["<<way<<"]"<<endl;
+    else cout<<endl;
     for(auto i : node->InstrList){
         for(int i=1;i<=dep*4;i++)cout<<' ';
         printIns(i);
     }
      for(auto i : node->succBlock)
      {
-         if(!vis[i])show_block(i,dep);
+         if(!vis[i])show_block(i,dep,node,1);
      }
     for(auto i : node->domBlock)
     {
-        if(!vis[i])show_block(i,dep+1);
+        if(!vis[i])show_block(i,dep+1,node,2);
+    }
+}
+
+void show_cfg()
+{
+    for(auto gb:IR1->Blocks){
+        dbg(gb);
+        for(auto b:gb->domBlock){
+            cout<<"dom:";
+            dbg(b);
+            for(auto eb:b->succBlock){
+                cout<<"succ:";
+                dbg(eb);
+            }
+            cout<<endl;
+        }
+        cout<<endl;
     }
 }
