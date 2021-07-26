@@ -1871,14 +1871,15 @@ Value* UnaryExpNode(GrammaNode* node,LinearIR *IR)
 
             //调用函数对应的函数基本块
             BasicBlock* funcCalled = IR->FuncMap[called];
+            funcCalled->called = 1;
             // cout<<"函数调用所在块:bbNow "<<bbNow<<bbNow->BlockName<<endl;
-            bbNow->Link(funcCalled);
-            funCNext = 1;
-            BasicBlock* next = GetPresentBlock(FuncN,BasicBlock::Basic);
+            // bbNow->Link(funcCalled);
+            // funCNext = 1;
+            // BasicBlock* next = GetPresentBlock(FuncN,BasicBlock::Basic);
             // cout<<"funcCalled :"<<funcCalled<<funcCalled->BlockName<<endl;
-            funcCalled->Link(next);
-            funCNext = 0;
-            bbNow = next;
+            // funcCalled->Link(next);
+            // funCNext = 0;
+            // bbNow = next;
             return ret;
         }
         else if(node->son.size() == 1)
@@ -1907,14 +1908,15 @@ Value* UnaryExpNode(GrammaNode* node,LinearIR *IR)
 
             //调用函数对应的函数基本块
             BasicBlock* funcCalled = IR->FuncMap[called];
-            bbNow->Link(funcCalled);
+            funcCalled->called = 1;
+            // bbNow->Link(funcCalled);
 
             //call指令下一条指令作为首指令的基本块
-            BasicBlock* next = CreateBlock(BasicBlock::Basic);
-            next->BlockName = "basic";
-            funcCalled->Link(next);
+            // BasicBlock* next = CreateBlock(BasicBlock::Basic);
+            // next->BlockName = "basic";
+            // funcCalled->Link(next);
 
-            bbNow = next;
+            // bbNow = next;
             return ret;
         }
         else

@@ -86,6 +86,8 @@ public:
     BlockType bType;
     //条件嵌套时，上一层的if的next
     BasicBlock* LastIfNext;
+    //表示函数顶层基本块，被调用情况
+    int called = 0;
 
     //对应符号表中的函数
     FunctionValue* FuncV;
