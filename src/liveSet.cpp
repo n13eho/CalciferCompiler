@@ -282,6 +282,7 @@ Decl* getDecl(Value* val, BasicBlock* node)
             return Assign_rec[make_pair(intval,node)].back();
         }
     }
+    else {return NULL;}
 }
 
 void usedAdd(armAdd* ins,BasicBlock* node)
@@ -368,8 +369,9 @@ int usedIns(armInstr* ins,BasicBlock* node)
         usedCall((armCall*)ins,node);
     }
     else if(ins->getType() == armInstr::ret){
-        usedCall((armCall*)ins,node);
+        usedRet((armRet*)ins,node);
     }
+    cout<<*ins<<endl;
     return 0;
 }
 
@@ -379,6 +381,7 @@ void setUsed(BasicBlock* s)
     for(auto dc : reachin[s]){
         addAssign(dc->rawValue,s,dc);
     } 
+    // dbg("done?");
     //对于每一条语句填used
     for(auto ins=newBlock[s].begin();ins!=newBlock[s].end();ins++){
         if(usedIns(*ins,s)==-1){
@@ -432,14 +435,11 @@ void liveSets()
             //刚进入函数的时候已有的形参需要首先加入进 reachin
             //TODO: 还有一种思路, 不在最开始的地方加入reachin, 在四元式中加入一条use指令,,然后再use指令时加入集合,不过还没想好后面的活性分析怎么搞...
             BasicBlock* b1=rt->block;
-            dbg(b1);
             FunctionValue* func=rt->func;
-            dbg(func);
             for(auto i=0;i<min(4,(int)func->FuncParams.size());i++){
                 varDecl* xc = new varDecl(func->FuncParams[i],b1,Rcnt++);
                 reachin[b1].insert(xc);
             }
-            dbg("here?");
             calReach(rt->block);
         }
     }
