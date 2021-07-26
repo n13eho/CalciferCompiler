@@ -15,7 +15,7 @@ void ArmI2InOut(armInstr* ai)
 {//根据类型，找出每一条语句的in集合
     if(ai->getType() == armInstr::armInsType::add)
     {
-        armAdd* add_ai = (armAdd*)ai; // 向上塑性
+        armAdd* add_ai = (armAdd*)ai; // 向子类塑性
         // out[s] - kill[s]
         ins[ai].erase(add_ai->rd);
         // gen[s] U (out[s] - kill[s])
