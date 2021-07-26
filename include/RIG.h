@@ -8,7 +8,9 @@
 struct RIGnode
 {
     Decl* dc;
-    vector<RIGnode*> connect;
+    vector<RIGnode*> connectTo;
+
+    explicit RIGnode(Decl* x){dc = x;}
 };
 
 
