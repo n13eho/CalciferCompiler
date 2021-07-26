@@ -164,6 +164,9 @@ void connectDecl(DomTreenode* dn, BasicBlock* gb)
                 else
                 {
                     RIGnode* other_node = ForCnode(other_decl, gb);
+                    // 如果这条边已经连接过了，就不用加了
+                    if(find(n->connectTo.begin(), n->connectTo.end(), other_node) != n->connectTo.end())
+                         continue;
                     n->connectTo.push_back(other_node);
                 }
             }
