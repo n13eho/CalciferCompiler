@@ -84,4 +84,5 @@ private:
 
 // 打印当前IR中的所有指令
 void show_IR_ins(LinearIR *IR);
+void fixIfNext(LinearIR *IR,BasicBlock* node,int dep);
 extern LinearIR *IR1;

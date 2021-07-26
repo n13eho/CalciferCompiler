@@ -11,7 +11,8 @@ public:
     While,
     //用于部分死代码删除
     Break,
-    Continue
+    Continue,
+    IfNext
     };
 
     BasicBlock(BasicBlock::BlockType t){bType = t;}
@@ -77,11 +78,14 @@ public:
     //前驱基本块
     std::vector<BasicBlock*> pioneerBlock;
     //属于的函数体
-    BasicBlock* parent_;
+    BasicBlock* parent_=nullptr;
     //函数所控制的基本块
     std::vector<BasicBlock*> domBlock;
     //基本块类型
     BlockType bType;
+    //条件嵌套时，上一层的if的next
+    BasicBlock* LastIfNext;
+
     //对应符号表中的函数
     FunctionValue* FuncV;
     //用于可视化基本块关系
