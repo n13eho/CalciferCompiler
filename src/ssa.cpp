@@ -142,8 +142,8 @@ void calDF(BasicBlock *b)
         for(auto i : b->pioneerBlock){
             auto runner=i;
             while(runner!=block2dom[b]->idom->block){
-                set<BasicBlock*> tem;
-                if(ssaIR->DF.count(runner)==0)ssaIR->DF.insert(make_pair(runner,tem));
+                // set<BasicBlock*> tem;
+                // if(ssaIR->DF.count(runner)==0)ssaIR->DF.insert(make_pair(runner,tem));
                 ssaIR->DF[runner].insert(b);
                 runner=block2dom[runner]->idom->block;
             }
@@ -185,8 +185,12 @@ void setAssbyBlock(BasicBlock* s)
         Instruction *ins = IR1->InstList[i];
         if(ins->getOpType()>=Instruction::Add&&ins->getOpType()<=Instruction::LogicOr)
             addAssbyBlock(ins->getResult(),s);
-        // else if(ins->getOpType()==)
-        //还没想好load和store怎么处理
+        else if(ins->getOpType()==Instruction::Load){
+            addAssbyBlock(ins->getResult(),s);
+        }
+        else if(ins->getOpType()==Instruction::Call){
+            addAssbyBlock(ins->getResult(),s);
+        }
     }
 }
 
