@@ -93,7 +93,7 @@ class addrDecl: public Decl{
 class armInstr{
     public:
     Decl* rd;
-    enum armInsType{add=1,sub,mul,div,mod,mov,push,pop,cmp,beq,bne,blt,ble,bgt,bge,blr,b,movlt,movle,movge,movgt,moveq,movne,ldr,str};
+    enum armInsType{add=1,sub,mul,div,mod,mov,push,pop,cmp,beq,bne,blt,ble,bgt,bge,blr,b,movlt,movle,movge,movgt,moveq,movne,ldr,str,call,ret};
     virtual ostream& output(ostream&out)const{
         out<<"@ NULL"<<endl;
         return out;
@@ -141,6 +141,33 @@ class armMul:public armInstr
 
 class armDiv:public armInstr{};
 class armMod:public armInstr{};
+class armRet:public armInstr
+{
+    public:
+    Decl *rs;
+    virtual int getType(){return ret;}
+    virtual ostream& output(ostream&out)const
+    {
+        if(rs!=nullptr)out<<"mov r1, "<<rs<<endl;
+        //TODO: 这里要求每个函数都需要有个一return指令..
+        //TODO：或许还有一些堆栈操作..
+        out<<"bx lr"<<endl;
+        return out;
+    }
+};
+class armCall:public armInstr{
+    public:
+    vector<Decl*>rs;
+    virtual int getType(){return call;}
+    virtual ostream& output(ostream&out)const
+    {
+        out<<"call ";
+        for(auto r : rs){
+            out<<r<<" ";
+        }
+        return out;
+    }
+};
 class armLdr:public armInstr{
     public:
     Decl *rs;

@@ -276,6 +276,7 @@ void getssa()
                             eb->InstrList.insert(it,IR1->InstList.size()-1);
                             break;
                         }
+                    }
                 }
             }
         }
