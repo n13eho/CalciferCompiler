@@ -48,7 +48,7 @@ int main(int argc, char *argv[])
         VisitAST(Droot, IR1); // 从ast：建立四元式 + 得出block的信息
         // cout << "\n\n"; show_block(globalBlock, 0);
         // Visitblock(IR1); // 删除空结点
-//        show_IR_ins(IR1); // 打印指令
+       show_IR_ins(IR1); // 打印指令
     //    cout << "\n\n"; show_block(globalBlock, 0); // 打印基本块 （写注释啊啊啊啊啊啊 --neho
 
         // SSA
