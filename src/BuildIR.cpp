@@ -809,6 +809,10 @@ void WhileNode(GrammaNode* node,LinearIR *IR)
         next->BlockName = "whileFalse";
         LoopNext.push(make_pair(bbNow,next));
 
+        CaseTBlocks.push(caseT);
+        CaseFBlocks.push(next);
+        IfNextBlocks.push(next);
+
         CondNode(node->son[0],IR);
 
         //函数控制的基本块更新
@@ -820,14 +824,14 @@ void WhileNode(GrammaNode* node,LinearIR *IR)
         bbNow->Link(caseT);
         bbNow->Link(next);
         //循环
-        caseT->Link(bbNow);
+        // caseT->Link(bbNow);
 
-        //条件成立，跳转至caseT，该指令属于bbNow
-        Instruction* ins_br2 = new Instruction(IR->getInstCnt(),Instruction::ConBr,0);
-        IR->InsertInstr(ins_br2);
-        ins_br2->jmpDestBlock = caseT;
-        bbNow->Addins(ins_br2->getId());
-        ins_br2->setParent(bbNow);
+        // //条件成立，跳转至caseT，该指令属于bbNow
+        // Instruction* ins_br2 = new Instruction(IR->getInstCnt(),Instruction::ConBr,0);
+        // IR->InsertInstr(ins_br2);
+        // ins_br2->jmpDestBlock = caseT;
+        // bbNow->Addins(ins_br2->getId());
+        // ins_br2->setParent(bbNow);
 
         //条件不成立，跳转至next,该指令属于bbNow
         Instruction* ins_br = new Instruction(IR->getInstCnt(),Instruction::Jmp,0);
@@ -843,6 +847,7 @@ void WhileNode(GrammaNode* node,LinearIR *IR)
         //T
         bbNow = caseT;
         StmtNode(node->son[1],IR);
+        bbNow->Link(whileHead);
 
         //插入跳转到cond语句的跳转语句
         Instruction* ins_br3 = new Instruction(IR->getInstCnt(),Instruction::Jmp,0);
@@ -853,14 +858,12 @@ void WhileNode(GrammaNode* node,LinearIR *IR)
 
         bbNow->Addins(ins_br3->getId());
         ins_br3->setParent(bbNow);
-        
-        //后面删除
-        //caseT body的无条件跳转指令的下一条指令就是while的条件跳转目的地址
-        // ins_br->setResult(new IntegerValue("jmpAddress0",node->lineno,node->var_scope,IR->getInstCnt(),1));
-        //next
+
         bbNow = next;
         LoopNext.pop();
-
+        CaseTBlocks.pop();
+        CaseFBlocks.pop();
+        IfNextBlocks.pop();
     }
     else
     {
