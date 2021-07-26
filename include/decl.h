@@ -148,7 +148,7 @@ class armRet:public armInstr
     virtual int getType(){return ret;}
     virtual ostream& output(ostream&out)const
     {
-        if(rs!=nullptr)out<<"mov r1, "<<rs<<endl;
+        if(rs!=nullptr)out<<"mov r1, "<<*rs<<endl;
         //TODO: 这里要求每个函数都需要有个一return指令..
         //TODO：或许还有一些堆栈操作..
         out<<"bx lr"<<endl;
@@ -163,7 +163,7 @@ class armCall:public armInstr{
     {
         out<<"call ";
         for(auto r : rs){
-            out<<r<<" ";
+            out<<*r<<" ";
         }
         return out;
     }
