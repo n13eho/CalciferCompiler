@@ -93,7 +93,7 @@ class addrDecl: public Decl{
 class armInstr{
     public:
     Decl* rd;
-    enum armInsType{add=1,sub,mul,div,mod,mov,push,pop,cmp,beq,bne,blt,ble,bgt,bge,blr,b,movlt,movle,movge,movgt,moveq,movne,ldr,str,call,ret};
+    enum armInsType{add=1,sub,rsb,mul,div,mod,mov,push,pop,cmp,beq,bne,blt,ble,bgt,bge,blr,b,movlt,movle,movge,movgt,moveq,movne,ldr,str,call,ret};
     virtual ostream& output(ostream&out)const{
         out<<"@ NULL"<<endl;
         return out;
@@ -122,6 +122,17 @@ class armSub:public armInstr
     virtual ostream& output(ostream&out)const
     {
         out<<"sub "<<*rd<<", "<<*r0<<", "<<*r1;
+        return out;
+    }
+};
+class armRsb:public armInstr
+{
+    public:
+    Decl *r0,*r1;
+    virtual int getType(){return rsb;}
+    virtual ostream& output(ostream&out)const
+    {
+        out<<"rsb "<<*rd<<", "<<*r0<<", "<<*r1;
         return out;
     }
 };
