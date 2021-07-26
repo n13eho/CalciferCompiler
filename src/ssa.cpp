@@ -188,6 +188,9 @@ void setAssbyBlock(BasicBlock* s)
         else if(ins->getOpType()==Instruction::Load){
             addAssbyBlock(ins->getResult(),s);
         }
+        else if(ins->getOpType()==Instruction::Call){
+            addAssbyBlock(ins->getResult(),s);
+        }
     }
 }
 

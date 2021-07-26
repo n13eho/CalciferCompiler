@@ -31,7 +31,6 @@ void assignMov(Instruction* instr, BasicBlock* node)
     newBlock[node].push_back(ins);
     trance[ins]=instr;
 }
-
 void assignAdd(Instruction* instr,BasicBlock *node)
 {
     armAdd *ins=new armAdd();
@@ -70,7 +69,6 @@ void assignSub(Instruction* instr,BasicBlock *node)
         trance[ins]=instr;
     }
 }
-
 void assignPhi(Instruction* instr,BasicBlock*node)
 {
     Value* val=instr->getOp()[0];    
@@ -91,7 +89,6 @@ void assignPhi(Instruction* instr,BasicBlock*node)
         trance[ins]=instr;
     }
 }
-
 void assignLdr(Instruction* instr, BasicBlock* node)
 {
     Value *rdval = instr->getResult();
@@ -140,7 +137,6 @@ void assignStr(Instruction* instr, BasicBlock* node)
     }
     newBlock[node].push_back(ins);
 }
-
 void assignLogic(Instruction* instr, BasicBlock* node, BasicBlock* nex)
 {
     // 一个cmp指令
@@ -186,14 +182,12 @@ void assignLogic(Instruction* instr, BasicBlock* node, BasicBlock* nex)
         insb->lb=block2lb[nex];
     }
 }
-
 void assignjmp(Instruction* instr, BasicBlock* node)
 {
     armB* ins = new armB();
     newBlock[node].push_back(ins);
     ins->lb = block2lb[instr->jmpDestBlock];
 }
-
 void assignCall(Instruction* instr, BasicBlock* node)
 {
     //TODO: 目前的想法时甩锅到代码生成, 这里就先沿用四元式的表示;如果发现可以解决记得回来改哦!
@@ -201,6 +195,10 @@ void assignCall(Instruction* instr, BasicBlock* node)
     newBlock[node].push_back(ins);
     trance[ins]=instr;
     ins->funcname = instr->getOp()[0]->VName;
+    //返回值.
+    IntegerValue* rd=(IntegerValue*)instr->getResult();
+    varDecl *rdd = new varDecl(rd,node,Rcnt++);
+    ins->rd=rdd;
 }
 void assignRet(Instruction* instr, BasicBlock* node)
 {
@@ -245,7 +243,6 @@ void assignIns(Instruction* ins,BasicBlock* node)
         assignRet(ins,node);
     }
 }
-
 void setDecl(BasicBlock *s)
 {
     for(auto id=s->InstrList.begin();id!=s->InstrList.end();++id){
@@ -397,6 +394,7 @@ void usedCall(armCall* ins, BasicBlock* node)
         Decl* r = getDecl(val,node);
         if(r)ins->rs.push_back(r);
     }
+    addAssign(ins->rd->rawValue,node,ins->rd);
 }
 void usedRet(armRet* ins, BasicBlock* node)
 {
@@ -438,7 +436,6 @@ int usedIns(armInstr* ins,BasicBlock* node)
     else if(ins->getType() == armInstr::ret){
         usedRet((armRet*)ins,node);
     }
-    cout<<*ins<<endl;
     return 0;
 }
 
@@ -450,6 +447,7 @@ void setUsed(BasicBlock* s)
     } 
     //对于每一条语句填used
     for(auto ins=newBlock[s].begin();ins!=newBlock[s].end();ins++){
+        dbg((*ins)->getType());
         if(usedIns(*ins,s)==-1){
             newBlock[s].erase(ins);
         }
