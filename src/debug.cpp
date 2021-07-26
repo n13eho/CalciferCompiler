@@ -101,6 +101,9 @@ void outputsuc(BasicBlock* s)
     for(auto eb:s->succBlock){
         cout<<"succ:";
         dbg(eb);
+        dbg(eb->BlockName);
+        for(auto i : eb->InstrList)
+            printIns(i);
         other.insert(eb);
     }
 }
@@ -109,9 +112,15 @@ void show_cfg()
 {
     for(auto gb:IR1->Blocks){
         dbg(gb);
+        dbg(gb->BlockName);
+        for(auto i : gb->InstrList)
+            printIns(i);
         for(auto b:gb->domBlock){
             cout<<"dom:";
             dbg(b);
+            dbg(b->BlockName);
+            for(auto i : b->InstrList)
+                printIns(i);
             if(!viscfg[b])outputsuc(b);
             cout<<endl;
         }

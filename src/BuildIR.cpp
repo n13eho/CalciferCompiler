@@ -30,6 +30,7 @@ vector<int> CondCnt;
 stack<BasicBlock*> IfNextBlocks;
 
 map<BasicBlock*,int> visited;
+int funCNext = 0;
 
 
 BasicBlock* GetPresentBlock(BasicBlock* funcP,BasicBlock::BlockType t)
@@ -39,7 +40,10 @@ BasicBlock* GetPresentBlock(BasicBlock* funcP,BasicBlock::BlockType t)
     //若当前函数已有基本块，更新前驱后继
     if(0 != funcP->domBlock.size())
     {
-        funcP->domBlock.back()->Link(bbNow);
+        if(!funCNext)
+        {
+            funcP->domBlock.back()->Link(bbNow);
+        }
     }
     funcP->AddDom(bbNow);   
     bbNow->setParnt(funcP);
@@ -590,6 +594,7 @@ void IfNode(GrammaNode* node,LinearIR *IR)
         BasicBlock* next = new BasicBlock(BasicBlock::Basic);
         next->BlockName = "ifNext";
         //条件所在基本块建立与caseT、next的联系
+        // cout<<"cond :bbNow "<<bbNow<<bbNow->BlockName<<endl;
         bbNow->Link(caseT);
         bbNow->Link(next);
 
@@ -630,6 +635,7 @@ void IfNode(GrammaNode* node,LinearIR *IR)
             ins_jmp2->jmpDestBlock = next;
             ins_jmp2->setParent(bbNow);
         }
+        // cout<<"case T :bbNow "<<bbNow<<bbNow->BlockName<<endl;
         bbNow->Link(next);
         bbNow = next;
         bbNow->bType = BasicBlock::IfNext;
@@ -1865,13 +1871,15 @@ Value* UnaryExpNode(GrammaNode* node,LinearIR *IR)
 
             //调用函数对应的函数基本块
             BasicBlock* funcCalled = IR->FuncMap[called];
-            bbNow->Link(funcCalled);
-
-            BasicBlock* next = GetPresentBlock(FuncN,BasicBlock::Basic);
-
-            funcCalled->Link(next);
-
-            bbNow = next;
+            funcCalled->called = 1;
+            // cout<<"函数调用所在块:bbNow "<<bbNow<<bbNow->BlockName<<endl;
+            // bbNow->Link(funcCalled);
+            // funCNext = 1;
+            // BasicBlock* next = GetPresentBlock(FuncN,BasicBlock::Basic);
+            // cout<<"funcCalled :"<<funcCalled<<funcCalled->BlockName<<endl;
+            // funcCalled->Link(next);
+            // funCNext = 0;
+            // bbNow = next;
             return ret;
         }
         else if(node->son.size() == 1)
@@ -1900,14 +1908,15 @@ Value* UnaryExpNode(GrammaNode* node,LinearIR *IR)
 
             //调用函数对应的函数基本块
             BasicBlock* funcCalled = IR->FuncMap[called];
-            bbNow->Link(funcCalled);
+            funcCalled->called = 1;
+            // bbNow->Link(funcCalled);
 
             //call指令下一条指令作为首指令的基本块
-            BasicBlock* next = CreateBlock(BasicBlock::Basic);
-            next->BlockName = "basic";
-            funcCalled->Link(next);
+            // BasicBlock* next = CreateBlock(BasicBlock::Basic);
+            // next->BlockName = "basic";
+            // funcCalled->Link(next);
 
-            bbNow = next;
+            // bbNow = next;
             return ret;
         }
         else

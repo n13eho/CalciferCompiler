@@ -1,5 +1,5 @@
 #pragma once
-
+#include <iostream>
 #include "Value.h"
 #include<list>
 //基本块
@@ -23,6 +23,7 @@ public:
     //this作为前驱、succ作为后继
     void Link(BasicBlock* succ)
     {
+        // std::cout<<this->BlockName<<" link with "<<succ->BlockName<<std::endl;
         this->succBlock.push_back(succ);
         succ->pioneerBlock.push_back(this);
     }
@@ -85,6 +86,8 @@ public:
     BlockType bType;
     //条件嵌套时，上一层的if的next
     BasicBlock* LastIfNext;
+    //表示函数顶层基本块，被调用情况
+    int called = 0;
 
     //对应符号表中的函数
     FunctionValue* FuncV;
