@@ -360,6 +360,10 @@ int usedMov(armMov* ins, BasicBlock* node)
     Instruction* raw = trance[ins];
 
     IntegerValue* rs ;
+    if(raw->getOpType()==Instruction::Mul||raw->getOpType()==Instruction::Div){
+        addAssign(ins->rd->rawValue,node,ins->rd);
+        return 0;
+    }
     if(raw->getOp().size())rs= (IntegerValue*)raw->getOp()[0];
     else rs= new IntegerValue("tt",-1,"",1);
     ins->rs = getDecl(rs,node);
