@@ -160,7 +160,7 @@ void semantic_stmt_(GrammaNode *root)
     {
         cycleStackTop++;
         semantic_cond_(root->son[0]);
-        semantic_Block(root->son[1]);
+        semantic_stmt_(root->son[1]);
         cycleStackTop--;
     }
     else if (root->type == Stmt_Return_)
@@ -207,8 +207,9 @@ void semantic_Block(GrammaNode *root)
             semantic_ConstDef_(root->son[i]);
         else if (root->son[i]->type == VarDefs_)
             semantic_VarDefs_(root->son[i]);
-        else
+        else{
             semantic_stmt_(root->son[i]);
+        }
     }
 }
 
@@ -346,7 +347,6 @@ IntegerValue *semantic_PrimaryExp_(GrammaNode *root, int needConst, int needCond
     }
     else if (root->type == LVal_Array_)
     {
-        dbg("what " + root->str);
         return semantic_LVal_Array_(root, needConst, needCond);
     }
     else
