@@ -53,12 +53,12 @@ int main(int argc, char *argv[])
 
         // SSA
         show_cfg();
-        getssa();//建立支配树以及支配边界 -->
-        cout << "\n\n"; show_block(globalBlock, 0,nullptr,0); // 打印基本块，查看phi结点
-        liveSets();//重命名
+        // getssa();//建立支配树以及支配边界 -->
+        // cout << "\n\n"; show_block(globalBlock, 0,nullptr,0); // 打印基本块，查看phi结点
+        // liveSets();//重命名
 
         // 寄存器分配：虚拟寄存器->realj寄存器。变量活性分析，建立冲突图；
-        buildRIG();
+        // buildRIG();
 
         // codegeneration();
         // 利用四元式和bb信息得出ssa_0

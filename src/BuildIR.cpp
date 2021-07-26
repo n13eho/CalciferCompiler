@@ -987,39 +987,39 @@ void LOrExpNode(GrammaNode* node,LinearIR *IR)
     CondLogi.push_back(Instruction::LogicOr);
     CondCnt.push_back(node->son.size());
     cout<<"LOrExpNode cond cnt:"<<node->son.size()<<endl;
-    //前一个条件value
-    // Value* Condpre = LAndExpNode(node->son[0],IR);
-    // if(node->son.size()==1)
-    //     return;
-    for(int i=0;i<node->son.size();i++)
+    if(node->son.size() == 1)
     {
-        //当前条件value
-        Value* Condi = LAndExpNode(node->son[i],IR);
-        //当前a or b计算结果
-        // Value* ret = new Value("t"+std::to_string(i),node->lineno,node->var_scope);
-
-        // if(nullptr == FuncN && 0 == global)
-        // {
-        //     return ;
-        // }
-        // //属于某个函数且该指令为首指令，新建一个基本块，并建立联系
-        // if(nullptr == bbNow)
-        // {
-        //     bbNow = GetPresentBlock(FuncN,BasicBlock::Basic);
-        // }
-
-        // Instruction* ins_or = new Instruction(IR->getInstCnt(),Instruction::LogicOr,2);
-        // ins_or->addOperand(Condpre);
-        // ins_or->addOperand(Condi);
-        // ins_or->setResult(ret);
-        // IR->InsertInstr(ins_or);
-        // bbNow->Addins(ins_or->getId());
-        // ins_or->setParent(bbNow);
-        // Condpre=ret;
+        Value* Condi = LAndExpNode(node->son[0],IR);   
     }
-    //立即数0
-    // ImmValue* const0 = new ImmValue("0",0);
-    // Value* ret = new Value("tr",node->lineno,node->var_scope);
+    else
+    {
+        for(int i=0;i<node->son.size();i++)
+        {
+            //当有'与'条件在'或'条件前，短路需要创建新基本块，如 a&&b&&c || d
+            if(node->son[i]->son.size()>1 && i!=node->son.size()-1)
+            {
+                cout<<"@@@@@@@@@@@@@@@"<<endl;
+                BasicBlock* nextOrCond = new BasicBlock(BasicBlock::If);
+                nextOrCond->BlockName = "condOr";
+                FuncN->AddDom(nextOrCond);
+                CaseFBlocks.push(nextOrCond);
+                Value* Condi = LAndExpNode(node->son[i],IR);
+                bbNow->Link(nextOrCond);
+                CaseFBlocks.pop();
+                Instruction* jmpIns = new Instruction(IR->getInstCnt(),Instruction::Jmp,0);
+                jmpIns->jmpDestBlock = nextOrCond;
+                IR->InsertInstr(jmpIns);
+                bbNow->Addins(jmpIns->getId());
+                jmpIns->setParent(bbNow);
+                bbNow = nextOrCond;
+            }
+            else
+            {
+                Value* Condi = LAndExpNode(node->son[i],IR);
+            }
+        }
+    }
+    
     if(nullptr == FuncN && 0 == global)
     {
         return ;
