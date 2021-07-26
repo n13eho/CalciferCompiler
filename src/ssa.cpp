@@ -115,6 +115,7 @@ void buildDomTree(BasicBlock *s)
     block2dom[s->domBlock[0]]=new DomTreenode();
     block2dom[s->domBlock[0]]->block=s->domBlock[0];
     DomTreenode* root=block2dom[s->domBlock[0]];
+    root->func=s->FuncV;
     DomRoot.push_back(root);
     dfsLT(root);
 
@@ -240,7 +241,7 @@ void getssa()
 
     //0.0 处理全局变量, 在每一个块中, 第一次出现全局变量的地方添加一个ldr指令
     for( auto gbval: allValue){
-        if(gbval->var_scope=="1"||gbval->isPara){
+        if(gbval->var_scope=="1"){
             for(auto b:IR1->Blocks){
                 for(auto eb:b->domBlock){
                     for(auto it = eb->InstrList.begin();it!=eb->InstrList.end();it++){
@@ -248,6 +249,26 @@ void getssa()
                         int fl=hasUsedGlobal(ins,gbval);
                         if(fl){
                             //一条加载全局变量的语句
+                            Instruction *insld = new Instruction(-1,Instruction::Load,1);
+                            insld->setResult(gbval);
+                            insld->addOperand(gbval);
+                            //加入这条语句
+                            IR1->InsertInstr(insld);
+                            eb->InstrList.insert(it,IR1->InstList.size()-1);
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        if(gbval->isPara>4){
+            for(auto b:IR1->Blocks){
+                for(auto eb:b->domBlock){
+                    for(auto it = eb->InstrList.begin();it!=eb->InstrList.end();it++){
+                        Instruction *ins = IR1->InstList[(*it)];
+                        int fl=hasUsedGlobal(ins,gbval);
+                        if(fl){
+                            //一条加载形参的语句
                             Instruction *insld = new Instruction(-1,Instruction::Load,1);
                             insld->setResult(gbval);
                             insld->addOperand(gbval);

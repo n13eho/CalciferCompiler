@@ -68,20 +68,29 @@ void assignPhi(Instruction* instr,BasicBlock*node)
 void assignLdr(Instruction* instr, BasicBlock* node)
 {
     Value *rdval = instr->getResult();
-    varDecl *rd = new varDecl(rdval,node,Rcnt++);
-
     armLdr* ins = new armLdr();
-    ins->rd=rd;
-    trance[ins]=instr;
+    if(rdval->getScope()=="1"){
+        addrDecl *rd = new addrDecl(rdval,node,Rcnt++);
+        ins->rd=rd;
+        trance[ins]=instr;
+    }
+    else{
+        varDecl *rd = new varDecl(rdval,node,Rcnt++);
+        ins->rd=rd;
+        trance[ins]=instr;
+    }
 
     //好像load在这里就可以写全了。。。
     if(rdval->getScope()=="1"){
         globalDecl* rs = new globalDecl(rdval, node, rdval->VName);
         ins->rs=rs;
     }
-    else if(rdval->isPara){
+    else if(rdval->isPara>4){
         memoryDecl* rs = new memoryDecl(rdval, node);
-        //TODO： 如果想好形参怎么存的话记得在这里改bias
+        //第5个形参放在sp-4的位置, 第6个形参放在sp-8的位置, 依此类推...
+        int id=rdval->isPara-4;
+        rs->bias = id*(-4);
+        ins->rs=rs;
     }
     newBlock[node].push_back(ins);
 }
@@ -98,8 +107,9 @@ void assignStr(Instruction* instr, BasicBlock* node)
     }
     else if(rdval->isPara){
         memoryDecl* rs = new memoryDecl(rdval, node);
+        int id=rdval->isPara-4;
+        rs->bias = id*(-4);
         ins->rs=rs;
-        //TODO： 如果想好形参怎么存的话记得在这里改bias
     }
     newBlock[node].push_back(ins);
 }
@@ -159,7 +169,17 @@ void assignjmp(Instruction* instr, BasicBlock* node)
 
 void assignCall(Instruction* instr, BasicBlock* node)
 {
-    // 高难度的函数跳转, 还没想好>_<
+    //TODO: 目前的想法时甩锅到代码生成, 这里就先沿用四元式的表示;如果发现可以解决记得回来改哦!
+    armCall* ins = new armCall();
+    newBlock[node].push_back(ins);
+    trance[ins]=instr;
+}
+void assignRet(Instruction* instr, BasicBlock* node)
+{
+    //TODO: ret有描述不出的锅 >.<;
+    armRet* ins = new armRet();
+    newBlock[node].push_back(ins);
+    trance[ins]=instr;
 }
 
 void assignIns(Instruction* ins,BasicBlock* node)
@@ -183,6 +203,14 @@ void assignIns(Instruction* ins,BasicBlock* node)
     else if(ins->getOpType() == Instruction::Store)
     {
         assignStr(ins,node);
+    }
+    else if(ins->getOpType() == Instruction::Call)
+    {
+        assignCall(ins,node);
+    }
+    else if(ins->getOpType() == Instruction::Ret)
+    {
+        assignRet(ins,node);
     }
 }
 
@@ -237,23 +265,22 @@ void calReach(BasicBlock* s)
 void addAssign(Value* val, BasicBlock* node, Decl* dc)
 {
     auto key=make_pair(val,node);
-    // if(Assign_rec.count(key)){
-    //     vector<Decl*> tem;
-    //     Assign_rec[key]=tem;
-    // }
     Assign_rec[key].push_back(dc);
 }
 
-Decl* getDecl(IntegerValue* val, BasicBlock* node)
+Decl* getDecl(Value* val, BasicBlock* node)
 {
-    if(val->isConst){
-        //常数的话,直接新建一个返回
-        constDecl* ret=new constDecl(val,node,val->RealValue);
-        return ret;
-    }
-    else{
-        //其他就返回上一次赋值
-        return Assign_rec[make_pair(val,node)].back();
+    if(val->getType()==1){
+        IntegerValue* intval = (IntegerValue*)val;
+        if(intval->isConst){
+            //常数的话,直接新建一个返回
+            constDecl* ret=new constDecl(intval,node,intval->RealValue);
+            return ret;
+        }
+        else{
+            //其他就返回上一次赋值
+            return Assign_rec[make_pair(intval,node)].back();
+        }
     }
 }
 
@@ -304,6 +331,22 @@ void usedStr(armStr* ins,BasicBlock* node)
     ins->rd = getDecl(r0,node);
 }
 
+void usedCall(armCall* ins, BasicBlock* node)
+{
+    Instruction* raw =trance[ins];
+    for( auto val :raw->getOp()){
+        Decl* r = getDecl(val,node);
+        ins->rs.push_back(r);
+    }
+}
+void usedRet(armRet* ins, BasicBlock* node)
+{
+    Instruction* raw =trance[ins];
+    if(raw->getOp().size()==0)return ;
+    IntegerValue* r0=(IntegerValue*)raw->getOp()[0];
+    ins->rs = getDecl(r0,node);
+}
+
 int usedIns(armInstr* ins,BasicBlock* node)
 {
     if(ins->getType()==armInstr::mov){
@@ -321,6 +364,12 @@ int usedIns(armInstr* ins,BasicBlock* node)
     else if(ins->getType() == armInstr::ldr){
         usedLdr((armLdr*)ins,node);
     }
+    else if(ins->getType() == armInstr::call){
+        usedCall((armCall*)ins,node);
+    }
+    else if(ins->getType() == armInstr::ret){
+        usedCall((armCall*)ins,node);
+    }
     return 0;
 }
 
@@ -335,7 +384,6 @@ void setUsed(BasicBlock* s)
         if(usedIns(*ins,s)==-1){
             newBlock[s].erase(ins);
         }
-        cout<<*(*ins)<<endl;
     }
 }
 
@@ -379,9 +427,19 @@ void liveSets()
     int MAXiter=5;
     while(MAXiter--){
         for(auto rt:DomRoot){
-            // set<Decl*> tem;
-            // reachin[rt->block]=tem;
             visReach.clear();
+
+            //刚进入函数的时候已有的形参需要首先加入进 reachin
+            //TODO: 还有一种思路, 不在最开始的地方加入reachin, 在四元式中加入一条use指令,,然后再use指令时加入集合,不过还没想好后面的活性分析怎么搞...
+            BasicBlock* b1=rt->block;
+            dbg(b1);
+            FunctionValue* func=rt->func;
+            dbg(func);
+            for(auto i=0;i<min(4,(int)func->FuncParams.size());i++){
+                varDecl* xc = new varDecl(func->FuncParams[i],b1,Rcnt++);
+                reachin[b1].insert(xc);
+            }
+            dbg("here?");
             calReach(rt->block);
         }
     }
