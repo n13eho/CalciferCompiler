@@ -13,6 +13,12 @@ map<BasicBlock*, bool> blockVisited;
 // created RIGnode
 map<Decl*, bool> rigNodeCreated;
 
+bool notConst(Decl* d)
+{
+    return d->gettype() != Decl::declType::const_decl;
+}
+
+
 void ArmI2InOut(armInstr* ai)
 {//根据类型，找出每一条语句的in集合
     if(ai->getType() == armInstr::armInsType::add)
@@ -23,7 +29,7 @@ void ArmI2InOut(armInstr* ai)
         // gen[s] U (out[s] - kill[s])
         ins[ai].insert(add_ai->r0);
         // 当它只有是var register的时候才insert，否则就不insert
-        if(add_ai->r1->gettype() == Decl::declType::var_decl)
+        if(notConst(add_ai->r1))
             ins[ai].insert(add_ai->r1);
     }
     else if(ai->getType() == armInstr::armInsType::sub)
@@ -31,7 +37,7 @@ void ArmI2InOut(armInstr* ai)
         armSub* sub_ai = (armSub*)ai;
         ins[ai].erase(sub_ai->rd);
         ins[ai].insert(sub_ai->r0);
-        if(sub_ai->r1->gettype() == Decl::declType::var_decl)
+        if(notConst(sub_ai->r1))
             ins[ai].insert(sub_ai->r1);
     }
     else if(ai->getType() == armInstr::armInsType::mul)
@@ -39,14 +45,14 @@ void ArmI2InOut(armInstr* ai)
         armMul* mul_ai = (armMul*)ai;
         ins[ai].erase(mul_ai->rd);
         ins[ai].insert(mul_ai->r0);
-        if(mul_ai->r1->gettype() == Decl::declType::var_decl)
+        if(notConst(mul_ai->r1))
             ins[ai].insert(mul_ai->r1);
     }
     else if(ai->getType() == armInstr::armInsType::mov)
     {
         armMov* mov_ai = (armMov*)ai;
         ins[ai].erase(mov_ai->rd);
-        if(mov_ai->rs->gettype() == Decl::declType::var_decl)
+        if(notConst(mov_ai->rs))
             ins[ai].insert(mov_ai->rs);
     }
     else if(ai->getType() == armInstr::armInsType::cmp)
@@ -54,7 +60,7 @@ void ArmI2InOut(armInstr* ai)
         armCmp* cmp_ai = (armCmp*)ai;
         // cmp 指令没有kill集合，因此没有decl来erase，只有两个操作数来进行insert
         ins[ai].insert(cmp_ai->r0);
-        if(cmp_ai->r1->gettype() == Decl::declType::var_decl)
+        if(notConst(cmp_ai->r1))
             ins[ai].insert(cmp_ai->r1);
     }
     else if(ai->getType() == armInstr::armInsType::str)
@@ -68,6 +74,24 @@ void ArmI2InOut(armInstr* ai)
         armLdr* ldr_ai = (armLdr*)ai;
         //ldr指令是的rd是kill集
         ins[ai].erase(ldr_ai->rd);
+    }
+    else if(ai->getType() == armInstr::armInsType::call)
+    {
+        armCall* call_ai = (armCall*)ai;
+
+        // rs内全是gen
+        for(auto r: call_ai->rs)
+        {
+            ins[ai].insert(r);
+        }
+    }
+    else if(ai->getType() == armInstr::armInsType::ret)
+    {
+        armRet* ret_ai = (armRet*)ai;
+
+        // rs is gen
+        if(notConst(ret_ai->rs))
+            ins[ai].insert(ret_ai->rs);
     }
 
 

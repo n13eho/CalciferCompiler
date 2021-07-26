@@ -152,21 +152,21 @@ class armMul:public armInstr//ok
 
 class armDiv:public armInstr{};
 class armMod:public armInstr{};
-class armRet:public armInstr//TODO
+class armRet:public armInstr//ok
 {
     public:
     Decl *rs;
     virtual int getType(){return ret;}
     virtual ostream& output(ostream&out)const
     {
-        if(rs!=nullptr)out<<"mov r1, "<<*rs<<endl;
+        if(rs!=nullptr)out<<"mov r0, "<<*rs<<endl;
         //TODO: 这里要求每个函数都需要有个一return指令..
         //TODO：或许还有一些堆栈操作..
         out<<"bx lr"<<endl;
         return out;
     }
 };
-class armCall:public armInstr{//TODO
+class armCall:public armInstr{//ok
     public:
     vector<Decl*>rs;
     string funcname;
@@ -180,7 +180,7 @@ class armCall:public armInstr{//TODO
         return out;
     }
 };
-class armLdr:public armInstr{//TODO
+class armLdr:public armInstr{//ok
     public:
     Decl *rs;
     virtual int getType(){return ldr;}
@@ -190,7 +190,7 @@ class armLdr:public armInstr{//TODO
         return out;
     }
 };
-class armStr:public armInstr{//TODO
+class armStr:public armInstr{//ok
     public:
     Decl *rs;//str中rs其实是目的位置！！！！！！！！！
     virtual int getType(){return str;}
