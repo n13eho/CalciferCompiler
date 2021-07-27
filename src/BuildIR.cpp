@@ -536,7 +536,7 @@ void AssignNode(GrammaNode* node,LinearIR *IR)
         else if(LVal_Array_ == node->son[0]->type)
         {
             //左值
-            LV = SymbolTable->askItem(node->son[0]);
+            LV = SymbolTable->askItem(node->son[0]->son[0]);
             Value* index =  LValArrayNode(node->son[0],IR);
             Value* RV = AddExpNode(node->son[1],IR);
             Instruction* ins_store = new Instruction(IR->getInstCnt(),Instruction::Store,3);
