@@ -3,6 +3,7 @@
 #include<bits/stdc++.h>
 
 #include "BuildIR.h" // for LinearIR
+#include"dbg.h"
 #include "BasicBlock.h" // for BasicBlock
 using namespace std;
 class armInstr;
@@ -80,11 +81,13 @@ class memoryDecl: public Decl{
 };
 class addrDecl: public Decl{
     public:
-    int Vreg;//以sp为标准, 有正负, 输出时不乘四...
+    int Vreg;
+    int bias;
     addrDecl(Value *_rawValue, BasicBlock *_rawBlock):Decl(_rawValue,_rawBlock){};
     addrDecl(Value *_rawValue, BasicBlock *_rawBlock,int _Vreg):Decl(_rawValue,_rawBlock),Vreg(_Vreg){};
     virtual ostream& output(ostream&out)const{
-        out<<"[r"<<Vreg<<']';
+        if(bias==0)out<<"[r"<<Vreg<<']';
+        else out<<"[r"<<Vreg<<", #"<<bias<<"]"<<endl;
         return out;
     }
     virtual int gettype(){return 5;}
@@ -162,7 +165,7 @@ class armRet:public armInstr//ok
         if(rs!=nullptr)out<<"mov r0, "<<*rs<<endl;
         //TODO: 这里要求每个函数都需要有个一return指令..
         //TODO：或许还有一些堆栈操作..
-        out<<"bx lr"<<endl;
+        out<<"bx lr";
         return out;
     }
 };
@@ -180,13 +183,17 @@ class armCall:public armInstr{//ok
         return out;
     }
 };
-class armLdr:public armInstr{//ok
+class armLdr:public armInstr{//ok??????????? //TODO: now array is different!
     public:
     Decl *rs;
+    Decl *bias;
     virtual int getType(){return ldr;}
     virtual ostream& output(ostream&out)const
     {
         out<<"ldr "<<*rd<<", "<<*rs;
+        if(bias){
+            out<<"\t@ this is array....";//TODO: 这里以后要改.
+        }
         return out;
     }
 };

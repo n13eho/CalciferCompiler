@@ -286,7 +286,7 @@ void getssa()
             }
         }
     } 
-    //0.1 处理mul,div, 使得他的源操作数没有常量. 有常量的话,就在这条四元式之前加入一条assign
+    //0.1 处理mul,div, //TODO:使得他的源操作数没有常量. 有常量的话,就在这条四元式之前加入一条assign
     // for(auto gb:IR1->Blocks){
     //     for(auto b:gb->domBlock){
     //         for(auto i: b->InstrList){

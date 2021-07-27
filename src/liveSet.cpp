@@ -25,9 +25,17 @@ map<armInstr*,Instruction*> trance;
 void assignMov(Instruction* instr, BasicBlock* node)
 {
     armMov *ins=new armMov();
-    IntegerValue* rd=(IntegerValue*)instr->getResult();
-    varDecl *rdd = new varDecl(rd,node,Rcnt++);
-    ins->rd=rdd;
+    if(instr->getResult()->getType()==1){
+        IntegerValue* rd=(IntegerValue*)instr->getResult();
+        varDecl *rdd = new varDecl(rd,node,Rcnt++);
+        ins->rd=rdd;
+    }
+    else{
+        //如果是数组就用一个addrdecl
+        ArrayValue* rd=(ArrayValue*)instr->getResult();
+        addrDecl *rdd = new addrDecl(rd,node,Rcnt++);
+        ins->rd=rdd;
+    }
     newBlock[node].push_back(ins);
     trance[ins]=instr;
 }
@@ -93,7 +101,7 @@ void assignLdr(Instruction* instr, BasicBlock* node)
 {
     Value *rdval = instr->getResult();
     armLdr* ins = new armLdr();
-    if(rdval->getScope()=="1"){
+    if(rdval->getScope()=="1"&&rdval->getType()==1){
         addrDecl *rd = new addrDecl(rdval,node,Rcnt++);
         ins->rd=rd;
         trance[ins]=instr;
@@ -103,13 +111,13 @@ void assignLdr(Instruction* instr, BasicBlock* node)
         ins->rd=rd;
         trance[ins]=instr;
     }
-
-    //好像load在这里就可以写全了。。。
-    if(rdval->getScope()=="1"){
+    if(rdval->getScope()=="1"&&rdval->getType()==1){
+        // 全局变量就可以写全了
         globalDecl* rs = new globalDecl(rdval, node, rdval->VName);
         ins->rs=rs;
     }
     else if(rdval->isPara>4){
+        //形参也可以写全
         memoryDecl* rs = new memoryDecl(rdval, node);
         //第5个形参放在sp-4的位置, 第6个形参放在sp-8的位置, 依此类推...
         int id=rdval->isPara-4;
@@ -299,7 +307,7 @@ void addAssign(Value* val, BasicBlock* node, Decl* dc)
 
 Decl* getDecl(Value* val, BasicBlock* node)
 {
-    if(val->getType()==1){
+    if(val->getType()==1||val->getType()==2){
         IntegerValue* intval = (IntegerValue*)val;
         if(intval->isConst){
             //常数的话,直接新建一个返回
@@ -330,7 +338,6 @@ void usedMul(armMul* ins,BasicBlock* node)
     Instruction* raw = trance[ins];
     IntegerValue* r0 = (IntegerValue*)raw->getOp()[0];
     IntegerValue* r1 = (IntegerValue*)raw->getOp()[1];
-    if(r0->isConst)swap(r0,r1);
     ins->r0 = getDecl(r0,node);
     ins->r1 = getDecl(r1,node);
     addAssign(ins->rd->rawValue,node,ins->rd);
@@ -360,10 +367,6 @@ int usedMov(armMov* ins, BasicBlock* node)
     Instruction* raw = trance[ins];
 
     IntegerValue* rs ;
-    if(raw->getOpType()==Instruction::Mul||raw->getOpType()==Instruction::Div){
-        addAssign(ins->rd->rawValue,node,ins->rd);
-        return 0;
-    }
     if(raw->getOp().size())rs= (IntegerValue*)raw->getOp()[0];
     else rs= new IntegerValue("tt",-1,"",1);
     ins->rs = getDecl(rs,node);
@@ -381,6 +384,23 @@ void usedCmp(armCmp* ins,BasicBlock* node)
 }
 void usedLdr(armLdr* ins,BasicBlock* node)
 {
+    Instruction* raw = trance[ins];
+    Value* rawop = raw->getOp()[0];
+    if(rawop->getType()==2){
+        if(rawop->isPara>4){
+
+        }
+        else if(rawop->getScope()=="1"){
+
+        }
+        else if(rawop->isPara&&rawop->isPara<=4){
+
+        }
+        else{
+            ins->rs = getDecl(rawop,node);
+            ins->bias = getDecl(raw->getOp()[1],node);
+        }
+    }
     addAssign(ins->rd->rawValue,node,ins->rd);
 }
 void usedStr(armStr* ins,BasicBlock* node)
@@ -451,7 +471,6 @@ void setUsed(BasicBlock* s)
     } 
     //对于每一条语句填used
     for(auto ins=newBlock[s].begin();ins!=newBlock[s].end();ins++){
-        dbg((*ins)->getType());
         if(usedIns(*ins,s)==-1){
             newBlock[s].erase(ins);
         }
@@ -499,7 +518,6 @@ void liveSets()
     while(MAXiter--){
         for(auto rt:DomRoot){
             visReach.clear();
-
             //刚进入函数的时候已有的形参需要首先加入进 reachin
             //TODO: 还有一种思路, 不在最开始的地方加入reachin, 在四元式中加入一条use指令,,然后再use指令时加入集合,不过还没想好后面的活性分析怎么搞...
             BasicBlock* b1=rt->block;
