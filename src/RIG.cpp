@@ -237,7 +237,7 @@ void init_color()
     colors.clear();
 }
 
-vector<RIGnode*> s_point;
+vector<RIGnode*> s_point; // 起点
 
 bool check_ok(RIGnode* n, int c)
 {
@@ -254,7 +254,8 @@ bool paintColor(BasicBlock* gb){
     s_point.clear();
     for(auto node: RIG[gb]){
         if(colors.count(node))continue;
-        if(node->connectTo.size()>maxdu){
+
+        if((int)node->connectTo.size()>maxdu){
             s_point.clear();
             s_point.push_back(node);
             maxdu=node->connectTo.size();
@@ -331,6 +332,7 @@ void buildRIG()
             }
             cout << "\n";
         }
+        dbg("neho -- show RIG win");
 
         // 4. filling colors!
         int success=0;
@@ -338,6 +340,21 @@ void buildRIG()
             init_color();
             if(paintColor(gb)){
                 //TODO:修改Vreg
+                // 4.1 遍历color map，修改Vreg
+                for(auto rigN: colors)
+                {
+                    Decl* dc = rigN.first->dc;
+                    if(dc->gettype() == Decl::declType::var_decl)
+                    { // 变量 是存在register里面的
+                        varDecl* var_dc = (varDecl*)dc;
+                        var_dc->Vreg = rigN.second;
+                    }
+                    else if(dc->gettype() == Decl::declType::addr_decl)
+                    { // 地址 也是存在register里面的
+                        addrDecl* mem_dc = (addrDecl*)dc;
+                        mem_dc->Vreg = rigN.second;
+                    }
+                }
                 success=1;
                 break;
             }
@@ -345,6 +362,12 @@ void buildRIG()
         if(success==0){
             //TODO: add memory operation.
         }
-         
+
+
+
     }
+    // 4.5 show instruction agian, this time with limited k registers
+    cout << "****winwin Arm Instruction with limited Registers ****\n";
+    for(auto dr: DomRoot)
+        showDecl(dr);
 }

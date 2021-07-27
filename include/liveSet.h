@@ -6,4 +6,6 @@
 // using namespace std;
 
 void liveSets();
+void showDecl(DomTreenode* sd);
+
 extern map<BasicBlock*, vector<armInstr*>> newBlock;
