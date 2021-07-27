@@ -243,6 +243,10 @@ void assignIns(Instruction* ins,BasicBlock* node)
     {
         assignAdd(ins,node);
     }
+    if(ins->getOpType() == Instruction::Sub)
+    {
+        assignAdd(ins,node);
+    }
     else if(ins->getOpType() == Instruction::Mul)
     {
         assignMul(ins,node);
