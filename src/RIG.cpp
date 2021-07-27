@@ -292,6 +292,70 @@ bool paintColor(BasicBlock* gb){
     return true;
 }
 
+void deleteDC(DomTreenode* dn, BasicBlock* gb)
+{
+    bool findDc;
+    BasicBlock* b = dn->block;
+    for(auto it = newBlock[b].begin(); it != newBlock[b].end(); it++)
+    {
+        if((*it)->rd != NULL)
+        {
+            findDc = false;
+            for(auto rn: RIG[gb])
+            {// 如果该左值没有出现在RIG[gb]中，就删除这条指令
+                if(rn->dc == (*it)->rd)
+                {
+                    findDc = true;
+                    break;
+                }
+            }
+            if(!findDc)
+            {// 没找到这个dc就删除这条指令
+                newBlock[b].erase(it);
+            }
+        }
+    }
+    // 递归删除剩下后继块的死代码
+    for(auto nx: dn->son)
+        deleteDC(nx, gb);
+}
+
+int VregNumofDecl(Decl* d)
+{// 主要是返回这个decl对应的寄存器变化vreg；有vreg的只有两中decl，分别是var和address
+    if(d->gettype() == Decl::var_decl)
+    {
+        varDecl* var_d = (varDecl*)d;
+        return var_d->Vreg;
+    }
+    else if(d->gettype() == Decl::addr_decl)
+    {
+        addrDecl* add_d = (addrDecl*)d;
+        return add_d->Vreg;
+    }
+    return 789;
+}
+
+void specialInsDelete(DomTreenode* sd)
+{
+    BasicBlock* s=sd->block;
+    for(auto it = newBlock[s].begin(); it != newBlock[s].end(); it++){
+        if((*it)->getType() == armInstr::mov)
+        {
+            armMov* mov_ai = (armMov*)(*it);
+            if(VregNumofDecl(mov_ai->rd) == VregNumofDecl(mov_ai->rs))
+            {// 两个寄存器的number一样的话就删除
+                newBlock[s].erase(it);
+            }
+        }
+
+    }
+
+    //递归
+    for(auto nx:sd->son){
+        specialInsDelete(nx);
+    }
+}
+
 void buildRIG()
 {
     // 对于每个顶层块（除了第一个全局模块），都应该对应一个RIG图
@@ -301,25 +365,40 @@ void buildRIG()
         if(gb->domBlock.size() == 0)continue;
 
         // 1 init: clear the ins and outs sets
-        ins.clear();
-        outs.clear();
         blockVisited.clear();
         rigNodeCreated.clear();
         dbg("neho -- init: clear sets and graph");
 
-        // 2 开始从第一个domblock递归，填满in 和 out 集合
-        fillInOut(gb->domBlock[0]);
-        dbg("neho -- fill in/out sets");
 
-        // 2.5 for debug 先临时打印一下这些个in 和 out
-//        cout << "**** IN&OUT set of every armIns ****\n";
-//        for(auto dr: DomRoot)
-//            showSets(dr);
+        int times_deadCode = 5;
+        while(times_deadCode--)
+        {
+            // 1.5 init clear out
+            ins.clear();
+            outs.clear();
 
-        // 3 利用填好的in、out集合，建立冲突图，也是一个递归的过程
-        for(auto dr: DomRoot)
-            connectDecl(dr, gb);
-        dbg("neho -- RIG created");
+
+            // 2 开始从第一个domblock递归，填满in 和 out 集合
+            int times_RIG = 5;
+            while(times_RIG--)
+                fillInOut(gb->domBlock[0]);
+            dbg("neho -- fill in/out sets");
+
+            // 2.5 for debug 先临时打印一下这些个in 和 out
+//            cout << "**** IN&OUT set of every armIns ****\n";
+//            for(auto dr: DomRoot)
+//                showSets(dr);
+
+            // 3 利用填好的in、out集合，建立冲突图，也是一个递归的过程
+            for(auto dr: DomRoot)
+                connectDecl(dr, gb);
+            dbg("neho -- RIG created");
+
+            // 4 deleting dead code
+            for(auto dr: DomRoot)
+                deleteDC(dr, gb);
+        }
+
 
         // 3.5 for debug 打印整张图看看
         cout << "**** the RIG of " << gb->BlockName <<  "****\n";
@@ -334,7 +413,9 @@ void buildRIG()
         }
         dbg("neho -- show RIG win");
 
-        // 4. filling colors!
+
+
+        // 5. filling colors!
         int success=0;
         while(trytimes--){
             init_color();
@@ -347,12 +428,12 @@ void buildRIG()
                     if(dc->gettype() == Decl::declType::var_decl)
                     { // 变量 是存在register里面的
                         varDecl* var_dc = (varDecl*)dc;
-                        var_dc->Vreg = rigN.second;
+                        var_dc->Vreg = rigN.second - 1;
                     }
                     else if(dc->gettype() == Decl::declType::addr_decl)
                     { // 地址 也是存在register里面的
                         addrDecl* mem_dc = (addrDecl*)dc;
-                        mem_dc->Vreg = rigN.second;
+                        mem_dc->Vreg = rigN.second - 1;
                     }
                 }
                 success=1;
@@ -366,7 +447,13 @@ void buildRIG()
 
 
     }
-    // 4.5 show instruction agian, this time with limited k registers
+
+    // 此条不专门针对 mov r0, r0; TODO：之后可以在里面加上针对其他ir指令的优化
+    for(auto dr: DomRoot)
+        specialInsDelete(dr);
+
+
+    // final show instruction agian, this time with limited k registers
     cout << "****winwin Arm Instruction with limited Registers ****\n";
     for(auto dr: DomRoot)
         showDecl(dr);
