@@ -300,9 +300,9 @@ void getssa()
                  int antiType = ins_c->getOpType();
                  if(antiType == Instruction::Mul || antiType == Instruction::Div || antiType == Instruction::Mod)
                  {//找到这三种指令
-                    for(int i=0; i < ins_c->getOp().size(); i++)
+                    for(int i=0; i < ins_c->Operands.size(); i++)
                     {// 对两个操作数都扫一遍
-                        auto opVaule = ins_c->getOp()[i];
+                        auto opVaule = ins_c->Operands[i];
                         if(opVaule->getType() == 1 && ((IntegerValue*)opVaule)->isConst == 1)
                         {// 是常数，则在前面加一条assign语句
                             //这条assign语句
@@ -311,7 +311,11 @@ void getssa()
                             IntegerValue* dummyVal = new IntegerValue(mdm_name + to_string(mdm_cnt++), opVaule->lineno, opVaule->var_scope, 0);
                             ins_ass->setResult(dummyVal); // 新指令的result应该是一个新的Value，有一个中间temp变量
                             // 还需要把当前的这个opValue换成新的dummyVal
-                            ins_c->getOp()[i] = dummyVal;
+//                            ins_c->getOp().insert(ins_c->getOp().begin() + i, dummyVal);
+//                            ins_c->getOp().erase(ins_c->getOp().begin() + i);
+                            ins_c->Operands[i] = dummyVal;
+//                            dbg(dummyVal->VName);
+//                            dbg(ins_c->getOp()[i]->VName);
 
                             // 在它前面插入这条Instruction
                             IR1->InsertInstr(ins_ass);

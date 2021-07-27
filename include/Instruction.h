@@ -76,14 +76,16 @@ public:
     BasicBlock* getParent(){return ParentBasicblock;}
     
     BasicBlock* jmpDestBlock=nullptr;
+
+    //操作数列表  neho于7.27将它从private中移了出来，由于需要改动原来的op
+    std::vector<Value *> Operands;
+
 private:
     //instruction id
     int InstrId;
     //（OP，arg1，arg2，result）
     //操作符 ins_type
     InsType OpType;
-    //操作数列表
-    std::vector<Value *> Operands;
     //结果
     Value* Result;
     //操作数个数
