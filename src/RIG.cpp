@@ -226,6 +226,70 @@ void connectDecl(DomTreenode* dn, BasicBlock* gb)
     for(auto nx: dn->son)
         connectDecl(nx, gb);
 }
+//filling colors data structure.
+int trytimes=5;//某迭代次数
+map<RIGnode*, int> colors;
+queue<RIGnode*> que;//queue of filling color with BFS
+const int K =13;// number of Rigster
+
+void init_color()
+{
+    colors.clear();
+}
+
+vector<RIGnode*> s_point;
+
+bool check_ok(RIGnode* n, int c)
+{
+    for(auto con: n->connectTo){
+        if(!colors.count(con))continue;
+        if(colors[con]==c)return false;
+    }
+    return true;
+}
+
+bool paintColor(BasicBlock* gb){
+    //1. 找到所有起点;
+    int maxdu=-1;
+    s_point.clear();
+    for(auto node: RIG[gb]){
+        if(colors.count(node))continue;
+        if(node->connectTo.size()>maxdu){
+            s_point.clear();
+            s_point.push_back(node);
+            maxdu=node->connectTo.size();
+        }
+        else if(node->connectTo.size()==maxdu)s_point.push_back(node);
+    }
+    //1.1random
+    random_shuffle(s_point.begin(),s_point.end());
+    //1.2 add s_point
+    colors[s_point[0]]=1;
+    que.push(s_point[0]);
+    //2. BFS coloring
+    while(!que.empty()){
+        RIGnode* now = que.front();
+        que.pop();
+        // 随机的访问now所连的点
+        random_shuffle(now->connectTo.begin(),now->connectTo.end());
+        for(auto nx:now->connectTo){
+            //对nx尝试每一种颜色
+            if(colors[nx])continue;
+            for(int i=1;i<=K;i++){
+                if(check_ok(nx,i)){
+                    colors[nx]=i;
+                    que.push(nx);
+                    break;
+                }
+            }
+            if(!colors.count(nx))return false;
+        }
+    }
+    for(auto node: RIG[gb]){
+        if(!colors.count(node))return paintColor(gb);
+    }
+    return true;
+}
 
 void buildRIG()
 {
@@ -267,5 +331,20 @@ void buildRIG()
             }
             cout << "\n";
         }
+
+        // 4. filling colors!
+        int success=0;
+        while(trytimes--){
+            init_color();
+            if(paintColor(gb)){
+                //TODO:修改Vreg
+                success=1;
+                break;
+            }
+        }
+        if(success==0){
+            //TODO: add memory operation.
+        }
+         
     }
 }
