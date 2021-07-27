@@ -117,19 +117,23 @@ void assignPhi(Instruction* instr,BasicBlock*node)
 }
 void assignLdr(Instruction* instr, BasicBlock* node)
 {
+    //TODO: 形参的数组,,, 先不写了.(可能碰巧能运行,也不知道为什么鲁棒性这么强~)
     Value *rdval = instr->getResult();
     armLdr* ins = new armLdr();
-    if(rdval->getScope()=="1"&&rdval->getType()==1){
+    if(rdval->getScope()=="1"&&rdval->getType()<=2){
+        //全局变量(数组或者单个)的话, 目标寄存器就应该是个地址
         addrDecl *rd = new addrDecl(rdval,node,Rcnt++);
         ins->rd=rd;
         trance[ins]=instr;
     }
     else{
+        //普通形参, 目标寄存器是var
+        //数组的某个数, 目标寄存器是var
         varDecl *rd = new varDecl(rdval,node,Rcnt++);
         ins->rd=rd;
         trance[ins]=instr;
     }
-    if(rdval->getScope()=="1"&&rdval->getType()==1){
+    if(rdval->getScope()=="1"&&rdval->getType()<=2){
         // 全局变量就可以写全了
         globalDecl* rs = new globalDecl(rdval, node, rdval->VName);
         ins->rs=rs;
@@ -434,10 +438,7 @@ void usedLdr(armLdr* ins,BasicBlock* node)
         if(rawop->isPara>4){
 
         }
-        else if(rawop->getScope()=="1"){
-
-        }
-        else if(rawop->isPara&&rawop->isPara<=4){
+        else if(raw->getOp().size()<2){
 
         }
         else{
