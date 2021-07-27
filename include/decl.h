@@ -137,8 +137,7 @@ class armRsb:public armInstr
     }
 };
 
-class armMul:public armInstr//ok
-{
+class armMul:public armInstr{//ok
     public:
     Decl *r0,*r1;
     virtual int getType(){return mul;}
@@ -149,9 +148,26 @@ class armMul:public armInstr//ok
     }
 
 };
-
-class armDiv:public armInstr{};
-class armMod:public armInstr{};
+class armDiv:public armInstr{
+public:
+    Decl *r0, *r1;
+    virtual int getType(){return div;}
+    virtual ostream& output(ostream&out)const
+    {
+        out << "div " << *rd << ", " << *r0 << ", " << *r1;
+        return out;
+    }
+};
+class armMod:public armInstr{
+public:
+    Decl *r0, *r1;
+    virtual int getType(){return mod;}
+    virtual ostream& output(ostream&out)const
+    {
+        out << "mod " << *rd << ", " << *r0 << ", " << *r1;
+        return out;
+    }
+};
 class armRet:public armInstr//ok
 {
     public:

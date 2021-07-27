@@ -45,8 +45,21 @@ void ArmI2InOut(armInstr* ai)
         armMul* mul_ai = (armMul*)ai;
         ins[ai].erase(mul_ai->rd);
         ins[ai].insert(mul_ai->r0);
-        if(notConst(mul_ai->r1))
-            ins[ai].insert(mul_ai->r1);
+        ins[ai].insert(mul_ai->r1); // 由于ssa处已经将三个操作数都确保成了寄存器，因此这里就不判断是否为立即数了
+    }
+    else if(ai->getType() == armInstr::armInsType::div)
+    {
+        armDiv* div_ai = (armDiv*)ai;
+        ins[ai].erase(div_ai->rd);
+        ins[ai].insert(div_ai->r0);
+        ins[ai].insert(div_ai->r1); // 由于ssa处已经将三个操作数都确保成了寄存器，因此这里就不判断是否为立即数了
+    }
+    else if(ai->getType() == armInstr::armInsType::mod)
+    {
+        armMod* mod_ai = (armMod*)ai;
+        ins[ai].erase(mod_ai->rd);
+        ins[ai].insert(mod_ai->r0);
+        ins[ai].insert(mod_ai->r1); // 由于ssa处已经将三个操作数都确保成了寄存器，因此这里就不判断是否为立即数了
     }
     else if(ai->getType() == armInstr::armInsType::mov)
     {
