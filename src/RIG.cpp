@@ -106,6 +106,14 @@ void ArmI2InOut(armInstr* ai)
         if(notConst(ret_ai->rs))
             ins[ai].insert(ret_ai->rs);
     }
+    else if(ai->getType() == armInstr::rsb)
+    {// r1 maybe imm/const, but r0 is var_decl for sure
+        armRsb* rsb_ai = (armRsb*)ai;
+        ins[ai].erase(rsb_ai->rd);
+        ins[ai].insert(rsb_ai->r0);
+        if(notConst(rsb_ai->r1))
+            ins[ai].insert(rsb_ai->r1);
+    }
 
 
 
@@ -420,7 +428,6 @@ void buildRIG()
         while(trytimes--){
             init_color();
             if(paintColor(gb)){
-                //TODO:修改Vreg
                 // 4.1 遍历color map，修改Vreg
                 for(auto rigN: colors)
                 {
@@ -441,7 +448,7 @@ void buildRIG()
             }
         }
         if(success==0){
-            //TODO: add memory operation.
+            //TODO: 如果图着色失败了，add memory operation.
         }
 
 

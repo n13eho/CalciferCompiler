@@ -128,8 +128,8 @@ class armSub:public armInstr//ok
         return out;
     }
 };
-class armRsb:public armInstr
-{
+class armRsb:public armInstr//ok
+{// r1 maybe imm/const, but r0 is var_decl for sure
     public:
     Decl *r0,*r1;
     virtual int getType(){return rsb;}
@@ -151,7 +151,7 @@ class armMul:public armInstr{//ok
     }
 
 };
-class armDiv:public armInstr{
+class armDiv:public armInstr{//ok   In this ir, leave it like this
 public:
     Decl *r0, *r1;
     virtual int getType(){return div;}
@@ -161,7 +161,7 @@ public:
         return out;
     }
 };
-class armMod:public armInstr{
+class armMod:public armInstr{//ok   In this ir, leave it like this
 public:
     Decl *r0, *r1;
     virtual int getType(){return mod;}
@@ -227,7 +227,7 @@ class armStr:public armInstr{//ok
         return out;
     }
 };
-class armB:public armInstr{//no
+class armB:public armInstr{//no need for RIG trans of IN/OUT set
     public:
     string lb;
     virtual int getType(){return beq;}
@@ -237,7 +237,7 @@ class armB:public armInstr{//no
         return out;
     }
 };
-class armBeq:public armInstr{//no
+class armBeq:public armInstr{//no need for RIG trans of IN/OUT set
     public:
     string lb;
     virtual int getType(){return beq;}
@@ -247,7 +247,7 @@ class armBeq:public armInstr{//no
         return out;
     }
 };
-class armBne:public armInstr{//no
+class armBne:public armInstr{//no need for RIG trans of IN/OUT set
     public:
     string lb;
     virtual int getType(){return beq;}
@@ -257,7 +257,7 @@ class armBne:public armInstr{//no
         return out;
     }
 };
-class armBlt:public armInstr{//no
+class armBlt:public armInstr{//no need for RIG trans of IN/OUT set
     public:
     string lb;
     virtual int getType(){return beq;}
@@ -267,7 +267,7 @@ class armBlt:public armInstr{//no
         return out;
     }
 };
-class armBgt:public armInstr{//no
+class armBgt:public armInstr{//no need for RIG trans of IN/OUT set
     public:
     string lb;
     virtual int getType(){return beq;}
@@ -277,7 +277,7 @@ class armBgt:public armInstr{//no
         return out;
     }
 };
-class armBle:public armInstr{//no
+class armBle:public armInstr{//no need for RIG trans of IN/OUT set
     public:
     string lb;
     virtual int getType(){return beq;}
@@ -287,7 +287,7 @@ class armBle:public armInstr{//no
         return out;
     }
 };
-class armBge:public armInstr{//no
+class armBge:public armInstr{//no need for RIG trans of IN/OUT set
     public:
     string lb;
     virtual int getType(){return beq;}
