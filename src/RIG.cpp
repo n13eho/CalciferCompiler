@@ -234,9 +234,9 @@ void buildRIG()
         dbg("neho -- fill in/out sets");
 
         // 2.5 for debug 先临时打印一下这些个in 和 out
-        cout << "**** IN&OUT set of every armIns ****\n";
-        for(auto dr: DomRoot)
-            showSets(dr);
+//        cout << "**** IN&OUT set of every armIns ****\n";
+//        for(auto dr: DomRoot)
+//            showSets(dr);
 
         // 3 利用填好的in、out集合，建立冲突图，也是一个递归的过程
         for(auto dr: DomRoot)
@@ -244,7 +244,7 @@ void buildRIG()
         dbg("neho -- RIG created");
 
         // 3.5 for debug 打印整张图看看
-        cout << "**** the RIG ****\n";
+        cout << "**** the RIG of " << gb->BlockName <<  "****\n";
         for(auto dnode: RIG[gb])
         {
             cout << *dnode->dc << "\t";

@@ -20,7 +20,7 @@ class Value
     virtual int getType(){return 0;}
     //1.整数
     //2.数组
-    //3.函数 
+    //3.函数
     Value(std::string name_){VName=name_;}
     Value(std::string name_,int line,std::string scope)
     {

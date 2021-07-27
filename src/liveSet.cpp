@@ -447,7 +447,7 @@ void setUsed(BasicBlock* s)
     } 
     //对于每一条语句填used
     for(auto ins=newBlock[s].begin();ins!=newBlock[s].end();ins++){
-        dbg((*ins)->getType());
+//        dbg((*ins)->getType());
         if(usedIns(*ins,s)==-1){
             newBlock[s].erase(ins);
         }
