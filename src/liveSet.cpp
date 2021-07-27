@@ -59,6 +59,24 @@ void assignMul(Instruction* instr,BasicBlock *node)
     newBlock[node].push_back(ins);
     trance[ins]=instr;
 }
+void assignDiv(Instruction* instr,BasicBlock *node)
+{
+    armDiv *ins=new armDiv();
+    IntegerValue* res=(IntegerValue*)instr->getResult();
+    varDecl *resd = new varDecl(res,node,Rcnt++);
+    ins->rd = resd;
+    newBlock[node].push_back(ins);
+    trance[ins]=instr;
+}
+void assignMod(Instruction* instr,BasicBlock *node)
+{
+    armMod *ins=new armMod();
+    IntegerValue* res=(IntegerValue*)instr->getResult();
+    varDecl *resd = new varDecl(res,node,Rcnt++);
+    ins->rd = resd;
+    newBlock[node].push_back(ins);
+    trance[ins]=instr;
+}
 void assignSub(Instruction* instr,BasicBlock *node)
 {
     IntegerValue* res=(IntegerValue*)instr->getResult();
@@ -225,6 +243,14 @@ void assignIns(Instruction* ins,BasicBlock* node)
     {
         assignMul(ins,node);
     }
+    else if(ins->getOpType() == Instruction::Div)
+    {
+        assignDiv(ins,node);
+    }
+    else if(ins->getOpType() == Instruction::Mod)
+    {
+        assignMod(ins,node);
+    }
     else if(ins->getOpType() == Instruction::Assign)
     {
         assignMov(ins,node);
@@ -344,6 +370,24 @@ void usedMul(armMul* ins,BasicBlock* node)
     ins->r1 = getDecl(r1,node);
     addAssign(ins->rd->rawValue,node,ins->rd);
 }
+void usedDiv(armDiv* ins,BasicBlock* node)
+{
+    Instruction* raw = trance[ins];
+    IntegerValue* r0 = (IntegerValue*)raw->getOp()[0];
+    IntegerValue* r1 = (IntegerValue*)raw->getOp()[1];
+    ins->r0 = getDecl(r0,node);
+    ins->r1 = getDecl(r1,node);
+    addAssign(ins->rd->rawValue,node,ins->rd);
+}
+void usedMod(armMod* ins,BasicBlock* node)
+{
+    Instruction* raw = trance[ins];
+    IntegerValue* r0 = (IntegerValue*)raw->getOp()[0];
+    IntegerValue* r1 = (IntegerValue*)raw->getOp()[1];
+    ins->r0 = getDecl(r0,node);
+    ins->r1 = getDecl(r1,node);
+    addAssign(ins->rd->rawValue,node,ins->rd);
+}
 void usedSub(armSub* ins,BasicBlock* node)
 {
     Instruction* raw = trance[ins];
@@ -452,6 +496,12 @@ int usedIns(armInstr* ins,BasicBlock* node)
     }
     else if(ins->getType() == armInstr::mul){
         usedMul((armMul*)ins,node);
+    }
+    else if(ins->getType() == armInstr::div){
+        usedDiv((armDiv*)ins,node);
+    }
+    else if(ins->getType() == armInstr::mod){
+        usedMod((armMod*)ins,node);
     }
     else if(ins->getType() == armInstr::sub){
         usedSub((armSub*)ins,node);
