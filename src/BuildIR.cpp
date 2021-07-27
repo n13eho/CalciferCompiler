@@ -2086,7 +2086,6 @@ Value* LValArrayNode(GrammaNode* node,LinearIR *IR)
             }
             else
             {
-                //待修改，访问符号表,得到当前数组维度长度
                 int dimen = NumOfDimension_[i];
                 ImmValue* present_dimen = new ImmValue("dimen",dimen);
                 //当前维度的索引
@@ -2120,15 +2119,17 @@ Value* LValArrayNode(GrammaNode* node,LinearIR *IR)
                 IR->InsertInstr(ins_add);
                 bbNow->Addins(ins_add->getId());
                 ins_add->setParent(bbNow);
-
-                //计算维度累乘
-                Instruction* ins_mul2 = new Instruction(IR->getInstCnt(),Instruction::Mul,2);//这里后期考虑muladd指令优化
-                ins_mul2->addOperand(present_dimen);
-                ins_mul2->addOperand(accum);
-                ins_mul2->setResult(accum);
-                IR->InsertInstr(ins_mul2);
-                bbNow->Addins(ins_mul2->getId());
-                ins_mul2->setParent(bbNow);
+                if(i>0)
+                {
+                    //计算维度累乘
+                    Instruction* ins_mul2 = new Instruction(IR->getInstCnt(),Instruction::Mul,2);//这里后期考虑muladd指令优化
+                    ins_mul2->addOperand(present_dimen);
+                    ins_mul2->addOperand(accum);
+                    ins_mul2->setResult(accum);
+                    IR->InsertInstr(ins_mul2);
+                    bbNow->Addins(ins_mul2->getId());
+                    ins_mul2->setParent(bbNow);
+                }
             }
         }
         //数组访问
