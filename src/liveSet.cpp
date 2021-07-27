@@ -333,7 +333,6 @@ void addAssign(Value* val, BasicBlock* node, Decl* dc)
 
 Decl* getDecl(Value* val, BasicBlock* node)
 {
-    dbg(val->VName);
     if(val->getType()==1||val->getType()==2){
         IntegerValue* intval = (IntegerValue*)val;
         if(intval->isConst){
@@ -343,7 +342,6 @@ Decl* getDecl(Value* val, BasicBlock* node)
         }
         else{
             //其他就返回上一次赋值
-            dbg(Assign_rec.count(make_pair(intval,node)));
             return Assign_rec[make_pair(intval,node)].back();
         }
     }
@@ -531,8 +529,6 @@ void setUsed(BasicBlock* s)
 {
     //init:把reachin里的定义建立好
     for(auto dc : reachin[s]){
-        dbg(s);
-        dbg(dc->rawValue->VName);
         addAssign(dc->rawValue,s,dc);
     } 
     //对于每一条语句填used
