@@ -216,10 +216,14 @@ class armLdr:public armInstr{//ok??????????? //TODO: now array is different!
 class armStr:public armInstr{//ok
     public:
     Decl *rs;//str中rs其实是目的位置！！！！！！！！！
+    Decl *bias;
     virtual int getType(){return str;}
     virtual ostream& output(ostream&out)const
     {
         out<<"str "<<*rd<<", "<<*rs;
+        if(bias){
+            out<<"\t@ this is array....";//TODO: 这里以后要改.
+        }
         return out;
     }
 };

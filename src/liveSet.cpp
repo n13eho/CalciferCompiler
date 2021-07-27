@@ -128,16 +128,15 @@ void assignLdr(Instruction* instr, BasicBlock* node)
 }
 void assignStr(Instruction* instr, BasicBlock* node)
 {
-    Value *rdval = instr->getResult();
+    Value *rdval = instr->getOp()[0];
     armStr* ins = new armStr();
     trance[ins]=instr;
-
-    //str 比较特殊，创建好写rs就行吧。。。
-    if(rdval->getScope()=="1"){
+    //str 比较特殊，创建好写rs就行
+    if(rdval->getScope()=="1"&&rdval->getType()==1){
         globalDecl* rs = new globalDecl(rdval, node, rdval->VName);
         ins->rs=rs;
     }
-    else if(rdval->isPara){
+    else if(rdval->isPara>4){
         memoryDecl* rs = new memoryDecl(rdval, node);
         int id=rdval->isPara-4;
         rs->bias = id*(-4);
@@ -292,6 +291,7 @@ void calReach(BasicBlock* s)
         reachout[s].insert(dc);
     }
     for(auto suc:s->succBlock){
+        //完善后继的reachin
         for(auto i : reachout[s]){
             reachin[suc].insert(i);
         }
@@ -307,6 +307,7 @@ void addAssign(Value* val, BasicBlock* node, Decl* dc)
 
 Decl* getDecl(Value* val, BasicBlock* node)
 {
+    dbg(val->VName);
     if(val->getType()==1||val->getType()==2){
         IntegerValue* intval = (IntegerValue*)val;
         if(intval->isConst){
@@ -316,6 +317,7 @@ Decl* getDecl(Value* val, BasicBlock* node)
         }
         else{
             //其他就返回上一次赋值
+            dbg(Assign_rec.count(make_pair(intval,node)));
             return Assign_rec[make_pair(intval,node)].back();
         }
     }
@@ -408,8 +410,20 @@ void usedStr(armStr* ins,BasicBlock* node)
     //str 应该没有需要链接的目的操作数
     //源操作数是rd！！！！(至少global是这样)
     Instruction* raw = trance[ins];
-    IntegerValue* r0=(IntegerValue*)raw->getResult();
-    ins->rd = getDecl(r0,node);
+    if(raw->getOp().size()>1){
+        //这说明是一个数组的str
+        IntegerValue* r2=(IntegerValue*)raw->getOp()[2]; //这个是要存的数
+        IntegerValue* r1=(IntegerValue*)raw->getOp()[1]; //这个是数据的index
+        ArrayValue* r0=(ArrayValue*)raw->getOp()[0]; //将存入的数组
+        ins->rd = getDecl(r2,node);
+        ins->bias = getDecl(r1,node);
+        ins->rs = getDecl(r0,node);//FIXME:将变量存入a并不算对变量的重新赋值
+    }
+    else{
+        // 这说明是一个局部变量和形参
+        IntegerValue* r0=(IntegerValue*)raw->getResult();
+        ins->rd = getDecl(r0,node);
+    }
 }
 void usedCall(armCall* ins, BasicBlock* node)
 {
@@ -467,6 +481,8 @@ void setUsed(BasicBlock* s)
 {
     //init:把reachin里的定义建立好
     for(auto dc : reachin[s]){
+        dbg(s);
+        dbg(dc->rawValue->VName);
         addAssign(dc->rawValue,s,dc);
     } 
     //对于每一条语句填used
