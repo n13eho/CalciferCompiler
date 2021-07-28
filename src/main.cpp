@@ -58,7 +58,7 @@ int main(int argc, char *argv[])
          liveSets();//重命名
 
         // 寄存器分配：虚拟寄存器->realj寄存器。变量活性分析，建立冲突图；
-         buildRIG();
+         RigsterAlloc();
 
         // codegeneration();
         // 利用四元式和bb信息得出ssa_0

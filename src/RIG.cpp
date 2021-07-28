@@ -238,7 +238,7 @@ void connectDecl(DomTreenode* dn, BasicBlock* gb)
 int trytimes=5;//某迭代次数
 map<RIGnode*, int> colors;
 queue<RIGnode*> que;//queue of filling color with BFS
-const int K =13;// number of Rigster
+const int K=3;// number of Rigster
 
 void init_color()
 {
@@ -250,7 +250,7 @@ vector<RIGnode*> s_point; // 起点
 bool check_ok(RIGnode* n, int c)
 {
     for(auto con: n->connectTo){
-        if(!colors.count(con))continue;
+        if(!colors[con])continue;
         if(colors[con]==c)return false;
     }
     return true;
@@ -261,7 +261,7 @@ bool paintColor(BasicBlock* gb){
     int maxdu=-1;
     s_point.clear();
     for(auto node: RIG[gb]){
-        if(colors.count(node))continue;
+        if(colors[node])continue;
 
         if((int)node->connectTo.size()>maxdu){
             s_point.clear();
@@ -291,11 +291,11 @@ bool paintColor(BasicBlock* gb){
                     break;
                 }
             }
-            if(!colors.count(nx))return false;
+            if(colors[nx]==0)return false;
         }
     }
     for(auto node: RIG[gb]){
-        if(!colors.count(node))return paintColor(gb);
+        if(colors[node]==0)return paintColor(gb);
     }
     return true;
 }
@@ -364,8 +364,14 @@ void specialInsDelete(DomTreenode* sd)
     }
 }
 
-void buildRIG()
+void addMemoryOperation()
 {
+    
+}
+
+bool buildRIG()
+{
+    srand(time(0));
     // 对于每个顶层块（除了第一个全局模块），都应该对应一个RIG图
     for(auto gb: IR1->Blocks)
     {
@@ -374,7 +380,6 @@ void buildRIG()
 
         // 1 init: clear the ins and outs sets
         dbg("neho -- init: clear sets and graph");
-
 
         int times_deadCode = 10;
         while(times_deadCode--)
@@ -386,7 +391,6 @@ void buildRIG()
             rigNodeCreated.clear();
             ins.clear();
             outs.clear();
-
 
             // 2 开始从第一个domblock递归，填满in 和 out 集合
             int times_RIG = 5;
@@ -410,8 +414,6 @@ void buildRIG()
             for(auto dr: DomRoot)
                 showDecl(dr);
         }
-
-
         // 3.5 for debug 打印整张图看看
         cout << "**** the RIG of " << gb->BlockName <<  "****\n";
         for(auto dnode: RIG[gb])
@@ -424,8 +426,6 @@ void buildRIG()
             cout << "\n";
         }
         dbg("neho -- show RIG win");
-
-
 
         // 5. filling colors!
         int success=0;
@@ -454,16 +454,20 @@ void buildRIG()
         if(success==0){
             dbg("Badly!");
             //TODO: 如果图着色失败了，add memory operation.
+            addMemoryOperation();
+            return false;
         }
-
-
-
     }
+    return true;
+}
+
+void RigsterAlloc()
+{
+    while(!buildRIG());
 
     // 此条不专门针对 mov r0, r0; TODO：之后可以在里面加上针对其他ir指令的优化
     for(auto dr: DomRoot)
         specialInsDelete(dr);
-
 
     // final show instruction agian, this time with limited k registers
     cout << "****winwin Arm Instruction with limited Registers ****\n";

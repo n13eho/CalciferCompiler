@@ -16,4 +16,5 @@ struct RIGnode
 
 extern map<BasicBlock*, vector<RIGnode*>> RIG; // THE graph
 
-void buildRIG();
+// void buildRIG();
+void RigsterAlloc();
