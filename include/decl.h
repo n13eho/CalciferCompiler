@@ -82,12 +82,12 @@ class memoryDecl: public Decl{
 class addrDecl: public Decl{
     public:
     int Vreg;
-    int bias;
+    int bias=0;
     addrDecl(Value *_rawValue, BasicBlock *_rawBlock):Decl(_rawValue,_rawBlock){};
     addrDecl(Value *_rawValue, BasicBlock *_rawBlock,int _Vreg):Decl(_rawValue,_rawBlock),Vreg(_Vreg){};
     virtual ostream& output(ostream&out)const{
         if(bias==0)out<<"[r"<<Vreg<<']';
-        else out<<"[r"<<Vreg<<", #"<<bias<<"]"<<endl;
+        else out<<"[r"<<Vreg<<", #"<<bias<<"]";
         return out;
     }
     virtual int gettype(){return 5;}

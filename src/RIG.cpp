@@ -238,7 +238,7 @@ void connectDecl(DomTreenode* dn, BasicBlock* gb)
 int trytimes=5;//某迭代次数
 map<RIGnode*, int> colors;
 queue<RIGnode*> que;//queue of filling color with BFS
-const int K=3;// number of Rigster
+const int K=9;// number of Rigster
 
 void init_color()
 {
@@ -366,7 +366,7 @@ void specialInsDelete(DomTreenode* sd)
 
 void addMemoryOperation()
 {
-    
+
 }
 
 bool buildRIG()
