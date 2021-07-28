@@ -8,9 +8,9 @@ map<BasicBlock*, vector<RIGnode*>> RIG; // THE graph
 map<armInstr*, set<Decl*>> ins; // 每条arm指令对应的in集合，要记得清空
 map<armInstr*, set<Decl*>> outs; // 公用复用的out集合
 
-// visited block
+// visited block 每个顶层模块内的block
 map<BasicBlock*, bool> blockVisited;
-// created RIGnode
+// created RIGnode 该decl是否已经创建了对应的RIGnode
 map<Decl*, bool> rigNodeCreated;
 
 bool notConst(Decl* d)
@@ -103,8 +103,9 @@ void ArmI2InOut(armInstr* ai)
         armRet* ret_ai = (armRet*)ai;
 
         // rs is gen
-        if(notConst(ret_ai->rs))
-            ins[ai].insert(ret_ai->rs);
+        if(ret_ai->rs != NULL)
+            if(notConst(ret_ai->rs))
+                ins[ai].insert(ret_ai->rs);
     }
     else if(ai->getType() == armInstr::rsb)
     {// r1 maybe imm/const, but r0 is var_decl for sure
@@ -238,7 +239,8 @@ void connectDecl(DomTreenode* dn, BasicBlock* gb)
 int trytimes=5;//某迭代次数
 map<RIGnode*, int> colors;
 queue<RIGnode*> que;//queue of filling color with BFS
-const int K=3;// number of Rigster
+
+const int K = 4;// number of Rigster
 
 void init_color()
 {
@@ -319,7 +321,8 @@ void deleteDC(DomTreenode* dn, BasicBlock* gb)
             }
             if(!findDc)
             {// 没找到这个dc就删除这条指令
-                newBlock[b].erase(it);
+//                dbg(**it);
+                newBlock[b].erase(it--);
             }
         }
     }
@@ -352,7 +355,7 @@ void specialInsDelete(DomTreenode* sd)
             armMov* mov_ai = (armMov*)(*it);
             if(VregNumofDecl(mov_ai->rd) == VregNumofDecl(mov_ai->rs))
             {// 两个寄存器的number一样的话就删除
-                newBlock[s].erase(it);
+                newBlock[s].erase(it--);
             }
         }
 
@@ -402,6 +405,7 @@ bool buildRIG()
 //            cout << "**** IN&OUT set of every armIns ****\n";
 //            for(auto dr: DomRoot)
 //                showSets(dr);
+
             // 3 利用填好的in、out集合，建立冲突图，也是一个递归的过程
             for(auto dr: DomRoot)
                 connectDecl(dr, gb);
@@ -455,7 +459,7 @@ bool buildRIG()
             dbg("Badly!");
             //TODO: 如果图着色失败了，add memory operation.
             addMemoryOperation();
-            return false;
+            return true;
         }
     }
     return true;

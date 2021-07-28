@@ -82,7 +82,7 @@ class memoryDecl: public Decl{
 class addrDecl: public Decl{
     public:
     int Vreg;
-    int bias;
+    int bias=0;
     addrDecl(Value *_rawValue, BasicBlock *_rawBlock):Decl(_rawValue,_rawBlock){};
     addrDecl(Value *_rawValue, BasicBlock *_rawBlock,int _Vreg):Decl(_rawValue,_rawBlock),Vreg(_Vreg){};
     virtual ostream& output(ostream&out)const{
