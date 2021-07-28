@@ -373,15 +373,17 @@ void buildRIG()
         if(gb->domBlock.size() == 0)continue;
 
         // 1 init: clear the ins and outs sets
-        blockVisited.clear();
-        rigNodeCreated.clear();
         dbg("neho -- init: clear sets and graph");
 
 
-        int times_deadCode = 5;
+        int times_deadCode = 10;
         while(times_deadCode--)
         {
             // 1.5 init clear out
+            for(auto node:RIG[gb]){free(node);}
+            RIG[gb].clear();
+            blockVisited.clear();
+            rigNodeCreated.clear();
             ins.clear();
             outs.clear();
 
@@ -396,7 +398,6 @@ void buildRIG()
 //            cout << "**** IN&OUT set of every armIns ****\n";
 //            for(auto dr: DomRoot)
 //                showSets(dr);
-
             // 3 利用填好的in、out集合，建立冲突图，也是一个递归的过程
             for(auto dr: DomRoot)
                 connectDecl(dr, gb);
@@ -405,6 +406,9 @@ void buildRIG()
             // 4 deleting dead code
             for(auto dr: DomRoot)
                 deleteDC(dr, gb);
+            dbg("---------------------------------------");
+            for(auto dr: DomRoot)
+                showDecl(dr);
         }
 
 
@@ -448,6 +452,7 @@ void buildRIG()
             }
         }
         if(success==0){
+            dbg("Badly!");
             //TODO: 如果图着色失败了，add memory operation.
         }
 

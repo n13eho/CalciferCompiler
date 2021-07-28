@@ -245,7 +245,7 @@ void assignIns(Instruction* ins,BasicBlock* node)
     }
     if(ins->getOpType() == Instruction::Sub)
     {
-        assignAdd(ins,node);
+        assignSub(ins,node);
     }
     else if(ins->getOpType() == Instruction::Mul)
     {
