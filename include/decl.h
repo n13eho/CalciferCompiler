@@ -87,7 +87,7 @@ class addrDecl: public Decl{
     addrDecl(Value *_rawValue, BasicBlock *_rawBlock,int _Vreg):Decl(_rawValue,_rawBlock),Vreg(_Vreg){};
     virtual ostream& output(ostream&out)const{
         if(bias==0)out<<"[r"<<Vreg<<']';
-        else out<<"[r"<<Vreg<<", #"<<bias<<"]"<<endl;
+        else out<<"[r"<<Vreg<<", #"<<bias<<"]";
         return out;
     }
     virtual int gettype(){return 5;}

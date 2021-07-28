@@ -369,7 +369,7 @@ void specialInsDelete(DomTreenode* sd)
 
 void addMemoryOperation()
 {
-    
+
 }
 
 bool buildRIG()
