@@ -160,11 +160,6 @@ void getFrequency()
         for(auto i :exitB){
             addEdgeF(i,gb->domBlock[0],1.0);
         }
-//
-//        for(auto e: edgeF)
-//        {
-//            dbg(e.first, e.second, " ");
-//        }
 
         // 2. 根据转移概率列方程
         for(int i=0;i<gb->domBlock.size();i++){

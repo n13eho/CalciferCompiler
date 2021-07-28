@@ -1,5 +1,5 @@
 #include"RIG.h"
-
+#include"op_cfgFrequency.h"
 // input at liveSet.h
    /*map<BasicBlock*, vector<armInstr*>> newBlock;*/
 
@@ -367,6 +367,12 @@ void specialInsDelete(DomTreenode* sd)
     }
 }
 
+void spillCost(BasicBlock* gb){
+    for(auto node: RIG[gb]){
+        auto dc= node->dc;
+        dc->spill_cost = blockFrequency[dc->rawBlock]*dc->gen_used.size();
+    }
+}
 /*
  * 1 挑选哪个node出来
  * 计算每个node的spill cost，选出cost最小的
@@ -379,9 +385,20 @@ void specialInsDelete(DomTreenode* sd)
  * 2 挑出来之后...
  *
  */
-void addMemoryOperation()
-{
 
+Decl* chosenOne;
+
+void addMemoryOperation(BasicBlock* gb)
+{
+    spillCost(gb);
+    double mincost = 1e18;
+    for(auto node : RIG[gb]){
+        Decl* dc= node->dc;
+        if(dc->spill_cost<mincost){
+            mincost = dc->spill_cost;
+            chosenOne = dc;
+        }
+    }
 }
 
 bool buildRIG()
@@ -470,7 +487,7 @@ bool buildRIG()
         if(success==0){
             dbg("Badly!");
             //TODO: 如果图着色失败了，add memory operation.
-            addMemoryOperation();
+            addMemoryOperation(gb);
             return false;
         }
     }
