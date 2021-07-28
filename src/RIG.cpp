@@ -1,4 +1,5 @@
 #include"RIG.h"
+#include"op_cfgFrequency.h"
 
 // input at liveSet.h
    /*map<BasicBlock*, vector<armInstr*>> newBlock;*/
@@ -240,7 +241,7 @@ int trytimes=5;//某迭代次数
 map<RIGnode*, int> colors;
 queue<RIGnode*> que;//queue of filling color with BFS
 
-const int K = 4;// number of Rigster
+const int K = 3;// number of Rigster
 
 void init_color()
 {
@@ -381,7 +382,8 @@ void specialInsDelete(DomTreenode* sd)
  */
 void addMemoryOperation()
 {
-
+    getFrequency();
+    // dbg("calcing frequency win!");
 }
 
 bool buildRIG()
@@ -471,7 +473,7 @@ bool buildRIG()
             dbg("Badly!");
             //TODO: 如果图着色失败了，add memory operation.
             addMemoryOperation();
-            return true;
+            return false;
         }
     }
     return true;
@@ -479,7 +481,7 @@ bool buildRIG()
 
 void RigsterAlloc()
 {
-    while(!buildRIG());
+    if(!buildRIG());
 
     // 此条不专门针对 mov r0, r0; TODO：之后可以在里面加上针对其他ir指令的优化
     for(auto dr: DomRoot)
