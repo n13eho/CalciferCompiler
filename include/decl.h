@@ -20,7 +20,9 @@ class Decl {
     public:
     Value* rawValue; //which variable
     BasicBlock* rawBlock;//which block
-    vector<armInstr*> usesd; //which instruction uses it; 不知道是不是有用...
+    vector<armInstr*> gen_used; // 记录该decl出现在那些指令的gen集合中
+    double spill_cost = 0.0; // 记录该decl的spill cost，是将其移出寄存器的依据
+
     Decl(){}
     ~Decl(){}
 

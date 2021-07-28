@@ -367,6 +367,18 @@ void specialInsDelete(DomTreenode* sd)
     }
 }
 
+/*
+ * 1 挑选哪个node出来
+ * 计算每个node的spill cost，选出cost最小的
+ * 计算spillCost算法：
+ * 1.1 计算frequency of each block map_frequen<basicBlock* b, double frequency>
+ * 1.2 在建立IN/OUT集合的时候就记录每个decl出现在gen集合中的次数，并记录，用dc->gen_used
+ * 1.3 map_frequen[dc->rawBlock] * dc->gen_used.size() 得到最终的cost， 存入dc->spill_cost
+ * 1.4 通过RIG图 遍历所有decl 找出cost最小的
+ *
+ * 2 挑出来之后...
+ *
+ */
 void addMemoryOperation()
 {
 
