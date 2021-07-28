@@ -28,17 +28,25 @@ void ArmI2InOut(armInstr* ai)
         ins[ai].erase(add_ai->rd);
         // gen[s] U (out[s] - kill[s])
         ins[ai].insert(add_ai->r0);
+        add_ai->r0->gen_used.push_back(ai); // 图着色溢出的1.2
         // 当它只有是var register的时候才insert，否则就不insert
         if(notConst(add_ai->r1))
+        {
             ins[ai].insert(add_ai->r1);
+            add_ai->r1->gen_used.push_back(ai);
+        }
     }
     else if(ai->getType() == armInstr::armInsType::sub)
     {
         armSub* sub_ai = (armSub*)ai;
         ins[ai].erase(sub_ai->rd);
         ins[ai].insert(sub_ai->r0);
+        sub_ai->r0->gen_used.push_back(ai);
         if(notConst(sub_ai->r1))
+        {
             ins[ai].insert(sub_ai->r1);
+            sub_ai->r1->gen_used.push_back(ai);
+        }
     }
     else if(ai->getType() == armInstr::armInsType::mul)
     {
@@ -46,6 +54,8 @@ void ArmI2InOut(armInstr* ai)
         ins[ai].erase(mul_ai->rd);
         ins[ai].insert(mul_ai->r0);
         ins[ai].insert(mul_ai->r1); // 由于ssa处已经将三个操作数都确保成了寄存器，因此这里就不判断是否为立即数了
+        mul_ai->r0->gen_used.push_back(ai);
+        mul_ai->r1->gen_used.push_back(ai);
     }
     else if(ai->getType() == armInstr::armInsType::div)
     {
@@ -53,6 +63,8 @@ void ArmI2InOut(armInstr* ai)
         ins[ai].erase(div_ai->rd);
         ins[ai].insert(div_ai->r0);
         ins[ai].insert(div_ai->r1); // 由于ssa处已经将三个操作数都确保成了寄存器，因此这里就不判断是否为立即数了
+        div_ai->r0->gen_used.push_back(ai);
+        div_ai->r1->gen_used.push_back(ai);
     }
     else if(ai->getType() == armInstr::armInsType::mod)
     {
@@ -60,27 +72,37 @@ void ArmI2InOut(armInstr* ai)
         ins[ai].erase(mod_ai->rd);
         ins[ai].insert(mod_ai->r0);
         ins[ai].insert(mod_ai->r1); // 由于ssa处已经将三个操作数都确保成了寄存器，因此这里就不判断是否为立即数了
+        mod_ai->r0->gen_used.push_back(ai);
+        mod_ai->r1->gen_used.push_back(ai);
     }
     else if(ai->getType() == armInstr::armInsType::mov)
     {
         armMov* mov_ai = (armMov*)ai;
         ins[ai].erase(mov_ai->rd);
         if(notConst(mov_ai->rs))
+        {
             ins[ai].insert(mov_ai->rs);
+            mov_ai->rs->gen_used.push_back(ai);
+        }
     }
     else if(ai->getType() == armInstr::armInsType::cmp)
     {
         armCmp* cmp_ai = (armCmp*)ai;
         // cmp 指令没有kill集合，因此没有decl来erase，只有两个操作数来进行insert
         ins[ai].insert(cmp_ai->r0);
+        cmp_ai->r0->gen_used.push_back(ai);
         if(notConst(cmp_ai->r1))
+        {
             ins[ai].insert(cmp_ai->r1);
+            cmp_ai->r1->gen_used.push_back(ai);
+        }
     }
     else if(ai->getType() == armInstr::armInsType::str)
     {
         armStr* str_ai = (armStr*)ai;
         //str指令是的rd是gen集
         ins[ai].insert(str_ai->rd);
+        str_ai->rd->gen_used.push_back(ai);
     }
     else if(ai->getType() == armInstr::armInsType::ldr)
     {
@@ -96,6 +118,7 @@ void ArmI2InOut(armInstr* ai)
         for(auto r: call_ai->rs)
         {
             ins[ai].insert(r);
+            r->gen_used.push_back(ai);
         }
     }
     else if(ai->getType() == armInstr::armInsType::ret)
@@ -105,15 +128,22 @@ void ArmI2InOut(armInstr* ai)
         // rs is gen
         if(ret_ai->rs != NULL)
             if(notConst(ret_ai->rs))
+            {
                 ins[ai].insert(ret_ai->rs);
+                ret_ai->rs->gen_used.push_back(ai);
+            }
     }
     else if(ai->getType() == armInstr::rsb)
     {// r1 maybe imm/const, but r0 is var_decl for sure
         armRsb* rsb_ai = (armRsb*)ai;
         ins[ai].erase(rsb_ai->rd);
         ins[ai].insert(rsb_ai->r0);
+        rsb_ai->r0->gen_used.push_back(ai);
         if(notConst(rsb_ai->r1))
+        {
             ins[ai].insert(rsb_ai->r1);
+            rsb_ai->r1->gen_used.push_back(ai);
+        }
     }
 
 
