@@ -8,6 +8,7 @@
 #include"../include/ssa.h"
 #include"../include/liveSet.h"
 #include "../include/RIG.h"
+#include"op_cfgFrequency.h"
 
 //外部的lineno，行号信息
 extern int lineno;
@@ -44,21 +45,24 @@ int main(int argc, char *argv[])
     {
         show_node(Droot, 0); //打印AST
         semanticAnalyzer(Droot); // 从ast语义检查 + 构建符号表
-       show_SymbleTable(SymbolTable); // 打印符号表
+        show_SymbleTable(SymbolTable); // 打印符号表
         VisitAST(Droot, IR1); // 从ast：建立四元式 + 得出block的信息
         // cout << "\n\n"; show_block(globalBlock, 0);
         // Visitblock(IR1); // 删除空结点
-       show_IR_ins(IR1); // 打印指令
-    //    cout << "\n\n"; show_block(globalBlock, 0); // 打印基本块 （写注释啊啊啊啊啊啊 --neho
+        show_IR_ins(IR1); // 打印指令
 
         // SSA
-         getssa();//建立支配树以及支配边界 -->
+        getssa();//建立支配树以及支配边界 -->
         show_cfg();
+
+        // 计算每个block的frequency， 可以和上面一步的SSA并行
+        getFrequency(); // 是addMemoryOperation(RIG.cpp)的1.1
+
         // cout << "\n\n"; show_block(globalBlock, 0,nullptr,0); // 打印基本块，查看phi结点
-         liveSets();//重命名
+//         liveSets();//重命名
 
         // 寄存器分配：虚拟寄存器->realj寄存器。变量活性分析，建立冲突图；
-         RigsterAlloc();
+//         RigsterAlloc();
 
         // codegeneration();
         // 利用四元式和bb信息得出ssa_0

@@ -146,7 +146,9 @@ void getFrequency()
     // 调用接口
     // 1. 估算每一条边的转移概率, 以及对block编号
     for(auto gb: IR1->Blocks){
-        //TODO:init;
+        if(gb->domBlock.size() == 0)continue; // 全局变量跳过
+
+        // init
         x.clear();
         Fcnt=1;
         coefficientM.clear();
@@ -158,25 +160,46 @@ void getFrequency()
         for(auto i :exitB){
             addEdgeF(i,gb->domBlock[0],1.0);
         }
+//
+//        for(auto e: edgeF)
+//        {
+//            dbg(e.first, e.second, " ");
+//        }
 
         // 2. 根据转移概率列方程
         for(int i=0;i<gb->domBlock.size();i++){
             vector<double> tem;
             for(int j=0;j<gb->domBlock.size();j++)tem.push_back(0.0);
-            tem[i]=1.0;
+            tem[i]+=1.0;
             coefficientM.push_back(tem);
         }
         for(auto edge:edgeF){
             int v = block2id[edge.first.first];//start
             int u = block2id[edge.first.second];//end
-            coefficientM[v-1][u-1]=-edge.second;
+            coefficientM[u-1][v-1]-=edge.second;
+//            dbg(v, u, edge.second);
         }
         vector<double> tem;
         for(int i=0;i<gb->domBlock.size();i++)tem.push_back(0.0);
         tem[0]=1;coefficientM.push_back(tem);
+        for(int i=0;i<coefficientM.size();i++)x.push_back(0.0);
+        x[coefficientM.size() - 1]=1;
+
+//        for(auto i: coefficientM)
+//        {
+//            for(auto j: i)
+//            {
+//                cout << j <<"\t";
+//            }
+//            cout << "\n";
+//        }
+//        for(auto i: x)
+//        {
+//            cout << i <<"\t";
+//        }
+//        cout << endl;
+
         // 3. 解方程
-        for(int i=0;i<gb->domBlock.size();i++)x.push_back(0.0);
-        x[0]=-1;
         if(Gauss(coefficientM.size(),gb->domBlock.size(),coefficientM)){
             // 4. 给blockFrequency 赋值
             for(auto b:gb->domBlock){
@@ -185,7 +208,16 @@ void getFrequency()
             }
         }
         else{
-            dbg("大概率板子错了");
+            dbg("板子永远不会错！");
         }
     }
+
+    // for debug 打印fre
+    for(auto p: blockFrequency)
+    {
+        dbg(p.first->BlockName, p.second);
+        dbg(" ");
+    }
+
+
 }

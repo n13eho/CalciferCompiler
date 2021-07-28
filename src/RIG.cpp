@@ -1,5 +1,4 @@
 #include"RIG.h"
-#include"op_cfgFrequency.h"
 
 // input at liveSet.h
    /*map<BasicBlock*, vector<armInstr*>> newBlock;*/
@@ -382,8 +381,7 @@ void specialInsDelete(DomTreenode* sd)
  */
 void addMemoryOperation()
 {
-    getFrequency();
-    // dbg("calcing frequency win!");
+
 }
 
 bool buildRIG()
