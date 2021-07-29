@@ -10,6 +10,9 @@ map<BasicBlock*, string> block2lb;
 int Bcnt;
 string lb=".LB";
 int Rcnt;
+
+map<int, vector<Decl*>> Vreg2Decls;
+
 ///////////////
 ostream& operator<<(ostream&out,const armInstr& a){
     return a.output(out);

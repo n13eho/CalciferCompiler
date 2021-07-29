@@ -8,6 +8,7 @@
 using namespace std;
 class armInstr;
 
+
 /*
 Decl的type:
 1. const
@@ -36,6 +37,10 @@ class Decl {
     virtual int gettype(){return 0;}
 };
 
+
+extern map<int, vector<Decl*>> Vreg2Decls; // 寄存器编号对应的Decl*
+
+
 ostream& operator<<(ostream&out,const Decl& a);
 
 class constDecl:public Decl{
@@ -52,7 +57,9 @@ class constDecl:public Decl{
 class varDecl:public Decl{
     public:
     int Vreg;
-    varDecl(Value *_rawValue, BasicBlock *_rawBlock,int _Vreg):Decl(_rawValue,_rawBlock),Vreg(_Vreg){};
+    varDecl(Value *_rawValue, BasicBlock *_rawBlock,int _Vreg):Decl(_rawValue,_rawBlock),Vreg(_Vreg){
+        Vreg2Decls[Vreg].push_back(this);
+    };
     virtual ostream& output(ostream&out)const{
         out<<"r"<<Vreg;
         return out;
@@ -86,7 +93,9 @@ class addrDecl: public Decl{
     int Vreg;
     int bias=0;
     addrDecl(Value *_rawValue, BasicBlock *_rawBlock):Decl(_rawValue,_rawBlock){};
-    addrDecl(Value *_rawValue, BasicBlock *_rawBlock,int _Vreg):Decl(_rawValue,_rawBlock),Vreg(_Vreg){};
+    addrDecl(Value *_rawValue, BasicBlock *_rawBlock,int _Vreg):Decl(_rawValue,_rawBlock),Vreg(_Vreg){
+        Vreg2Decls[Vreg].push_back(this);
+    };
     virtual ostream& output(ostream&out)const{
         if(bias==0)out<<"[r"<<Vreg<<']';
         else out<<"[r"<<Vreg<<", #"<<bias<<"]";

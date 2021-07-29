@@ -7,10 +7,10 @@
 
 struct RIGnode
 {
-    Decl* dc;
+    int dc;
     vector<RIGnode*> connectTo;
 
-    explicit RIGnode(Decl* x){dc = x;}
+    explicit RIGnode(int x){dc = x;}
 };
 
 

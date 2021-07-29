@@ -5,17 +5,38 @@
 
 // output
 map<BasicBlock*, vector<RIGnode*>> RIG; // THE graph
-map<armInstr*, set<Decl*>> ins; // 每条arm指令对应的in集合，要记得清空
-map<armInstr*, set<Decl*>> outs; // 公用复用的out集合
+map<armInstr*, set<int>> ins; // 每条arm指令对应的in集合，要记得清空
+map<armInstr*, set<int>> outs; // 公用复用的out集合
 
 // visited block 每个顶层模块内的block
 map<BasicBlock*, bool> blockVisited;
-// created RIGnode 该decl是否已经创建了对应的RIGnode
-map<Decl*, bool> rigNodeCreated;
+// created RIGnode 该decl(现在是这个寄存器编号int)是否已经创建了对应的RIGnode
+map<int, bool> rigNodeCreated;
+// vregNumber 到 使用这个编号的decl 的集合，用于找到这些decl，来自LiveSet.cpp
+// 这是个临时用于转存的map
+map<int, vector<Decl*>> temp_Vreg2Decls;
+
+// 记录每一个寄存器编号（颜色）对应的spilling cost
+map<int, double> spilling_cost;
 
 bool notConst(Decl* d)
 {
     return d->gettype() != Decl::declType::const_decl;
+}
+
+int VregNumofDecl(Decl* d)
+{// 主要是返回这个decl对应的寄存器变化vreg；有vreg的只有两中decl，分别是var和address
+    if(d->gettype() == Decl::var_decl)
+    {
+        varDecl* var_d = (varDecl*)d;
+        return var_d->Vreg;
+    }
+    else if(d->gettype() == Decl::addr_decl)
+    {
+        addrDecl* add_d = (addrDecl*)d;
+        return add_d->Vreg;
+    }
+    return 789;
 }
 
 
@@ -25,63 +46,63 @@ void ArmI2InOut(armInstr* ai)
     {
         armAdd* add_ai = (armAdd*)ai; // 向子类塑性
         // out[s] - kill[s]
-        ins[ai].erase(add_ai->rd);
+        ins[ai].erase(VregNumofDecl(add_ai->rd));
         // gen[s] U (out[s] - kill[s])
-        ins[ai].insert(add_ai->r0);
+        ins[ai].insert(VregNumofDecl(add_ai->r0));
         add_ai->r0->gen_used.push_back(ai); // 图着色溢出的1.2
         // 当它只有是var register的时候才insert，否则就不insert
         if(notConst(add_ai->r1))
         {
-            ins[ai].insert(add_ai->r1);
+            ins[ai].insert(VregNumofDecl(add_ai->r1));
             add_ai->r1->gen_used.push_back(ai);
         }
     }
     else if(ai->getType() == armInstr::armInsType::sub)
     {
         armSub* sub_ai = (armSub*)ai;
-        ins[ai].erase(sub_ai->rd);
-        ins[ai].insert(sub_ai->r0);
+        ins[ai].erase(VregNumofDecl(sub_ai->rd));
+        ins[ai].insert(VregNumofDecl(sub_ai->r0));
         sub_ai->r0->gen_used.push_back(ai);
         if(notConst(sub_ai->r1))
         {
-            ins[ai].insert(sub_ai->r1);
+            ins[ai].insert(VregNumofDecl(sub_ai->r1));
             sub_ai->r1->gen_used.push_back(ai);
         }
     }
     else if(ai->getType() == armInstr::armInsType::mul)
     {
         armMul* mul_ai = (armMul*)ai;
-        ins[ai].erase(mul_ai->rd);
-        ins[ai].insert(mul_ai->r0);
-        ins[ai].insert(mul_ai->r1); // 由于ssa处已经将三个操作数都确保成了寄存器，因此这里就不判断是否为立即数了
+        ins[ai].erase(VregNumofDecl(mul_ai->rd));
+        ins[ai].insert(VregNumofDecl(mul_ai->r0));
+        ins[ai].insert(VregNumofDecl(mul_ai->r1)); // 由于ssa处已经将三个操作数都确保成了寄存器，因此这里就不判断是否为立即数了
         mul_ai->r0->gen_used.push_back(ai);
         mul_ai->r1->gen_used.push_back(ai);
     }
     else if(ai->getType() == armInstr::armInsType::div)
     {
         armDiv* div_ai = (armDiv*)ai;
-        ins[ai].erase(div_ai->rd);
-        ins[ai].insert(div_ai->r0);
-        ins[ai].insert(div_ai->r1); // 由于ssa处已经将三个操作数都确保成了寄存器，因此这里就不判断是否为立即数了
+        ins[ai].erase(VregNumofDecl(div_ai->rd));
+        ins[ai].insert(VregNumofDecl(div_ai->r0));
+        ins[ai].insert(VregNumofDecl(div_ai->r1)); // 由于ssa处已经将三个操作数都确保成了寄存器，因此这里就不判断是否为立即数了
         div_ai->r0->gen_used.push_back(ai);
         div_ai->r1->gen_used.push_back(ai);
     }
     else if(ai->getType() == armInstr::armInsType::mod)
     {
         armMod* mod_ai = (armMod*)ai;
-        ins[ai].erase(mod_ai->rd);
-        ins[ai].insert(mod_ai->r0);
-        ins[ai].insert(mod_ai->r1); // 由于ssa处已经将三个操作数都确保成了寄存器，因此这里就不判断是否为立即数了
+        ins[ai].erase(VregNumofDecl(mod_ai->rd));
+        ins[ai].insert(VregNumofDecl(mod_ai->r0));
+        ins[ai].insert(VregNumofDecl(mod_ai->r1)); // 由于ssa处已经将三个操作数都确保成了寄存器，因此这里就不判断是否为立即数了
         mod_ai->r0->gen_used.push_back(ai);
         mod_ai->r1->gen_used.push_back(ai);
     }
     else if(ai->getType() == armInstr::armInsType::mov)
     {
         armMov* mov_ai = (armMov*)ai;
-        ins[ai].erase(mov_ai->rd);
+        ins[ai].erase(VregNumofDecl(mov_ai->rd));
         if(notConst(mov_ai->rs))
         {
-            ins[ai].insert(mov_ai->rs);
+            ins[ai].insert(VregNumofDecl(mov_ai->rs));
             mov_ai->rs->gen_used.push_back(ai);
         }
     }
@@ -89,11 +110,11 @@ void ArmI2InOut(armInstr* ai)
     {
         armCmp* cmp_ai = (armCmp*)ai;
         // cmp 指令没有kill集合，因此没有decl来erase，只有两个操作数来进行insert
-        ins[ai].insert(cmp_ai->r0);
+        ins[ai].insert(VregNumofDecl(cmp_ai->r0));
         cmp_ai->r0->gen_used.push_back(ai);
         if(notConst(cmp_ai->r1))
         {
-            ins[ai].insert(cmp_ai->r1);
+            ins[ai].insert(VregNumofDecl(cmp_ai->r1));
             cmp_ai->r1->gen_used.push_back(ai);
         }
     }
@@ -101,14 +122,14 @@ void ArmI2InOut(armInstr* ai)
     {
         armStr* str_ai = (armStr*)ai;
         //str指令是的rd是gen集
-        ins[ai].insert(str_ai->rd);
+        ins[ai].insert(VregNumofDecl(str_ai->rd));
         str_ai->rd->gen_used.push_back(ai);
     }
     else if(ai->getType() == armInstr::armInsType::ldr)
     {
         armLdr* ldr_ai = (armLdr*)ai;
         //ldr指令是的rd是kill集
-        ins[ai].erase(ldr_ai->rd);
+        ins[ai].erase(VregNumofDecl(ldr_ai->rd));
     }
     else if(ai->getType() == armInstr::armInsType::call)
     {
@@ -117,7 +138,7 @@ void ArmI2InOut(armInstr* ai)
         // rs内全是gen
         for(auto r: call_ai->rs)
         {
-            ins[ai].insert(r);
+            ins[ai].insert(VregNumofDecl(r));
             r->gen_used.push_back(ai);
         }
     }
@@ -129,19 +150,19 @@ void ArmI2InOut(armInstr* ai)
         if(ret_ai->rs != NULL)
             if(notConst(ret_ai->rs))
             {
-                ins[ai].insert(ret_ai->rs);
+                ins[ai].insert(VregNumofDecl(ret_ai->rs));
                 ret_ai->rs->gen_used.push_back(ai);
             }
     }
     else if(ai->getType() == armInstr::rsb)
     {// r1 maybe imm/const, but r0 is var_decl for sure
         armRsb* rsb_ai = (armRsb*)ai;
-        ins[ai].erase(rsb_ai->rd);
-        ins[ai].insert(rsb_ai->r0);
+        ins[ai].erase(VregNumofDecl(rsb_ai->rd));
+        ins[ai].insert(VregNumofDecl(rsb_ai->r0));
         rsb_ai->r0->gen_used.push_back(ai);
         if(notConst(rsb_ai->r1))
         {
-            ins[ai].insert(rsb_ai->r1);
+            ins[ai].insert(VregNumofDecl(rsb_ai->r1));
             rsb_ai->r1->gen_used.push_back(ai);
         }
     }
@@ -196,10 +217,10 @@ void showSets(DomTreenode* dn)
 //        dbg(ins[arm_ins].size());
         cout << "\tins: ";
         for(auto in_decl: ins[arm_ins])
-            cout << *in_decl << " ";
+            cout << "r" << in_decl << " ";
         cout << "\touts: ";
         for(auto out_decl: outs[arm_ins])
-            cout << *out_decl << " ";
+            cout << "r"  << out_decl << " ";
         cout << "\n";
     }
     // 递归打印剩下的
@@ -209,7 +230,7 @@ void showSets(DomTreenode* dn)
     }
 }
 
-RIGnode* ForCnode(Decl* d, BasicBlock* gb)
+RIGnode* ForCnode(int d, BasicBlock* gb)
 {
     RIGnode* ret_n;
     if(rigNodeCreated[d])
@@ -242,7 +263,7 @@ void connectDecl(DomTreenode* dn, BasicBlock* gb)
         {
             // 1 新建/找到存在的node
             // 如果该decl已经建立了RIGnode，则不再建立，否则建立
-            auto* n = ForCnode(in_decl, gb);
+            RIGnode* n = ForCnode(in_decl, gb);
 
             // 2 建立映射
             for(auto other_decl: ins[arm_ins])
@@ -307,7 +328,7 @@ bool paintColor(BasicBlock* gb){
     //1.1random
     random_shuffle(s_point.begin(),s_point.end());
     //1.2 add s_point
-    colors[s_point[0]]=1;
+    colors[s_point[0]]=usedK == 0 ? ++usedK : 1; // 非联通的图可以重新使用1
     que.push(s_point[0]);
     //2. BFS coloring
     while(!que.empty()){
@@ -346,8 +367,8 @@ void deleteDC(DomTreenode* dn, BasicBlock* gb)
         {
             findDc = false;
             for(auto rn: RIG[gb])
-            {// 如果该左值没有出现在RIG[gb]中，就删除这条指令
-                if(rn->dc == (*it)->rd)
+            {// 找该指令的左值是否出现在RIG[gb]中，如果该左值没有出现在RIG[gb]中，就删除这条指令
+                if(rn->dc == VregNumofDecl((*it)->rd))
                 {
                     findDc = true;
                     break;
@@ -363,21 +384,6 @@ void deleteDC(DomTreenode* dn, BasicBlock* gb)
     // 递归删除剩下后继块的死代码
     for(auto nx: dn->son)
         deleteDC(nx, gb);
-}
-
-int VregNumofDecl(Decl* d)
-{// 主要是返回这个decl对应的寄存器变化vreg；有vreg的只有两中decl，分别是var和address
-    if(d->gettype() == Decl::var_decl)
-    {
-        varDecl* var_d = (varDecl*)d;
-        return var_d->Vreg;
-    }
-    else if(d->gettype() == Decl::addr_decl)
-    {
-        addrDecl* add_d = (addrDecl*)d;
-        return add_d->Vreg;
-    }
-    return 789;
 }
 
 void specialInsDelete(DomTreenode* sd)
@@ -403,8 +409,12 @@ void specialInsDelete(DomTreenode* sd)
 
 void spillCost(BasicBlock* gb){
     for(auto node: RIG[gb]){
-        auto dc= node->dc;
-        dc->spill_cost = blockFrequency[dc->rawBlock]*dc->gen_used.size();
+        auto dc_vreg= node->dc;
+        spilling_cost[dc_vreg] = 0; // 清零
+        for(auto dc: Vreg2Decls[dc_vreg])
+        {
+            spilling_cost[dc_vreg] += blockFrequency[dc->rawBlock] * (double)dc->gen_used.size();
+        }
     }
 }
 /*
@@ -420,18 +430,22 @@ void spillCost(BasicBlock* gb){
  *
  */
 
-Decl* chosenOne;
 
+// cost最小的寄存器编号
+int chosenOne;
 
 void addMemoryOperation(BasicBlock* gb)
 {
+    // 计算cost
     spillCost(gb);
+
+    // 选出cost最小的dc
     double mincost = 1e18;
     for(auto node : RIG[gb]){
-        Decl* dc= node->dc;
-        if(dc->spill_cost<mincost){
-            mincost = dc->spill_cost;
-            chosenOne = dc;
+        int dc_vreg= node->dc;
+        if(spilling_cost[dc_vreg]<mincost){
+            mincost = spilling_cost[dc_vreg];
+            chosenOne = dc_vreg;
         }
     }
 }
@@ -440,18 +454,43 @@ void changeVreg()
 {
     for(auto rigN: colors)
     {
-        Decl* dc = rigN.first->dc;
-        if(dc->gettype() == Decl::declType::var_decl)
-        { // 变量 是存在register里面的
-            varDecl* var_dc = (varDecl*)dc;
-            var_dc->Vreg = rigN.second - 1;
+        int dc_vreg = rigN.first->dc;
+
+        for(auto dc: Vreg2Decls[dc_vreg])
+        {// 就将每一个decl的vreg批量改了
+            if(dc->gettype() == Decl::declType::var_decl)
+            { // 变量 是存在register里面的
+                varDecl* var_dc = (varDecl*)dc;
+                var_dc->Vreg = rigN.second - 1;
+            }
+            else if(dc->gettype() == Decl::declType::addr_decl)
+            { // 地址 也是存在register里面的
+                addrDecl* mem_dc = (addrDecl*)dc;
+                mem_dc->Vreg = rigN.second - 1;
+            }
         }
-        else if(dc->gettype() == Decl::declType::addr_decl)
-        { // 地址 也是存在register里面的
-            addrDecl* mem_dc = (addrDecl*)dc;
-            mem_dc->Vreg = rigN.second - 1;
+
+
+    }
+}
+
+void updateV2Ds()
+{
+     // init
+    temp_Vreg2Decls.clear();
+
+    // 存入temp_Vreg2Decls
+    for(auto p: Vreg2Decls)
+    {
+        for(auto dc: p.second)
+        {
+            temp_Vreg2Decls[VregNumofDecl(dc)].push_back(dc);
         }
     }
+
+    // deep copy
+    Vreg2Decls.clear();
+    Vreg2Decls.insert(temp_Vreg2Decls.begin(), temp_Vreg2Decls.end());
 }
 
 
@@ -476,7 +515,7 @@ bool buildRIG(BasicBlock* gb)
         int times_RIG = 5;
         while(times_RIG--)
             fillInOut(gb->domBlock[0]);
-        dbg("neho -- fill in/out sets");
+//        dbg("neho -- fill in/out sets");
 
         // 2.5 for debug 先临时打印一下这些个in 和 out
 //            cout << "**** IN&OUT set of every armIns ****\n";
@@ -486,23 +525,25 @@ bool buildRIG(BasicBlock* gb)
         // 3 利用填好的in、out集合，建立冲突图，也是一个递归的过程
         for(auto dr: DomRoot)
             connectDecl(dr, gb);
-        dbg("neho -- RIG created");
+//        dbg("neho -- RIG created");
 
         // 4 deleting dead code
         for(auto dr: DomRoot)
             deleteDC(dr, gb);
-        dbg("---------------------------------------");
-        for(auto dr: DomRoot)
-            showDecl(dr);
+//        dbg("---------------------------------------");
+//        for(auto dr: DomRoot)
+//            showDecl(dr);
     }
+    dbg("neho -- fill in/out sets");
+    dbg("neho -- RIG created");
     // 3.5 for debug 打印整张图看看
     cout << "**** the RIG of " << gb->BlockName <<  "****\n";
     for(auto dnode: RIG[gb])
     {
-        cout << *dnode->dc << "\t";
+        cout << "r" << dnode->dc << "\t";
         for(auto con_node: dnode->connectTo)
         {
-            cout << *con_node->dc << " ";
+            cout << "r" << con_node->dc << " ";
         }
         cout << "\n";
     }
@@ -510,21 +551,30 @@ bool buildRIG(BasicBlock* gb)
 
     // 5. filling colors!
     int success=0;
+    trytimes = 5;
     while(trytimes--){
         init_color();
+        dbg(trytimes);
         if(paintColor(gb)){
-            //如果使用颜色过多就再试一次
-            if(usedK>K)continue;
-            // 4.1 遍历color map，修改Vreg
-            break;
+            //如果成功了就break; 否则使用颜色过多就再试一次（最多5次）
+            if(usedK <= K)break;
         }
     }
+
+    // 4.1 遍历color map，修改Vreg
     changeVreg();
+
+    // 跟新Vreg2Decls
+    updateV2Ds();
+
     // 此条不专门针对 mov r0, r0; TODO：之后可以在里面加上针对其他ir指令的优化
     specialInsDelete(block2dom[gb->domBlock[0]]);
-    if(usedK>K){
+    dbg("specialIns Deleted");
+
+    if(usedK>K){ // 染色失败
         return false;
     }
+    dbg("染色成功！");
     return true;
 }
 
@@ -536,7 +586,7 @@ void RigsterAlloc()
         // 跳过第一个全局变量，core dump，可能有隐患
         if(gb->domBlock.size() == 0)continue;
         while(!buildRIG(gb)){
-            dbg("Badly!");
+            dbg("染色失败！");
             //TODO: 如果图着色失败了，add memory operation.
             addMemoryOperation(gb);
         }
