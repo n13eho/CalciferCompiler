@@ -271,9 +271,11 @@ map<RIGnode*, int> colors;
 queue<RIGnode*> que;//queue of filling color with BFS
 
 const int K = 3;// number of Rigster
+int usedK;
 
 void init_color()
 {
+    usedK =0;
     colors.clear();
 }
 
@@ -316,14 +318,16 @@ bool paintColor(BasicBlock* gb){
         for(auto nx:now->connectTo){
             //对nx尝试每一种颜色
             if(colors[nx])continue;
-            for(int i=1;i<=K;i++){
+            for(int i=1;i<=usedK;i++){
                 if(check_ok(nx,i)){
                     colors[nx]=i;
                     que.push(nx);
                     break;
                 }
             }
-            if(colors[nx]==0)return false;
+            if(colors[nx]==0){
+                colors[nx]=++usedK;
+            }
         }
     }
     for(auto node: RIG[gb]){
@@ -418,6 +422,7 @@ void spillCost(BasicBlock* gb){
 
 Decl* chosenOne;
 
+
 void addMemoryOperation(BasicBlock* gb)
 {
     spillCost(gb);
@@ -431,106 +436,111 @@ void addMemoryOperation(BasicBlock* gb)
     }
 }
 
-bool buildRIG()
+void changeVreg()
+{
+    for(auto rigN: colors)
+    {
+        Decl* dc = rigN.first->dc;
+        if(dc->gettype() == Decl::declType::var_decl)
+        { // 变量 是存在register里面的
+            varDecl* var_dc = (varDecl*)dc;
+            var_dc->Vreg = rigN.second - 1;
+        }
+        else if(dc->gettype() == Decl::declType::addr_decl)
+        { // 地址 也是存在register里面的
+            addrDecl* mem_dc = (addrDecl*)dc;
+            mem_dc->Vreg = rigN.second - 1;
+        }
+    }
+}
+
+
+bool buildRIG(BasicBlock* gb)
 {
     srand(time(0));
-    // 对于每个顶层块（除了第一个全局模块），都应该对应一个RIG图
-    for(auto gb: IR1->Blocks)
+    // 1 init: clear the ins and outs sets
+    dbg("neho -- init: clear sets and graph");
+
+    int times_deadCode = 10;
+    while(times_deadCode--)
     {
-        // 跳过第一个全局变量，core dump，可能有隐患
-        if(gb->domBlock.size() == 0)continue;
+        // 1.5 init clear out
+        for(auto node:RIG[gb]){free(node);}
+        RIG[gb].clear();
+        blockVisited.clear();
+        rigNodeCreated.clear();
+        ins.clear();
+        outs.clear();
 
-        // 1 init: clear the ins and outs sets
-        dbg("neho -- init: clear sets and graph");
+        // 2 开始从第一个domblock递归，填满in 和 out 集合
+        int times_RIG = 5;
+        while(times_RIG--)
+            fillInOut(gb->domBlock[0]);
+        dbg("neho -- fill in/out sets");
 
-        int times_deadCode = 10;
-        while(times_deadCode--)
-        {
-            // 1.5 init clear out
-            for(auto node:RIG[gb]){free(node);}
-            RIG[gb].clear();
-            blockVisited.clear();
-            rigNodeCreated.clear();
-            ins.clear();
-            outs.clear();
-
-            // 2 开始从第一个domblock递归，填满in 和 out 集合
-            int times_RIG = 5;
-            while(times_RIG--)
-                fillInOut(gb->domBlock[0]);
-            dbg("neho -- fill in/out sets");
-
-            // 2.5 for debug 先临时打印一下这些个in 和 out
+        // 2.5 for debug 先临时打印一下这些个in 和 out
 //            cout << "**** IN&OUT set of every armIns ****\n";
 //            for(auto dr: DomRoot)
 //                showSets(dr);
 
-            // 3 利用填好的in、out集合，建立冲突图，也是一个递归的过程
-            for(auto dr: DomRoot)
-                connectDecl(dr, gb);
-            dbg("neho -- RIG created");
+        // 3 利用填好的in、out集合，建立冲突图，也是一个递归的过程
+        for(auto dr: DomRoot)
+            connectDecl(dr, gb);
+        dbg("neho -- RIG created");
 
-            // 4 deleting dead code
-            for(auto dr: DomRoot)
-                deleteDC(dr, gb);
-            dbg("---------------------------------------");
-            for(auto dr: DomRoot)
-                showDecl(dr);
-        }
-        // 3.5 for debug 打印整张图看看
-        cout << "**** the RIG of " << gb->BlockName <<  "****\n";
-        for(auto dnode: RIG[gb])
+        // 4 deleting dead code
+        for(auto dr: DomRoot)
+            deleteDC(dr, gb);
+        dbg("---------------------------------------");
+        for(auto dr: DomRoot)
+            showDecl(dr);
+    }
+    // 3.5 for debug 打印整张图看看
+    cout << "**** the RIG of " << gb->BlockName <<  "****\n";
+    for(auto dnode: RIG[gb])
+    {
+        cout << *dnode->dc << "\t";
+        for(auto con_node: dnode->connectTo)
         {
-            cout << *dnode->dc << "\t";
-            for(auto con_node: dnode->connectTo)
-            {
-                cout << *con_node->dc << " ";
-            }
-            cout << "\n";
+            cout << *con_node->dc << " ";
         }
-        dbg("neho -- show RIG win");
+        cout << "\n";
+    }
+    dbg("neho -- show RIG win");
 
-        // 5. filling colors!
-        int success=0;
-        while(trytimes--){
-            init_color();
-            if(paintColor(gb)){
-                // 4.1 遍历color map，修改Vreg
-                for(auto rigN: colors)
-                {
-                    Decl* dc = rigN.first->dc;
-                    if(dc->gettype() == Decl::declType::var_decl)
-                    { // 变量 是存在register里面的
-                        varDecl* var_dc = (varDecl*)dc;
-                        var_dc->Vreg = rigN.second - 1;
-                    }
-                    else if(dc->gettype() == Decl::declType::addr_decl)
-                    { // 地址 也是存在register里面的
-                        addrDecl* mem_dc = (addrDecl*)dc;
-                        mem_dc->Vreg = rigN.second - 1;
-                    }
-                }
-                success=1;
-                break;
-            }
+    // 5. filling colors!
+    int success=0;
+    while(trytimes--){
+        init_color();
+        if(paintColor(gb)){
+            //如果使用颜色过多就再试一次
+            if(usedK>K)continue;
+            // 4.1 遍历color map，修改Vreg
+            break;
         }
-        if(success==0){
-            dbg("Badly!");
-            //TODO: 如果图着色失败了，add memory operation.
-            addMemoryOperation(gb);
-            return false;
-        }
+    }
+    changeVreg();
+    // 此条不专门针对 mov r0, r0; TODO：之后可以在里面加上针对其他ir指令的优化
+    specialInsDelete(block2dom[gb->domBlock[0]]);
+    if(usedK>K){
+        return false;
     }
     return true;
 }
 
 void RigsterAlloc()
 {
-    if(!buildRIG());
-
-    // 此条不专门针对 mov r0, r0; TODO：之后可以在里面加上针对其他ir指令的优化
-    for(auto dr: DomRoot)
-        specialInsDelete(dr);
+    // 对于每个顶层块（除了第一个全局模块），都应该对应一个RIG图
+    for(auto gb: IR1->Blocks)
+    {
+        // 跳过第一个全局变量，core dump，可能有隐患
+        if(gb->domBlock.size() == 0)continue;
+        while(!buildRIG(gb)){
+            dbg("Badly!");
+            //TODO: 如果图着色失败了，add memory operation.
+            addMemoryOperation(gb);
+        }
+    }
 
     // final show instruction agian, this time with limited k registers
     cout << "****winwin Arm Instruction with limited Registers ****\n";

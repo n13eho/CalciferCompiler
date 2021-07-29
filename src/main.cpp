@@ -59,10 +59,10 @@ int main(int argc, char *argv[])
         getFrequency(); // 是addMemoryOperation(RIG.cpp)的1.1
 
         // cout << "\n\n"; show_block(globalBlock, 0,nullptr,0); // 打印基本块，查看phi结点
-//         liveSets();//重命名
+        liveSets();//重命名
 
         // 寄存器分配：虚拟寄存器->realj寄存器。变量活性分析，建立冲突图；
-//         RigsterAlloc();
+        RigsterAlloc();
 
         // codegeneration();
         // 利用四元式和bb信息得出ssa_0
