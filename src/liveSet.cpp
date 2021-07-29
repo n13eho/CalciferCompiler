@@ -619,6 +619,7 @@ void liveSets()
     dbg("syy -- show super arm win!");
 
     for(auto gb:IR1->Blocks){
+        if(gb->domBlock.size()==0)continue;
         FunctionValue* func = gb->FuncV;
         if(func->getParamCnt()>4)gblock2spbias[gb]=(func->getParamCnt()-4); //TODO：数组的话,  再说
     }

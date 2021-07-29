@@ -452,23 +452,29 @@ void addMemoryOperation(BasicBlock* gb)
     memoryDecl* memShift = new memoryDecl(nullptr,gb,++gblock2spbias[gb]);
     for(auto b : gb->domBlock){
         for(auto it = newBlock[b].begin();it!=newBlock[b].end();it++){
-            auto ins = *it;
-            //是否要加str
-            if(ins->rd != nullptr && VregNumofDecl(ins->rd)==chosenOne && ins->getType()!=armInstr::str){
-                armStr* str_ins= new armStr();
-                str_ins->rd = ins->rd;
-                str_ins->rs = memShift;
-                newBlock[b].insert(it+1,str_ins);
-            }
+            dbg(**it);
+            auto arm_ins = *it;
+
             //是否要加ldr
-            vector<Decl*> rs = ins->getGen();
+            vector<Decl*> rs = arm_ins->getGen();
             for(auto dc : rs){
                 if(VregNumofDecl(dc)==chosenOne){
                     armLdr* ldr_ins= new armLdr();
                     ldr_ins->rd = dc;
                     ldr_ins->rs = memShift;
-                    newBlock[b].insert(it,ldr_ins);
+                    newBlock[b].insert(it++,ldr_ins);
+                    dbg(**it);
                 }
+            }
+
+            //是否要加str
+            if(arm_ins->rd != nullptr && VregNumofDecl(arm_ins->rd)==chosenOne && arm_ins->getType()!=armInstr::str){
+                armStr* str_ins= new armStr();
+                str_ins->rd = arm_ins->rd;
+                str_ins->rs = memShift;
+                newBlock[b].insert(++it,str_ins);
+//                dbg(**it);
+
             }
         }
     }
@@ -614,6 +620,14 @@ void RigsterAlloc()
             if(whenToadd++ > WHENTOMO)
                 addMemoryOperation(gb);
             dbg(chosenOne);
+            // 打印cost
+            for(auto p: spilling_cost)
+            {
+                cout << p.first <<"\t" << p.second <<endl;
+            }
+
+            for(auto dr: DomRoot)
+                showDecl(dr);
         }
     }
 
