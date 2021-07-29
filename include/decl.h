@@ -237,6 +237,12 @@ class armStr:public armInstr{//ok
         }
         return out;
     }
+    virtual vector<Decl*> getGen()
+    {
+        vector<Decl*> tem;
+        tem.push_back(rd);
+        return tem;
+    }
 };
 class armB:public armInstr{//no need for RIG trans of IN/OUT set
     public:
@@ -318,6 +324,13 @@ class armCmp:public armInstr{//ok
         out<<"cmp "<<*r0<<", "<<*r1;
         return out;
     }
+    virtual vector<Decl*> getGen()
+    {
+        vector<Decl*> tem;
+        tem.push_back(r0);
+        tem.push_back(r1);
+        return tem;
+    }
 };
 
 class armMov:public armInstr{//ok
@@ -328,6 +341,12 @@ class armMov:public armInstr{//ok
     {
         out<<"mov "<<*rd<<", "<<*rs;
         return out;
+    }
+    virtual vector<Decl*> getGen()
+    {
+        vector<Decl*> tem;
+        tem.push_back(rs);
+        return tem;
     }
 };
 
