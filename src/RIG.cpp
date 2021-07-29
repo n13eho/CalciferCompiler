@@ -461,16 +461,17 @@ void addMemoryOperation(BasicBlock* gb)
                 newBlock[b].insert(it+1,str_ins);
             }
             //是否要加ldr
-            
+            vector<Decl*> rs = ins->getGen();
+            for(auto dc : rs){
+                if(VregNumofDecl(dc)==chosenOne){
+                    armLdr* ldr_ins= new armLdr();
+                    ldr_ins->rd = dc;
+                    ldr_ins->rs = memShift;
+                    newBlock[b].insert(it,ldr_ins);
+                }
+            }
         }
     }
-    // for(auto dc : Vreg2Decls[chosenOne]){
-    //     //计算chosenOne的偏移量
-    //     memoryDecl* memShift = new memoryDecl(dc->rawValue,dc->rawBlock,++gblock2spbias[gb]);
-    //     //找dc在哪里定义
-    //     for(auto ins: )
-    // }
-    
 }
 
 void changeVreg()
@@ -604,8 +605,6 @@ void RigsterAlloc()
     // 对于每个顶层块（除了第一个全局模块），都应该对应一个RIG图
     for(auto gb: IR1->Blocks)
     {
-        
-
         // 跳过第一个全局变量，core dump，可能有隐患
         if(gb->domBlock.size() == 0)continue;
         int whenToadd = 0;
@@ -614,10 +613,7 @@ void RigsterAlloc()
             //TODO: 如果图着色失败了，add memory operation.
             if(whenToadd++ > WHENTOMO)
                 addMemoryOperation(gb);
-            for(auto p: spilling_cost)
-            {
-                cout << p.first << " " << p.second << endl;
-            }
+            dbg(chosenOne);
         }
     }
 
