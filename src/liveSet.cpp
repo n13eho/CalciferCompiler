@@ -7,6 +7,7 @@ output: newIR
 */
 
 map<BasicBlock*, string> block2lb;
+map<BasicBlock*, int> gblock2spbias;
 int Bcnt;
 string lb=".LB";
 int Rcnt;
@@ -144,6 +145,7 @@ void assignLdr(Instruction* instr, BasicBlock* node)
     else if(rdval->isPara>4){
         //形参也可以写全
         memoryDecl* rs = new memoryDecl(rdval, node);
+
         //第5个形参放在sp-4的位置, 第6个形参放在sp-8的位置, 依此类推...
         int id=rdval->isPara-4;
         rs->bias = id*(-4);
@@ -550,8 +552,10 @@ void setUsed(BasicBlock* s)
 void showDecl(DomTreenode* sd)
 {
     BasicBlock* s=sd->block;
-    cout<<block2lb[s]<<endl;
+    cout<<endl;
+    cout<<block2lb[s]<<':'<<endl;
     for(auto ins:newBlock[s]){
+        cout<<'\t';
         cout<<*ins<<endl;
     }
     for(auto nx:sd->son){
@@ -613,4 +617,9 @@ void liveSets()
         showDecl(rt);
     }
     dbg("syy -- show super arm win!");
+
+    for(auto gb:IR1->Blocks){
+        FunctionValue* func = gb->FuncV;
+        if(func->getParamCnt()>4)gblock2spbias[gb]=(func->getParamCnt()-4); //TODO：数组的话,  再说
+    }
 }
