@@ -79,11 +79,11 @@ class globalDecl: public Decl{
 };
 class memoryDecl: public Decl{
     public:
-    int bias;//以sp为标准, 有正负, 输出时不乘四...
+    int bias;//以sp为标准, 有正负;
     memoryDecl(Value *_rawValue, BasicBlock *_rawBlock):Decl(_rawValue,_rawBlock){};
     memoryDecl(Value *_rawValue, BasicBlock *_rawBlock,int _bias):Decl(_rawValue,_rawBlock),bias(_bias){};
     virtual ostream& output(ostream&out)const{
-        out<<"[sp,#"<<bias<<']';
+        out<<"[sp,#"<<bias*4<<']';
         return out;
     }
     virtual int gettype(){return 4;}
@@ -113,6 +113,7 @@ class armInstr{
         return out;
     }
     virtual int getType(){return 0;}
+    virtual vector<Decl*> getGen(){vector<Decl*> tem;return tem;}
 };
 ostream& operator<<(ostream&out,const armInstr& a);
 
@@ -126,6 +127,13 @@ class armAdd:public armInstr//ok
         out<<"add "<<*rd<<", "<<*r0<<", "<<*r1;
         return out;
     }
+    virtual vector<Decl*> getGen()
+    {
+        vector<Decl*> tem;
+        tem.push_back(r0);
+        tem.push_back(r1);
+        return tem;
+    }
 };
 
 class armSub:public armInstr//ok
@@ -138,6 +146,13 @@ class armSub:public armInstr//ok
         out<<"sub "<<*rd<<", "<<*r0<<", "<<*r1;
         return out;
     }
+    virtual vector<Decl*> getGen()
+    {
+        vector<Decl*> tem;
+        tem.push_back(r0);
+        tem.push_back(r1);
+        return tem;
+    }
 };
 class armRsb:public armInstr//ok
 {// r1 maybe imm/const, but r0 is var_decl for sure
@@ -148,6 +163,13 @@ class armRsb:public armInstr//ok
     {
         out<<"rsb "<<*rd<<", "<<*r0<<", "<<*r1;
         return out;
+    }
+    virtual vector<Decl*> getGen()
+    {
+        vector<Decl*> tem;
+        tem.push_back(r0);
+        tem.push_back(r1);
+        return tem;
     }
 };
 
@@ -160,6 +182,13 @@ class armMul:public armInstr{//ok
         out<<"mul "<<*rd<<", "<<*r0<<", "<<*r1;
         return out;
     }
+    virtual vector<Decl*> getGen()
+    {
+        vector<Decl*> tem;
+        tem.push_back(r0);
+        tem.push_back(r1);
+        return tem;
+    }
 
 };
 class armDiv:public armInstr{//ok   In this ir, leave it like this
@@ -171,6 +200,13 @@ public:
         out << "div " << *rd << ", " << *r0 << ", " << *r1;
         return out;
     }
+    virtual vector<Decl*> getGen()
+    {
+        vector<Decl*> tem;
+        tem.push_back(r0);
+        tem.push_back(r1);
+        return tem;
+    }
 };
 class armMod:public armInstr{//ok   In this ir, leave it like this
 public:
@@ -180,6 +216,13 @@ public:
     {
         out << "mod " << *rd << ", " << *r0 << ", " << *r1;
         return out;
+    }
+    virtual vector<Decl*> getGen()
+    {
+        vector<Decl*> tem;
+        tem.push_back(r0);
+        tem.push_back(r1);
+        return tem;
     }
 };
 class armRet:public armInstr//ok
@@ -195,6 +238,12 @@ class armRet:public armInstr//ok
         out<<"bx lr";
         return out;
     }
+    virtual vector<Decl*> getGen()
+    {
+        vector<Decl*> tem;
+        tem.push_back(rs);
+        return tem;
+    }
 };
 class armCall:public armInstr{//ok
     public:
@@ -208,6 +257,10 @@ class armCall:public armInstr{//ok
             out<<*r<<" ";
         }
         return out;
+    }
+    virtual vector<Decl*> getGen()
+    {
+        return rs;
     }
 };
 class armLdr:public armInstr{//ok??????????? //TODO: now array is different!

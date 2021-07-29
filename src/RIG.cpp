@@ -39,7 +39,6 @@ int VregNumofDecl(Decl* d)
     return 789;
 }
 
-
 void ArmI2InOut(armInstr* ai)
 {//根据类型，找出每一条语句的in集合
     if(ai->getType() == armInstr::armInsType::add)
@@ -376,7 +375,6 @@ void deleteDC(DomTreenode* dn, BasicBlock* gb)
             }
             if(!findDc)
             {// 没找到这个dc就删除这条指令
-//                dbg(**it);
                 newBlock[b].erase(it--);
             }
         }
@@ -407,6 +405,23 @@ void specialInsDelete(DomTreenode* sd)
     }
 }
 
+/*
+ * 1 挑选哪个node出来
+ * 计算每个node的spill cost，选出cost最小的
+ * 计算spillCost算法：
+ * 1.1 计算frequency of each block map_frequen<basicBlock* b, double frequency>
+ * 1.2 在建立IN/OUT集合的时候就记录每个decl出现在gen集合中的次数，并记录，用dc->gen_used
+ * 1.3 map_frequen[dc->rawBlock] * dc->gen_used.size() 得到最终的cost， 存入dc->spill_cost
+ * 1.4 通过RIG图 遍历所有decl 找出cost最小的
+ *
+ * 2 挑出来之后...
+ * 加指令：在定义之后加str；在要使用之前加ldr，使用之后也要加str
+    - var to memery
+    - global to 段
+ */
+int chosenOne = -1;
+// cost最小的寄存器编号
+
 void spillCost(BasicBlock* gb){
     for(auto node: RIG[gb]){
         auto dc_vreg= node->dc;
@@ -419,22 +434,6 @@ void spillCost(BasicBlock* gb){
         }
     }
 }
-/*
- * 1 挑选哪个node出来
- * 计算每个node的spill cost，选出cost最小的
- * 计算spillCost算法：
- * 1.1 计算frequency of each block map_frequen<basicBlock* b, double frequency>
- * 1.2 在建立IN/OUT集合的时候就记录每个decl出现在gen集合中的次数，并记录，用dc->gen_used
- * 1.3 map_frequen[dc->rawBlock] * dc->gen_used.size() 得到最终的cost， 存入dc->spill_cost
- * 1.4 通过RIG图 遍历所有decl 找出cost最小的
- *
- * 2 挑出来之后...
- *
- */
-
-
-// cost最小的寄存器编号
-int chosenOne = -1;
 
 void addMemoryOperation(BasicBlock* gb)
 {
@@ -450,6 +449,28 @@ void addMemoryOperation(BasicBlock* gb)
             chosenOne = dc_vreg;
         }
     }
+    memoryDecl* memShift = new memoryDecl(nullptr,gb,++gblock2spbias[gb]);
+    for(auto b : gb->domBlock){
+        for(auto it = newBlock[b].begin();it!=newBlock[b].end();it++){
+            auto ins = *it;
+            //是否要加str
+            if(ins->rd != nullptr && VregNumofDecl(ins->rd)==chosenOne && ins->getType()!=armInstr::str){
+                armStr* str_ins= new armStr();
+                str_ins->rd = ins->rd;
+                str_ins->rs = memShift;
+                newBlock[b].insert(it+1,str_ins);
+            }
+            //是否要加ldr
+            
+        }
+    }
+    // for(auto dc : Vreg2Decls[chosenOne]){
+    //     //计算chosenOne的偏移量
+    //     memoryDecl* memShift = new memoryDecl(dc->rawValue,dc->rawBlock,++gblock2spbias[gb]);
+    //     //找dc在哪里定义
+    //     for(auto ins: )
+    // }
+    
 }
 
 void changeVreg()
@@ -517,7 +538,6 @@ bool buildRIG(BasicBlock* gb)
         int times_RIG = 5;
         while(times_RIG--)
             fillInOut(gb->domBlock[0]);
-//        dbg("neho -- fill in/out sets");
 
         // 2.5 for debug 先临时打印一下这些个in 和 out
 //            cout << "**** IN&OUT set of every armIns ****\n";
@@ -527,7 +547,6 @@ bool buildRIG(BasicBlock* gb)
         // 3 利用填好的in、out集合，建立冲突图，也是一个递归的过程
         for(auto dr: DomRoot)
             connectDecl(dr, gb);
-//        dbg("neho -- RIG created");
 
         // 4 deleting dead code
         for(auto dr: DomRoot)
@@ -585,22 +604,20 @@ void RigsterAlloc()
     // 对于每个顶层块（除了第一个全局模块），都应该对应一个RIG图
     for(auto gb: IR1->Blocks)
     {
+        
+
         // 跳过第一个全局变量，core dump，可能有隐患
         if(gb->domBlock.size() == 0)continue;
-        int debug = 0;
         int whenToadd = 0;
         while(!buildRIG(gb)){
             dbg("染色失败！");
             //TODO: 如果图着色失败了，add memory operation.
             if(whenToadd++ > WHENTOMO)
                 addMemoryOperation(gb);
-            dbg(chosenOne);
             for(auto p: spilling_cost)
             {
                 cout << p.first << " " << p.second << endl;
             }
-
-            if(debug++ > 6)break;
         }
     }
 
