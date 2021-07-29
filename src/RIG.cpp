@@ -414,6 +414,8 @@ void spillCost(BasicBlock* gb){
         for(auto dc: Vreg2Decls[dc_vreg])
         {
             spilling_cost[dc_vreg] += blockFrequency[dc->rawBlock] * (double)dc->gen_used.size();
+            spilling_cost[dc_vreg] += blockFrequency[dc->rawBlock] * 1.0;
+            dc->gen_used.clear();
         }
     }
 }
@@ -432,7 +434,7 @@ void spillCost(BasicBlock* gb){
 
 
 // cost最小的寄存器编号
-int chosenOne;
+int chosenOne = -1;
 
 void addMemoryOperation(BasicBlock* gb)
 {
@@ -554,7 +556,6 @@ bool buildRIG(BasicBlock* gb)
     trytimes = 5;
     while(trytimes--){
         init_color();
-        dbg(trytimes);
         if(paintColor(gb)){
             //如果成功了就break; 否则使用颜色过多就再试一次（最多5次）
             if(usedK <= K)break;
@@ -578,6 +579,7 @@ bool buildRIG(BasicBlock* gb)
     return true;
 }
 
+
 void RigsterAlloc()
 {
     // 对于每个顶层块（除了第一个全局模块），都应该对应一个RIG图
@@ -585,10 +587,20 @@ void RigsterAlloc()
     {
         // 跳过第一个全局变量，core dump，可能有隐患
         if(gb->domBlock.size() == 0)continue;
+        int debug = 0;
+        int whenToadd = 0;
         while(!buildRIG(gb)){
             dbg("染色失败！");
             //TODO: 如果图着色失败了，add memory operation.
-            addMemoryOperation(gb);
+            if(whenToadd++ > WHENTOMO)
+                addMemoryOperation(gb);
+            dbg(chosenOne);
+            for(auto p: spilling_cost)
+            {
+                cout << p.first << " " << p.second << endl;
+            }
+
+            if(debug++ > 6)break;
         }
     }
 
