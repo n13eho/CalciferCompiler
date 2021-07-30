@@ -65,19 +65,25 @@ void assignMul(Instruction* instr,BasicBlock *node)
 }
 void assignDiv(Instruction* instr,BasicBlock *node)
 {
-    armDiv *ins=new armDiv();
+    armCall *ins=new armCall();
     IntegerValue* res=(IntegerValue*)instr->getResult();
     varDecl *resd = new varDecl(res,node,Rcnt++);
     ins->rd = resd;
+
+    ins->funcname = "__aeabi_idiv";
+
     newBlock[node].push_back(ins);
     trance[ins]=instr;
 }
 void assignMod(Instruction* instr,BasicBlock *node)
 {
-    armMod *ins=new armMod();
+    armCall *ins=new armCall();
     IntegerValue* res=(IntegerValue*)instr->getResult();
     varDecl *resd = new varDecl(res,node,Rcnt++);
     ins->rd = resd;
+
+    ins->funcname = "__aeabi_idivmod";
+
     newBlock[node].push_back(ins);
     trance[ins]=instr;
 }

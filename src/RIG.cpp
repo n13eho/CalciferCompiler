@@ -133,6 +133,9 @@ void ArmI2InOut(armInstr* ai)
     else if(ai->getType() == armInstr::armInsType::call)
     {
         armCall* call_ai = (armCall*)ai;
+        // call 有返回值，需要kill掉
+        if(call_ai->rd != NULL)
+            ins[ai].erase(VregNumofDecl(call_ai->rd));
 
         // rs内全是gen
         for(auto r: call_ai->rs)
@@ -144,9 +147,6 @@ void ArmI2InOut(armInstr* ai)
             }
         }
 
-        // call 有返回值，需要kill掉
-        if(call_ai->rd != NULL)
-            ins[ai].erase(VregNumofDecl(call_ai->rd));
     }
     else if(ai->getType() == armInstr::armInsType::ret)
     {

@@ -235,7 +235,7 @@ class armRet:public armInstr//ok
         if(rs!=nullptr)out<<"mov r0, "<<*rs<<endl;
         //TODO: 这里要求每个函数都需要有个一return指令..
         //TODO：或许还有一些堆栈操作..
-        out<<"bx lr";
+        out<<"\tbx lr";
         return out;
     }
     virtual vector<Decl*> getGen()
@@ -253,9 +253,11 @@ class armCall:public armInstr{//ok
     virtual ostream& output(ostream&out)const
     {
         out<<"call ";
+        out<<funcname<<' ';
         for(auto r : rs){
             out<<*r<<" ";
         }
+        cout<<*rd;
         return out;
     }
     virtual vector<Decl*> getGen()

@@ -3,12 +3,12 @@
 #include "../include/BuildIR.h"
 #include "part.tab.hpp"
 #include "../include/debug.h"
-#include "CodeGeneration.h"
 #include "../include/detetedeadblock.h"
 #include"../include/ssa.h"
 #include"../include/liveSet.h"
 #include "../include/RIG.h"
 #include"op_cfgFrequency.h"
+#include"CalciferCodeGen.h"
 
 //外部的lineno，行号信息
 extern int lineno;
@@ -63,8 +63,9 @@ int main(int argc, char *argv[])
 
         // 寄存器分配：虚拟寄存器->realj寄存器。变量活性分析，建立冲突图；
         RigsterAlloc();
-
-        // codegeneration();
+        
+        //代码生成
+        CalciferCodeGen();
         // 利用四元式和bb信息得出ssa_0
         // dbg("convert to ssa");
         // auto *ssa_0 = convert_ssa(IR1, globalBlock);
