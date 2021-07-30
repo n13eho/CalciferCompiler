@@ -462,7 +462,7 @@ void addMemoryOperation(BasicBlock* gb)
                     armLdr* ldr_ins= new armLdr();
                     ldr_ins->rd = dc;
                     ldr_ins->rs = memShift;
-                    newBlock[b].insert(it++,ldr_ins);
+                    it=newBlock[b].insert(it,ldr_ins)+1;
                     dbg(**it);
                 }
             }
@@ -472,8 +472,8 @@ void addMemoryOperation(BasicBlock* gb)
                 armStr* str_ins= new armStr();
                 str_ins->rd = arm_ins->rd;
                 str_ins->rs = memShift;
-                newBlock[b].insert(++it,str_ins);
-//                dbg(**it);
+                it=newBlock[b].insert(it+1,str_ins);
+               dbg(**it);
 
             }
         }
