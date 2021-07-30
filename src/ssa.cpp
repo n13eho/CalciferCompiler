@@ -251,8 +251,8 @@ void getssa()
     for( auto gbval: allValue){
         if(gbval==NULL)continue;
         if(gbval->var_scope=="1"&&gbval->getType()<=2){
-            int iffind =0;
             for(auto b:IR1->Blocks){
+                int iffind=0;
                 for(auto eb:b->domBlock){
                     for(auto it = eb->InstrList.begin();it!=eb->InstrList.end();it++){
                         Instruction *ins = IR1->InstList[(*it)];
@@ -271,9 +271,7 @@ void getssa()
                     }
                     if(iffind)break;
                 }
-                if(iffind)break;
             }
-            if(iffind)continue;
         }
         if(gbval->isPara>4){
             int iffind=0;
@@ -325,9 +323,6 @@ void getssa()
 //                            ins_c->getOp().insert(ins_c->getOp().begin() + i, dummyVal);
 //                            ins_c->getOp().erase(ins_c->getOp().begin() + i);
                             ins_c->Operands[i] = dummyVal;
-//                            dbg(dummyVal->VName);
-//                            dbg(ins_c->getOp()[i]->VName);
-
                             // 在它前面插入这条Instruction
                             IR1->InsertInstr(ins_ass);
                             b->InstrList.insert(it, IR1->InstList.size() - 1);
