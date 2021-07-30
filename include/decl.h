@@ -83,7 +83,7 @@ class memoryDecl: public Decl{
     memoryDecl(Value *_rawValue, BasicBlock *_rawBlock):Decl(_rawValue,_rawBlock){};
     memoryDecl(Value *_rawValue, BasicBlock *_rawBlock,int _bias):Decl(_rawValue,_rawBlock),bias(_bias){};
     virtual ostream& output(ostream&out)const{
-        out<<"[sp,#"<<bias*4<<']';
+        out<<"[sp, #"<<bias*4<<']';
         return out;
     }
     virtual int gettype(){return 4;}

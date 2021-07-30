@@ -249,6 +249,7 @@ void getssa()
 
     //0.0 处理全局变量, 在每一个块中, 第一次出现全局变量的地方添加一个ldr指令
     for( auto gbval: allValue){
+        if(gbval==NULL)continue;
         if(gbval->var_scope=="1"&&gbval->getType()<=2){
             int iffind =0;
             for(auto b:IR1->Blocks){

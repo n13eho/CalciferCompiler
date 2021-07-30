@@ -325,11 +325,15 @@ void calReach(BasicBlock* s)
         Decl* dc=ins->rd;
         if(dc == nullptr)continue;
         Value* val=dc->rawValue;
-        for(auto dead=reachout[s].begin();dead!=reachout[s].end();dead++){
+        for(auto dead=reachout[s].begin();dead!=reachout[s].end(); ){
             Decl* deadDc=*dead;
             if(deadDc->rawValue==val){
+                dbg(dead == reachout[s].end());
                 dead=reachout[s].erase(dead);
-                dead--;
+            }
+            else
+            {
+                dead++;
             }
         }
         //加上这个语句定义的decl

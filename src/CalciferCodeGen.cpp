@@ -103,6 +103,7 @@ void CalciferCodeGen()
     calout<<"\t.data\n";
     for(auto fuhao : allValue)
     {
+        if(fuhao == NULL)continue;
         //这里写.data
         if(fuhao->getType()==1)
         {

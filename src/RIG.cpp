@@ -563,11 +563,10 @@ bool buildRIG(BasicBlock* gb)
 
         // 4 deleting dead code
         deleteDC(block2dom[gb->domBlock[0]], gb);
-//        dbg("---------------------------------------");
-//        for(auto dr: DomRoot)
-//            showDecl(dr);
     }
     dbg("neho -- fill in/out sets");
+    // 根本没有分配寄存器，直接返回真
+    if(RIG[gb].size() == 0)return true;
     dbg("neho -- RIG created");
     // 3.5 for debug 打印整张图看看
     cout << "**** the RIG of " << gb->BlockName <<  "****\n";

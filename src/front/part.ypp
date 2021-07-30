@@ -412,6 +412,7 @@ void yyerror(char const *message)
 {
 	string l = "\033[43;34m" + to_string(lineno) + " \033[0m ";
 	cout << "\033[31m[ERROR]\033[0m " << message << " at " << "\033[43;34m line \033[0m" << l << endl;
+	abort();
 	return;
 }
 
@@ -482,8 +483,18 @@ GrammaNode* IdentDefineCheck(GrammaNode* deIdent)
 	//啥都没找见
 	if(declCnt == 0)
 	{
-		string m = "Undeclared identifier :'" + deIdent->str + "', scope : " + to_string(resScoptCmp);
-		yyerror(m.c_str());
+
+        // 加运行时库的管关键字
+        if(deIdent->str.compare("getint") == 0 || deIdent->str.compare("getch") == 0 || deIdent->str.compare("getarray") == 0 || deIdent->str.compare("putint") == 0 || deIdent->str.compare("putch") == 0 || deIdent->str.compare("putarray") == 0 || deIdent->str.compare("putf") == 0 || deIdent->str.compare("starttime") == 0 || deIdent->str.compare("stoptime") == 0)
+        {
+            return deIdent;
+        }
+        else
+        {
+        	string m = "Undeclared identifier :'" + deIdent->str + "', scope : " + to_string(resScoptCmp);
+        	yyerror(m.c_str());
+        }
+
 	}
 
 	return res;

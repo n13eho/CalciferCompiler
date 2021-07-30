@@ -208,11 +208,11 @@ void getFrequency()
     }
 
     // for debug 打印fre
-    for(auto p: blockFrequency)
-    {
-        dbg(p.first->BlockName, p.second);
-        dbg(" ");
-    }
+//    for(auto p: blockFrequency)
+//    {
+//        dbg(p.first->BlockName, p.second);
+//        dbg(" ");
+//    }
 
 
 }

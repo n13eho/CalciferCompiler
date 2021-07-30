@@ -362,17 +362,76 @@ IntegerValue *semantic_UnaryExp_(GrammaNode *root, int needConst, int needCond)
     if (UnaryExp_func_ == root->type)
     {
         GrammaNode *tempGn = idList[make_pair(root->son[0]->str, root->son[0]->var_scope)]; // 从idList找原来的树上的结点
+
         FunctionValue *val = (FunctionValue *)SymbolTable->askItem(tempGn);
-        // 函数调用语义检查 √error：这里先只检查参数个数
+        if(val == NULL)
+        { // 他是运行时库
+            int sysyparamcnt = 0, sysyretType = 0;
+
+            if(root->son[0]->str == "getint")
+            {
+                sysyparamcnt = 0;
+                sysyretType = 1;
+            }
+            else if(root->son[0]->str == "getch")
+            {
+                sysyparamcnt = 0;
+                sysyretType = 1;
+            }
+            else if(root->son[0]->str == "getarray")
+            {
+                sysyparamcnt = 1;
+                sysyretType = 1;
+            }
+            else if(root->son[0]->str == "putint")
+            {
+                sysyparamcnt = 1;
+                sysyretType = 0;
+            }
+            else if(root->son[0]->str == "putch")
+            {
+                sysyparamcnt = 1;
+                sysyretType = 0;
+            }
+            else if(root->son[0]->str == "putarray")
+            {
+                sysyparamcnt = 1;
+                sysyretType = 0;
+            }
+            else if(root->son[0]->str == "putf")
+            {
+                sysyparamcnt = 999;
+                sysyretType = 0;
+            }
+            else if(root->son[0]->str == "starttime")
+            {
+                sysyparamcnt = 0;
+                sysyretType = 0;
+            }
+            else if(root->son[0]->str == "stoptime")
+            {
+                sysyparamcnt = 0;
+                sysyretType = 0;
+            }
+
+            FunctionValue* runtime_fv = new FunctionValue(root->son[0]->str, root->son[0]->lineno, root->son[0]->var_scope, sysyparamcnt, sysyretType);
+            val = runtime_fv;
+
+        }
+
+        // 函数调用语义检查 √error：这里先只检查参数个数；这里需要绕过putf运行时库
         int call_param_number = 0;
         if(root->son.size() > 1)
         {// 有参数
             call_param_number = root->son[1]->son.size();
         }
-        if(call_param_number != val->getParams().size())
-        {// 个数不匹配
-            //----------------语义检查【3.1】----------------
-            throw SemanticError(root->lineno, root->son[0]->str, "函数参数个数不匹配");
+        if(root->son[0]->str != "putf")
+        {
+            if(call_param_number != val->getParams().size())
+            {// 个数不匹配
+                //----------------语义检查【3.1】----------------
+                throw SemanticError(root->lineno, root->son[0]->str, "函数参数个数不匹配");
+            }
         }
 
         //语义检查没问题就映射函数名字
@@ -902,6 +961,7 @@ void show_SymbleTable(idTable_struct *SymbolTable)
     cout << "\nSymbolTable指针地址：" << SymbolTable << " 符号表大小：" << SymbolTable->table.size() << endl;
     for (auto & iter : SymbolTable->table)
     {
+        if(iter.first == NULL)continue;
         cout << "GNType: " << iter.first->type << "\tscope:\t" << iter.first->var_scope
              << "\tGN Name: " << iter.first->str << "\t\tlineNumber:" << iter.first->lineno << endl;
     }
@@ -910,6 +970,7 @@ void show_SymbleTable(idTable_struct *SymbolTable)
     dbg("SymbolTable(partly):");
     for (auto & iter : SymbolTable->table)
     {
+        if(iter.first == NULL)continue;
         /// 函数声明
         if (iter.first->type == FuncDef_int_ || iter.first->type == FuncDef_void_) // 函数声明-int无参数 和 函数声明-void无参数
             printFuncInfo(iter.first->type, (FunctionValue *)iter.second);
