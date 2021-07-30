@@ -137,9 +137,16 @@ void ArmI2InOut(armInstr* ai)
         // rs内全是gen
         for(auto r: call_ai->rs)
         {
-            ins[ai].insert(VregNumofDecl(r));
-            r->gen_used.push_back(ai);
+            if(notConst(r))
+            {
+                ins[ai].insert(VregNumofDecl(r));
+                r->gen_used.push_back(ai);
+            }
         }
+
+        // call 有返回值，需要kill掉
+        if(call_ai->rd != NULL)
+            ins[ai].erase(VregNumofDecl(call_ai->rd));
     }
     else if(ai->getType() == armInstr::armInsType::ret)
     {
@@ -552,12 +559,10 @@ bool buildRIG(BasicBlock* gb)
 //                showSets(dr);
 
         // 3 利用填好的in、out集合，建立冲突图，也是一个递归的过程
-        for(auto dr: DomRoot)
-            connectDecl(dr, gb);
+        connectDecl(block2dom[gb->domBlock[0]], gb);
 
         // 4 deleting dead code
-        for(auto dr: DomRoot)
-            deleteDC(dr, gb);
+        deleteDC(block2dom[gb->domBlock[0]], gb);
 //        dbg("---------------------------------------");
 //        for(auto dr: DomRoot)
 //            showDecl(dr);
@@ -614,7 +619,9 @@ void RigsterAlloc()
         // 跳过第一个全局变量，core dump，可能有隐患
         if(gb->domBlock.size() == 0)continue;
         int whenToadd = 0;
+//        int temp_debug = 0;
         while(!buildRIG(gb)){
+//            if(temp_debug++ > 6)break;
             dbg("染色失败！");
             //TODO: 如果图着色失败了，add memory operation.
             if(whenToadd++ > WHENTOMO)
