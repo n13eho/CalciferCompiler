@@ -297,7 +297,7 @@ int trytimes=5;//某迭代次数
 map<RIGnode*, int> colors;
 queue<RIGnode*> que;//queue of filling color with BFS
 
-const int K = 3;// number of Rigster
+
 int usedK;
 
 void init_color()
