@@ -502,9 +502,10 @@ IntegerValue *semantic_MulExp_(GrammaNode *root, int needConst, int needCond)
         if (root->type == MulExp_Mul_)
             temp->RealValue = mul->RealValue * unary->RealValue;
         else if (root->type == MulExp_Div_)
-            temp->RealValue = mul->RealValue / unary->RealValue;
+            temp->RealValue = unary->RealValue == 0 ? 0 : mul->RealValue / unary->RealValue;
         else if (root->type == MulExp_Mod_)
-            temp->RealValue = mul->RealValue % unary->RealValue;
+            temp->RealValue = unary->RealValue == 0 ? 0 : mul->RealValue % unary->RealValue;
+
 
         SymbolTable->addItem(root, temp);
         return temp;
