@@ -8,7 +8,6 @@ void printArm(DomTreenode* dn,BasicBlock* gb)
     calout<<block2lb[b]<<":\n";
     
     for(auto inst:newBlock[b]){
-        //TODO：call，ret等。。。
         if(inst->getType()==armInstr::call){
             armCall* call_ins = (armCall*)inst;
 
@@ -80,6 +79,15 @@ void printArm(DomTreenode* dn,BasicBlock* gb)
             //放返回值
             calout<<"\t"<<*inst<<endl;  
             calout<<"@ end of return "<<endl;
+        }
+        else if(inst->getType()==armInstr::mov){
+            armMov *inst_mov = (armMov*)inst;
+            if(VregNumofDecl(inst_mov->rd) == VregNumofDecl(inst_mov->rs)){
+                //这里其实是专门为加载全局变量值而产生的ldr指令
+                //tqy:如果能活到这里的mov，一定是mov r0, [r0]这样的指令
+                calout<<"\tldr "<<*inst_mov->rd<<", "<<*inst_mov->rs<<endl;
+            }
+            else calout<<"\t"<<*inst<<endl;
         }
         else{
             calout<<"\t";

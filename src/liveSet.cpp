@@ -32,8 +32,8 @@ void strGlobal(Instruction* instr, BasicBlock* node, Decl* src)
     armLdr* load_arm = new armLdr();
     
     //创建临时变量，这个value在符号表中索引不到！！！！！！
-    IntegerValue *lsbl_addr = new IntegerValue("lsbl_addr",-1, "1", 0);
-    addrDecl *rdd = new addrDecl(lsbl_addr,node,Rcnt++);
+    // IntegerValue *lsbl_addr = new IntegerValue("lsbl_addr",-1, "1", 0);
+    addrDecl *rdd = new addrDecl(src->rawValue,node,Rcnt++);
     load_arm->rd=rdd;
     globalDecl* gval = new globalDecl(src->rawValue,src->rawBlock,src->rawValue->VName);
     load_arm->rs=gval;
@@ -58,7 +58,10 @@ void assignMov(Instruction* instr, BasicBlock* node)
         IntegerValue* rd=(IntegerValue*)instr->getResult();
         varDecl *rdd = new varDecl(rd,node,Rcnt++);
         ins->rd=rdd;
-        if(instr->getResult()->getScope()=="1"){
+        if(instr->getResult()->getScope()=="1"&&instr->getResult()!=instr->getOp()[0]){
+            //目标如果是一个全局变量，那么应该在赋值完加入两条指令，用于更新全局段
+            //否则，多个函数更新无法保存
+            //第二个条件是跳过加载全局变量从地址到内容的assign
             strGlobal(instr,node,rdd);
         }
     }
@@ -514,6 +517,7 @@ void usedLdr(armLdr* ins,BasicBlock* node)
             ins->bias = getDecl(raw->getOp()[1],node);
         }
     }
+
     addAssign(ins->rd->rawValue,node,ins->rd);
 }
 void usedStr(armStr* ins,BasicBlock* node)
