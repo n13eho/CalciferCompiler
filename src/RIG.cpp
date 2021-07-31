@@ -369,7 +369,6 @@ void deleteDC(DomTreenode* dn, BasicBlock* gb)
     BasicBlock* b = dn->block;
     for(auto it = newBlock[b].begin(); it != newBlock[b].end(); it++)
     {
-        
         if((*it)->rd != NULL)
         {
             findDc = false;
@@ -383,7 +382,11 @@ void deleteDC(DomTreenode* dn, BasicBlock* gb)
             }
             if(!findDc)
             {// 没找到这个dc就删除这条指令
-                newBlock[b].erase(it--);
+                if((*it)->getType()==armInstr::call){
+                    (*it)->rd == nullptr;
+                }
+                else 
+                    newBlock[b].erase(it--);
             }
         }
     }
