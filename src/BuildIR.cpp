@@ -983,6 +983,20 @@ void CondNode(GrammaNode* node,LinearIR *IR)
 {
     if(node->son.size()>=1)
         LOrExpNode(node->son[0],IR);
+
+
+    /*
+    当LOrExp孩子数
+    =1时
+        当LAnd孩子数
+        =1时：a
+        >1时:  a&&b
+    >1时
+        当LAnd孩子数
+        =1时: a|| c
+        >1时:a||b&&c
+
+    */
 }
 
 void LOrExpNode(GrammaNode* node,LinearIR *IR)
@@ -999,9 +1013,9 @@ void LOrExpNode(GrammaNode* node,LinearIR *IR)
         for(int i=0;i<node->son.size();i++)
         {
             //当有'与'条件在'或'条件前，短路需要创建新基本块，如 a&&b&&c || d
-            if(node->son[i]->son.size()>1 && i!=node->son.size()-1)
+            if(i!=node->son.size()-1)
             {
-                cout<<"@@@@@@@@@@@@@@@"<<endl;
+                // dbg("@@@@@@@@@@@@@@@@");
                 BasicBlock* nextOrCond = new BasicBlock(BasicBlock::If);
                 nextOrCond->BlockName = "condOr";
                 FuncN->AddDom(nextOrCond);
@@ -1115,11 +1129,23 @@ Value* LAndExpNode(GrammaNode* node,LinearIR *IR)
             {
                 bbNow = GetPresentBlock(FuncN,BasicBlock::Basic);
             }
+            BasicBlock* nextOrCond = nullptr;
+            if(i!=node->son.size()-1)
+            {
+                // dbg("create下一个condblock");
+                nextOrCond = new BasicBlock(BasicBlock::If);
+                nextOrCond->BlockName = "condOr";
+                FuncN->AddDom(nextOrCond);
+                CaseTBlocks.push(nextOrCond);
+            }
+            
             Value* Condi = EqExpNode(node->son[i],IR);
+            
             if(Ident_ == node->son[i]->type || AddExp_Add_ == node->son[i]->type ||
             AddExp_Sub_ == node->son[i]->type || MulExp_Mul_ == node->son[i]->type ||
             MulExp_Div_ == node->son[i]->type || MulExp_Mod_ == node->son[i]->type)
             {                
+                // dbg("bbbbbbbbbbbbbbbbbbbbb");
                 //与常数0比较
                 IntegerValue* const0 = new IntegerValue("const0",node->son[i]->lineno,node->son[i]->var_scope,0,1);
                 vector<Value*> ops={Condi,const0};
@@ -1134,10 +1160,41 @@ Value* LAndExpNode(GrammaNode* node,LinearIR *IR)
                 conbr->setParent(bbNow);
                 IR->InsertInstr(conbr);
                 if(CondCnt.back()>1)
-                    conbr->jmpDestBlock = CaseFBlocks.top();
+                {
+                    if(!CaseFBlocks.empty())
+                    {
+                        conbr->jmpDestBlock = CaseFBlocks.top();
+                    }
+                    else
+                    {
+                        dbg("caseFBlock empty!");
+                    }
+                }
                 else
-                    conbr->jmpDestBlock = CaseTBlocks.top();
+                {
+                    if(!CaseTBlocks.empty())
+                    {
+                        conbr->jmpDestBlock = CaseTBlocks.top();
+                    }
+                    else
+                    {
+                        dbg("caseTBlock empty!");
+                    }
+                }
                 CondCnt[CondCnt.size()-1]-=1;
+            }
+
+            if(nextOrCond != nullptr)
+            {
+                // dbg("下一个condblock");
+                bbNow->Link(nextOrCond);
+                CaseTBlocks.pop();
+                Instruction* jmpIns = new Instruction(IR->getInstCnt(),Instruction::Jmp,0);
+                jmpIns->jmpDestBlock = nextOrCond;
+                IR->InsertInstr(jmpIns);
+                bbNow->Addins(jmpIns->getId());
+                jmpIns->setParent(bbNow);
+                bbNow = nextOrCond;
             }
         }
     }
