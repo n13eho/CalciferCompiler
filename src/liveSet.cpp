@@ -149,8 +149,15 @@ void assignPhi(Instruction* instr,BasicBlock*node)
         armMov* ins = new armMov();
         ins->rd=rd;
         auto pos = newBlock[pred].end();
-        while((*(--pos))->getType()>=armInstr::beq&&(*(pos))->getType()<=armInstr::b||(*(pos))->getType()==armInstr::ret||(*(pos))->getType()==armInstr::call);
-        newBlock[pred].insert(++pos,ins);
+        //找到第一个不是跳转的指令.
+        while(((*(--pos))->getType() >= armInstr::beq && (*(pos))->getType() <= armInstr::b || 
+            (*(pos))->getType() == armInstr::ret || 
+            (*(pos))->getType() == armInstr::call))
+        {
+            if(pos==newBlock[pred].begin())break;//防止RE
+        }
+        if(pos != newBlock[pred].begin())pos++;
+        newBlock[pred].insert(pos,ins);
         trance[ins]=instr;
     }
 }
