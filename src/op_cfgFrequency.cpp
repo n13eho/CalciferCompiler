@@ -199,6 +199,7 @@ void getFrequency()
             // 4. 给blockFrequency 赋值
             for(auto b:gb->domBlock){
                 int id = block2id[b];
+                if(id==0)continue;//有一些没人要的块需要跳过!
                 blockFrequency[b]=x[id-1];
             }
         }
