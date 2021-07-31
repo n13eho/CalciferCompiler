@@ -146,7 +146,7 @@ class ImmValue:public Value
     //获取立即数的值
     int getValue(){return RealValue;}
 
-    private:
+    // private:
     //立即数的值
     int RealValue;
 };

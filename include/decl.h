@@ -272,7 +272,11 @@ class armLdr:public armInstr{//ok??????????? //TODO: now array is different!
     virtual int getType(){return ldr;}
     virtual ostream& output(ostream&out)const
     {
-        out<<"ldr "<<*rd<<", "<<*rs;
+        if(rd->gettype() == Decl::addr_decl){
+            out<<"ldr r"<<((addrDecl*)rd)->Vreg<<", "<<*rs;
+        }
+        else 
+            out<<"ldr "<<*rd<<", "<<*rs;
         if(bias){
             out<<"\t@ this is array....";//TODO: 这里以后要改.
         }

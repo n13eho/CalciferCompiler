@@ -328,7 +328,6 @@ void calReach(BasicBlock* s)
         for(auto dead=reachout[s].begin();dead!=reachout[s].end(); ){
             Decl* deadDc=*dead;
             if(deadDc->rawValue==val){
-                dbg(dead == reachout[s].end());
                 dead=reachout[s].erase(dead);
             }
             else
@@ -367,6 +366,11 @@ Decl* getDecl(Value* val, BasicBlock* node)
             //其他就返回上一次赋值
             return Assign_rec[make_pair(intval,node)].back();
         }
+    }
+    if(val->getType() == 4){
+        ImmValue* intval = (ImmValue*)val;
+        constDecl* ret=new constDecl(intval,node,intval->RealValue);
+        return ret;
     }
     else {return NULL;}
 }
@@ -547,6 +551,7 @@ int usedIns(armInstr* ins,BasicBlock* node)
 
 void setUsed(BasicBlock* s)
 {
+
     //init:把reachin里的定义建立好
     for(auto dc : reachin[s]){
         addAssign(dc->rawValue,s,dc);
