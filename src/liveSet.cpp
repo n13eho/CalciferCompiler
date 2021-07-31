@@ -247,6 +247,16 @@ void assignRet(Instruction* instr, BasicBlock* node)
     newBlock[node].push_back(ins);
     trance[ins]=instr;
 }
+void assignNeg(Instruction* instr, BasicBlock* node)
+{
+    armRsb* ins = new armRsb();
+    IntegerValue* res=(IntegerValue*)instr->getResult();
+    varDecl *resd = new varDecl(res,node,Rcnt++);
+    ins->rd = resd;
+
+    newBlock[node].push_back(ins);
+    trance[ins]=instr;
+}
 
 void assignIns(Instruction* ins,BasicBlock* node)
 {//依照不同类型的指令，计算赋值,同时填newblock, 分支指令除外
@@ -293,6 +303,10 @@ void assignIns(Instruction* ins,BasicBlock* node)
     else if(ins->getOpType() == Instruction::Ret)
     {
         assignRet(ins,node);
+    }
+    else if(ins->getOpType() == Instruction::UnaryNeg)
+    {
+        assignNeg(ins,node);
     }
 }
 void setDecl(BasicBlock *s)
@@ -427,10 +441,15 @@ void usedRsb(armRsb* ins,BasicBlock* node)
 {
     Instruction* raw = trance[ins];
     IntegerValue* r0 = (IntegerValue*)raw->getOp()[0];
-    IntegerValue* r1 = (IntegerValue*)raw->getOp()[1];
-    if(r0->isConst)swap(r0,r1);
+    if(raw->getOp().size()==1){
+        ins->r1 = new constDecl(nullptr,node,0);
+    }
+    else{
+        IntegerValue* r1 = (IntegerValue*)raw->getOp()[1];
+        if(r0->isConst)swap(r0,r1);
+        ins->r1 = getDecl(r1,node);
+    }
     ins->r0 = getDecl(r0,node);
-    ins->r1 = getDecl(r1,node);
     addAssign(ins->rd->rawValue,node,ins->rd);
 }
 int usedMov(armMov* ins, BasicBlock* node)
