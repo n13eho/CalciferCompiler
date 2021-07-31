@@ -2183,8 +2183,12 @@ void show_IR_ins(LinearIR *IR)
     {
         // 当前指令
         presenIns = IR->InstList[i];
-        cout << presenIns->getId() << "\t" << DEBUG_insOP[presenIns->getOpType()] << "\t";
+        cout << presenIns->getId() << "\t";
+//        dbg(presenIns->getId());
+        cout<< DEBUG_insOP[presenIns->getOpType()] << "\t";
+//        dbg(DEBUG_insOP[presenIns->getOpType()]);
         cout<<presenIns->getParent()<<"\t";
+//        dbg(presenIns->getParent());
         if(presenIns->getOpType() == Instruction::Jmp|| presenIns->getOpType() == Instruction::ConBr)
         {
             if(nullptr != presenIns->jmpDestBlock)
@@ -2211,6 +2215,7 @@ void show_IR_ins(LinearIR *IR)
         {
             // std::cout << presenIns->getOp()[i]<< " \t";
             std::cout << presenIns->getOp()[i]->VName << "\t";
+//            dbg(presenIns->getOp()[i]->VName);
         }
         if(presenIns->getOp().size() == 1) cout << "\t";
         if(presenIns->getOpType() == Instruction::InsType::Ret)
@@ -2219,10 +2224,12 @@ void show_IR_ins(LinearIR *IR)
         }
         else
         {
+//            dbg(presenIns->getId());
+//            dbg(presenIns->getResult());
             if(presenIns->getResult()!=nullptr)
-            cout << presenIns->getResult()->VName << endl;
+                cout << presenIns->getResult()->VName << endl;
             else
-            cout<<endl;
+                cout<<endl;
         }
     }
     cout<<"\n\n";
