@@ -416,8 +416,8 @@ void specialInsDelete(DomTreenode* sd)
         if((*it)->getType() == armInstr::mov)
         {
             armMov* mov_ai = (armMov*)(*it);
-            if(VregNumofDecl(mov_ai->rd) == VregNumofDecl(mov_ai->rs))
-            {// 两个寄存器的number一样的话就删除
+            if(VregNumofDecl(mov_ai->rd) == VregNumofDecl(mov_ai->rs) && mov_ai->rd->gettype() == mov_ai->rs->gettype())
+            {// 两个寄存器的number一样的话就删除 && 类型不一样的话（0731出现 mov r0 [r0]也给删了的闹剧）
                 newBlock[s].erase(it--);
             }
         }
