@@ -425,9 +425,8 @@ IntegerValue *semantic_UnaryExp_(GrammaNode *root, int needConst, int needCond)
         {// 有参数
             call_param_number = root->son[1]->son.size();
         }
-        dbg(call_param_number);
-        dbg(val->getParams().size());
-        if(root->son[0]->str != "putf" && root->son[0]->str != "getarray" && root->son[0]->str != "putarray")
+        // 有参数的运行时库：后门全开
+        if(root->son[0]->str != "getarray" && root->son[0]->str != "putint" && root->son[0]->str != "putch" && root->son[0]->str != "putarray" && root->son[0]->str != "putf")
         {
             if(call_param_number != val->getParams().size())
             {// 个数不匹配
