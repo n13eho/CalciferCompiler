@@ -64,6 +64,7 @@ public:
     Instruction(int id,Instruction::InsType ins_type,unsigned oprands_num):InstrId(id),OpType(ins_type),OpNums(oprands_num)
     {
 //        std::cout<<"InsID:"<<id<<" type:"<<ins_type<<" Operator nums:"<<oprands_num<<std::endl;
+        Result = nullptr;
     }
     void setId(int id){InstrId=id;}
     void addOperand(Value* opd){Operands.push_back(opd);}
