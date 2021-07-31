@@ -145,18 +145,19 @@ void assignPhi(Instruction* instr,BasicBlock*node)
             if(b==pred){fl=1;break;}
         }
         if(!fl)continue;
-
         armMov* ins = new armMov();
         ins->rd=rd;
         auto pos = newBlock[pred].end();
         //找到第一个不是跳转的指令.
         while(((*(--pos))->getType() >= armInstr::beq && (*(pos))->getType() <= armInstr::b || 
             (*(pos))->getType() == armInstr::ret || 
-            (*(pos))->getType() == armInstr::call))
+            (*(pos))->getType() == armInstr::call && (*(pos))->rd->rawValue!=val))
         {
             if(pos==newBlock[pred].begin())break;//防止RE
         }
-        if(pos != newBlock[pred].begin())pos++;
+        if(!((*(pos))->getType() >= armInstr::beq && (*(pos))->getType() <= armInstr::b ||
+            (*(pos))->getType() == armInstr::ret ||
+            (*(pos))->getType() == armInstr::call && (*(pos))->rd->rawValue!=val))pos++;
         newBlock[pred].insert(pos,ins);
         trance[ins]=instr;
     }
@@ -612,7 +613,6 @@ int usedIns(armInstr* ins,BasicBlock* node)
 
 void setUsed(BasicBlock* s)
 {
-
     //init:把reachin里的定义建立好
     for(auto dc : reachin[s]){
         addAssign(dc->rawValue,s,dc);
