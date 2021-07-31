@@ -411,7 +411,7 @@ IntConst:
 void yyerror(char const *message)
 {
 	string l = "\033[43;34m" + to_string(lineno) + " \033[0m ";
-	cout << "\033[31m[ERROR]\033[0m " << message << " at " << "\033[43;34m line \033[0m" << l << endl;
+	cout << "\033[31m[ERROR]\033[0m " << message << " a123t " << "\033[43;34m line \033[0m" << l << endl;
 	abort();
 	return;
 }

@@ -49,7 +49,7 @@ struct GrammaNode
     std::vector<GrammaNode*> son;
     GrammaNode(){son.clear();}
     GrammaNode(int l, int x){lineno = l; type=x; son.clear();}
-    GrammaNode(int l, int x, std::string y){lineno = l; type=x; str = y; son.clear();}
+    GrammaNode(int l, int x, std::string y){lineno = l; type=x; str = y; son.clear();/*std::cout<<type<<" "<<str<<std::endl;*/}
 };
 
 // #endif

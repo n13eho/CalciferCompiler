@@ -24,19 +24,26 @@ hexadecimalConst 0[xX][0-9a-fA-F]+
 /*IntConst {octalConst}|{hexadecimalConst}|{decimalConst}|{zeroo}*/
 /*Ident,标识符*/
 Ident [_a-zA-Z][_a-zA-Z0-9]*
-/*注释？在这里处理吗*/
-Comment1 "//".*
-Comment2 \/\*([^\*^\/]*|[\*^\/*]*|[^\**\/]*)*\*\/
-Comment {Comment1}|{Comment2}
+
+
+
+%x Comment
 
 
 %%
+
+"/*" {BEGIN(Comment);}
+<Comment>"*/" {BEGIN(INITIAL);}
+<Comment>([^*]|\n+|.)
+<Comment><<EOF>> {printf("What comment?\n");return 0;}
+
+
 0+ {yylval.no = new GrammaNode(lineno, IntConst_D_,yytext);return ZERO;}
 
 {space} {}
 {enter} {lineno++;} // 遇见\n，行号++
 {zb}    {}
-{Comment}  {}
+
 
 ";" {yylval.no = new GrammaNode(lineno, SEMI_, yytext);return SEMI;}
 "," {yylval.no = new GrammaNode(lineno, COMM_,yytext);return COMM;}
@@ -80,9 +87,7 @@ Comment {Comment1}|{Comment2}
 {octalConst}    {yylval.no = new GrammaNode(lineno, IntConst_O_,yytext);return IntConst_O;}
 {decimalConst} {yylval.no = new GrammaNode(lineno, IntConst_D_,yytext);return IntConst_D;}
 {hexadecimalConst} {yylval.no = new GrammaNode(lineno, IntConst_H_,yytext);return IntConst_H;}
-
 {Ident} {yylval.no = new GrammaNode(lineno, Ident_,yytext);return Ident;}
-
 
 %%
 

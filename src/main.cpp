@@ -1,7 +1,7 @@
 #include "../include/sysy_node.hpp"
 #include "../include/semanticAnalyze.h" //语义检查
 #include "../include/BuildIR.h"
-#include "part.tab.hpp"
+#include "./front/part.tab.hpp"
 #include "../include/debug.h"
 #include "../include/detetedeadblock.h"
 #include"../include/ssa.h"
