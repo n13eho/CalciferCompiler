@@ -123,12 +123,26 @@ void ArmI2InOut(armInstr* ai)
         //str指令是的rd是gen集
         ins[ai].insert(VregNumofDecl(str_ai->rd));
         str_ai->rd->gen_used.push_back(ai);
+
+        // str 的rs是[r0]这种情况的话，r0也是他的gen。PS:rs处只有可能是addr_decl和mem_decl
+        if(str_ai->rs->gettype() == Decl::addr_decl)
+        {
+            ins[ai].insert(VregNumofDecl(str_ai->rs));
+            str_ai->rs->gen_used.push_back(ai);
+        }
     }
     else if(ai->getType() == armInstr::armInsType::ldr)
     {
         armLdr* ldr_ai = (armLdr*)ai;
         //ldr指令是的rd是kill集
         ins[ai].erase(VregNumofDecl(ldr_ai->rd));
+
+        //ldr 的rs是[r0]这种情况，r0是他的gen。PS：rs处只有可能是 global_decl, memory_decl, addr_decl
+        if(ldr_ai->rs->gettype() == Decl::addr_decl)
+        {
+            ins[ai].insert(VregNumofDecl(ldr_ai->rs));
+            ldr_ai->rs->gen_used.push_back(ai);
+        }
     }
     else if(ai->getType() == armInstr::armInsType::call)
     {
