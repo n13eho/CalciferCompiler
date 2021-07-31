@@ -27,7 +27,7 @@ class Decl {
     Decl(){}
     ~Decl(){}
 
-    enum declType{const_decl=1, var_decl, global_decl, memory_decl,addr_decl};
+    enum declType{const_decl=1, var_decl, global_decl, memory_decl, addr_decl};
 
     Decl(Value *_rawValue, BasicBlock *_rawBlock) : rawValue(_rawValue), rawBlock(_rawBlock){};
     virtual ostream& output(ostream&out)const{
@@ -282,6 +282,12 @@ class armLdr:public armInstr{//ok??????????? //TODO: now array is different!
         }
         return out;
     }
+    virtual vector<Decl*> getGen()
+    {
+        vector<Decl*> tem;
+        tem.push_back(rs); // 因为rs可以能还是[=a]这种情况
+        return tem;
+    }
 };
 class armStr:public armInstr{//ok
     public:
@@ -300,6 +306,7 @@ class armStr:public armInstr{//ok
     {
         vector<Decl*> tem;
         tem.push_back(rd);
+        tem.push_back(rs);
         return tem;
     }
 };
