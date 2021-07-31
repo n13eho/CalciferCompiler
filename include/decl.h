@@ -257,7 +257,7 @@ class armCall:public armInstr{//ok
         for(auto r : rs){
             out<<*r<<" ";
         }
-        cout<<*rd;
+        if(rd!=nullptr)cout<<*rd;
         return out;
     }
     virtual vector<Decl*> getGen()
