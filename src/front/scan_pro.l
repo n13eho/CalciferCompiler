@@ -24,8 +24,8 @@ hexadecimalConst 0[xX][0-9a-fA-F]+
 /*IntConst {octalConst}|{hexadecimalConst}|{decimalConst}|{zeroo}*/
 /*Ident,标识符*/
 Ident [_a-zA-Z][_a-zA-Z0-9]*
-
-
+/*单行注释*/
+Comment1 "//".*
 
 %x Comment
 
@@ -44,6 +44,7 @@ Ident [_a-zA-Z][_a-zA-Z0-9]*
 {enter} {lineno++;} // 遇见\n，行号++
 {zb}    {}
 
+{Comment1} {}
 
 ";" {yylval.no = new GrammaNode(lineno, SEMI_, yytext);return SEMI;}
 "," {yylval.no = new GrammaNode(lineno, COMM_,yytext);return COMM;}
