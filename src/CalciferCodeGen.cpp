@@ -13,12 +13,22 @@ void printArm(DomTreenode* dn,BasicBlock* gb)
             armCall* call_ins = (armCall*)inst;
 
             //push 所有寄存器//TODO: 应该push用过的
-            int rdNum = VregNumofDecl(call_ins->rd);
-            if(rdNum==0)calout<<"\tpush {r1-r12}"<<endl;
-            else if(rdNum == 12)calout<<"\tpush {r0-r11}"<<endl;
-            else{
-                calout<<"\tpush {r0-r"<<rdNum-1<<", r"<<rdNum+1<<"-r12}"<<endl;
+            int rdNum = -1;
+            if(call_ins->rd != NULL)
+            {
+                int rdNum = VregNumofDecl(call_ins->rd);
+                if(rdNum==0)calout<<"\tpush {r1-r12}"<<endl;
+                else if(rdNum == 12)calout<<"\tpush {r0-r11}"<<endl;
+                else{
+                    calout<<"\tpush {r0-r"<<rdNum-1<<", r"<<rdNum+1<<"-r12}"<<endl;
+                }
             }
+            else
+            {
+                calout<<"\tpush {r0-r12}"<<endl;
+            }
+
+
             
             //填写参数
             calout<<"@ print params"<<endl;
@@ -43,13 +53,23 @@ void printArm(DomTreenode* dn,BasicBlock* gb)
             calout<<"\tbl "<<call_ins->funcname<<endl;
 
             //处理返回值
-            calout<<"\tmov "<<*(call_ins->rd)<<", "<<"r0"<<endl;
+            if(call_ins->rd != NULL)
+            {
+                calout<<"\tmov "<<*(call_ins->rd)<<", "<<"r0"<<endl;
+            }
 
             //pop 所有寄存器//TODO: 应该pop用过的
-            if(rdNum==0)calout<<"\tpop {r1-r12}"<<endl;
-            else if(rdNum == 12)calout<<"\tpop {r0-r11}"<<endl;
-            else{
-                calout<<"\tpop {r0-r"<<rdNum-1<<", r"<<rdNum+1<<"-r12}"<<endl;
+            if(rdNum == -1)
+            {
+                calout<<"\tpop {r0-r12}"<<endl;
+            }
+            else
+            {
+                if(rdNum==0)calout<<"\tpop {r1-r12}"<<endl;
+                else if(rdNum == 12)calout<<"\tpop {r0-r11}"<<endl;
+                else{
+                    calout<<"\tpop {r0-r"<<rdNum-1<<", r"<<rdNum+1<<"-r12}"<<endl;
+                }
             }
         }
         else if(inst->getType()==armInstr::ret){

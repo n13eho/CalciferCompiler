@@ -383,7 +383,7 @@ void deleteDC(DomTreenode* dn, BasicBlock* gb)
             if(!findDc)
             {// 没找到这个dc就删除这条指令
                 if((*it)->getType()==armInstr::call){
-                    (*it)->rd == nullptr;
+                    (*it)->rd = nullptr;
                 }
                 else 
                     newBlock[b].erase(it--);
