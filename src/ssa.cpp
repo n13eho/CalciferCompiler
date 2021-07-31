@@ -320,8 +320,6 @@ void getssa()
                             IntegerValue* dummyVal = new IntegerValue(mdm_name + to_string(mdm_cnt++), opVaule->lineno, opVaule->var_scope, 0);
                             ins_ass->setResult(dummyVal); // 新指令的result应该是一个新的Value，有一个中间temp变量
                             // 还需要把当前的这个opValue换成新的dummyVal
-//                            ins_c->getOp().insert(ins_c->getOp().begin() + i, dummyVal);
-//                            ins_c->getOp().erase(ins_c->getOp().begin() + i);
                             ins_c->Operands[i] = dummyVal;
                             // 在它前面插入这条Instruction
                             IR1->InsertInstr(ins_ass);

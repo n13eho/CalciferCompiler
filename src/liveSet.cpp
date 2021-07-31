@@ -26,13 +26,41 @@ ostream& operator<<(ostream&out,const Decl& a){
 map<BasicBlock*, vector<armInstr*>> newBlock;
 map<armInstr*,Instruction*> trance;
 
+void strGlobal(Instruction* instr, BasicBlock* node, Decl* src)
+{
+    //添加load指令
+    armLdr* load_arm = new armLdr();
+    
+    //创建临时变量，这个value在符号表中索引不到！！！！！！
+    IntegerValue *lsbl_addr = new IntegerValue("lsbl_addr",-1, "1", 0);
+    addrDecl *rdd = new addrDecl(lsbl_addr,node,Rcnt++);
+    load_arm->rd=rdd;
+    globalDecl* gval = new globalDecl(src->rawValue,src->rawBlock,src->rawValue->VName);
+    load_arm->rs=gval;
+
+    newBlock[node].push_back(load_arm);
+    trance[load_arm]=instr;
+    
+    //添加str指令
+    armStr* str_arm = new armStr();
+    str_arm->rd = src;
+    str_arm->rs = gval;
+    newBlock[node].push_back(str_arm);
+    trance[str_arm]=instr;
+}
+
 void assignMov(Instruction* instr, BasicBlock* node)
 {
     armMov *ins=new armMov();
+    newBlock[node].push_back(ins);
+    trance[ins]=instr;
     if(instr->getResult()->getType()==1){
         IntegerValue* rd=(IntegerValue*)instr->getResult();
         varDecl *rdd = new varDecl(rd,node,Rcnt++);
         ins->rd=rdd;
+        if(instr->getResult()->getScope()=="1"){
+            strGlobal(instr,node,rdd);
+        }
     }
     else{
         //如果是数组就用一个addrdecl
@@ -40,8 +68,6 @@ void assignMov(Instruction* instr, BasicBlock* node)
         addrDecl *rdd = new addrDecl(rd,node,Rcnt++);
         ins->rd=rdd;
     }
-    newBlock[node].push_back(ins);
-    trance[ins]=instr;
 }
 void assignAdd(Instruction* instr,BasicBlock *node)
 {
@@ -458,7 +484,7 @@ int usedMov(armMov* ins, BasicBlock* node)
 
     IntegerValue* rs ;
     if(raw->getOp().size())rs= (IntegerValue*)raw->getOp()[0];
-    else rs= new IntegerValue("tt",-1,"",1);
+    else rs= new IntegerValue("tt",-1,"",1);//这里对于没有初值的全局变量的处理
     ins->rs = getDecl(rs,node);
     addAssign(ins->rd->rawValue,node,ins->rd);
     return 0;
@@ -503,6 +529,11 @@ void usedStr(armStr* ins,BasicBlock* node)
         ins->rd = getDecl(r2,node);
         ins->bias = getDecl(r1,node);
         ins->rs = getDecl(r0,node);//FIXME:将变量存入a并不算对变量的重新赋值
+    }
+    else if(raw->getResult()&& raw->getResult()->getScope()=="1"){
+        //这是一个为了更新全局变量而诞生的指令, rd已经填过了，但是rs还是没有填。
+        IntegerValue* r0=(IntegerValue*)ins->rd->rawValue;
+        ins->rs = getDecl(r0,node);
     }
     else{
         // 这说明是一个局部变量和形参

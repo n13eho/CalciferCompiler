@@ -16,7 +16,7 @@ void printArm(DomTreenode* dn,BasicBlock* gb)
             int rdNum = -1;
             if(call_ins->rd != NULL)
             {
-                int rdNum = VregNumofDecl(call_ins->rd);
+                rdNum = VregNumofDecl(call_ins->rd);
                 if(rdNum==0)calout<<"\tpush {r1-r12}"<<endl;
                 else if(rdNum == 12)calout<<"\tpush {r0-r11}"<<endl;
                 else{
@@ -27,8 +27,6 @@ void printArm(DomTreenode* dn,BasicBlock* gb)
             {
                 calout<<"\tpush {r0-r12}"<<endl;
             }
-
-
             
             //填写参数
             calout<<"@ print params"<<endl;
