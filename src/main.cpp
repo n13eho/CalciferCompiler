@@ -15,8 +15,6 @@ extern int lineno;
 
 using namespace std;
 extern FILE *yyin;
-char *testfilename;
-char *ir_file = strdup("../test_set/test.ll");
 
 GrammaNode *Droot = new GrammaNode(lineno, 0, "ROOT");
 idTable_struct *SymbolTable = new idTable_struct();
@@ -25,19 +23,44 @@ BasicBlock *globalBlock = new BasicBlock(BasicBlock::Basic);
 
 int main(int argc, char *argv[])
 {
-    if (argc == 2)
+    // 初始参数文件
+    char *input_file = nullptr, *output_file = nullptr;
+    for(int ch; (ch = getopt(argc, argv, "So:")) != -1;)
     {
-        testfilename = argv[1];
+        switch(ch)
+        {
+            case 'S':
+                break; // 啥也不干，为了测评机
+            case 'o':
+                output_file = strdup(optarg);
+                dbg(output_file);
+                break;
+            default:
+                break;
+        }
     }
-    else
+    // 处理input_file
+//    if (optind <= argc)
+//    {
+//        input_file = argv[optind];
+//    }
+    input_file = argv[argc-1];
+
+    // 处理output_file
+    // 这里处理成传参
+
+    // show in/out put info
+    dbg(input_file, output_file);
+
+    // 输入提醒
+    if (input_file == nullptr)
     {
-        testfilename = (char*)"../test_sets/test.sy";
+        fprintf(stderr, "Usage: %s [-S] [-o output_file] [input_file]\n", argv[0]);
+        return -1;
     }
-    FILE *f1 = fopen(testfilename, "r");
 
 
-    yyin = f1;
-
+    yyin = fopen(input_file, "r");
     // 词法语法分析，无误返回0
     // freopen("../test_sets/debug.out","w",stdout);
     int ret = yyparse();
@@ -65,11 +88,7 @@ int main(int argc, char *argv[])
         RigsterAlloc();
         
         //代码生成
-        CalciferCodeGen();
-        // 利用四元式和bb信息得出ssa_0
-        // dbg("convert to ssa");
-        // auto *ssa_0 = convert_ssa(IR1, globalBlock);
-        // std::ofstream(ir_file) << *ssa_0;
+        CalciferCodeGen(output_file);
     }
 
     // post-precess

@@ -118,12 +118,13 @@ void transFunc(BasicBlock* node)
   
 }
 
-void CalciferCodeGen()
+void CalciferCodeGen(char *output_file_path)
 {
-    string outputfile = basename(testfilename);
-    outputfile = outputfile.substr(0, outputfile.length()-2);
-    outputfile  = "../test_sets/outputS/" + outputfile;
-    outputfile = outputfile + "S";
+
+    string outputfile = output_file_path;
+//    outputfile = outputfile.substr(0, outputfile.length()-2);
+//    outputfile  = "../test_sets/outputS/" + outputfile;
+//    outputfile = outputfile + "S";
 
     calout.open(outputfile, std::ifstream::out);
     calout<<"\t.data\n";

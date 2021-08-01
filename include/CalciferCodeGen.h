@@ -1,5 +1,4 @@
 #include"RIG.h"
 #include"liveSet.h"
 // #include <libgen.h>
-extern char *testfilename;
-void CalciferCodeGen();
+void CalciferCodeGen(char *output_file_path);

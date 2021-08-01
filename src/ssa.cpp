@@ -87,7 +87,13 @@ void step23()
         //     vector<DomTreenode*> tem;
         //     bucket[vertex[semi[w]-1]]=tem;
         // }
-        bucket[vertex[semi[w]-1]].push_back(w);
+        auto t1 = semi[w];
+        auto t2 = vertex[t1-1];
+        dbg(t1-1);
+
+
+        dbg(bucket[t2]);
+        bucket[t2].push_back(w);
         ancestor[w]=parent[w];
         // if(bucket.count(parent[w])==0)continue;
         if(bucket[parent[w]].size()==0)continue;
