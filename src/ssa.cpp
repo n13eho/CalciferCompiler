@@ -39,10 +39,11 @@ void tarjan_init()
 void dfsLT(DomTreenode* dang)
 {
     semi[dang]=++dfscnt;
-    vertex.push_back(dang);
+    vertex.push_back(dang);//第n个点的下标是n-1!!!!!!!!
     BasicBlock* db=dang->block;
     for( auto i : db->succBlock){
-        if(!block2dom.count(i)){
+        //遍历所有后继
+        if(!block2dom[i]){
             block2dom[i]=new DomTreenode();
             block2dom[i]->block=i;
         }
@@ -88,11 +89,11 @@ void step23()
         // }
         bucket[vertex[semi[w]-1]].push_back(w);
         ancestor[w]=parent[w];
-        if(bucket.count(parent[w])==0)continue;
+        // if(bucket.count(parent[w])==0)continue;
+        if(bucket[parent[w]].size()==0)continue;
         for(auto i=bucket[parent[w]].begin();i<bucket[parent[w]].end();i++){
             auto v=*i;
-            bucket[parent[w]].erase(i);
-            --i;
+            i=bucket[parent[w]].erase(i)-1;
             DomTreenode* u=eval(v);
             if(semi[u]<semi[v])v->idom=u;
             else v->idom=parent[w];
@@ -107,6 +108,7 @@ void step4()
         if(w->idom!=vertex[semi[w]-1]){
             w->idom=w->idom->idom;
         }
+        //不仅要计算idom还需要给idom的son中加入w;
         w->idom->son.push_back(w);
     }
     vertex[0]->idom=nullptr;
