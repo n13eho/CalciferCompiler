@@ -136,6 +136,7 @@ void semantic_stmt_(GrammaNode *root)
     {
         IntegerValue *zuo = semantic_LVal_(root->son[0]);
         IntegerValue *you = semantic_Exp_(root->son[1], 0, 0);
+        zuo->RealValue = you->RealValue;
         IntegerValue *tem = new IntegerValue(name + to_string(cnt++), root->lineno, root->var_scope, you->RealValue, 0);
         SymbolTable->addItem(root->son[0], zuo);
         SymbolTable->addItem(root, tem);
@@ -263,9 +264,13 @@ IntegerValue *semantic_LVal_Array_(GrammaNode *root, int needConst, int needCond
 
     for (int i = 0; i < root->son[1]->son.size(); i++)
     {
+        IntegerValue* indexValue = semantic_Exp_(root->son[1]->son[i], 0, 0);
+        if(indexValue->isConst == 0)continue; // 不是常数就不判
+
         // 获取访问的维度 eachIndex
-        eachIndex = semantic_Exp_(root->son[1]->son[i], 0, 0)->RealValue;
+        eachIndex = indexValue->RealValue;
         // 判断访问维度是否越界
+        cout << "********** " << eachIndex << endl;
         if (eachIndex >= val->NumOfDimension[i] || eachIndex < 0)
         { // √error 超额或者索引是负数
             // 数组访问越界

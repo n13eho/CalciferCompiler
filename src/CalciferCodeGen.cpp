@@ -33,7 +33,7 @@ void printArm(DomTreenode* dn,BasicBlock* gb)
                 calout<<"\tmov r"<<i<<", "<<*(call_ins->rs[i])<<endl;
             }
             int tem_bias = 2;
-            for(int i=(int)call_ins->rs.size();i>=4;i++,tem_bias++){
+            for(int i=(int)call_ins->rs.size() - 1;i>=4;i--,tem_bias++){
                 auto p =call_ins->rs[i];
                 if(p->gettype()==Decl::const_decl){
                     //if const

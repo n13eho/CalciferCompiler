@@ -632,6 +632,14 @@ void showDecl(DomTreenode* sd)
     cout<<block2lb[s]<<':'<<endl;
     for(auto ins:newBlock[s]){
         cout<<'\t';
+        if(ins->getType() == 25)
+        {
+            dbg(ins);
+            armLdr* iii = (armLdr*)ins;
+            dbg(iii->rs);
+            dbg(iii->bias);
+            dbg(*(iii->rd));
+        }
         cout<<*ins<<endl;
     }
     for(auto nx:sd->son){
