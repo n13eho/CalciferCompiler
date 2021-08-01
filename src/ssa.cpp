@@ -38,6 +38,7 @@ void tarjan_init()
 }
 void dfsLT(DomTreenode* dang)
 {
+
     semi[dang]=++dfscnt;
     vertex.push_back(dang);//第n个点的下标是n-1!!!!!!!!
     BasicBlock* db=dang->block;
@@ -56,6 +57,7 @@ void dfsLT(DomTreenode* dang)
 }
 void compress(DomTreenode* v)
 {
+    //计算eval可以看作"路径压缩的带权并查集".这里实现压缩部分
     if(ancestor[ancestor[v]]!=0){
         compress(ancestor[v]);
         if(semi[label[ancestor[v]]]<semi[label[v]]){
@@ -66,10 +68,11 @@ void compress(DomTreenode* v)
 }
 DomTreenode* eval(DomTreenode* v)
 {
-    if(ancestor[v]==0)return v;
+    //eval: 在并查集中到根路径中semi最小的点
+    if(ancestor[v]==0)return v;//如果是根
     else{
-        compress(v);
-        return label[v];
+        compress(v);//进行路径压缩
+        return label[v];//返回label
     }
 }
 
@@ -81,13 +84,12 @@ void step23()
         for(auto vb: wb->pioneerBlock){
             DomTreenode* v=block2dom[vb];
             DomTreenode* u=eval(v);
+            if(u==0){dbg(vb,vb->BlockName,"zhe ke neng?");}
             if(semi[u]<semi[w])semi[w]=semi[u];
         }
-        // if(bucket.count(vertex[semi[w]-1])==0){
-        //     vector<DomTreenode*> tem;
-        //     bucket[vertex[semi[w]-1]]=tem;
-        // }
-        bucket[vertex[semi[w]-1]].push_back(w);
+        auto t1 = semi[w];
+        auto t2 = vertex[t1-1];
+        bucket[t2].push_back(w);
         ancestor[w]=parent[w];
         // if(bucket.count(parent[w])==0)continue;
         if(bucket[parent[w]].size()==0)continue;
@@ -117,6 +119,12 @@ void step4()
 void buildDomTree(BasicBlock *s)
 {
     //step1 求sdom
+
+    //step1: 初始化semi/vertex/parent
+    //首先遍历cfg得到dfs序
+    //semi[w]:记录w的semidominaitor,,,(最小的能走回w的比w大的点)
+    //vertex:这是一个vector, 里面按dfs序依次push, 下表从0开始
+    //parent[w]:dfs生成树中w的父亲.
     tarjan_init();
     block2dom[s->domBlock[0]]=new DomTreenode();
     block2dom[s->domBlock[0]]->block=s->domBlock[0];
@@ -125,7 +133,7 @@ void buildDomTree(BasicBlock *s)
     DomRoot.push_back(root);
     dfsLT(root);
 
-    //step2\3
+    //step2\3: 主要是计算semi
     ancestor[root]==0;
     for(auto i: vertex)label[i]=i;
     step23();
