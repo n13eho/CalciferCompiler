@@ -75,8 +75,8 @@ int main(int argc, char *argv[])
         show_IR_ins(IR1); // 打印指令
 
         // SSA
-        getssa();//建立支配树以及支配边界 -->
         show_cfg();
+        getssa();//建立支配树以及支配边界 -->
 
         // 计算每个block的frequency， 可以和上面一步的SSA并行
         getFrequency(); // 是addMemoryOperation(RIG.cpp)的1.1

@@ -149,10 +149,30 @@ void CalciferCodeGen(char *output_file_path)
             {
                 //常量数组
                 calout<<val->VName.data()<<":";
+                int repeat_cnt = 0;
                 for(int j = 0;j<val->ArrayElement.size();j++)
                 {
-                    calout<<"\n\t.word ";
-                    calout<<to_string(val->ArrayElement[j]).data();
+                    if(val->ArrayElement[j]!=0)
+                    {
+                        if(repeat_cnt>0)
+                        {
+                            calout<<"\n\t.zero ";
+                            calout<<to_string(repeat_cnt).data();
+                            repeat_cnt = 0;
+                        }
+                        calout<<"\n\t.word ";
+                        calout<<to_string(val->ArrayElement[j]).data();
+                    }
+                    else
+                    {
+                        repeat_cnt++;
+                    }
+                }
+                if(repeat_cnt>0)
+                {
+                    calout<<"\n\t.zero ";
+                    calout<<to_string(repeat_cnt).data();
+                    repeat_cnt = 0;
                 }
                 //后续多个0 采用.fill cnt 4 0格式 todo
                 calout<<endl;
@@ -162,10 +182,34 @@ void CalciferCodeGen(char *output_file_path)
                 //变量数组
                 calout<<val->VName.data()<<":";
                 std::vector<Value*> ele = val->ArrayInitList;
+                int repeat_cnt = 0;
                 for(auto vv : ele)
                 {
-                    calout<<"\n\t.word ";
-                    calout<<to_string(((IntegerValue*)vv)->getValue()).data();
+                    IntegerValue* tt = (IntegerValue*)vv;
+                    // calout<<"\n\t.word ";
+                    // calout<<to_string(tt->getValue()).data();
+
+                    if(tt->getValue()!=0)
+                    {
+                        if(repeat_cnt>0)
+                        {
+                            calout<<"\n\t.zero ";
+                            calout<<to_string(repeat_cnt).data();
+                            repeat_cnt = 0;
+                        }
+                        calout<<"\n\t.word ";
+                        calout<<to_string(tt->getValue()).data();
+                    }
+                    else
+                    {
+                        repeat_cnt++;
+                    }
+                }
+                if(repeat_cnt>0)
+                {
+                    calout<<"\n\t.zero ";
+                    calout<<to_string(repeat_cnt).data();
+                    repeat_cnt = 0;
                 }
                 calout<<endl;
             }

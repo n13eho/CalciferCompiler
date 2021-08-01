@@ -721,37 +721,54 @@ void IfElseNode(GrammaNode* node,LinearIR *IR)
         //T
         bbNow = caseT;
         StmtNode(node->son[1],IR);
-        //如果此分支不存在break、continue、ret
-        if(linkNext(bbNow,IR))
-        {
-            //此时bbNow不一定是caseT
-            bbNow->Link(next);
-            //T跳转至next
-            Instruction* ins_br = new Instruction(IR->getInstCnt(),Instruction::Jmp,0);
-            IR->InsertInstr(ins_br);
-            caseT->Addins(ins_br->getId());
-            ins_br->setParent(caseT);
-            ins_br->jmpDestBlock = next;
+        // //如果此分支不存在break、continue、ret
+        // if(linkNext(bbNow,IR))
+        // {
+        //     //此时bbNow不一定是caseT
+        //     bbNow->Link(next);
+        //     //T跳转至next
+        //     Instruction* ins_br = new Instruction(IR->getInstCnt(),Instruction::Jmp,0);
+        //     IR->InsertInstr(ins_br);
+        //     caseT->Addins(ins_br->getId());
+        //     ins_br->setParent(caseT);
+        //     ins_br->jmpDestBlock = next;
 
-            // cout<<"case T "<<bbNow->BlockName<<"link next"<<endl;
-        }
+        //     // cout<<"case T "<<bbNow->BlockName<<"link next"<<endl;
+        // }
+
+        bbNow->Link(next);
+        //T跳转至next
+        Instruction* ins_br3 = new Instruction(IR->getInstCnt(),Instruction::Jmp,0);
+        IR->InsertInstr(ins_br3);
+        caseT->Addins(ins_br3->getId());
+        ins_br3->setParent(caseT);
+        ins_br3->jmpDestBlock = next;
 
         //F
         bbNow = caseF;
         StmtNode(node->son[2],IR);
         //如果此分支不存在break、continue、ret
-        if(linkNext(bbNow,IR))
-        {
-            //此时bbNow不一定是caseF
-            bbNow->Link(next);
-            //T跳转至next
-            Instruction* ins_br = new Instruction(IR->getInstCnt(),Instruction::Jmp,0);
-            IR->InsertInstr(ins_br);
-            caseF->Addins(ins_br->getId());
-            ins_br->setParent(caseF);
-            ins_br->jmpDestBlock = next;
+        // if(linkNext(bbNow,IR))
+        // {
+        //     //此时bbNow不一定是caseF
+        //     bbNow->Link(next);
+        //     //T跳转至next
+        //     Instruction* ins_br = new Instruction(IR->getInstCnt(),Instruction::Jmp,0);
+        //     IR->InsertInstr(ins_br);
+        //     caseF->Addins(ins_br->getId());
+        //     ins_br->setParent(caseF);
+        //     ins_br->jmpDestBlock = next;
             
-        }
+        // }
+        //此时bbNow不一定是caseF
+        bbNow->Link(next);
+        //T跳转至next
+        Instruction* ins_br4 = new Instruction(IR->getInstCnt(),Instruction::Jmp,0);
+        IR->InsertInstr(ins_br4);
+        caseF->Addins(ins_br4->getId());
+        ins_br4->setParent(caseF);
+        ins_br4->jmpDestBlock = next;
+
         bbNow = next;
         bbNow->bType = BasicBlock::IfNext;
         IfNextBlocks.pop();
