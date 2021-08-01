@@ -185,15 +185,15 @@ void assignLdr(Instruction* instr, BasicBlock* node)
         globalDecl* rs = new globalDecl(rdval, node, rdval->VName);
         ins->rs=rs;
     }
-    else if(rdval->isPara>4){
-        //形参也可以写全
-        memoryDecl* rs = new memoryDecl(rdval, node);
+    // else if(rdval->isPara>4){
+    //     //形参也可以写全
+    //     memoryDecl* rs = new memoryDecl(rdval, node);
 
-        //第5个形参放在sp-4的位置, 第6个形参放在sp-8的位置, 依此类推...
-        int id=rdval->isPara-4;
-        rs->bias = id*(-4);
-        ins->rs=rs;
-    }
+    //     //第5个形参放在sp+4的位置, 第6个形参放在sp+8的位置, 依此类推...
+    //     int id=rdval->isPara-4;
+    //     rs->bias = id;
+    //     ins->rs=rs;
+    // }
     newBlock[node].push_back(ins);
 }
 void assignStr(Instruction* instr, BasicBlock* node)
@@ -512,20 +512,25 @@ void usedCmp(armCmp* ins,BasicBlock* node)
 void usedLdr(armLdr* ins,BasicBlock* node)
 {
     Instruction* raw = trance[ins];
+    if(raw == nullptr){
+        //raw对应的指令为空的话, 这就是一条为了加载多余形参而添加的load,只需要更新形参的assign_rec就行.
+        addAssign(ins->rd->rawValue,node,ins->rd);
+        return ;
+    }
     Value* rawop = raw->getOp()[0];
     if(rawop->getType()==2){
         if(rawop->isPara>4){
-
+            ins->rs = getDecl(rawop,node);
+            ins->bias = getDecl(raw->getOp()[1],node);
         }
         else if(raw->getOp().size()<2){
-
+            dbg("这是啥呀?????????????????????????????????");
         }
         else{
             ins->rs = getDecl(rawop,node);
             ins->bias = getDecl(raw->getOp()[1],node);
         }
     }
-
     addAssign(ins->rd->rawValue,node,ins->rd);
 }
 void usedStr(armStr* ins,BasicBlock* node)
@@ -634,11 +639,7 @@ void showDecl(DomTreenode* sd)
         cout<<'\t';
         if(ins->getType() == 25)
         {
-            dbg(ins);
             armLdr* iii = (armLdr*)ins;
-            dbg(iii->rs);
-            dbg(iii->bias);
-            dbg(*(iii->rd));
         }
         cout<<*ins<<endl;
     }
@@ -672,18 +673,36 @@ void liveSets()
     }
     dbg("syy -- work phi win!");
     //2. 计算reachin和reachout,这里先迭代5次
+    
+    //2.0 添加形参load指令
+    for(auto rt:DomRoot){
+        auto b1=rt->block;
+        FunctionValue* func=rt->func;
+        for(auto i=4;i<func->FuncParams.size();i++){
+            //后面的参数需要从mem里load出来使用
+            armLdr* ldr_ins = new armLdr();
+            varDecl* rd = new varDecl(func->FuncParams[i],b1,Rcnt++);
+            ldr_ins->rd = rd;
+            memoryDecl* rs = new memoryDecl(func->FuncParams[i],b1,i-3);
+            ldr_ins->rs = rs;
+            //把这条指令加到这个函数调用的入口
+            trance[ldr_ins]=nullptr;//代表形参特有的ldr
+            newBlock[b1].insert(newBlock[b1].begin(),ldr_ins);
+        }
+    }
+
     int MAXiter=5;
     while(MAXiter--){
         for(auto rt:DomRoot){
             visReach.clear();
             //刚进入函数的时候已有的形参需要首先加入进 reachin
-            //TODO: 还有一种思路, 不在最开始的地方加入reachin, 在四元式中加入一条use指令,,然后再use指令时加入集合,不过还没想好后面的活性分析怎么搞...
             BasicBlock* b1=rt->block;
             FunctionValue* func=rt->func;
             for(auto i=0;i<min(4,(int)func->FuncParams.size());i++){
+                //直接为前4个寄存器分配参数
                 varDecl* xc = new varDecl(func->FuncParams[i],b1,Rcnt++);
                 reachin[b1].insert(xc);
-            }
+            }  
             calReach(rt->block);
         }
     }

@@ -281,31 +281,6 @@ void getssa()
                 }
             }
         }
-        if(gbval->isPara>4){
-            int iffind=0;
-            for(auto b:IR1->Blocks){
-                for(auto eb:b->domBlock){
-                    for(auto it = eb->InstrList.begin();it!=eb->InstrList.end();it++){
-                        Instruction *ins = IR1->InstList[(*it)];
-                        int fl=hasUsedGlobal(ins,gbval);
-                        if(fl){
-                            //一条加载形参的语句
-                            Instruction *insld = new Instruction(-1,Instruction::Load,1);
-                            insld->setResult(gbval);
-                            insld->addOperand(gbval);
-                            //加入这条语句
-                            IR1->InsertInstr(insld);
-                            eb->InstrList.insert(it,IR1->InstList.size()-1);
-                            iffind =1;
-                            break;
-                        }
-                    }
-                    if(iffind)break;
-                }
-                if(iffind)break;
-            }
-            if(iffind)continue;
-        }
     }
 
     //0.1 处理 mul,div,mod 使得他的源操作数没有常量. 有常量的话,就在这条四元式之前加入一条assign
