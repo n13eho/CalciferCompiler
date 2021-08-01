@@ -2042,9 +2042,10 @@ Value* UnaryExpNode(GrammaNode* node,LinearIR *IR)
                 {
                     bbNow = GetPresentBlock(FuncN,BasicBlock::Basic);
                 }
-
+                IntegerValue* const0 = new IntegerValue("const0",node->lineno,node->var_scope,0,1);
                 ins_new = new Instruction(IR->getInstCnt(),Instruction::UnaryNot,1);
                 ins_new->addOperand(arg1);
+                ins_new->addOperand(const0);
                 ins_new->setResult(ret);
                 IR->InsertInstr(ins_new);
                 bbNow->Addins(ins_new->getId());
