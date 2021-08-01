@@ -255,12 +255,13 @@ IntegerValue *semantic_LVal_Array_(GrammaNode *root, int needConst, int needCond
         throw SemanticError(root->lineno, val->VName, "数组访问越界：维度超了");
     }
     // 这里这个【2.3】存疑，对函数调用是否有影响，函数调用可以这么用
-    if (root->son[1]->son.size() < val->NumOfDimension.size())
-    { // √error 少了未必不对
+    // 0801补充 确实对函数调用有印象
+//    if (root->son[1]->son.size() < val->NumOfDimension.size())
+//    { // √error 少了未必不对
         // 数组访问越界：超出维度了
         //----------------语义检查【2.3】----------------
-        throw SemanticError(root->lineno, val->VName, "数组访问越界：维度不够");
-    }
+//        throw SemanticError(root->lineno, val->VName, "数组访问越界：维度不够");
+//    }
 
     for (int i = 0; i < root->son[1]->son.size(); i++)
     {
@@ -270,7 +271,7 @@ IntegerValue *semantic_LVal_Array_(GrammaNode *root, int needConst, int needCond
         // 获取访问的维度 eachIndex
         eachIndex = indexValue->RealValue;
         // 判断访问维度是否越界
-        cout << "********** " << eachIndex << endl;
+//        cout << "********** " << eachIndex << endl;
         if (eachIndex >= val->NumOfDimension[i] || eachIndex < 0)
         { // √error 超额或者索引是负数
             // 数组访问越界

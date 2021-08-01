@@ -479,6 +479,7 @@ void usedRsb(armRsb* ins,BasicBlock* node)
     Instruction* raw = trance[ins];
     IntegerValue* r0 = (IntegerValue*)raw->getOp()[0];
     if(raw->getOp().size()==1){
+        // 说明这是个单目运算，-
         ins->r1 = new constDecl(nullptr,node,0);
     }
     else{
