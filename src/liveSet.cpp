@@ -294,6 +294,21 @@ void assignNeg(Instruction* instr, BasicBlock* node)
     newBlock[node].push_back(ins);
     trance[ins]=instr;
 }
+void assignNot(Instruction* instr, BasicBlock* node)
+{
+    //翻译成一个比较指令和一个条件mov
+    armCmp* ins = new armCmp();
+    newBlock[node].push_back(ins);
+    trance[ins]=instr;
+
+    IntegerValue* res=(IntegerValue*)instr->getResult();
+    varDecl *resd = new varDecl(res,node,Rcnt++);
+
+    armMoveq* inseq =new armMoveq();
+    inseq->rd = resd;
+    armMovne* insne =new armMovne();
+    insne->rd = resd;
+}
 
 void assignIns(Instruction* ins,BasicBlock* node)
 {//依照不同类型的指令，计算赋值,同时填newblock, 分支指令除外
@@ -344,6 +359,10 @@ void assignIns(Instruction* ins,BasicBlock* node)
     else if(ins->getOpType() == Instruction::UnaryNeg)
     {
         assignNeg(ins,node);
+    }
+    else if(ins->getOpType() == Instruction::UnaryNot)
+    {
+        assignNot(ins,node);
     }
 }
 void setDecl(BasicBlock *s)
@@ -575,6 +594,14 @@ void usedRet(armRet* ins, BasicBlock* node)
     IntegerValue* r0=(IntegerValue*)raw->getOp()[0];
     ins->rs = getDecl(r0,node);
 }
+void usedMoveq(armMoveq* ins, BasicBlock* node)
+{
+    addAssign(ins->rd->rawValue,node,ins->rd);
+}
+void usedMovne(armMovne* ins, BasicBlock* node)
+{
+    addAssign(ins->rd->rawValue,node,ins->rd);
+}
 
 int usedIns(armInstr* ins,BasicBlock* node)
 {
@@ -613,6 +640,12 @@ int usedIns(armInstr* ins,BasicBlock* node)
     }
     else if(ins->getType() == armInstr::ret){
         usedRet((armRet*)ins,node);
+    }
+    else if(ins->getType() == armInstr::moveq){
+        usedMoveq((armMoveq*)ins,node);
+    }
+    else if(ins->getType() == armInstr::movne){
+        usedMovne((armMovne*)ins,node);
     }
     return 0;
 }

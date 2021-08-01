@@ -117,6 +117,29 @@ class armInstr{
 };
 ostream& operator<<(ostream&out,const armInstr& a);
 
+class armMoveq: public armInstr
+{
+    public:
+    Decl* rs;
+    virtual int getType(){return add;}
+    virtual ostream& output(ostream&out)const
+    {
+        out<<"moveq "<<*rd<<", #0";
+        return out;
+    }
+};
+class armMovne: public armInstr
+{
+    public:
+    Decl* rs;
+    virtual int getType(){return add;}
+    virtual ostream& output(ostream&out)const
+    {
+        out<<"movne "<<*rd<<", #1";
+        return out;
+    }
+};
+
 class armAdd:public armInstr//ok
 {
     public:
@@ -257,7 +280,7 @@ class armCall:public armInstr{//ok
         for(auto r : rs){
             out<<*r<<" ";
         }
-        if(rd!=nullptr)cout<<*rd;
+        if(rd!=nullptr)out<<*rd;
         return out;
     }
     virtual vector<Decl*> getGen()
