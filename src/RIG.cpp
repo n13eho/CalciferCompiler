@@ -56,6 +56,20 @@ void ArmI2InOut(armInstr* ai)
             add_ai->r1->gen_used.push_back(ai);
         }
     }
+    else if(ai->getType() == armInstr::armInsType::moveq)
+    {
+        armMoveq* moveq_ai = (armMoveq*)ai;
+
+        // moveq的rd是kill集合,只需要erase
+        ins[ai].erase(VregNumofDecl(moveq_ai->rd));
+    }
+    else if(ai->getType() == armInstr::armInsType::movne)
+    {
+        armMovne* movne_ai = (armMovne*)ai;
+
+        // 只需要erase
+        ins[ai].erase(VregNumofDecl(movne_ai->rd));
+    }
     else if(ai->getType() == armInstr::armInsType::sub)
     {
         armSub* sub_ai = (armSub*)ai;

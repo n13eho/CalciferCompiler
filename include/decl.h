@@ -117,7 +117,7 @@ class armInstr{
 };
 ostream& operator<<(ostream&out,const armInstr& a);
 
-class armMoveq: public armInstr
+class armMoveq: public armInstr//ok
 {
     public:
     Decl* rs;
@@ -128,7 +128,7 @@ class armMoveq: public armInstr
         return out;
     }
 };
-class armMovne: public armInstr
+class armMovne: public armInstr//ok
 {
     public:
     Decl* rs;
