@@ -121,7 +121,7 @@ class armMoveq: public armInstr
 {
     public:
     Decl* rs;
-    virtual int getType(){return add;}
+    virtual int getType(){return moveq;}
     virtual ostream& output(ostream&out)const
     {
         out<<"moveq "<<*rd<<", #0";
@@ -132,7 +132,7 @@ class armMovne: public armInstr
 {
     public:
     Decl* rs;
-    virtual int getType(){return add;}
+    virtual int getType(){return movne;}
     virtual ostream& output(ostream&out)const
     {
         out<<"movne "<<*rd<<", #1";

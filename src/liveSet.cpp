@@ -308,6 +308,11 @@ void assignNot(Instruction* instr, BasicBlock* node)
     inseq->rd = resd;
     armMovne* insne =new armMovne();
     insne->rd = resd;
+
+    newBlock[node].push_back(inseq);
+    trance[inseq]=instr;
+    newBlock[node].push_back(insne);
+    trance[insne]=instr;
 }
 
 void assignIns(Instruction* ins,BasicBlock* node)
@@ -671,10 +676,6 @@ void showDecl(DomTreenode* sd)
     cout<<block2lb[s]<<':'<<endl;
     for(auto ins:newBlock[s]){
         cout<<'\t';
-        if(ins->getType() == 25)
-        {
-            armLdr* iii = (armLdr*)ins;
-        }
         cout<<*ins<<endl;
     }
     for(auto nx:sd->son){
