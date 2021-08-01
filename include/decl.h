@@ -117,22 +117,22 @@ class armInstr{
 };
 ostream& operator<<(ostream&out,const armInstr& a);
 
-class armMoveq: public armInstr
+class armMoveq: public armInstr//ok
 {
     public:
     Decl* rs;
-    virtual int getType(){return add;}
+    virtual int getType(){return moveq;}
     virtual ostream& output(ostream&out)const
     {
         out<<"moveq "<<*rd<<", #0";
         return out;
     }
 };
-class armMovne: public armInstr
+class armMovne: public armInstr//ok
 {
     public:
     Decl* rs;
-    virtual int getType(){return add;}
+    virtual int getType(){return movne;}
     virtual ostream& output(ostream&out)const
     {
         out<<"movne "<<*rd<<", #1";
