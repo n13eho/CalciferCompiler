@@ -1027,6 +1027,16 @@ void LOrExpNode(GrammaNode* node,LinearIR *IR)
     }
     else
     {
+        if(nullptr == FuncN && 0 == global)
+        {
+            return ;
+        }
+        //属于某个函数且该指令为首指令，新建一个基本块，并建立联系
+        if(nullptr == bbNow)
+        {
+            bbNow = GetPresentBlock(FuncN,BasicBlock::If);
+        }
+
         for(int i=0;i<node->son.size();i++)
         {
             //当有'与'条件在'或'条件前，短路需要创建新基本块，如 a&&b&&c || d
@@ -1036,6 +1046,7 @@ void LOrExpNode(GrammaNode* node,LinearIR *IR)
                 BasicBlock* nextOrCond = new BasicBlock(BasicBlock::If);
                 nextOrCond->BlockName = "condOr";
                 FuncN->AddDom(nextOrCond);
+                nextOrCond->setParnt(FuncN);
                 CaseFBlocks.push(nextOrCond);
                 Value* Condi = LAndExpNode(node->son[i],IR);
                 bbNow->Link(nextOrCond);
@@ -1154,6 +1165,7 @@ Value* LAndExpNode(GrammaNode* node,LinearIR *IR)
                 nextOrCond = new BasicBlock(BasicBlock::If);
                 nextOrCond->BlockName = "condOr";
                 FuncN->AddDom(nextOrCond);
+                nextOrCond->setParnt(FuncN);
                 CaseTBlocks.push(nextOrCond);
             }
             
