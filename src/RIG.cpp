@@ -265,7 +265,7 @@ void showSets(DomTreenode* dn)
 }
 
 RIGnode* ForCnode(int d, BasicBlock* gb)
-{
+{// find or create a new RIGnode
     RIGnode* ret_n;
     if(rigNodeCreated[d])
     {//建立过，在已有的graph中找出来
@@ -322,16 +322,32 @@ void connectDecl(DomTreenode* dn, BasicBlock* gb)
 }
 //filling colors data structure.
 int trytimes=5;//某迭代次数
-map<RIGnode*, int> colors;
+map<RIGnode*, int> colors; // 着色color 一个rignode（其实是vreg）对应新的颜色
 queue<RIGnode*> que;//queue of filling color with BFS
 
 
 int usedK;
 
-void init_color()
+void init_color(BasicBlock* gb)
 {
-    usedK =0;
+    // 别的需要用到寄存器的，从参数个数开始染色
     colors.clear();
+
+    // 首先就把r0-r3的参数编号内定了
+    usedK = 0;
+    for(auto i=0 ; i<min(4,(int)gb->FuncV->FuncParams.size()) ; i++)
+    {
+        auto param_value = gb->FuncV->FuncParams[i];
+        Decl* param_dc = Assign_rec[make_pair(param_value,gb->domBlock[0])][reachset_times-1];
+        // 789 预警
+        if(VregNumofDecl(param_dc) == 789)dbg("789 出现！！！！！");
+        RIGnode* param_rignode = ForCnode(VregNumofDecl(param_dc), gb); //RIGnode建立好了
+
+        // 直接填死颜色
+        colors[param_rignode] = ++usedK;
+        dbg(gb->FuncV->FuncParams[i]->VName);
+        dbg(param_rignode->dc, colors[param_rignode]);
+    }
 }
 
 vector<RIGnode*> s_point; // 起点
@@ -361,8 +377,9 @@ bool paintColor(BasicBlock* gb){
     }
     //1.1random
     random_shuffle(s_point.begin(),s_point.end());
-    //1.2 add s_point
-    colors[s_point[0]]=usedK == 0 ? ++usedK : 1; // 非联通的图可以重新使用1
+    //1.2 add s_point，非联通的图可以重新使用参数个数/4
+    dbg(gb->FuncV->FuncParams.size());
+    colors[s_point[0]] = usedK == 0 ? ++usedK : min(4,(int)gb->FuncV->FuncParams.size())+1;
     que.push(s_point[0]);
     //2. BFS coloring
     while(!que.empty()){
@@ -519,7 +536,7 @@ void addMemoryOperation(BasicBlock* gb)
     }
 }
 
-void changeVreg()
+void changeVreg(BasicBlock *gb)
 {
     for(auto rigN: colors)
     {
@@ -527,15 +544,18 @@ void changeVreg()
 
         for(auto dc: Vreg2Decls[dc_vreg])
         {// 就将每一个decl的vreg批量改了
-            if(dc->gettype() == Decl::declType::var_decl)
-            { // 变量 是存在register里面的
-                varDecl* var_dc = (varDecl*)dc;
-                var_dc->Vreg = rigN.second - 1;
-            }
-            else if(dc->gettype() == Decl::declType::addr_decl)
-            { // 地址 也是存在register里面的
-                addrDecl* mem_dc = (addrDecl*)dc;
-                mem_dc->Vreg = rigN.second - 1;
+            if(dc->rawBlock->parent_ == gb)
+            {//（0802改：只改对应gb里面的decl，其他的不要变）
+                if(dc->gettype() == Decl::declType::var_decl)
+                { // 变量 是存在register里面的
+                    varDecl* var_dc = (varDecl*)dc;
+                    var_dc->Vreg = rigN.second - 1;
+                }
+                else if(dc->gettype() == Decl::declType::addr_decl)
+                { // 地址 也是存在register里面的
+                    addrDecl* mem_dc = (addrDecl*)dc;
+                    mem_dc->Vreg = rigN.second - 1;
+                }
             }
         }
 
@@ -566,19 +586,18 @@ void updateV2Ds()
 bool buildRIG(BasicBlock* gb)
 {
     srand(time(0));
-    // 1 init: clear the ins and outs sets
-    dbg("neho -- init: clear sets and graph");
 
     int times_deadCode = 10;
     while(times_deadCode--)
     {
-        // 1.5 init clear out
+        // 1 init clear out
         for(auto node:RIG[gb]){free(node);}
         RIG[gb].clear();
         blockVisited.clear();
         rigNodeCreated.clear();
         ins.clear();
         outs.clear();
+//        dbg("neho -- init: clear sets and graph");
 
         // 2 开始从第一个domblock递归，填满in 和 out 集合
         int times_RIG = 5;
@@ -600,7 +619,7 @@ bool buildRIG(BasicBlock* gb)
     // 根本没有分配寄存器，直接返回真
     if(RIG[gb].size() == 0)return true;
     dbg("neho -- RIG created");
-    // 3.5 for debug 打印整张图看看
+    // for debug 打印整张图看看
     cout << "**** the RIG of " << gb->BlockName <<  "****\n";
     for(auto dnode: RIG[gb])
     {
@@ -617,15 +636,19 @@ bool buildRIG(BasicBlock* gb)
     int success=0;
     trytimes = 5;
     while(trytimes--){
-        init_color();
+        init_color(gb);
         if(paintColor(gb)){
             //如果成功了就break; 否则使用颜色过多就再试一次（最多5次）
+            dbg("color ...");
+            for(auto node: RIG[gb]){
+                cout << node->dc << " " << colors[node] << endl;
+            }
             if(usedK <= K)break;
         }
     }
 
-    // 4.1 遍历color map，修改Vreg
-    changeVreg();
+    // 遍历color map，修改Vreg
+    changeVreg(gb);
 
     // 跟新Vreg2Decls
     updateV2Ds();
@@ -654,7 +677,7 @@ void RigsterAlloc()
         while(!buildRIG(gb)){
 //            if(temp_debug++ > 6)break;
             dbg("染色失败！");
-            //TODO: 如果图着色失败了，add memory operation.
+            // 如果图着色失败了，add memory operation.
             if(whenToadd++ > WHENTOMO)
                 addMemoryOperation(gb);
             dbg(chosenOne);

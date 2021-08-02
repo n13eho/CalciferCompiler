@@ -31,7 +31,7 @@ file(GLOB performance_test2021_pre "sysyruntime2021/performance_test2021_pre/*.s
 file(GLOB custom_test_cases "test_sets/*.sy")
 
 # output .S file path
-set(output_file_path "test_sets/outputS")
+set(output_file_path "/mnt/w/Compiler/calcifercompiler/test_sets/outputS")
 
 
 # test which cases

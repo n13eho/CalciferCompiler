@@ -192,7 +192,7 @@ void assignLdr(Instruction* instr, BasicBlock* node)
     //     //第5个形参放在sp+4的位置, 第6个形参放在sp+8的位置, 依此类推...
     //     int id=rdval->isPara-4;
     //     rs->bias = id;
-    //     ins->rs=rs;
+    //     ins->rs=rs;am
     // }
     newBlock[node].push_back(ins);
 }
@@ -658,7 +658,9 @@ int usedIns(armInstr* ins,BasicBlock* node)
 void setUsed(BasicBlock* s)
 {
     //init:把reachin里的定义建立好
+    dbg(s);
     for(auto dc : reachin[s]){
+        dbg(dc->rawValue->VName,*dc);
         addAssign(dc->rawValue,s,dc);
     } 
     //对于每一条语句填used
@@ -726,7 +728,7 @@ void liveSets()
         }
     }
 
-    int MAXiter=5;
+    int MAXiter=reachset_times;
     while(MAXiter--){
         for(auto rt:DomRoot){
             visReach.clear();

@@ -40,14 +40,9 @@ int main(int argc, char *argv[])
         }
     }
     // 处理input_file
-//    if (optind <= argc)
-//    {
-//        input_file = argv[optind];
-//    }
     input_file = argv[argc-1];
 
-    // 处理output_file
-    // 这里处理成传参
+    // 处理output_file: 这里处理成传参
 
     // show in/out put info
     dbg(input_file, output_file);

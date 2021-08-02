@@ -28,11 +28,14 @@ void printArm(DomTreenode* dn,BasicBlock* gb)
             }
             
             //填写参数
-            calout<<"@ print params"<<endl;
+            calout<<"@ mov params"<<endl;
+            // 前4个
             for(int i=0;i<min(4,(int)call_ins->rs.size());i++){
                 calout<<"\tmov r"<<i<<", "<<*(call_ins->rs[i])<<endl;
             }
-            int tem_bias = 2;
+            // 后5+个
+            int tem_bias = 2; // bias初始值从2开始，是因为1处存着lr
+            // 传参的参数倒着放
             for(int i=(int)call_ins->rs.size() - 1;i>=4;i--,tem_bias++){
                 auto p =call_ins->rs[i];
                 if(p->gettype()==Decl::const_decl){
