@@ -378,7 +378,8 @@ bool paintColor(BasicBlock* gb){
     //1.1random
     random_shuffle(s_point.begin(),s_point.end());
     //1.2 add s_point，非联通的图可以重新使用参数个数/4
-    dbg(gb->FuncV->FuncParams.size());
+
+    if(s_point.size() == 0)return true;// 表示这个函数只用了参数分到的寄存器，没用其他的寄存器，因此直接返回true
     colors[s_point[0]] = usedK == 0 ? ++usedK : min(4,(int)gb->FuncV->FuncParams.size())+1;
     que.push(s_point[0]);
     //2. BFS coloring
