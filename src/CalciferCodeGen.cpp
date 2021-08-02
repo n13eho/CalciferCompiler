@@ -51,6 +51,7 @@ void printArm(DomTreenode* dn,BasicBlock* gb)
                     //如果是立即数的话
                     calout<<"\tmov r"<<i<<", "<<*(call_ins->rs[i])<<endl;
                 else{
+                    if(VregNumofDecl(call_ins->rs[i])==i)continue;
                     //如果是寄存器,需要移一下..
                     calout<<"\tmov r"<<i+7<<", "<<*(call_ins->rs[i])<<endl;
                     calout<<"\tmov r"<<i<<", r"<<i+7<<endl;
