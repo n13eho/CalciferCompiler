@@ -103,7 +103,7 @@ void printArm(DomTreenode* dn,BasicBlock* gb)
             else calout<<"\t"<<*inst<<endl;
         }
         else{
-            calout<<"\t";
+            // calout<<"\t";
             calout<<*inst<<endl;
         }
     }

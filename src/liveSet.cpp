@@ -206,7 +206,6 @@ void assignStr(Instruction* instr, BasicBlock* node)
 {
     Value *rdval = instr->getOp()[0];
     armStr* ins = new armStr();
-    trance[ins]=instr;
     //str 比较特殊，创建好写rs就行
     if(rdval->getScope()=="1"&&rdval->getType()==1){
         globalDecl* rs = new globalDecl(rdval, node, rdval->VName);
@@ -215,11 +214,14 @@ void assignStr(Instruction* instr, BasicBlock* node)
     else if(rdval->getType() == 2){
         //这里应该用已经定义过的数组    array, index, 目标
         //应该增加一条 add index, 数组首地址, index 
-        armAdd* calId = new armAdd();
-        
         IntegerValue* index_val = (IntegerValue*)instr->getOp()[1];
-        addrDecl* index = new addrDecl(index_val, node, Rcnt++);
-        calId->rd = index;
+        if(index_val->isConst==0){
+            armAdd* calId = new armAdd();
+            addrDecl* index = new addrDecl(index_val, node, Rcnt++);
+            calId->rd = index;
+            trance[calId]=instr;
+            newBlock[node].push_back(calId);
+        }
         
     }
     else if(rdval->isPara>4){
@@ -228,6 +230,7 @@ void assignStr(Instruction* instr, BasicBlock* node)
         rs->bias = id*(-4);
         ins->rs=rs;
     }
+    trance[ins]=instr;
     newBlock[node].push_back(ins);
 }
 void assignLogic(Instruction* instr, BasicBlock* node, BasicBlock* nex)
@@ -494,11 +497,16 @@ Decl* getDecl(Value* val, BasicBlock* node)
 
 void usedAdd(armAdd* ins,BasicBlock* node)
 {
-    
     Instruction* raw = trance[ins];
     if(raw->getOpType() == Instruction::Alloc){
         addAssign(ins->rd->rawValue,node, ins->rd);
         return ;
+    }
+    if(raw->getOpType() == Instruction::Store){
+        //这是一条计算数组下标的语句
+        ins->r0 = getDecl(raw->getOp()[0],node);
+        ins->r1 = getDecl(raw->getOp()[1],node);
+        return;
     }
     IntegerValue* r0 = (IntegerValue*)raw->getOp()[0];
     IntegerValue* r1 = (IntegerValue*)raw->getOp()[1];
@@ -615,8 +623,14 @@ void usedStr(armStr* ins,BasicBlock* node)
         IntegerValue* r1=(IntegerValue*)raw->getOp()[1]; //这个是数据的index
         ArrayValue* r0=(ArrayValue*)raw->getOp()[0]; //将存入的数组
         ins->rd = getDecl(r2,node);
-        ins->bias = r1->RealValue+1;
-        ins->rs = getDecl(r0,node);
+
+        if(r1->isConst){
+            ins->bias = r1->RealValue+1;
+            ins->rs = getDecl(r0,node);
+        }
+        else{
+            ins->rs = getDecl(r0,node);
+        }
     }
     else if(raw->getResult()&& raw->getResult()->getScope()=="1"){
         //这是一个为了更新全局变量而诞生的指令, rd已经填过了，但是rs还是没有填。
@@ -721,7 +735,7 @@ void showDecl(DomTreenode* sd)
     cout<<endl;
     cout<<block2lb[s]<<':'<<endl;
     for(auto ins:newBlock[s]){
-        cout<<'\t';
+        // cout<<'\t';
         cout<<*ins<<endl;
     }
     for(auto nx:sd->son){
