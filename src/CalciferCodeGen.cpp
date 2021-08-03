@@ -29,10 +29,10 @@ void printArm(DomTreenode* dn,BasicBlock* gb)
             
             //填写参数
             calout<<"@ mov params"<<endl;
-            // 后5+个
-            int tem_bias = 2; // bias初始值从2开始，是因为1处存着lr
+            // 第5+个
+            int tem_bias = gblock2spbias[gb]+1; // bias初始值从gblock2spbias[gb]+1开始，是因为最上面存着lr
             // 传参的参数倒着放
-            for(int i=(int)call_ins->rs.size() - 1;i>=4;i--,tem_bias++){
+            for(int i=(int)call_ins->rs.size() - 1;i>=4;i--,tem_bias--){
                 auto p =call_ins->rs[i];
                 if(p->gettype()==Decl::const_decl){
                     //if const
@@ -90,7 +90,7 @@ void printArm(DomTreenode* dn,BasicBlock* gb)
             //pop lr
             calout<<"\tpop {lr}"<<endl;
             //放返回值
-            calout<<"\t"<<*inst<<endl;  
+            calout<<*inst<<endl;  
             calout<<"@ end of return "<<endl;
         }
         else if(inst->getType()==armInstr::mov){
@@ -100,7 +100,7 @@ void printArm(DomTreenode* dn,BasicBlock* gb)
                 //tqy:如果能活到这里的mov，一定是mov r0, [r0]这样的指令
                 calout<<"\tldr "<<*inst_mov->rd<<", "<<*inst_mov->rs<<endl;
             }
-            else calout<<"\t"<<*inst<<endl;
+            else calout<<*inst<<endl;
         }
         else{
             // calout<<"\t";
