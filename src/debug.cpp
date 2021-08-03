@@ -126,7 +126,7 @@ void show_cfg()
         }
         cout<<endl;
     }
-    dbg("-----------------------------------");
+//    dbg("-----------------------------------");
     for(auto ot:other){
         if(viscfg[ot])continue;
         dbg(ot);

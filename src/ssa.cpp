@@ -329,21 +329,21 @@ void getssa()
     for(auto i: IR1->Blocks){
         if(i->domBlock.size())buildDomTree(i);
     }
-    dbg("build tree win!");
+//    dbg("build tree win!");
     //计算df;
     for(auto i : IR1->Blocks){
         if(i->domBlock.size()){
             for(auto j : i->domBlock)calDF(j);
         }
     }
-    dbg("cal df win!");
+//    dbg("cal df win!");
 
     for(auto i : IR1->Blocks){
         if(i->domBlock.size()){
             for(auto j : i->domBlock)setAssbyBlock(j);
         }
     }
-    dbg("get all value win!");
+//    dbg("get all value win!");
     //抄它!  002_SSA比较清楚的说明_Lecture23.4up.pdf
     placePhi();
     dbg("place phi win!");

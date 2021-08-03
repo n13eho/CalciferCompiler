@@ -616,10 +616,10 @@ bool buildRIG(BasicBlock* gb)
         // 4 deleting dead code
         deleteDC(block2dom[gb->domBlock[0]], gb);
     }
-    dbg("neho -- fill in/out sets");
+//    dbg("neho -- fill in/out sets");
     // 根本没有分配寄存器，直接返回真
     if(RIG[gb].size() == 0)return true;
-    dbg("neho -- RIG created");
+    dbg("neho -- RIG created and show");
     // for debug 打印整张图看看
     cout << "**** the RIG of " << gb->BlockName <<  "****\n";
     for(auto dnode: RIG[gb])
@@ -631,7 +631,7 @@ bool buildRIG(BasicBlock* gb)
         }
         cout << "\n";
     }
-    dbg("neho -- show RIG win");
+//    dbg("neho -- show RIG win");
 
     // 5. filling colors!
     int success=0;
@@ -640,7 +640,7 @@ bool buildRIG(BasicBlock* gb)
         init_color(gb);
         if(paintColor(gb)){
             //如果成功了就break; 否则使用颜色过多就再试一次（最多5次）
-            dbg("color ...");
+            dbg("color，该全局块染色情况");
             for(auto node: RIG[gb]){
                 cout << node->dc << " " << colors[node] << endl;
             }
@@ -694,7 +694,7 @@ void RigsterAlloc()
     }
 
     // final show instruction agian, this time with limited k registers
-    cout << "****winwin Arm Instruction with limited Registers ****\n";
+    cout << "****Arm Instruction with limited Registers ****\n";
     for(auto dr: DomRoot)
         showDecl(dr);
 }

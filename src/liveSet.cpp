@@ -752,12 +752,12 @@ void liveSets()
             newBlock[eb]={};
         }
     }
-    dbg("syy -- add label win!");
+//    dbg("syy -- add label win!");
     // 1. 转换Decl
     for(auto rt:DomRoot){
         setDecl(rt->block);
     }
-    dbg("syy -- set Decl win!");
+//    dbg("syy -- set Decl win!");
     //1.1 最后才能考虑phi
     for(auto b:phiPos){
         for(auto i:b->InstrList){
@@ -766,7 +766,7 @@ void liveSets()
             }
         }
     }
-    dbg("syy -- work phi win!");
+//    dbg("syy -- work phi win!");
     //2. 计算reachin和reachout,这里先迭代5次
     
     //2.0 添加形参load指令
@@ -801,7 +801,7 @@ void liveSets()
             calReach(rt->block);
         }
     }
-    dbg("syy -- reach sets win!");
+//    dbg("syy -- reach sets win!");
     //3. 填每条语句的used和计算<value,block>到decl的映射...(也不知道有什么用,先算出来吧...)
     for(auto gb:IR1->Blocks){
         for(auto blk : gb->domBlock){
@@ -814,7 +814,7 @@ void liveSets()
     for(auto rt:DomRoot){
         showDecl(rt);
     }
-    dbg("syy -- show super arm win!");
+//    dbg("syy -- show super arm win!");
 
     for(auto gb:IR1->Blocks){
         if(gb->domBlock.size()==0)continue;
