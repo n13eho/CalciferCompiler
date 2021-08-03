@@ -53,7 +53,14 @@ void printArm(DomTreenode* dn,BasicBlock* gb)
                 else{
                     if(VregNumofDecl(call_ins->rs[i])==i)continue;
                     //如果是寄存器,需要移一下..
-                    calout<<"\tmov r"<<i+7<<", "<<*(call_ins->rs[i])<<endl;
+                    // 经典讨论
+                    if(call_ins->rs[i]->gettype() == Decl::addr_decl){
+                        calout<<"\tmov r"<<i+7<<", r"<<((addrDecl*)call_ins->rs[i])->Vreg<<endl;
+                    }
+                    else{
+                        calout<<"\tmov r"<<i+7<<", "<<*(call_ins->rs[i])<<endl;
+                    }
+
                     calout<<"\tmov r"<<i<<", r"<<i+7<<endl;
                 }
             }

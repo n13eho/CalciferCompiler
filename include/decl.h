@@ -507,7 +507,8 @@ class armMov:public armInstr{//ok
         else
         { // rd就是var_decl
             if(rs->gettype() == Decl::addr_decl){
-                out<<"\tldr "<<*rd<<", r"<<((addrDecl*)rs)->Vreg;
+                out << "@@heeee\n";
+                out<<"\tldr "<<*rd<<", "<<*rs;
             }
             else if(rs->gettype()==Decl:: memory_decl){
                 dbg("不可能出现");
