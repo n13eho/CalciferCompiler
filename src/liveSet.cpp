@@ -480,6 +480,7 @@ void addAssign(Value* val, BasicBlock* node, Decl* dc)
 
 Decl* getDecl(Value* val, BasicBlock* node)
 {
+    dbg(val->VName);
     if(val->getType()==1){
         IntegerValue* intval = (IntegerValue*)val;
         if(intval->isConst&&Assign_rec[make_pair(intval,node)].size()==0){
