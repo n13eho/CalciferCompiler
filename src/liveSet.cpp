@@ -590,7 +590,11 @@ int usedMov(armMov* ins, BasicBlock* node)
     }
     IntegerValue* rs ;
     if(raw->getOp().size())rs= (IntegerValue*)raw->getOp()[0];
-    else rs= new IntegerValue("tt",-1,"",1);//这里对于没有初值的全局变量的处理
+    else {
+        IntegerValue* temval = (IntegerValue*)ins->rd->rawValue;
+        rs= new IntegerValue("tt",-1,"",1);//这里对于没有初值的变量的处理
+        if(temval->isConst) rs->RealValue=temval->RealValue;//如果是常量初始化
+    }
     ins->rs = getDecl(rs,node);
     addAssign(ins->rd->rawValue,node,ins->rd);
     return 0;
