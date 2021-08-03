@@ -2,6 +2,9 @@
 #include "../include/debug.h"
 #include "../include/semanticAnalyze.h"
 #include <stack>
+
+//决定数组是否用memset的比例
+#define ArrayPercent 20
 using namespace std;
 
 extern idTable_struct* SymbolTable;
@@ -17,6 +20,7 @@ stack<pair<BasicBlock*,BasicBlock*>> LoopNext;
 
 //用于数组初始化
 std::vector<Value *> array_init;
+int given_value = 0;
 std::vector<unsigned> array_dimen;
 int dimen_dpeth;
 //记录条件语句的两种跳转位置
@@ -129,8 +133,9 @@ void VisitAST(GrammaNode* DRoot,LinearIR *IR)
             bbNow = nullptr;
         }
     }
-
-    fixIfNext(IR,globalBlock,0);
+    visited.clear();
+    for(auto gb:IR->Blocks)
+        fixIfNext(IR,gb,0);
 }
 
 void ConstDefNode(GrammaNode* node,LinearIR *IR)
@@ -259,6 +264,7 @@ void VarDefNode(GrammaNode* node,LinearIR *IR)
             Value* VL=SymbolTable->askItem(p_node->son[0]);
             int total = 1;
             array_init.clear();
+            given_value = 0;
             dimen_dpeth = 0;
             array_dimen = ((ArrayValue*)VL)->NumOfDimension;
             for(int j = 0;j<((ArrayValue*)VL)->NumOfDimension.size();j++)
@@ -288,13 +294,27 @@ void VarDefNode(GrammaNode* node,LinearIR *IR)
                 {
                     if(0 == global)
                     {
+                        int memset_flag = 0;
+                        // if(given_value*ArrayPercent <= total)
+                        // {
+                        //     //用memset
+                        //     memset_flag = 1;
+                        //     IntegerValue* const00 = new IntegerValue("const0",node->lineno,node->var_scope,0,1);
+                        //     IntegerValue* arraysize = new IntegerValue("ArraySize",node->lineno,node->var_scope,total,1);
+                        //     FunctionValue* funcMemset = new FunctionValue("memset",node->lineno,node->var_scope,3,0);
+                        //     std::vector<Value*> op = {funcMemset,VL,const00,arraysize};//调用的函数value、数组首地址、0、memset数组的大小
+                        //     CreateIns(node,IR,Instruction::Call,4,op,nullptr);
+                        // }
                         for(int j=0;j<array_init.size();j++)
                         {
+                            // if(memset_flag && array_init[j]->getName() == "const0")
+                            //     continue;
                             IntegerValue* index = new IntegerValue("index",node->lineno,node->var_scope,j,1);
                             std::vector<Value*> op = {VL,index,array_init[j]};
                             cout<<"store "<<array_init[j]->getName()<<" to index "<<j<<endl;
                             CreateIns(node,IR,Instruction::Store,3,op,nullptr);
                         }
+
                     }
                     //变量数组 初始值存于该结构中，在代码生成时，直接遍历该结构
                     ((ArrayValue*)VL)->ArrayInitList.assign(array_init.begin(),array_init.end());
@@ -2333,9 +2353,10 @@ void fixIfNext(LinearIR *IR,BasicBlock* node,int dep)
     visited[node]=1;
     // cout<<node->BlockName<<" "<<node->InstrList.size()<<" "<<node->getLastIns()<<endl;
     int insId = node->getLastIns();
-    
+    dbg(node->BlockName,node->bType,node->parent_,insId);
     if(node->bType == BasicBlock::IfNext&&node->parent_!=nullptr &&(insId == -1 || (IR->getIns(insId)->getOpType() != 17 && IR->getIns(insId)->getOpType() != 20)))
     {
+        // dbg("kong",node->BlockName,node);
         //空基本块
         if(node->LastIfNext == nullptr)
         {
@@ -2359,14 +2380,14 @@ void fixIfNext(LinearIR *IR,BasicBlock* node,int dep)
     }
     for(auto i : node->succBlock)
      {
-        if(!visited[i])
+        if(!visited.count(i))
         {
             fixIfNext(IR,i,dep);
         }
      }
     for(auto i : node->domBlock)
     {
-        if(!visited[i])
+        if(!visited.count(i))
         {
             fixIfNext(IR,i,dep+1);
         }
