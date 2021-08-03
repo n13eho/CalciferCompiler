@@ -10,9 +10,12 @@ map<BasicBlock*, string> block2lb;
 map<BasicBlock*, int> gblock2spbias;
 int Bcnt;
 string lb=".LB";
-int Rcnt;
+int Rcnt=14;
 
 map<int, vector<Decl*>> Vreg2Decls;
+
+// because of array
+map<ArrayValue*, Decl> arrayAddr;
 
 ///////////////
 ostream& operator<<(ostream&out,const armInstr& a){
@@ -51,6 +54,9 @@ void strGlobal(Instruction* instr, BasicBlock* node, Decl* src)
 
 void assignMov(Instruction* instr, BasicBlock* node)
 {
+    if(instr->getResult()->getType() ==2&&instr->getOp().size()<1)
+        return;//屏蔽掉未初始化数组alloc后的第一句......
+
     armMov *ins=new armMov();
     newBlock[node].push_back(ins);
     trance[ins]=instr;
@@ -206,6 +212,16 @@ void assignStr(Instruction* instr, BasicBlock* node)
         globalDecl* rs = new globalDecl(rdval, node, rdval->VName);
         ins->rs=rs;
     }
+    else if(rdval->getType() == 2){
+        //这里应该用已经定义过的数组    array, index, 目标
+        //应该增加一条 add index, 数组首地址, index 
+        armAdd* calId = new armAdd();
+        
+        IntegerValue* index_val = (IntegerValue*)instr->getOp()[1];
+        addrDecl* index = new addrDecl(index_val, node, Rcnt++);
+        calId->rd = index;
+        
+    }
     else if(rdval->isPara>4){
         memoryDecl* rs = new memoryDecl(rdval, node);
         int id=rdval->isPara-4;
@@ -258,6 +274,7 @@ void assignLogic(Instruction* instr, BasicBlock* node, BasicBlock* nex)
         newBlock[node].push_back(insb);
         insb->lb=block2lb[nex];
     }
+    
 }
 void assignjmp(Instruction* instr, BasicBlock* node)
 {
@@ -369,6 +386,27 @@ void assignIns(Instruction* ins,BasicBlock* node)
     {
         assignNot(ins,node);
     }
+    else if(ins->getOpType() == Instruction::Alloc){
+        if(ins->getOp()[0]->getType() == 2){
+            //只有alloc是数组的时候才需要处理
+            ArrayValue* array =(ArrayValue*) ins->getOp()[0];//被声明的定义
+
+            armAdd* calAddr = new armAdd();//用一个加指令计算数组首地址
+            addrDecl* rd = new addrDecl(array, node, Rcnt++);
+            calAddr->rd = rd;
+            varDecl* r0 = new varDecl(nullptr, node, 13);//这是sp寄存器
+            calAddr->r0=r0;
+            dbg(node->parent_->BlockName);
+            dbg(gblock2spbias[node->parent_]);
+            constDecl* r1 = new constDecl(nullptr, node, (gblock2spbias[node->parent_]+1)*4);//这是数组首地址偏移，从低地址向高地址存
+            calAddr->r1=r1;
+            int size = 1;//TODO:被声明的数组大小
+            gblock2spbias[node->parent_]+=size;
+            
+            newBlock[node].push_back(calAddr);
+            trance[calAddr]=ins;//添加指令
+        }
+    }
 }
 void setDecl(BasicBlock *s)
 {
@@ -430,7 +468,7 @@ void addAssign(Value* val, BasicBlock* node, Decl* dc)
 
 Decl* getDecl(Value* val, BasicBlock* node)
 {
-    if(val->getType()==1||val->getType()==2){
+    if(val->getType()==1){
         IntegerValue* intval = (IntegerValue*)val;
         if(intval->isConst){
             //常数的话,直接新建一个返回
@@ -442,18 +480,26 @@ Decl* getDecl(Value* val, BasicBlock* node)
             return Assign_rec[make_pair(intval,node)].back();
         }
     }
-    if(val->getType() == 4){
+    else if(val->getType() == 4){
         ImmValue* intval = (ImmValue*)val;
         constDecl* ret=new constDecl(intval,node,intval->RealValue);
         return ret;
+    }
+    else if(val->getType()==2)
+    {
+        return Assign_rec[make_pair(val,node)].back();
     }
     else {return NULL;}
 }
 
 void usedAdd(armAdd* ins,BasicBlock* node)
 {
+    
     Instruction* raw = trance[ins];
-
+    if(raw->getOpType() == Instruction::Alloc){
+        addAssign(ins->rd->rawValue,node, ins->rd);
+        return ;
+    }
     IntegerValue* r0 = (IntegerValue*)raw->getOp()[0];
     IntegerValue* r1 = (IntegerValue*)raw->getOp()[1];
     if(r0->isConst)swap(r0,r1);
@@ -546,14 +592,14 @@ void usedLdr(armLdr* ins,BasicBlock* node)
     if(rawop->getType()==2){
         if(rawop->isPara>4){
             ins->rs = getDecl(rawop,node);
-            ins->bias = getDecl(raw->getOp()[1],node);
+            ins->bias = ((IntegerValue*)raw->getOp()[1])->RealValue+1;
         }
         else if(raw->getOp().size()<2){
             dbg("这是啥呀?????????????????????????????????");
         }
         else{
             ins->rs = getDecl(rawop,node);
-            ins->bias = getDecl(raw->getOp()[1],node);
+            ins->bias = ((IntegerValue*)raw->getOp()[1])->RealValue+1;
         }
     }
     addAssign(ins->rd->rawValue,node,ins->rd);
@@ -569,8 +615,8 @@ void usedStr(armStr* ins,BasicBlock* node)
         IntegerValue* r1=(IntegerValue*)raw->getOp()[1]; //这个是数据的index
         ArrayValue* r0=(ArrayValue*)raw->getOp()[0]; //将存入的数组
         ins->rd = getDecl(r2,node);
-        ins->bias = getDecl(r1,node);
-        ins->rs = getDecl(r0,node);//FIXME:将变量存入a并不算对变量的重新赋值
+        ins->bias = r1->RealValue+1;
+        ins->rs = getDecl(r0,node);
     }
     else if(raw->getResult()&& raw->getResult()->getScope()=="1"){
         //这是一个为了更新全局变量而诞生的指令, rd已经填过了，但是rs还是没有填。
@@ -658,9 +704,7 @@ int usedIns(armInstr* ins,BasicBlock* node)
 void setUsed(BasicBlock* s)
 {
     //init:把reachin里的定义建立好
-    dbg(s);
     for(auto dc : reachin[s]){
-        dbg(dc->rawValue->VName,*dc);
         addAssign(dc->rawValue,s,dc);
     } 
     //对于每一条语句填used

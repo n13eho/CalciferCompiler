@@ -147,7 +147,14 @@ class armAdd:public armInstr//ok
     virtual int getType(){return add;}
     virtual ostream& output(ostream&out)const
     {
-        out<<"add "<<*rd<<", "<<*r0<<", "<<*r1;
+        if(rd->gettype()==Decl::addr_decl)
+        {
+            addrDecl* print = (addrDecl*)rd;
+            out<<"add r"<<print->Vreg<<", "<<*r0<<", "<<*r1;
+        }
+        else{
+            out<<"add "<<*rd<<", "<<*r0<<", "<<*r1;
+        }
         return out;
     }
     virtual vector<Decl*> getGen()
@@ -291,17 +298,21 @@ class armCall:public armInstr{//ok
 class armLdr:public armInstr{//ok??????????? //TODO: now array is different!
     public:
     Decl *rs;
-    Decl *bias;
+    int bias;
     virtual int getType(){return ldr;}
     virtual ostream& output(ostream&out)const
     {
         if(rd->gettype() == Decl::addr_decl){
             out<<"ldr r"<<((addrDecl*)rd)->Vreg<<", "<<*rs;
         }
-        else 
-            out<<"ldr "<<*rd<<", "<<*rs;
-        if(bias){
-            out<<"\t@ this is array....";//TODO: 这里以后要改.
+        else{
+            out<<"ldr "<<*rd;
+            if(bias){
+                out<<", [r"<<((addrDecl*)rs)->Vreg<<", #"<<bias*4<<"]"<<"\t@ this is array....";//TODO: 这里以后要改.
+            }
+            else{
+                cout<<", "<<*rs;
+            }
         }
         return out;
     }
@@ -315,13 +326,17 @@ class armLdr:public armInstr{//ok??????????? //TODO: now array is different!
 class armStr:public armInstr{//ok
     public:
     Decl *rs;//str中rs其实是目的位置！！！！！！！！！
-    Decl *bias;
+    int bias;
     virtual int getType(){return str;}
     virtual ostream& output(ostream&out)const
     {
-        out<<"str "<<*rd<<", "<<*rs;
+        out<<"str "<<*rd;
         if(bias){
-            out<<"\t@ this is array....";//TODO: 这里以后要改.
+            
+            out<<", [r"<<((addrDecl*)rs)->Vreg<<", #"<<bias*4<<"]"<<"\t@ this is array....";//TODO: 这里以后要改.
+        }
+        else{
+            out<<", "<<*rs;
         }
         return out;
     }
@@ -428,7 +443,22 @@ class armMov:public armInstr{//ok
     virtual int getType(){return mov;}
     virtual ostream& output(ostream&out)const
     {
-        out<<"mov "<<*rd<<", "<<*rs;
+        if(rd->gettype() == Decl::addr_decl||rd->gettype() == Decl::memory_decl){
+            if(rs->gettype() == Decl::addr_decl||rs->gettype()==Decl:: memory_decl){
+                out<<"@ This is possible??????I have no idea. ----hsyy04";
+            }
+            else{
+                out<<"str "<<*rs<<", "<<*rd;
+            }
+        }
+        else{
+            if(rs->gettype() == Decl::addr_decl||rs->gettype()==Decl:: memory_decl){
+                out<<"ldr "<<*rd<<", "<<*rs;
+            }
+            else{
+                out<<"mov "<<*rd<<", "<<*rs;
+            }
+        }
         return out;
     }
     virtual vector<Decl*> getGen()
