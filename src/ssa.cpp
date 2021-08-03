@@ -274,7 +274,7 @@ void getssa()
                             insld->addOperand(gbval);
                             //加入这条语句
                             IR1->InsertInstr(insld);
-                            eb->InstrList.insert(it,IR1->InstList.size()-1);
+                            b->domBlock[0]->InstrList.push_front(IR1->InstList.size()-1);
 
                             if(gbval->getType() != 2)
                             { // 如果不是全局数组，是全局变量，就需要ldr进来其值，相反如果是全局数组，则只需要一个首地址即可
@@ -284,7 +284,7 @@ void getssa()
                                 ins_addr2content->addOperand(gbval);
                                 //加入这条语句
                                 IR1->InsertInstr(ins_addr2content);
-                                eb->InstrList.insert(it,IR1->InstList.size()-1);
+                                b->domBlock[0]->InstrList.push_front(IR1->InstList.size()-1);
                             }
                             iffind=1;
                             break;

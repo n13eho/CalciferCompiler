@@ -412,8 +412,6 @@ void assignIns(Instruction* ins,BasicBlock* node)
             calAddr->rd = rd;
             varDecl* r0 = new varDecl(nullptr, node, 13);//这是sp寄存器
             calAddr->r0=r0;
-            dbg(node->parent_->BlockName);
-            dbg(gblock2spbias[node->parent_]);
             constDecl* r1 = new constDecl(nullptr, node, (gblock2spbias[node->parent_]+1)*4);//这是数组首地址偏移，从低地址向高地址存
             calAddr->r1=r1;
             int size = ((IntegerValue*)ins->getOp()[1])->RealValue;
@@ -451,18 +449,16 @@ void calReach(BasicBlock* s)
     reachout[s]=reachin[s];
     for(auto ins:newBlock[s]){
         //减去这个语句定义的decl对应的val的decl
-        Decl* dc=ins->rd;
+        Decl* dc=ins->rd;//这个语句对应的decl
         if(dc == nullptr)continue;
-        Value* val=dc->rawValue;
+        Value* val=dc->rawValue;//要修改的val
         for(auto dead=reachout[s].begin();dead!=reachout[s].end(); ){
-            Decl* deadDc=*dead;
+            Decl* deadDc=*dead;//当前在集合中的decl
             if(deadDc->rawValue==val){
                 dead=reachout[s].erase(dead);
             }
             else
-            {
                 dead++;
-            }
         }
         //加上这个语句定义的decl
         reachout[s].insert(dc);
@@ -503,7 +499,6 @@ Decl* getDecl(Value* val, BasicBlock* node)
     }
     else if(val->getType()==2)
     {
-        dbg(Assign_rec[make_pair(val,node)].size());
         return Assign_rec[make_pair(val,node)].back();
     }
     else {return NULL;}
@@ -623,15 +618,8 @@ void usedLdr(armLdr* ins,BasicBlock* node)
             ins->bias = ((IntegerValue*)raw->getOp()[1])->RealValue+1;
         }
         else if(raw->getOp().size()<2){ // 是因为要使用全局数组，加载进来
-            dbg(node);
-            dbg(raw->getId());
-            dbg(rawop->VName);
-            dbg("这是啥呀??数组的接口????????????");
         }
         else{
-            dbg(node);
-            dbg(raw->getId());
-            dbg(rawop->VName);
             ins->rs = getDecl(rawop,node);
             ins->bias = ((IntegerValue*)raw->getOp()[1])->RealValue+1;
         }
@@ -747,12 +735,12 @@ void setUsed(BasicBlock* s)
     for(auto dc : reachin[s]){
         addAssign(dc->rawValue,s,dc);
     } 
+    
     //对于每一条语句填used
     for(auto ins=newBlock[s].begin();ins!=newBlock[s].end();ins++){
         if(usedIns(*ins,s)==-1){
             newBlock[s].erase(ins);
         }
-        dbg(ins->rd->rawValue->VName);
     }
 
 }
