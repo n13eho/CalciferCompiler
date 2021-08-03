@@ -90,7 +90,7 @@ void printArm(DomTreenode* dn,BasicBlock* gb)
             //pop lr
             calout<<"\tpop {lr}"<<endl;
             //放返回值
-            calout<<"\t"<<*inst<<endl;  
+            calout<<*inst<<endl;  
             calout<<"@ end of return "<<endl;
         }
         else if(inst->getType()==armInstr::mov){
@@ -100,7 +100,7 @@ void printArm(DomTreenode* dn,BasicBlock* gb)
                 //tqy:如果能活到这里的mov，一定是mov r0, [r0]这样的指令
                 calout<<"\tldr "<<*inst_mov->rd<<", "<<*inst_mov->rs<<endl;
             }
-            else calout<<"\t"<<*inst<<endl;
+            else calout<<*inst<<endl;
         }
         else{
             // calout<<"\t";

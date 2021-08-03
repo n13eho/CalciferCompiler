@@ -157,16 +157,19 @@ class armAdd:public armInstr//ok
 {
     public:
     Decl *r1,*r0;
+    int isAddr=0;
     virtual int getType(){return add;}
     virtual ostream& output(ostream&out)const
     {
-        // 处理全局变量的时候，r0和r1可能是变成了地址，所以先判断一下，如果是地址就再多输出一条ldr指令
-        // r0 处理
-        if(r0->gettype() == Decl::addr_decl)
-            out << "\tldr r" << ((addrDecl*)r0)->Vreg << ", " << *r0 << endl;
-        // r1 处理
-        if(r1->gettype() == Decl::addr_decl)
-            out << "\tldr r" << ((addrDecl*)r1)->Vreg << ", " << *r1 << endl;
+        if(isAddr==0){
+            // 处理全局变量的时候，r0和r1可能是变成了地址，所以先判断一下，如果是地址就再多输出一条ldr指令
+            // r0 处理
+            if(r0->gettype() == Decl::addr_decl)
+                out << "\tldr r" << ((addrDecl*)r0)->Vreg << ", " << *r0 << endl;
+            // r1 处理
+            if(r1->gettype() == Decl::addr_decl)
+                out << "\tldr r" << ((addrDecl*)r1)->Vreg << ", " << *r1 << endl;
+        }
 
         // rd 有在数组处理的时候会变成地址，因此不输出方括号
         out << "\tadd ";
@@ -178,7 +181,7 @@ class armAdd:public armInstr//ok
         if(r0->gettype() == Decl::addr_decl)
             out << "r" << ((addrDecl*)r0)->Vreg;
         else out << *r0;
-        cout << ", ";
+        out << ", ";
 
         if(r1->gettype() == Decl::addr_decl)
             out << "r" << ((addrDecl*)r1)->Vreg;
@@ -342,7 +345,7 @@ class armLdr:public armInstr{//ok??????????? //TODO: now array is different!
                 out<<", [r"<<((addrDecl*)rs)->Vreg<<", #"<<bias*4<<"]"<<"\t@ this is array....";//TODO: 这里以后要改.
             }
             else{
-                cout<<", "<<*rs;
+                out<<", "<<*rs;
             }
         }
         return out;

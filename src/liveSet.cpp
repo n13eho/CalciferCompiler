@@ -230,6 +230,19 @@ void assignStr(Instruction* instr, BasicBlock* node)
         rs->bias = id*(-4);
         ins->rs=rs;
     }
+
+    //如果要str的是一个立即数，需要先把立即数mov到寄存器中!
+    IntegerValue* imm = (IntegerValue*)instr->getOp()[2];
+    if(imm->isConst==1){
+        armMov* immIns = new armMov();
+        varDecl* imm_decl = new varDecl(instr->getOp()[2],node, Rcnt++);
+        immIns->rd = imm_decl;
+        constDecl* const_imm = new constDecl(instr->getOp()[2],node,imm->RealValue);
+        immIns->rs = const_imm;
+        trance[immIns]=instr;
+        newBlock[node].push_back(immIns);
+    }
+
     trance[ins]=instr;
     newBlock[node].push_back(ins);
 }
@@ -473,7 +486,7 @@ Decl* getDecl(Value* val, BasicBlock* node)
 {
     if(val->getType()==1){
         IntegerValue* intval = (IntegerValue*)val;
-        if(intval->isConst){
+        if(intval->isConst&&Assign_rec[make_pair(intval,node)].size()==0){
             //常数的话,直接新建一个返回
             constDecl* ret=new constDecl(intval,node,intval->RealValue);
             return ret;
@@ -506,6 +519,8 @@ void usedAdd(armAdd* ins,BasicBlock* node)
         //这是一条计算数组下标的语句
         ins->r0 = getDecl(raw->getOp()[0],node);
         ins->r1 = getDecl(raw->getOp()[1],node);
+        addAssign(ins->rd->rawValue,node,ins->rd);
+        ins->isAddr=1;
         return;
     }
     IntegerValue* r0 = (IntegerValue*)raw->getOp()[0];
@@ -571,7 +586,11 @@ void usedRsb(armRsb* ins,BasicBlock* node)
 int usedMov(armMov* ins, BasicBlock* node)
 {
     Instruction* raw = trance[ins];
-
+    if(raw->getOpType() == Instruction::Store){
+        //为了处理str立即数特别加上的一条mov指令
+        addAssign(ins->rd->rawValue,node,ins->rd);
+        return 0;
+    }
     IntegerValue* rs ;
     if(raw->getOp().size())rs= (IntegerValue*)raw->getOp()[0];
     else rs= new IntegerValue("tt",-1,"",1);//这里对于没有初值的全局变量的处理
@@ -629,7 +648,7 @@ void usedStr(armStr* ins,BasicBlock* node)
             ins->rs = getDecl(r0,node);
         }
         else{
-            ins->rs = getDecl(r0,node);
+            ins->rs = getDecl(r1,node);
         }
     }
     else if(raw->getResult()&& raw->getResult()->getScope()=="1"){
