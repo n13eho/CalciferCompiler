@@ -477,15 +477,36 @@ class armMov:public armInstr{//ok
     virtual int getType(){return mov;}
     virtual ostream& output(ostream&out)const
     {
-        if(rd->gettype() == Decl::addr_decl||rd->gettype() == Decl::memory_decl){
-            if(rs->gettype() == Decl::addr_decl||rs->gettype()==Decl:: memory_decl){
-                out<<"@ This is possible??????I have no idea. ----hsyy04";
+        if(rd->gettype() == Decl::addr_decl)
+        { // rd是addr_decl
+            if(rs->gettype() == Decl::addr_decl){
+                out<<"@ This is possible??????I have no idea. ----hsyy04\n";
+                out<<"@ 我先临时乱写一下. ----neho\n";
+                out << "\tmov r" << ((addrDecl*)rd)->Vreg << ", r" << ((addrDecl*)rs)->Vreg;
+            }
+            else if(rs->gettype()==Decl::memory_decl)
+            {
+                out<<"@ This is possible??????I have no idea. ----hsyy04\n";
             }
             else{
                 out<<"\tstr "<<*rs<<", "<<*rd;
             }
         }
-        else{
+        else if(rd->gettype() == Decl::memory_decl)
+        { // rd是memory_decl
+            if(rs->gettype() == Decl::addr_decl){
+                out<<"@ This is possible??????I have no idea. ----hsyy04\n";
+            }
+            else if(rs->gettype()==Decl::memory_decl)
+            {
+                out<<"@ This is possible??????I have no idea. ----hsyy04\n";
+            }
+            else{
+                out<<"\tstr "<<*rs<<", "<<*rd;
+            }
+        }
+        else
+        { // rd就是var_decl
             if(rs->gettype() == Decl::addr_decl||rs->gettype()==Decl:: memory_decl){
                 out<<"\tldr "<<*rd<<", "<<*rs;
             }

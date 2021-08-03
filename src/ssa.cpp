@@ -276,13 +276,16 @@ void getssa()
                             IR1->InsertInstr(insld);
                             eb->InstrList.insert(it,IR1->InstList.size()-1);
 
-                            //由于加载过来的全局变量是个地址，在mov一遍，就是说再加一个assign
-                            Instruction *ins_addr2content= new Instruction(-1,Instruction::Assign,1);
-                            ins_addr2content->setResult(gbval);
-                            ins_addr2content->addOperand(gbval);
-                            //加入这条语句
-                            IR1->InsertInstr(ins_addr2content);
-                            eb->InstrList.insert(it,IR1->InstList.size()-1);
+                            if(gbval->getType() != 2)
+                            { // 如果不是全局数组，是全局变量，就需要ldr进来其值，相反如果是全局数组，则只需要一个首地址即可
+                                //由于加载过来的全局变量是个地址，在mov一遍，就是说再加一个assign
+                                Instruction *ins_addr2content= new Instruction(-1,Instruction::Assign,1);
+                                ins_addr2content->setResult(gbval);
+                                ins_addr2content->addOperand(gbval);
+                                //加入这条语句
+                                IR1->InsertInstr(ins_addr2content);
+                                eb->InstrList.insert(it,IR1->InstList.size()-1);
+                            }
                             iffind=1;
                             break;
                         }

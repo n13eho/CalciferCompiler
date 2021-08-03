@@ -503,6 +503,7 @@ Decl* getDecl(Value* val, BasicBlock* node)
     }
     else if(val->getType()==2)
     {
+        dbg(Assign_rec[make_pair(val,node)].size());
         return Assign_rec[make_pair(val,node)].back();
     }
     else {return NULL;}
@@ -616,15 +617,21 @@ void usedLdr(armLdr* ins,BasicBlock* node)
         return ;
     }
     Value* rawop = raw->getOp()[0];
-    if(rawop->getType()==2){
-        if(rawop->isPara>4){
+    if(rawop->getType()==2){ // 2是数组
+        if(rawop->isPara>4){ // 形参第5+是数组
             ins->rs = getDecl(rawop,node);
             ins->bias = ((IntegerValue*)raw->getOp()[1])->RealValue+1;
         }
-        else if(raw->getOp().size()<2){
-            dbg("这是啥呀?????????????????????????????????");
+        else if(raw->getOp().size()<2){ // 是因为要使用全局数组，加载进来
+            dbg(node);
+            dbg(raw->getId());
+            dbg(rawop->VName);
+            dbg("这是啥呀??数组的接口????????????");
         }
         else{
+            dbg(node);
+            dbg(raw->getId());
+            dbg(rawop->VName);
             ins->rs = getDecl(rawop,node);
             ins->bias = ((IntegerValue*)raw->getOp()[1])->RealValue+1;
         }
@@ -745,7 +752,9 @@ void setUsed(BasicBlock* s)
         if(usedIns(*ins,s)==-1){
             newBlock[s].erase(ins);
         }
+        dbg(ins->rd->rawValue->VName);
     }
+
 }
 
 void showDecl(DomTreenode* sd)

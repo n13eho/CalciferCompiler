@@ -67,11 +67,11 @@ int main(int argc, char *argv[])
         VisitAST(Droot, IR1); // 从ast：建立四元式 + 得出block的信息
         // cout << "\n\n"; show_block(globalBlock, 0);
         // Visitblock(IR1); // 删除空结点
-//        show_IR_ins(IR1); // 打印指令
+        show_IR_ins(IR1); // 打印指令
 
         // SSA
-        show_cfg();
         getssa();//建立支配树以及支配边界 -->
+        show_cfg();
 
         // 计算每个block的frequency， 可以和上面一步的SSA并行
         getFrequency(); // 是addMemoryOperation(RIG.cpp)的1.1
