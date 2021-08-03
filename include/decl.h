@@ -34,7 +34,12 @@ class Decl {
         out<<"@NULL"<<endl;
         return out;
     }
-    virtual int gettype(){return 0;}
+    virtual int gettype()const{return 0;}
+
+
+//    virtual ostream & output(ostream &out,bool fl)const{
+//        return output(out);
+//    }
 };
 
 
@@ -51,7 +56,7 @@ class constDecl:public Decl{
         out<<"#"<<value;
         return out;
     }
-    virtual int gettype(){return 1;}
+    virtual int gettype()const{return 1;}
 };
 
 class varDecl:public Decl{
@@ -64,7 +69,7 @@ class varDecl:public Decl{
         out<<"r"<<Vreg;
         return out;
     }
-    virtual int gettype(){return 2;}
+    virtual int gettype()const{return 2;}
 };
 
 class globalDecl: public Decl{
@@ -75,7 +80,7 @@ class globalDecl: public Decl{
         out<<"="<<dataPos;
         return out;
     }
-    virtual int gettype(){return 3;}
+    virtual int gettype()const{return 3;}
 };
 class memoryDecl: public Decl{
     public:
@@ -86,7 +91,7 @@ class memoryDecl: public Decl{
         out<<"[sp, #"<<bias*4<<']';
         return out;
     }
-    virtual int gettype(){return 4;}
+    virtual int gettype()const{return 4;}
 };
 class addrDecl: public Decl{
     public:
@@ -101,7 +106,15 @@ class addrDecl: public Decl{
         else out<<"[r"<<Vreg<<", #"<<bias<<"]";
         return out;
     }
-    virtual int gettype(){return 5;}
+//    ostream & output(ostream &out,bool fl)const{
+//        if(fl)out<<*this;//输出带括号的
+//        else{
+//            out<<"r"<<Vreg;
+//        }
+//        return out;
+//    }
+
+    virtual int gettype()const{return 5;}
 };
 
 class armInstr{
@@ -124,7 +137,7 @@ class armMoveq: public armInstr//ok
     virtual int getType(){return moveq;}
     virtual ostream& output(ostream&out)const
     {
-        out<<"moveq "<<*rd<<", #1";
+        out<<"\tmoveq "<<*rd<<", #1";
         return out;
     }
 };
@@ -135,7 +148,7 @@ class armMovne: public armInstr//ok
     virtual int getType(){return movne;}
     virtual ostream& output(ostream&out)const
     {
-        out<<"movne "<<*rd<<", #0";
+        out<<"\tmovne "<<*rd<<", #0";
         return out;
     }
 };
@@ -147,14 +160,32 @@ class armAdd:public armInstr//ok
     virtual int getType(){return add;}
     virtual ostream& output(ostream&out)const
     {
-        if(rd->gettype()==Decl::addr_decl)
-        {
-            addrDecl* print = (addrDecl*)rd;
-            out<<"add r"<<print->Vreg<<", "<<*r0<<", "<<*r1;
-        }
-        else{
-            out<<"add "<<*rd<<", "<<*r0<<", "<<*r1;
-        }
+        // 处理全局变量的时候，r0和r1可能是变成了地址，所以先判断一下，如果是地址就再多输出一条ldr指令
+        // r0 处理
+        if(r0->gettype() == Decl::addr_decl)
+            out << "\tldr r" << ((addrDecl*)r0)->Vreg << ", " << *r0 << endl;
+        // r1 处理
+        if(r1->gettype() == Decl::addr_decl)
+            out << "\tldr r" << ((addrDecl*)r1)->Vreg << ", " << *r1 << endl;
+
+        // rd 有在数组处理的时候会变成地址，因此不输出方括号
+        out << "\tadd ";
+        if(rd->gettype() == Decl::addr_decl)
+            out << "r" << ((addrDecl*)rd)->Vreg;
+        else out << *rd;
+        out << ", ";
+
+        if(r0->gettype() == Decl::addr_decl)
+            out << "r" << ((addrDecl*)r0)->Vreg;
+        else out << *r0;
+        cout << ", ";
+
+        if(r1->gettype() == Decl::addr_decl)
+            out << "r" << ((addrDecl*)r1)->Vreg;
+        else out << *r1;
+
+//        out<<"add "<< ((rd->gettype() == Decl::addr_decl) ? (((addrDecl*)rd, false) : (*rd))) <<", "<<*r0<<", "<<*r1;
+
         return out;
     }
     virtual vector<Decl*> getGen()
@@ -173,7 +204,7 @@ class armSub:public armInstr//ok
     virtual int getType(){return sub;}
     virtual ostream& output(ostream&out)const
     {
-        out<<"sub "<<*rd<<", "<<*r0<<", "<<*r1;
+        out<<"\tsub "<<*rd<<", "<<*r0<<", "<<*r1;
         return out;
     }
     virtual vector<Decl*> getGen()
@@ -191,7 +222,7 @@ class armRsb:public armInstr//ok
     virtual int getType(){return rsb;}
     virtual ostream& output(ostream&out)const
     {
-        out<<"rsb "<<*rd<<", "<<*r0<<", "<<*r1;
+        out<<"\trsb "<<*rd<<", "<<*r0<<", "<<*r1;
         return out;
     }
     virtual vector<Decl*> getGen()
@@ -209,7 +240,7 @@ class armMul:public armInstr{//ok
     virtual int getType(){return mul;}
     virtual ostream& output(ostream&out)const
     {
-        out<<"mul "<<*rd<<", "<<*r0<<", "<<*r1;
+        out<<"\tmul "<<*rd<<", "<<*r0<<", "<<*r1;
         return out;
     }
     virtual vector<Decl*> getGen()
@@ -227,7 +258,7 @@ public:
     virtual int getType(){return div;}
     virtual ostream& output(ostream&out)const
     {
-        out << "div " << *rd << ", " << *r0 << ", " << *r1;
+        out << "\tdiv " << *rd << ", " << *r0 << ", " << *r1;
         return out;
     }
     virtual vector<Decl*> getGen()
@@ -244,7 +275,7 @@ public:
     virtual int getType(){return mod;}
     virtual ostream& output(ostream&out)const
     {
-        out << "mod " << *rd << ", " << *r0 << ", " << *r1;
+        out << "\tmod " << *rd << ", " << *r0 << ", " << *r1;
         return out;
     }
     virtual vector<Decl*> getGen()
@@ -262,7 +293,7 @@ class armRet:public armInstr//ok
     virtual int getType(){return ret;}
     virtual ostream& output(ostream&out)const
     {
-        if(rs!=nullptr)out<<"mov r0, "<<*rs<<endl;
+        if(rs!=nullptr)out<<"\tmov r0, "<<*rs<<endl;
         //TODO: 这里要求每个函数都需要有个一return指令..
         //TODO：或许还有一些堆栈操作..
         out<<"\tbx lr";
@@ -282,7 +313,7 @@ class armCall:public armInstr{//ok
     virtual int getType(){return call;}
     virtual ostream& output(ostream&out)const
     {
-        out<<"call ";
+        out<<"\tcall ";
         out<<funcname<<' ';
         for(auto r : rs){
             out<<*r<<" ";
@@ -303,10 +334,10 @@ class armLdr:public armInstr{//ok??????????? //TODO: now array is different!
     virtual ostream& output(ostream&out)const
     {
         if(rd->gettype() == Decl::addr_decl){
-            out<<"ldr r"<<((addrDecl*)rd)->Vreg<<", "<<*rs;
+            out<<"\tldr r"<<((addrDecl*)rd)->Vreg<<", "<<*rs;
         }
         else{
-            out<<"ldr "<<*rd;
+            out<<"\tldr "<<*rd;
             if(bias){
                 out<<", [r"<<((addrDecl*)rs)->Vreg<<", #"<<bias*4<<"]"<<"\t@ this is array....";//TODO: 这里以后要改.
             }
@@ -330,7 +361,7 @@ class armStr:public armInstr{//ok
     virtual int getType(){return str;}
     virtual ostream& output(ostream&out)const
     {
-        out<<"str "<<*rd;
+        out<<"\tstr "<<*rd;
         if(bias){
             
             out<<", [r"<<((addrDecl*)rs)->Vreg<<", #"<<bias*4<<"]"<<"\t@ this is array....";//TODO: 这里以后要改.
@@ -354,7 +385,7 @@ class armB:public armInstr{//no need for RIG trans of IN/OUT set
     virtual int getType(){return beq;}
     virtual ostream& output(ostream&out)const
     {
-        out<<"b "<<lb;
+        out<<"\tb "<<lb;
         return out;
     }
 };
@@ -364,7 +395,7 @@ class armBeq:public armInstr{//no need for RIG trans of IN/OUT set
     virtual int getType(){return beq;}
     virtual ostream& output(ostream&out)const
     {
-        out<<"beq "<<lb;
+        out<<"\tbeq "<<lb;
         return out;
     }
 };
@@ -374,7 +405,7 @@ class armBne:public armInstr{//no need for RIG trans of IN/OUT set
     virtual int getType(){return beq;}
     virtual ostream& output(ostream&out)const
     {
-        out<<"bne "<<lb;
+        out<<"\tbne "<<lb;
         return out;
     }
 };
@@ -384,7 +415,7 @@ class armBlt:public armInstr{//no need for RIG trans of IN/OUT set
     virtual int getType(){return beq;}
     virtual ostream& output(ostream&out)const
     {
-        out<<"blt "<<lb;
+        out<<"\tblt "<<lb;
         return out;
     }
 };
@@ -394,7 +425,7 @@ class armBgt:public armInstr{//no need for RIG trans of IN/OUT set
     virtual int getType(){return beq;}
     virtual ostream& output(ostream&out)const
     {
-        out<<"bgt "<<lb;
+        out<<"\tbgt "<<lb;
         return out;
     }
 };
@@ -404,7 +435,7 @@ class armBle:public armInstr{//no need for RIG trans of IN/OUT set
     virtual int getType(){return beq;}
     virtual ostream& output(ostream&out)const
     {
-        out<<"ble "<<lb;
+        out<<"\tble "<<lb;
         return out;
     }
 };
@@ -414,7 +445,7 @@ class armBge:public armInstr{//no need for RIG trans of IN/OUT set
     virtual int getType(){return beq;}
     virtual ostream& output(ostream&out)const
     {
-        out<<"bge "<<lb;
+        out<<"\tbge "<<lb;
         return out;
     }
 };
@@ -425,7 +456,7 @@ class armCmp:public armInstr{//ok
     virtual int getType(){return cmp;}
     virtual ostream& output(ostream&out)const
     {
-        out<<"cmp "<<*r0<<", "<<*r1;
+        out<<"\tcmp "<<*r0<<", "<<*r1;
         return out;
     }
     virtual vector<Decl*> getGen()
@@ -448,15 +479,15 @@ class armMov:public armInstr{//ok
                 out<<"@ This is possible??????I have no idea. ----hsyy04";
             }
             else{
-                out<<"str "<<*rs<<", "<<*rd;
+                out<<"\tstr "<<*rs<<", "<<*rd;
             }
         }
         else{
             if(rs->gettype() == Decl::addr_decl||rs->gettype()==Decl:: memory_decl){
-                out<<"ldr "<<*rd<<", "<<*rs;
+                out<<"\tldr "<<*rd<<", "<<*rs;
             }
             else{
-                out<<"mov "<<*rd<<", "<<*rs;
+                out<<"\tmov "<<*rd<<", "<<*rs;
             }
         }
         return out;

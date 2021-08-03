@@ -12,7 +12,7 @@ void printArm(DomTreenode* dn,BasicBlock* gb)
             armCall* call_ins = (armCall*)inst;
 
             //push 所有寄存器//TODO: 应该push用过的
-            int rdNum = -1;
+            int rdNum = -1;  //函数返回值
             if(call_ins->rd != NULL)
             {
                 rdNum = VregNumofDecl(call_ins->rd);
