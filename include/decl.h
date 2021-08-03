@@ -497,8 +497,7 @@ class armMov:public armInstr{//ok
             if(rs->gettype() == Decl::addr_decl){
                 out<<"@ This is possible??????I have no idea. ----hsyy04\n";
             }
-            else if(rs->gettype()==Decl::memory_decl)
-            {
+            else if(rs->gettype()==Decl::memory_decl){
                 out<<"@ This is possible??????I have no idea. ----hsyy04\n";
             }
             else{
@@ -507,8 +506,11 @@ class armMov:public armInstr{//ok
         }
         else
         { // rd就是var_decl
-            if(rs->gettype() == Decl::addr_decl||rs->gettype()==Decl:: memory_decl){
-                out<<"\tldr "<<*rd<<", "<<*rs;
+            if(rs->gettype() == Decl::addr_decl){
+                out<<"\tldr "<<*rd<<", r"<<((addrDecl*)rs)->Vreg;
+            }
+            else if(rs->gettype()==Decl:: memory_decl){
+                dbg("不可能出现");
             }
             else{
                 out<<"\tmov "<<*rd<<", "<<*rs;
