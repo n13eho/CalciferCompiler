@@ -416,7 +416,7 @@ void assignIns(Instruction* ins,BasicBlock* node)
             dbg(gblock2spbias[node->parent_]);
             constDecl* r1 = new constDecl(nullptr, node, (gblock2spbias[node->parent_]+1)*4);//这是数组首地址偏移，从低地址向高地址存
             calAddr->r1=r1;
-            int size = 1;//TODO:被声明的数组大小
+            int size = ((IntegerValue*)ins->getOp()[1])->RealValue;
             gblock2spbias[node->parent_]+=size;
             
             newBlock[node].push_back(calAddr);
