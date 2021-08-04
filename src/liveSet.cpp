@@ -31,11 +31,9 @@ map<armInstr*,Instruction*> trance;
 
 void strGlobal(Instruction* instr, BasicBlock* node, Decl* src)
 {
+    //src以前是个全局变量
     //添加load指令
     armLdr* load_arm = new armLdr();
-    
-    //创建临时变量，这个value在符号表中索引不到！！！！！！
-    // IntegerValue *lsbl_addr = new IntegerValue("lsbl_addr",-1, "1", 0);
     addrDecl *rdd = new addrDecl(src->rawValue,node,Rcnt++);
     load_arm->rd=rdd;
     globalDecl* gval = new globalDecl(src->rawValue,src->rawBlock,src->rawValue->VName);
@@ -47,9 +45,18 @@ void strGlobal(Instruction* instr, BasicBlock* node, Decl* src)
     //添加str指令
     armStr* str_arm = new armStr();
     str_arm->rd = src;
-    str_arm->rs = gval;
+    str_arm->rs = rdd;
     newBlock[node].push_back(str_arm);
     trance[str_arm]=instr;
+    
+    //还需要更新寄存器中的全局变量, 再加一条load到本身的
+    armLdr* ldr_arm = new armLdr();
+    varDecl* gbnew = new varDecl(gval->rawValue,src->rawBlock,rdd->Vreg);
+    ldr_arm->rd = gbnew;
+    ldr_arm->rs = rdd;
+    newBlock[node].push_back(ldr_arm);
+    trance[ldr_arm]=instr;
+    
 }
 
 void assignMov(Instruction* instr, BasicBlock* node)
