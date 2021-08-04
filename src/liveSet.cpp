@@ -101,7 +101,7 @@ void assignMul(Instruction* instr,BasicBlock *node)
 
     IntegerValue* op2 = (IntegerValue*)(instr->getOp()[1]);
     IntegerValue* op1 = (IntegerValue*)(instr->getOp()[0]);
-    if(op1->isConst ==1)swap(op1,op2);
+    if(op1->isConst == 1)swap(op1,op2);
     /**
      * op1一定是varDecl，op2可能是varDecl或者imm：只有当imm是不合法的时候再new一个新的mov指令
      * */
@@ -384,7 +384,6 @@ void assignCall(Instruction* instr, BasicBlock* node)
     ins->funcname = instr->getOp()[0]->VName;
     //返回值.
     IntegerValue* rd=(IntegerValue*)instr->getResult();
-    dbg(rd);
     varDecl *rdd = new varDecl(rd,node,Rcnt++);
     ins->rd=rdd;
 }
@@ -567,7 +566,6 @@ Decl* getDecl(Value* val, BasicBlock* node)
         }
         else{
             //其他就返回上一次赋值
-            dbg(intval->VName);
             return Assign_rec[make_pair(intval,node)].back();
         }
     }
@@ -610,6 +608,7 @@ void usedMul(armMul* ins,BasicBlock* node)
     Instruction* raw = trance[ins];
     IntegerValue* r0 = (IntegerValue*)raw->getOp()[0];
     IntegerValue* r1 = (IntegerValue*)raw->getOp()[1];
+    if(r0->isConst)swap(r0,r1);
     ins->r0 = getDecl(r0,node);
     ins->r1 = getDecl(r1,node);
     addAssign(ins->rd->rawValue,node,ins->rd);
@@ -783,7 +782,6 @@ void usedStr(armStr* ins,BasicBlock* node)
 void usedCall(armCall* ins, BasicBlock* node)
 {
     //call的参数是内定的!
-    dbg(ins->rd->rawValue);
     addAssign(ins->rd->rawValue,node,ins->rd);
 }
 void usedRet(armRet* ins, BasicBlock* node)
