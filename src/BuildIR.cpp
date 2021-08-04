@@ -280,7 +280,12 @@ void VarDefNode(GrammaNode* node,LinearIR *IR)
             {
                 
                 VR = InitValNode(p_node->son[2],IR);
-                // cout<<"finish array initvals compute"<<endl;
+                dbg(VL->getName());
+        
+                for(auto vv:array_init)
+                {
+                    dbg(((IntegerValue*)vv)->getValue());
+                }
 
                 //属于某个函数且该指令为首指令，新建一个基本块，并建立联系
                 if(0 == global && nullptr == bbNow)
@@ -295,20 +300,20 @@ void VarDefNode(GrammaNode* node,LinearIR *IR)
                     if(0 == global)
                     {
                         int memset_flag = 0;
-                        // if(given_value*ArrayPercent <= total)
-                        // {
-                        //     //用memset
-                        //     memset_flag = 1;
-                        //     IntegerValue* const00 = new IntegerValue("const0",node->lineno,node->var_scope,0,1);
-                        //     IntegerValue* arraysize = new IntegerValue("ArraySize",node->lineno,node->var_scope,total,1);
-                        //     FunctionValue* funcMemset = new FunctionValue("memset",node->lineno,node->var_scope,3,0);
-                        //     std::vector<Value*> op = {funcMemset,VL,const00,arraysize};//调用的函数value、数组首地址、0、memset数组的大小
-                        //     CreateIns(node,IR,Instruction::Call,4,op,nullptr);
-                        // }
+                        if(given_value*ArrayPercent <= total)
+                        {
+                            //用memset
+                            memset_flag = 1;
+                            IntegerValue* const00 = new IntegerValue("const0",node->lineno,node->var_scope,0,1);
+                            IntegerValue* arraysize = new IntegerValue("ArraySize",node->lineno,node->var_scope,total,1);
+                            FunctionValue* funcMemset = new FunctionValue("memset",node->lineno,node->var_scope,3,0);
+                            std::vector<Value*> op = {funcMemset,VL,const00,arraysize};//调用的函数value、数组首地址、0、memset数组的大小
+                            CreateIns(node,IR,Instruction::Call,4,op,nullptr);
+                        }
                         for(int j=0;j<array_init.size();j++)
                         {
-                            // if(memset_flag && array_init[j]->getName() == "const0")
-                            //     continue;
+                            if(memset_flag && array_init[j]->getName() == "const0")
+                                continue;
                             IntegerValue* index = new IntegerValue("index",node->lineno,node->var_scope,j,1);
                             std::vector<Value*> op = {VL,index,array_init[j]};
                             cout<<"store "<<array_init[j]->getName()<<" to index "<<j<<endl;
@@ -1612,6 +1617,7 @@ Value* RelExpNode(GrammaNode* node,LinearIR *IR)
 
 Value* InitValNode(GrammaNode* node,LinearIR *IR)
 {
+    // dbg(node->type);
     if(InitVal_EXP == node->type)
     {//表达式,son个数为1
         //该表达式结果
@@ -1649,6 +1655,7 @@ Value* InitValNode(GrammaNode* node,LinearIR *IR)
         {
             IntegerValue* const0 = new IntegerValue("const0",node->lineno,node->var_scope,0,1);
             array_init.push_back((Value*)const0);
+            dbg("push a zero in array_init");
         }
 
         IntegerValue* ret = new IntegerValue("sub matrix size",node->lineno,node->var_scope,init_list.size(),1);
@@ -1660,14 +1667,15 @@ Value* InitValNode(GrammaNode* node,LinearIR *IR)
         {
             //InitVals_
             GrammaNode* p_node = node->son[0];
+            // dbg("p_node",p_node->type);
             IntegerValue* ret= new IntegerValue("t1",p_node->lineno,p_node->var_scope,d_len*cur_dimen,1);
             int cnt = 0;
             // cout<<"初值son个数:"<<p_node->son.size()<<endl;
             for(int i=0;i<p_node->son.size();i++)
             {
+                // dbg(p_node->son[i]->type);
                 if(InitVal_EXP == p_node->son[i]->type)
                 {
-                    
                     Value* ExpV = InitValNode(p_node->son[i],IR);
                     // if(((IntegerValue*)ExpV)->isConst == 1)
                     // {
@@ -1675,6 +1683,7 @@ Value* InitValNode(GrammaNode* node,LinearIR *IR)
                     // }
                     // init_list.push_back(ExpV);
                     array_init.push_back(ExpV);
+                    // dbg("push a int to",((IntegerValue*)ExpV)->getValue()," array_init");
                     cnt++;
                 }
                 else// if(InitVal_NULL == p_node->son[i]->type )
@@ -1694,10 +1703,12 @@ Value* InitValNode(GrammaNode* node,LinearIR *IR)
                     {
                         IntegerValue* const0 = new IntegerValue("const0",p_node->lineno,p_node->var_scope,0,1);
                         array_init.push_back((Value*)const0);
+                        // dbg("push a zero in array_init");
                         // init_list.push_back((Value*)const0);
                         cnt++;
                     }
-                    if(InitVals_ == p_node->son[i]->type)
+                    //???InitVals与 InitVal_区别
+                    if(InitVal_ == p_node->son[i]->type)
                     {
                         dimen_dpeth++;
                         //递归
@@ -1715,6 +1726,7 @@ Value* InitValNode(GrammaNode* node,LinearIR *IR)
             {
                 IntegerValue* const0 = new IntegerValue("const0",p_node->lineno,p_node->var_scope,0,1);
                 array_init.push_back((Value*)const0);
+                // dbg("push a zero in array_init");
             }
 
             return ret;
