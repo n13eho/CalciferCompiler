@@ -312,11 +312,12 @@ void assignCall(Instruction* instr, BasicBlock* node)
     //把参数移入死寄存器r0-r3;
     FunctionValue* func = (FunctionValue*)instr->getOp()[0];
     int Vnum = 0;
-    for(auto param: func->getParams()){
-        if(Vnum>3)break;
+    for(auto param : instr->getOp()){
+        if(param==instr->getOp().front())continue;
+        if(Vnum>3)break; //加前4个参数的mov
         armMov* mov_param = new armMov();
-        mov_param->rd = new varDecl(instr->getOp()[param->isPara], node, Vnum++);
-
+        mov_param->rd = new varDecl(param, node, Vnum++);
+        mov_param->isaddress = true;
         newBlock[node].push_back(mov_param);
         trance[mov_param]=instr;
     }

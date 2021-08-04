@@ -478,6 +478,7 @@ class armCmp:public armInstr{//ok
 class armMov:public armInstr{//ok
     public:
     Decl *rs;
+    bool isaddress = 0; // 就是需要地址，不要翻译成ldr进来的值了！！！！！
     virtual int getType(){return mov;}
     virtual ostream& output(ostream&out)const
     {
@@ -510,10 +511,15 @@ class armMov:public armInstr{//ok
         }
         else
         { // rd就是var_decl
-            if(rs->gettype() == Decl::addr_decl){
-                out << "@@heeee\n";
+            if(rs->gettype() == Decl::addr_decl && !isaddress){ // ldr 进来值
+                out << "@@mov trans to ldr to get it's value\n";
                 out<<"\tldr "<<*rd<<", "<<*rs;
             }
+            else if(rs->gettype() == Decl::addr_decl && isaddress){ // address is exactly what i want
+                out << "@@address is exactly what i want\n";
+                out<<"\tmov "<<*rd<<", r"<<((addrDecl*)rs)->Vreg;
+            }
+
             else if(rs->gettype()==Decl:: memory_decl){
                 dbg("不可能出现");
             }
