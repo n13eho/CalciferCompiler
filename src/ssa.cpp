@@ -176,6 +176,7 @@ void getAllValue()
     for(auto i : SymbolTable->table)
     {
         Value *tem = i.second;
+        if(tem==nullptr)continue;
         if(allValue.count(tem))continue;
         else allValue.insert(tem);
     }
@@ -214,7 +215,9 @@ void setAssbyBlock(BasicBlock* s)
 
 void placePhi()
 {
+    int cnttem = 0 ;
     for(auto val : allValue){
+        cnttem++;
         phiIns.clear();
         Added.clear();
         //这里是计算blist, 里面存的是对val赋过值的block
@@ -231,6 +234,7 @@ void placePhi()
                 if(!phiIns[d]){
                     //add d one phi about val;
                     Instruction* ins=new Instruction(-1,Instruction::Phi,1);
+                    if(val==nullptr)dbg(cnttem);
                     ins->addOperand(val);
                     IR1->InsertInstr(ins);
                     d->InstrList.insert(d->InstrList.begin(),IR1->InstList.size()-1);
