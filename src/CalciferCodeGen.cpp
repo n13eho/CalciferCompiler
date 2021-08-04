@@ -43,27 +43,6 @@ void printArm(DomTreenode* dn,BasicBlock* gb)
                     calout<<"\tstr "<<*p<<", [sp, #-"<<tem_bias*4<<"]"<<endl;
                 }
             }
-            // 前4个
-            //FIXME:这里的操作暂时解决实参传递问题，可能要改
-
-            for(int i=0;i<min(4,(int)call_ins->rs.size());i++){
-                if(call_ins->rs[i]->gettype()==Decl::const_decl)
-                    //如果是立即数的话
-                    calout<<"\tmov r"<<i<<", "<<*(call_ins->rs[i])<<endl;
-                else{
-                    if(VregNumofDecl(call_ins->rs[i])==i)continue;
-                    //如果是寄存器,需要移一下..
-                    // 经典讨论
-                    if(call_ins->rs[i]->gettype() == Decl::addr_decl){
-                        calout<<"\tmov r"<<i+7<<", r"<<((addrDecl*)call_ins->rs[i])->Vreg<<endl;
-                    }
-                    else{
-                        calout<<"\tmov r"<<i+7<<", "<<*(call_ins->rs[i])<<endl;
-                    }
-
-                    calout<<"\tmov r"<<i<<", r"<<i+7<<endl;
-                }
-            }
 
             //跳转
             calout<<"@ jmp"<<endl;
