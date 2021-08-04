@@ -209,22 +209,22 @@ void fillInOut(BasicBlock* bb)
 {// 不断访问后继，直到访问到最后一个没有没有后继的block，一步一步算in 和 out
 
 //    dbg(block2lb[bb]);
-    if(blockVisited[bb]) return; // 若已经访问过，则跳过
+    if(blockVisited[bb]==1) return; // 若已经访问过，则跳过
     blockVisited[bb] = true; // 标记访问
 
     // 若根本没有这个block的键值，直接返回（其实是出错了）；若当前block下根本没有指令，直接返回
     if(newBlock.count(bb) == 0 || newBlock[bb].size() == 0) return;
 
     armInstr* last_b_ins=newBlock[bb][newBlock[bb].size() - 1];
-//    dbg(*last_b_ins);
     outs[last_b_ins]={};
+//    dbg(bb->BlockName);
     for(auto succ: bb->succBlock)
     {// 先不断访问后继，递归下去
         fillInOut(succ);
-        // out[s] = U in[p] 把后继的第一条指令对应的 in 集合 放入当前指令的out集合
-
         // 如果它后继也一行代码也没有，也直接?????了，否则core dump
         if(newBlock.count(succ) == 0 || newBlock[succ].size() == 0) continue;
+
+        // out[s] = U in[p] 把后继的第一条指令对应的 in 集合 放入当前指令的out集合
         for (auto i : ins[newBlock[succ][0]])outs[last_b_ins].insert(i);
     }
     // 直到后面没有后继了，开始算
@@ -606,11 +606,13 @@ bool buildRIG(BasicBlock* gb)
 //        dbg("neho -- init: clear sets and graph");
 
         // 2 开始从第一个domblock递归，填满in 和 out 集合
-        int times_RIG = 5;
-        while(times_RIG--)
+        int times_RIG = TIMES_RIG;
+        while(times_RIG--){
+            blockVisited.clear();
             fillInOut(gb->domBlock[0]);
+        }
 
-        // 2.5 for debug 先临时打印一下这些个in 和 out
+//         2.5 for debug 先临时打印一下这些个in 和 out
 //            cout << "**** IN&OUT set of every armIns ****\n";
 //            for(auto dr: DomRoot)
 //                showSets(dr);

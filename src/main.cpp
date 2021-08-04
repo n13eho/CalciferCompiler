@@ -81,7 +81,7 @@ int main(int argc, char *argv[])
 
         // 寄存器分配：虚拟寄存器->realj寄存器。变量活性分析，建立冲突图；
         RigsterAlloc();
-        
+
         //代码生成
         CalciferCodeGen(output_file);
     }

@@ -24,3 +24,4 @@ int VregNumofDecl(Decl* d);
 
 
 #define WHENTOMO 2 // 多少次着色失败之后才进行spilling 操作
+#define TIMES_RIG 10
