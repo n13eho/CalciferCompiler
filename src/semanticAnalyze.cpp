@@ -411,12 +411,12 @@ IntegerValue *semantic_UnaryExp_(GrammaNode *root, int needConst, int needCond)
             }
             else if(root->son[0]->str == "starttime")
             {
-                sysyparamcnt = 0;
+                sysyparamcnt = 1;
                 sysyretType = 0;
             }
             else if(root->son[0]->str == "stoptime")
             {
-                sysyparamcnt = 0;
+                sysyparamcnt = 1;
                 sysyretType = 0;
             }
 

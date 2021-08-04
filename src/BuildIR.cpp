@@ -284,7 +284,7 @@ void VarDefNode(GrammaNode* node,LinearIR *IR)
         
                 for(auto vv:array_init)
                 {
-                    dbg(((IntegerValue*)vv)->getValue());
+//                    dbg(((IntegerValue*)vv)->getValue());
                 }
 
                 //属于某个函数且该指令为首指令，新建一个基本块，并建立联系
@@ -634,13 +634,6 @@ void IfNode(GrammaNode* node,LinearIR *IR)
 
         CondNode(node->son[0],IR);
 
-        //条件成立跳转指令
-        // Instruction* ins_br = new Instruction(IR->getInstCnt(),Instruction::ConBr,0);
-        // IR->InsertInstr(ins_br);
-        // bbNow->Addins(ins_br->getId());
-        // ins_br->setParent(bbNow);
-        // ins_br->jmpDestBlock = caseT;
-
         //条件不成立跳转指令
         Instruction* ins_jmp = new Instruction(IR->getInstCnt(),Instruction::Jmp,0);
         IR->InsertInstr(ins_jmp);
@@ -674,9 +667,6 @@ void IfNode(GrammaNode* node,LinearIR *IR)
         {
             bbNow->LastIfNext = IfNextBlocks.top();
         }
-        //update jmp address
-        //后面删除该结果value
-        // ins_br->setResult(new IntegerValue("jmpAddress0",node->lineno,node->var_scope,IR->getInstCnt(),1));
 
         CaseFBlocks.pop();
         CaseTBlocks.pop();
@@ -763,12 +753,15 @@ void IfElseNode(GrammaNode* node,LinearIR *IR)
 
         bbNow->Link(next);
         //T跳转至next
-        Instruction* ins_br3 = new Instruction(IR->getInstCnt(),Instruction::Jmp,0);
-        IR->InsertInstr(ins_br3);
-        caseT->Addins(ins_br3->getId());
-        ins_br3->setParent(caseT);
-        ins_br3->jmpDestBlock = next;
-
+        if(bbNow->getLastIns()>0 && IR->getIns(bbNow->getLastIns())->getOpType() != Instruction::Jmp)
+        {
+            Instruction* ins_br3 = new Instruction(IR->getInstCnt(),Instruction::Jmp,0);
+            IR->InsertInstr(ins_br3);
+            bbNow->Addins(ins_br3->getId());
+            ins_br3->setParent(bbNow);
+            ins_br3->jmpDestBlock = next;
+        }
+        
         //F
         bbNow = caseF;
         StmtNode(node->son[2],IR);
@@ -787,13 +780,15 @@ void IfElseNode(GrammaNode* node,LinearIR *IR)
         // }
         //此时bbNow不一定是caseF
         bbNow->Link(next);
-        //T跳转至next
-        Instruction* ins_br4 = new Instruction(IR->getInstCnt(),Instruction::Jmp,0);
-        IR->InsertInstr(ins_br4);
-        caseF->Addins(ins_br4->getId());
-        ins_br4->setParent(caseF);
-        ins_br4->jmpDestBlock = next;
-
+        //F跳转至next
+        if(bbNow->getLastIns()>0 && IR->getIns(bbNow->getLastIns())->getOpType() != Instruction::Jmp)
+        {
+            Instruction* ins_br4 = new Instruction(IR->getInstCnt(),Instruction::Jmp,0);
+            IR->InsertInstr(ins_br4);
+            bbNow->Addins(ins_br4->getId());
+            ins_br4->setParent(bbNow);
+            ins_br4->jmpDestBlock = next;
+        }
         bbNow = next;
         bbNow->bType = BasicBlock::IfNext;
         IfNextBlocks.pop();
@@ -839,6 +834,11 @@ void WhileNode(GrammaNode* node,LinearIR *IR)
             FuncN->AddDom(condBlock);
 
             bbNow->Link(condBlock);
+            Instruction* jmpIns = new Instruction(IR->getInstCnt(),Instruction::Jmp,0);
+            jmpIns->jmpDestBlock = condBlock;
+            IR->InsertInstr(jmpIns);
+            bbNow->Addins(jmpIns->getId());
+            jmpIns->setParent(bbNow);
 
             bbNow = condBlock;
         }
@@ -848,7 +848,7 @@ void WhileNode(GrammaNode* node,LinearIR *IR)
         caseT->BlockName = "whileTrue";
         //while body下一个基本块
         BasicBlock* next = new BasicBlock(BasicBlock::Basic);
-        next->BlockName = "whileFalse";
+        next->BlockName = "IfNext";
         LoopNext.push(make_pair(bbNow,next));
 
         CaseTBlocks.push(caseT);
@@ -868,12 +868,6 @@ void WhileNode(GrammaNode* node,LinearIR *IR)
         //循环
         // caseT->Link(bbNow);
 
-        // //条件成立，跳转至caseT，该指令属于bbNow
-        // Instruction* ins_br2 = new Instruction(IR->getInstCnt(),Instruction::ConBr,0);
-        // IR->InsertInstr(ins_br2);
-        // ins_br2->jmpDestBlock = caseT;
-        // bbNow->Addins(ins_br2->getId());
-        // ins_br2->setParent(bbNow);
 
         //条件不成立，跳转至next,该指令属于bbNow
         Instruction* ins_br = new Instruction(IR->getInstCnt(),Instruction::Jmp,0);
@@ -902,10 +896,20 @@ void WhileNode(GrammaNode* node,LinearIR *IR)
         ins_br3->setParent(bbNow);
 
         bbNow = next;
+        bbNow->bType = BasicBlock::IfNext;
+        IfNextBlocks.pop();
+        if(IfNextBlocks.empty())
+        {
+            //若前面无嵌套，并且最后ifnext也是空，则加入return
+            bbNow->LastIfNext = nullptr;
+        }
+        else
+        {
+            bbNow->LastIfNext = IfNextBlocks.top();  
+        }
         LoopNext.pop();
         CaseTBlocks.pop();
         CaseFBlocks.pop();
-        IfNextBlocks.pop();
     }
     else
     {
@@ -1655,7 +1659,7 @@ Value* InitValNode(GrammaNode* node,LinearIR *IR)
         {
             IntegerValue* const0 = new IntegerValue("const0",node->lineno,node->var_scope,0,1);
             array_init.push_back((Value*)const0);
-            dbg("push a zero in array_init");
+//            dbg("push a zero in array_init");
         }
 
         IntegerValue* ret = new IntegerValue("sub matrix size",node->lineno,node->var_scope,init_list.size(),1);
@@ -2021,13 +2025,18 @@ Value* UnaryExpNode(GrammaNode* node,LinearIR *IR)
             {
                 bbNow = GetPresentBlock(FuncN,BasicBlock::Basic);
             }
-            Instruction* ins_new = new Instruction(IR->getInstCnt(),Instruction::Call,1);
-            
-            ins_new->addOperand(called);
-            ins_new->setResult(ret);
-            IR->InsertInstr(ins_new);
-            bbNow->Addins(ins_new->getId());
-            ins_new->setParent(bbNow);
+            if(called->getName() == "starttime" || called->getName() == "stoptime")
+            {
+                IntegerValue* lineV = new IntegerValue("lineno",node->lineno,node->var_scope,node->lineno,1);
+                vector<Value*> ops = {called,lineV};
+                CreateIns(node,IR,Instruction::Call,2,ops,0);
+            }
+            else
+            {
+                vector<Value*> ops = {called};
+                CreateIns(node,IR,Instruction::Call,1,ops,0);
+            }
+
 
             //调用函数对应的函数基本块
 //            BasicBlock* funcCalled = IR->FuncMap[called];
@@ -2365,7 +2374,7 @@ void fixIfNext(LinearIR *IR,BasicBlock* node,int dep)
     visited[node]=1;
     // cout<<node->BlockName<<" "<<node->InstrList.size()<<" "<<node->getLastIns()<<endl;
     int insId = node->getLastIns();
-    dbg(node->BlockName,node->bType,node->parent_,insId);
+//    dbg(node->BlockName,node->bType,node->parent_,insId);
     if(node->bType == BasicBlock::IfNext&&node->parent_!=nullptr &&(insId == -1 || (IR->getIns(insId)->getOpType() != 17 && IR->getIns(insId)->getOpType() != 20)))
     {
         // dbg("kong",node->BlockName,node);

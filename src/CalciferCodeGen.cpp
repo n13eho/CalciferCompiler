@@ -46,7 +46,15 @@ void printArm(DomTreenode* dn,BasicBlock* gb)
 
             //跳转
             calout<<"@ jmp"<<endl;
-            calout<<"\tbl "<<call_ins->funcname<<endl;
+            if(call_ins->funcname == "starttime"){
+                calout << "\tbl _sysy_starttime\n";
+            }
+            else if(call_ins->funcname == "stoptime"){
+                calout << "\tbl _sysy_stoptime\n";
+            }
+            else{
+                calout<<"\tbl "<<call_ins->funcname<<endl;
+            }
 
             //处理返回值
             if(call_ins->rd != NULL)
