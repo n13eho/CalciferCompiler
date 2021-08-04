@@ -269,15 +269,11 @@ void assignLogic(Instruction* instr, BasicBlock* node, BasicBlock* nex)
     }
     //op2
     IntegerValue* op2 = (IntegerValue*)(instr->getOp()[1]);
-    dbg(instr->getId());
-    dbg(op2->isConst);
-    dbg(op2->RealValue);
     if(op2->isConst == 1 && !isValid8bit(op2->RealValue)){
         armMov* movins2 = new armMov();
         movins2->rd = new varDecl(op2, node, Rcnt++);
         newBlock[node].push_back(movins2);
         trance[movins2] = instr;
-        dbg("123123");
     }
 
 

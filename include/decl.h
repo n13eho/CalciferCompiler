@@ -530,7 +530,7 @@ class armMov:public armInstr{//ok
                     out<<"\tmov "<<*rd<<", "<<*rs;
                 }
                 else if(!isValid8bit(const_rs->value) && (const_rs->value < 0xffff && const_rs->value > -0xffff)){ // 2. 不合法8-bit但是小于0xffff
-                    dbg(const_rs->value);
+//                    dbg(const_rs->value);
                     out<<"\tmovw "<<*rd<<", "<<*rs;
                 }
                 else{ // 这里得用个什么字面池了，可能就有4096偏移的限制，并不知道怎么处理，先用 FIXME: limitation of 4096

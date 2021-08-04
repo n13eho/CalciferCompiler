@@ -284,7 +284,7 @@ void VarDefNode(GrammaNode* node,LinearIR *IR)
         
                 for(auto vv:array_init)
                 {
-                    dbg(((IntegerValue*)vv)->getValue());
+//                    dbg(((IntegerValue*)vv)->getValue());
                 }
 
                 //属于某个函数且该指令为首指令，新建一个基本块，并建立联系
@@ -1655,7 +1655,7 @@ Value* InitValNode(GrammaNode* node,LinearIR *IR)
         {
             IntegerValue* const0 = new IntegerValue("const0",node->lineno,node->var_scope,0,1);
             array_init.push_back((Value*)const0);
-            dbg("push a zero in array_init");
+//            dbg("push a zero in array_init");
         }
 
         IntegerValue* ret = new IntegerValue("sub matrix size",node->lineno,node->var_scope,init_list.size(),1);
@@ -2365,7 +2365,7 @@ void fixIfNext(LinearIR *IR,BasicBlock* node,int dep)
     visited[node]=1;
     // cout<<node->BlockName<<" "<<node->InstrList.size()<<" "<<node->getLastIns()<<endl;
     int insId = node->getLastIns();
-    dbg(node->BlockName,node->bType,node->parent_,insId);
+//    dbg(node->BlockName,node->bType,node->parent_,insId);
     if(node->bType == BasicBlock::IfNext&&node->parent_!=nullptr &&(insId == -1 || (IR->getIns(insId)->getOpType() != 17 && IR->getIns(insId)->getOpType() != 20)))
     {
         // dbg("kong",node->BlockName,node);
