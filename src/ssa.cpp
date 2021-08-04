@@ -347,7 +347,13 @@ void getssa()
 
     for(auto i : IR1->Blocks){
         if(i->domBlock.size()){
-            for(auto j : i->domBlock)setAssbyBlock(j);
+            // addAssbyBlock()
+            for(auto param:i->FuncV->getParams()){
+                addAssbyBlock(param,i->domBlock[0]);
+            }
+            for(auto j : i->domBlock){
+                setAssbyBlock(j);
+            }
         }
     }
 //    dbg("get all value win!");
