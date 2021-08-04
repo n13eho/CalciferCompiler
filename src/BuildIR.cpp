@@ -2025,13 +2025,18 @@ Value* UnaryExpNode(GrammaNode* node,LinearIR *IR)
             {
                 bbNow = GetPresentBlock(FuncN,BasicBlock::Basic);
             }
-            Instruction* ins_new = new Instruction(IR->getInstCnt(),Instruction::Call,1);
-            
-            ins_new->addOperand(called);
-            ins_new->setResult(ret);
-            IR->InsertInstr(ins_new);
-            bbNow->Addins(ins_new->getId());
-            ins_new->setParent(bbNow);
+            if(called->getName() == "starttime" || called->getName() == "stoptime")
+            {
+                IntegerValue* lineV = new IntegerValue("lineno",node->lineno,node->var_scope,node->lineno,1);
+                vector<Value*> ops = {called,lineV};
+                CreateIns(node,IR,Instruction::Call,2,ops,0);
+            }
+            else
+            {
+                vector<Value*> ops = {called};
+                CreateIns(node,IR,Instruction::Call,1,ops,0);
+            }
+
 
             //调用函数对应的函数基本块
 //            BasicBlock* funcCalled = IR->FuncMap[called];
