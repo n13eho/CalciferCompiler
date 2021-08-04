@@ -147,6 +147,7 @@ void CalciferCodeGen(char *output_file_path)
 //    outputfile = outputfile + "S";
 
     calout.open(outputfile, std::ifstream::out);
+    calout<<"\t.arch armv7\n";
     calout<<"\t.data\n";
     for(auto fuhao : allValue)
     {
@@ -160,6 +161,7 @@ void CalciferCodeGen(char *output_file_path)
             calout<<":\n\t.word ";
             calout<<to_string(val->RealValue).data();
             calout<<endl;
+            dbg(val->VName);
         }
         else if(fuhao->getType() == 2 && fuhao->var_scope=="1")
         {//全局变量数组

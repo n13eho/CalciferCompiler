@@ -1,11 +1,15 @@
 #pragma once
-#include "Value.h"
-#include<bits/stdc++.h>
 
+#include "Value.h"
 #include "BuildIR.h" // for LinearIR
-#include"dbg.h"
+#include "dbg.h"
 #include "BasicBlock.h" // for BasicBlock
-using namespace std;
+
+#include "decl_related.h"
+
+
+
+
 class armInstr;
 
 
@@ -512,6 +516,31 @@ class armMov:public armInstr{//ok
             }
             else if(rs->gettype()==Decl:: memory_decl){
                 dbg("不可能出现");
+            }
+            else if(rs->gettype() == Decl::const_decl){ // rs是立即数的话要分为三种情况讨论
+                constDecl* const_rs = (constDecl*)rs;
+
+                if(isValid8bit(const_rs->value)){// 1. 8-bits范围内的，合法，直接输出
+                    out<<"\tmov "<<*rd<<", "<<*rs;
+                }
+                else if(!isValid8bit(const_rs->value) && (const_rs->value < 0xffff && const_rs->value > -0xffff)){ // 2. 不合法8-bit但是小于0xffff
+                    dbg(const_rs->value);
+                    out<<"\tmovw "<<*rd<<", "<<*rs;
+                }
+                else{ // 这里得用个什么字面池了，可能就有4096偏移的限制，并不知道怎么处理，先用 FIXME: limitation of 4096
+//                    dbg(const_rs->value);
+                    // 1 先往allValue里面扔一个新的integerValue，要么扔，要么从原先的找出来对应的
+//                    IntegerValue* imm_valuew = new IntegerValue(imm_vname+to_string(imm_cnt++), 999, "1", const_rs->value, 0);
+//                    allValue.insert(imm_valuew);
+
+                    IntegerValue* imm_value = findimmValue(const_rs->value);
+
+                    // 2 这里的mov要变成ldr，然后再ldr一遍获得它的值
+                    out << "@@@ the mov turn to ldr cause the illegal immediate integer\n";
+                    out << "\tldr " << *rd << ", " << "=" << imm_value->VName << "\n";
+                    out << "\tldr " << *rd << ", [" << *rd << "]";
+                }
+
             }
             else{
                 out<<"\tmov "<<*rd<<", "<<*rs;

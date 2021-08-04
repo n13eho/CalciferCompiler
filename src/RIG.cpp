@@ -345,8 +345,8 @@ void init_color(BasicBlock* gb)
 
         // 直接填死颜色
         colors[param_rignode] = ++usedK;
-        dbg(gb->FuncV->FuncParams[i]->VName);
-        dbg(param_rignode->dc, colors[param_rignode]);
+//        dbg(gb->FuncV->FuncParams[i]->VName);
+//        dbg(param_rignode->dc, colors[param_rignode]);
     }
 }
 
