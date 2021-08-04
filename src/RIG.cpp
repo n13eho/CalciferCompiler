@@ -420,9 +420,9 @@ void deleteDC(DomTreenode* dn, BasicBlock* gb)
     BasicBlock* b = dn->block;
     for(auto it = newBlock[b].begin(); it != newBlock[b].end(); it++)
     {
-        if(VregNumofDecl((*it)->rd)>=0&&VregNumofDecl((*it)->rd)<=3)continue;
         if((*it)->rd != NULL)
         {
+            if(VregNumofDecl((*it)->rd)>=0&&VregNumofDecl((*it)->rd)<=3)continue;
             findDc = false;
             for(auto rn: RIG[gb])
             {// 找该指令的左值是否出现在RIG[gb]中，如果该左值没有出现在RIG[gb]中，就删除这条指令
