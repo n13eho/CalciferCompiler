@@ -1986,7 +1986,8 @@ Value* UnaryExpNode(GrammaNode* node,LinearIR *IR)
             
             Instruction* ins_new = new Instruction(IR->getInstCnt(),Instruction::Call,para_num+1);
             ins_new->addOperand(called);
-            ins_new->setResult(ret);
+            if(called->Result == 1)
+                ins_new->setResult(ret);
             for(int i=0;i<para_num;i++)
             {
                 //这里需要确认，实参进入的顺序
@@ -2034,7 +2035,10 @@ Value* UnaryExpNode(GrammaNode* node,LinearIR *IR)
             else
             {
                 vector<Value*> ops = {called};
-                CreateIns(node,IR,Instruction::Call,1,ops,0);
+                if(called->Result == 0)
+                    ret = nullptr;
+                CreateIns(node,IR,Instruction::Call,1,ops,ret);
+                    
             }
 
 
