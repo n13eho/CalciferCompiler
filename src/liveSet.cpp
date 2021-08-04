@@ -308,7 +308,6 @@ void assignjmp(Instruction* instr, BasicBlock* node)
 }
 void assignCall(Instruction* instr, BasicBlock* node)
 {
-
     //把参数移入死寄存器r0-r3;
     FunctionValue* func = (FunctionValue*)instr->getOp()[0];
     int Vnum = 0;
@@ -709,11 +708,7 @@ void usedStr(armStr* ins,BasicBlock* node)
 }
 void usedCall(armCall* ins, BasicBlock* node)
 {
-    Instruction* raw =trance[ins];
-    for( auto val :raw->getOp()){
-        Decl* r = getDecl(val,node);
-        if(r)ins->rs.push_back(r);
-    }
+    //call的参数是内定的!
     addAssign(ins->rd->rawValue,node,ins->rd);
 }
 void usedRet(armRet* ins, BasicBlock* node)
@@ -861,7 +856,6 @@ void liveSets()
             BasicBlock* b1=rt->block;
             FunctionValue* func=rt->func;
             for(auto i=0;i<min(4,(int)func->FuncParams.size());i++){
-                //直接为前4个寄存器分配参数
                 varDecl* xc = new varDecl(func->FuncParams[i],b1,Rcnt++);
                 reachin[b1].insert(xc);
             }  
