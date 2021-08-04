@@ -140,7 +140,6 @@ void CalciferCodeGen(char *output_file_path)
             calout<<":\n\t.word ";
             calout<<to_string(val->RealValue).data();
             calout<<endl;
-            dbg(val->VName);
         }
         else if(fuhao->getType() == 2 && fuhao->var_scope=="1")
         {//全局变量数组

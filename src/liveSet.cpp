@@ -315,7 +315,7 @@ void assignCall(Instruction* instr, BasicBlock* node)
     for(auto param: func->getParams()){
         if(Vnum>3)break;
         armMov* mov_param = new armMov();
-        mov_param->rd = new varDecl(param, node, Vnum++);
+        mov_param->rd = new varDecl(instr->getOp()[param->isPara], node, Vnum++);
 
         newBlock[node].push_back(mov_param);
         trance[mov_param]=instr;
@@ -500,7 +500,6 @@ void addAssign(Value* val, BasicBlock* node, Decl* dc)
 
 Decl* getDecl(Value* val, BasicBlock* node)
 {
-//    dbg(val->VName);
     if(val->getType()==1){
         IntegerValue* intval = (IntegerValue*)val;
         if(intval->isConst&&Assign_rec[make_pair(intval,node)].size()==0){
@@ -624,12 +623,16 @@ int usedMov(armMov* ins, BasicBlock* node)
         return 0;
     }
     else if(raw->getOpType()==Instruction::Phi){
-        //原则上不会执行到这里
+        //phi语句翻译的mov
         Value* rs = raw->getOp()[0];
         if(Assign_rec[make_pair(rs,node)].size()==0){
+            //原则上不会执行到这里
             dbg("phi对这个块没意义");
             return -1;
         }
+        ins->rs = getDecl(rs,node);
+        addAssign(ins->rd->rawValue,node,ins->rd);
+        return 0;
     }
     else{
         // 最朴素的mov
@@ -638,6 +641,7 @@ int usedMov(armMov* ins, BasicBlock* node)
         addAssign(ins->rd->rawValue,node,ins->rd);
         return 0;
     }
+    return 987; 
 }
 void usedCmp(armCmp* ins,BasicBlock* node)
 {
@@ -778,9 +782,6 @@ void setUsed(BasicBlock* s)
 {
     //init:把reachin里的定义建立好
     for(auto dc : reachin[s]){
-        if(s->BlockName=="ifNext"){
-            dbg(*dc);
-        }
         addAssign(dc->rawValue,s,dc);
     } 
     
