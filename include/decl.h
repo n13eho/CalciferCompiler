@@ -529,7 +529,7 @@ class armMov:public armInstr{//ok
                 if(isValid8bit(const_rs->value)){// 1. 8-bits范围内的，合法，直接输出
                     out<<"\tmov "<<*rd<<", "<<*rs;
                 }
-                else if(!isValid8bit(const_rs->value) && (const_rs->value < 0xffff && const_rs->value > -0xffff)){ // 2. 不合法8-bit但是小于0xffff
+                else if(!isValid8bit(const_rs->value) && (const_rs->value < 0xffff && const_rs->value >= 0)){ // 2. 不合法8-bit但是小于0xffff
 //                    dbg(const_rs->value);
                     out<<"\tmovw "<<*rd<<", "<<*rs;
                 }

@@ -887,7 +887,7 @@ void WhileNode(GrammaNode* node,LinearIR *IR)
 
         //插入跳转到cond语句的跳转语句
         Instruction* ins_br3 = new Instruction(IR->getInstCnt(),Instruction::Jmp,0);
-        ImmValue* jmpIns = new ImmValue("jmpaddress",condInsId);
+        IntegerValue* jmpIns = new IntegerValue("jmpaddress",node->lineno,node->var_scope,condInsId,1);
         // ins_br3->setResult(jmpIns);
         IR->InsertInstr(ins_br3);
         ins_br3->jmpDestBlock = whileHead;
@@ -2216,12 +2216,13 @@ Value* LValArrayNode(GrammaNode* node,LinearIR *IR)
             {
                 index = AddExpNode(p_node->son[i],IR);
                 int dimen = NumOfDimension_[i];
-                accum = new ImmValue("dimen",dimen);
+                accum = new IntegerValue("dimen",node->lineno,node->var_scope,dimen,1);
+//                accum = new ImmValue("dimen",dimen);
             }
             else
             {
                 int dimen = NumOfDimension_[i];
-                ImmValue* present_dimen = new ImmValue("dimen",dimen);
+                IntegerValue* present_dimen = new IntegerValue("dimen",node->lineno,node->var_scope,dimen,1);
                 //当前维度的索引
                 Value* present_index = AddExpNode(p_node->son[i],IR);
                 Value* arg3 = new IntegerValue("t"+std::to_string(i),node->lineno,node->var_scope,0);

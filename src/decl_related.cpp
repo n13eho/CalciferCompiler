@@ -11,6 +11,8 @@ bool isValid8bit(int num)
     // back doors
     if(num == 0)return true;
 
+    if(num < 0)num = -num;
+
     auto ror = [](int val, int r_bits, int max_bits){
         return ((val & ( (1LL<<max_bits) - 1)) >> r_bits%max_bits) | (val << (max_bits-(r_bits%max_bits)) & ((1LL<<max_bits)-1));
     };
