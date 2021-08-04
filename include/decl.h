@@ -309,7 +309,7 @@ class armRet:public armInstr//ok
     virtual vector<Decl*> getGen()
     {
         vector<Decl*> tem;
-        tem.push_back(rs);
+        if(rs!=nullptr)tem.push_back(rs);
         return tem;
     }
 };
