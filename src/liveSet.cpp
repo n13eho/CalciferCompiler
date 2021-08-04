@@ -153,11 +153,11 @@ void assignPhi(Instruction* instr,BasicBlock*node)
     varDecl* rd = new varDecl(val, node, Rcnt++);
     for(auto pred : node->pioneerBlock){
         //有phi的block中,前驱不一定都存在着val的decl,先把没有的去掉
-        // int fl=0;
-        // for(auto b:ssaIR->AssbyBlock[val]){
-        //     if(b==pred){fl=1;break;}
-        // }
-        // if(!fl)continue;
+         int fl=0;
+         for(auto b:ssaIR->AssbyBlock[val]){
+             if(b==pred){fl=1;break;}
+         }
+         if(!fl)continue;
         //删掉不对啊..........
         armMov* ins = new armMov();
         ins->rd=rd;
