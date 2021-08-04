@@ -1,8 +1,7 @@
 #pragma once
 #include"decl.h"
 #include "Value.h"
-#include<bits/stdc++.h>
-using namespace std;
+
 /*
 input: IR1 without phi
 output: IR1 with phi

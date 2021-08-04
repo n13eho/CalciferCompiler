@@ -28,6 +28,10 @@ int dfscnt=0;
 string mdm_name = "mdm";
 int mdm_cnt = 0;
 
+// 为了给decl.h放imm立即数处理
+string imm_vname = "imm";
+int imm_cnt = 0;
+
 void tarjan_init()
 {
     dfscnt=0;
