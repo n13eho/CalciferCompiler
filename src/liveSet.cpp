@@ -98,6 +98,20 @@ void assignAdd(Instruction* instr,BasicBlock *node)
 }
 void assignMul(Instruction* instr,BasicBlock *node)
 {
+
+    IntegerValue* op2 = (IntegerValue*)(instr->getOp()[1]);
+    IntegerValue* op1 = (IntegerValue*)(instr->getOp()[0]);
+    if(op1->isConst ==1)swap(op1,op2);
+    /**
+     * op1一定是varDecl，op2可能是varDecl或者imm：只有当imm是不合法的时候再new一个新的mov指令
+     * */
+    if(op2->isConst && !isValid8bit(op2->RealValue)){
+        armMov* mul_mov = new armMov();
+        mul_mov->rd = new varDecl(op2, node, Rcnt++);
+        newBlock[node].push_back(mul_mov);
+        trance[mul_mov] = instr;
+    }
+
     armMul *ins=new armMul();
     IntegerValue* res=(IntegerValue*)instr->getResult();
     varDecl *resd = new varDecl(res,node,Rcnt++);
@@ -107,6 +121,17 @@ void assignMul(Instruction* instr,BasicBlock *node)
 }
 void assignDiv(Instruction* instr,BasicBlock *node)
 {
+    //call需要内定0123
+    int Vnum = 0;
+    for(auto param : instr->getOp()){
+        if(Vnum>3)break; //加前4个参数的mov
+        armMov* mov_param = new armMov();
+        mov_param->rd = new varDecl(param, node, Vnum++);
+        mov_param->isaddress = true;
+        newBlock[node].push_back(mov_param);
+        trance[mov_param]=instr;
+    }
+
     armCall *ins=new armCall();
     IntegerValue* res=(IntegerValue*)instr->getResult();
     varDecl *resd = new varDecl(res,node,Rcnt++);
@@ -119,6 +144,17 @@ void assignDiv(Instruction* instr,BasicBlock *node)
 }
 void assignMod(Instruction* instr,BasicBlock *node)
 {
+    //call需要内定0123
+    int Vnum = 0;
+    for(auto param : instr->getOp()){
+        if(Vnum>3)break; //加前4个参数的mov
+        armMov* mov_param = new armMov();
+        mov_param->rd = new varDecl(param, node, Vnum++);
+        mov_param->isaddress = true;
+        newBlock[node].push_back(mov_param);
+        trance[mov_param]=instr;
+    }
+
     armCall *ins=new armCall();
     IntegerValue* res=(IntegerValue*)instr->getResult();
     varDecl *resd = new varDecl(res,node,Rcnt++);
@@ -348,6 +384,7 @@ void assignCall(Instruction* instr, BasicBlock* node)
     ins->funcname = instr->getOp()[0]->VName;
     //返回值.
     IntegerValue* rd=(IntegerValue*)instr->getResult();
+    dbg(rd);
     varDecl *rdd = new varDecl(rd,node,Rcnt++);
     ins->rd=rdd;
 }
@@ -530,6 +567,7 @@ Decl* getDecl(Value* val, BasicBlock* node)
         }
         else{
             //其他就返回上一次赋值
+            dbg(intval->VName);
             return Assign_rec[make_pair(intval,node)].back();
         }
     }
@@ -628,13 +666,22 @@ int usedMov(armMov* ins, BasicBlock* node)
         addAssign(ins->rd->rawValue,node,ins->rd); // 原来的value，node，新增的dc(rd)
         return 0;
     }
+    else if(raw->getOpType() == Instruction::Mul){
+        // 为了处理mul的第二个操作数立即数特别加上的一条mov指令
+        // 直接复制下面的cmp家的
+        ins->rs = getDecl(ins->rd->rawValue, node);
+        addAssign(ins->rd->rawValue, node, ins->rd);
+        return 0;
+    }
     else if(raw->getOpType() >= Instruction::ArithEq && raw->getOpType() <= Instruction::ArithGQ){
         //为了处理cmp两个操作数立即数特别加上的一条mov指令
         ins->rs = getDecl(ins->rd->rawValue, node);
         addAssign(ins->rd->rawValue, node, ins->rd);
         return 0;
     }
-    else if(raw->getOpType() == Instruction::Call){
+    else if(raw->getOpType() == Instruction::Mod ||
+            raw->getOpType() == Instruction::Div ||
+            raw->getOpType() == Instruction::Call ){
         //为了使得实参是r0-r3.
         ins->rs = getDecl(ins->rd->rawValue,node);
         //rd是死寄存器,所以不用更新assign_rec
@@ -736,6 +783,7 @@ void usedStr(armStr* ins,BasicBlock* node)
 void usedCall(armCall* ins, BasicBlock* node)
 {
     //call的参数是内定的!
+    dbg(ins->rd->rawValue);
     addAssign(ins->rd->rawValue,node,ins->rd);
 }
 void usedRet(armRet* ins, BasicBlock* node)
