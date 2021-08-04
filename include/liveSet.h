@@ -1,9 +1,9 @@
 #pragma once
 #include"decl.h"
 #include"BasicBlock.h"
-// #include<bits/stdc++.h>
 #include"../include/ssa.h"
-// using namespace std;
+#include "decl_related.h"
+
 #define reachset_times 5 //计算reachset时迭代的次数，主要是为了之后能更方便得到形参的Decl
 
 void liveSets();

@@ -348,6 +348,9 @@ void init_color(BasicBlock* gb)
 //        dbg(gb->FuncV->FuncParams[i]->VName);
 //        dbg(param_rignode->dc, colors[param_rignode]);
     }
+
+    //
+    if(usedK != 5)usedK = 5;
 }
 
 vector<RIGnode*> s_point; // 起点
@@ -380,7 +383,7 @@ bool paintColor(BasicBlock* gb){
     //1.2 add s_point，非联通的图可以重新使用参数个数/4
 
     if(s_point.size() == 0)return true;// 表示这个函数只用了参数分到的寄存器，没用其他的寄存器，因此直接返回true
-    colors[s_point[0]] = usedK == 0 ? ++usedK : min(4,(int)gb->FuncV->FuncParams.size())+1;
+    colors[s_point[0]] = 5;
     que.push(s_point[0]);
     //2. BFS coloring
     while(!que.empty()){
@@ -392,7 +395,7 @@ bool paintColor(BasicBlock* gb){
             //对nx尝试每一种颜色
             if(colors[nx])continue;
             if(nx->dc==13 || (nx->dc >= 0 && nx->dc <= 3))continue;
-            for(int i=1;i<=usedK;i++){
+            for(int i=5;i<=usedK;i++){
                 if(check_ok(nx,i)){
                     colors[nx]=i;
                     que.push(nx);
@@ -433,8 +436,9 @@ void deleteDC(DomTreenode* dn, BasicBlock* gb)
                 if((*it)->getType()==armInstr::call){
                     (*it)->rd = nullptr;
                 }
-                else 
+                else{
                     newBlock[b].erase(it--);
+                }
             }
         }
     }
@@ -624,18 +628,19 @@ bool buildRIG(BasicBlock* gb)
 //    dbg("neho -- fill in/out sets");
     // 根本没有分配寄存器，直接返回真
     if(RIG[gb].size() == 0)return true;
-    dbg("neho -- RIG created and show");
+
     // for debug 打印整张图看看
-    cout << "**** the RIG of " << gb->BlockName <<  "****\n";
-    for(auto dnode: RIG[gb])
-    {
-        cout << "r" << dnode->dc << "\t";
-        for(auto con_node: dnode->connectTo)
-        {
-            cout << "r" << con_node->dc << " ";
-        }
-        cout << "\n";
-    }
+//    dbg("neho -- RIG created and show");
+//    cout << "**** the RIG of " << gb->BlockName <<  "****\n";
+//    for(auto dnode: RIG[gb])
+//    {
+//        cout << "r" << dnode->dc << "\t";
+//        for(auto con_node: dnode->connectTo)
+//        {
+//            cout << "r" << con_node->dc << " ";
+//        }
+//        cout << "\n";
+//    }
 //    dbg("neho -- show RIG win");
 
     // 5. filling colors!
@@ -645,11 +650,12 @@ bool buildRIG(BasicBlock* gb)
         init_color(gb);
         if(paintColor(gb)){
             //如果成功了就break; 否则使用颜色过多就再试一次（最多5次）
-            dbg("color，该全局块染色情况");
-            for(auto node: RIG[gb]){
-                cout << node->dc << " " << colors[node] << endl;
-            }
             if(usedK <= K)break;
+
+//            dbg("color，该全局块染色情况");
+//            for(auto node: RIG[gb]){
+//                cout << node->dc << " " << colors[node] << endl;
+//            }
         }
     }
 

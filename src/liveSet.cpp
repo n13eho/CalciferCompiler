@@ -256,6 +256,31 @@ void assignStr(Instruction* instr, BasicBlock* node)
 }
 void assignLogic(Instruction* instr, BasicBlock* node, BasicBlock* nex)
 {
+    /* 对于前两个操作数: op1如果不是imm那么一定是var，就不加新的指令，否则加上
+     *                  op2同样也可以是var和imm，当他是imm且是不合法的mov的时候，就加上一句mov
+    */
+    //op1
+    IntegerValue* op1 = (IntegerValue*)(instr->getOp()[0]);
+    if(op1->isConst == 1){
+        armMov* movins1 = new armMov();
+        movins1->rd = new varDecl(op1, node, Rcnt++);
+        newBlock[node].push_back(movins1);
+        trance[movins1] = instr;
+    }
+    //op2
+    IntegerValue* op2 = (IntegerValue*)(instr->getOp()[1]);
+    dbg(instr->getId());
+    dbg(op2->isConst);
+    dbg(op2->RealValue);
+    if(op2->isConst == 1 && !isValid8bit(op2->RealValue)){
+        armMov* movins2 = new armMov();
+        movins2->rd = new varDecl(op2, node, Rcnt++);
+        newBlock[node].push_back(movins2);
+        trance[movins2] = instr;
+        dbg("123123");
+    }
+
+
     // 一个cmp指令
     armCmp* ins = new armCmp();
     newBlock[node].push_back(ins);
@@ -312,11 +337,12 @@ void assignCall(Instruction* instr, BasicBlock* node)
     //把参数移入死寄存器r0-r3;
     FunctionValue* func = (FunctionValue*)instr->getOp()[0];
     int Vnum = 0;
-    for(auto param: func->getParams()){
-        if(Vnum>3)break;
+    for(auto param : instr->getOp()){
+        if(param==instr->getOp().front())continue;
+        if(Vnum>3)break; //加前4个参数的mov
         armMov* mov_param = new armMov();
-        mov_param->rd = new varDecl(instr->getOp()[param->isPara], node, Vnum++);
-
+        mov_param->rd = new varDecl(param, node, Vnum++);
+        mov_param->isaddress = true;
         newBlock[node].push_back(mov_param);
         trance[mov_param]=instr;
     }
@@ -604,7 +630,13 @@ int usedMov(armMov* ins, BasicBlock* node)
     Instruction* raw = trance[ins];
     if(raw->getOpType() == Instruction::Store){
         //为了处理str立即数特别加上的一条mov指令
-        addAssign(ins->rd->rawValue,node,ins->rd);
+        addAssign(ins->rd->rawValue,node,ins->rd); // 原来的value，node，新增的dc(rd)
+        return 0;
+    }
+    else if(raw->getOpType() >= Instruction::ArithEq && raw->getOpType() <= Instruction::ArithGQ){
+        //为了处理cmp两个操作数立即数特别加上的一条mov指令
+        ins->rs = getDecl(ins->rd->rawValue, node);
+        addAssign(ins->rd->rawValue, node, ins->rd);
         return 0;
     }
     else if(raw->getOpType() == Instruction::Call){
@@ -636,7 +668,7 @@ int usedMov(armMov* ins, BasicBlock* node)
     }
     else{
         // 最朴素的mov
-        IntegerValue* rs= (IntegerValue*)raw->getOp()[0];
+        Value* rs= (Value*)raw->getOp()[0];
         ins->rs = getDecl(rs,node);
         addAssign(ins->rd->rawValue,node,ins->rd);
         return 0;
