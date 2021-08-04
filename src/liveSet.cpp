@@ -153,12 +153,12 @@ void assignPhi(Instruction* instr,BasicBlock*node)
     varDecl* rd = new varDecl(val, node, Rcnt++);
     for(auto pred : node->pioneerBlock){
         //有phi的block中,前驱不一定都存在着val的decl,先把没有的去掉
-        // int fl=0;
-        // for(auto b:ssaIR->AssbyBlock[val]){
-        //     if(b==pred){fl=1;break;}
-        // }
-        // if(!fl)continue;
-        //删掉不对啊..........
+        int fl=0;
+        for(auto b:ssaIR->AssbyBlock[val]){
+            if(b==pred){fl=1;break;}
+        }
+        if(!fl)continue;
+
         armMov* ins = new armMov();
         ins->rd=rd;
         auto pos = newBlock[pred].end();
@@ -308,7 +308,19 @@ void assignjmp(Instruction* instr, BasicBlock* node)
 }
 void assignCall(Instruction* instr, BasicBlock* node)
 {
-    //TODO: 目前的想法时甩锅到代码生成, 这里就先沿用四元式的表示;如果发现可以解决记得回来改哦!
+
+    //把参数移入死寄存器r0-r3;
+    FunctionValue* func = (FunctionValue*)instr->getOp()[0];
+    int Vnum = 0;
+    for(auto param: func->getParams()){
+        if(Vnum>3)break;
+        armMov* mov_param = new armMov();
+        mov_param->rd = new varDecl(instr->getOp()[param->isPara], node, Vnum++);
+
+        newBlock[node].push_back(mov_param);
+        trance[mov_param]=instr;
+    }
+
     armCall* ins = new armCall();
     newBlock[node].push_back(ins);
     trance[ins]=instr;
@@ -488,7 +500,6 @@ void addAssign(Value* val, BasicBlock* node, Decl* dc)
 
 Decl* getDecl(Value* val, BasicBlock* node)
 {
-//    dbg(val->VName);
     if(val->getType()==1){
         IntegerValue* intval = (IntegerValue*)val;
         if(intval->isConst&&Assign_rec[make_pair(intval,node)].size()==0){
@@ -596,23 +607,41 @@ int usedMov(armMov* ins, BasicBlock* node)
         addAssign(ins->rd->rawValue,node,ins->rd);
         return 0;
     }
-    IntegerValue* rs ;
-    if(raw->getOp().size())rs= (IntegerValue*)raw->getOp()[0];
-    else {
-        IntegerValue* temval = (IntegerValue*)ins->rd->rawValue;
-        rs= new IntegerValue("tt",-1,"",1);//这里对于没有初值的变量的处理
-        if(temval->isConst) rs->RealValue=temval->RealValue;//如果是常量初始化
+    else if(raw->getOpType() == Instruction::Call){
+        //为了使得实参是r0-r3.
+        ins->rs = getDecl(ins->rd->rawValue,node);
+        //rd是死寄存器,所以不用更新assign_rec
+        return 0;
     }
-    if(raw->getOpType()==Instruction::Phi){
+    else if(raw->getOp().size()==0){
+        //这里对于没有初值的变量的处理
+        IntegerValue* temval = (IntegerValue*)ins->rd->rawValue;
+        IntegerValue* rs= new IntegerValue("tt",-1,"",1);
+        if(temval->isConst) rs->RealValue=temval->RealValue;//如果是常量初始化(const int后面有一条莫名其妙的语句...为了翻译它)
+        ins->rs = getDecl(rs,node);
+        addAssign(ins->rd->rawValue,node,ins->rd);
+        return 0;
+    }
+    else if(raw->getOpType()==Instruction::Phi){
+        //phi语句翻译的mov
+        Value* rs = raw->getOp()[0];
         if(Assign_rec[make_pair(rs,node)].size()==0){
+            //原则上不会执行到这里
             dbg("phi对这个块没意义");
-            dbg(raw->getOp()[0]->VName);
             return -1;
         }
+        ins->rs = getDecl(rs,node);
+        addAssign(ins->rd->rawValue,node,ins->rd);
+        return 0;
     }
-    ins->rs = getDecl(rs,node);
-    addAssign(ins->rd->rawValue,node,ins->rd);
-    return 0;
+    else{
+        // 最朴素的mov
+        IntegerValue* rs= (IntegerValue*)raw->getOp()[0];
+        ins->rs = getDecl(rs,node);
+        addAssign(ins->rd->rawValue,node,ins->rd);
+        return 0;
+    }
+    return 987; 
 }
 void usedCmp(armCmp* ins,BasicBlock* node)
 {
@@ -753,9 +782,6 @@ void setUsed(BasicBlock* s)
 {
     //init:把reachin里的定义建立好
     for(auto dc : reachin[s]){
-        if(s->BlockName=="ifNext"){
-            dbg(*dc);
-        }
         addAssign(dc->rawValue,s,dc);
     } 
     

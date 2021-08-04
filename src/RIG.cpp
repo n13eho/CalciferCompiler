@@ -367,7 +367,7 @@ bool paintColor(BasicBlock* gb){
     s_point.clear();
     for(auto node: RIG[gb]){
         if(colors[node])continue;
-        if(node->dc==13)continue;
+        if(node->dc==13 || (node->dc >= 0 && node->dc <= 3))continue; // 开后门
         if((int)node->connectTo.size()>maxdu){
             s_point.clear();
             s_point.push_back(node);
@@ -391,7 +391,7 @@ bool paintColor(BasicBlock* gb){
         for(auto nx:now->connectTo){
             //对nx尝试每一种颜色
             if(colors[nx])continue;
-            if(nx->dc==13)continue;
+            if(nx->dc==13 || (nx->dc >= 0 && nx->dc <= 3))continue;
             for(int i=1;i<=usedK;i++){
                 if(check_ok(nx,i)){
                     colors[nx]=i;
@@ -405,7 +405,7 @@ bool paintColor(BasicBlock* gb){
         }
     }
     for(auto node: RIG[gb]){
-        if(node->dc==13)continue;
+        if(node->dc==13 || (node->dc >= 0 && node->dc <= 3))continue;
         if(colors[node]==0)return paintColor(gb);
     }
     return true;
@@ -483,7 +483,7 @@ int chosenOne = -1;
 
 void spillCost(BasicBlock* gb){
     for(auto node: RIG[gb]){
-        if(node->dc==13)continue;
+        if(node->dc==13 || (node->dc >= 0 && node->dc <= 3))continue;
         auto dc_vreg= node->dc;
         spilling_cost[dc_vreg] = 0; // 清零
         for(auto dc: Vreg2Decls[dc_vreg])
@@ -503,7 +503,7 @@ void addMemoryOperation(BasicBlock* gb)
     // 选出cost最小的dc
     double mincost = 1e18;
     for(auto node : RIG[gb]){
-        if(node->dc==13)continue;
+        if(node->dc==13 || (node->dc >= 0 && node->dc <= 3))continue;
         int dc_vreg= node->dc;
         if(spilling_cost[dc_vreg]<mincost){
             mincost = spilling_cost[dc_vreg];
@@ -545,7 +545,7 @@ void changeVreg(BasicBlock *gb)
 {
     for(auto rigN: colors)
     {
-        if(rigN.first->dc==13)continue;
+        if(rigN.first->dc==13 || (rigN.first->dc >= 0 && rigN.first->dc <= 3))continue;
         int dc_vreg = rigN.first->dc;
         for(auto dc: Vreg2Decls[dc_vreg])
         {// 就将每一个decl的vreg批量改了
@@ -563,8 +563,6 @@ void changeVreg(BasicBlock *gb)
                 }
             }
         }
-
-
     }
 }
 
@@ -578,7 +576,7 @@ void updateV2Ds()
     {
         for(auto dc: p.second)
         {
-            if(VregNumofDecl(dc)==13)continue;
+            if(VregNumofDecl(dc)==13 || (VregNumofDecl(dc) >= 0 && VregNumofDecl(dc) <= 3))continue;
             temp_Vreg2Decls[VregNumofDecl(dc)].push_back(dc);
         }
     }
