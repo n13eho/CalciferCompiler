@@ -634,13 +634,6 @@ void IfNode(GrammaNode* node,LinearIR *IR)
 
         CondNode(node->son[0],IR);
 
-        //条件成立跳转指令
-        // Instruction* ins_br = new Instruction(IR->getInstCnt(),Instruction::ConBr,0);
-        // IR->InsertInstr(ins_br);
-        // bbNow->Addins(ins_br->getId());
-        // ins_br->setParent(bbNow);
-        // ins_br->jmpDestBlock = caseT;
-
         //条件不成立跳转指令
         Instruction* ins_jmp = new Instruction(IR->getInstCnt(),Instruction::Jmp,0);
         IR->InsertInstr(ins_jmp);
@@ -674,9 +667,6 @@ void IfNode(GrammaNode* node,LinearIR *IR)
         {
             bbNow->LastIfNext = IfNextBlocks.top();
         }
-        //update jmp address
-        //后面删除该结果value
-        // ins_br->setResult(new IntegerValue("jmpAddress0",node->lineno,node->var_scope,IR->getInstCnt(),1));
 
         CaseFBlocks.pop();
         CaseTBlocks.pop();
@@ -763,12 +753,15 @@ void IfElseNode(GrammaNode* node,LinearIR *IR)
 
         bbNow->Link(next);
         //T跳转至next
-        Instruction* ins_br3 = new Instruction(IR->getInstCnt(),Instruction::Jmp,0);
-        IR->InsertInstr(ins_br3);
-        caseT->Addins(ins_br3->getId());
-        ins_br3->setParent(caseT);
-        ins_br3->jmpDestBlock = next;
-
+        if(bbNow->getLastIns()>0 && IR->getIns(bbNow->getLastIns())->getOpType() != Instruction::Jmp)
+        {
+            Instruction* ins_br3 = new Instruction(IR->getInstCnt(),Instruction::Jmp,0);
+            IR->InsertInstr(ins_br3);
+            bbNow->Addins(ins_br3->getId());
+            ins_br3->setParent(bbNow);
+            ins_br3->jmpDestBlock = next;
+        }
+        
         //F
         bbNow = caseF;
         StmtNode(node->son[2],IR);
@@ -787,13 +780,15 @@ void IfElseNode(GrammaNode* node,LinearIR *IR)
         // }
         //此时bbNow不一定是caseF
         bbNow->Link(next);
-        //T跳转至next
-        Instruction* ins_br4 = new Instruction(IR->getInstCnt(),Instruction::Jmp,0);
-        IR->InsertInstr(ins_br4);
-        caseF->Addins(ins_br4->getId());
-        ins_br4->setParent(caseF);
-        ins_br4->jmpDestBlock = next;
-
+        //F跳转至next
+        if(bbNow->getLastIns()>0 && IR->getIns(bbNow->getLastIns())->getOpType() != Instruction::Jmp)
+        {
+            Instruction* ins_br4 = new Instruction(IR->getInstCnt(),Instruction::Jmp,0);
+            IR->InsertInstr(ins_br4);
+            bbNow->Addins(ins_br4->getId());
+            ins_br4->setParent(bbNow);
+            ins_br4->jmpDestBlock = next;
+        }
         bbNow = next;
         bbNow->bType = BasicBlock::IfNext;
         IfNextBlocks.pop();
@@ -839,6 +834,11 @@ void WhileNode(GrammaNode* node,LinearIR *IR)
             FuncN->AddDom(condBlock);
 
             bbNow->Link(condBlock);
+            Instruction* jmpIns = new Instruction(IR->getInstCnt(),Instruction::Jmp,0);
+            jmpIns->jmpDestBlock = condBlock;
+            IR->InsertInstr(jmpIns);
+            bbNow->Addins(jmpIns->getId());
+            jmpIns->setParent(bbNow);
 
             bbNow = condBlock;
         }
@@ -848,7 +848,7 @@ void WhileNode(GrammaNode* node,LinearIR *IR)
         caseT->BlockName = "whileTrue";
         //while body下一个基本块
         BasicBlock* next = new BasicBlock(BasicBlock::Basic);
-        next->BlockName = "whileFalse";
+        next->BlockName = "IfNext";
         LoopNext.push(make_pair(bbNow,next));
 
         CaseTBlocks.push(caseT);
@@ -868,12 +868,6 @@ void WhileNode(GrammaNode* node,LinearIR *IR)
         //循环
         // caseT->Link(bbNow);
 
-        // //条件成立，跳转至caseT，该指令属于bbNow
-        // Instruction* ins_br2 = new Instruction(IR->getInstCnt(),Instruction::ConBr,0);
-        // IR->InsertInstr(ins_br2);
-        // ins_br2->jmpDestBlock = caseT;
-        // bbNow->Addins(ins_br2->getId());
-        // ins_br2->setParent(bbNow);
 
         //条件不成立，跳转至next,该指令属于bbNow
         Instruction* ins_br = new Instruction(IR->getInstCnt(),Instruction::Jmp,0);
@@ -902,10 +896,20 @@ void WhileNode(GrammaNode* node,LinearIR *IR)
         ins_br3->setParent(bbNow);
 
         bbNow = next;
+        bbNow->bType = BasicBlock::IfNext;
+        IfNextBlocks.pop();
+        if(IfNextBlocks.empty())
+        {
+            //若前面无嵌套，并且最后ifnext也是空，则加入return
+            bbNow->LastIfNext = nullptr;
+        }
+        else
+        {
+            bbNow->LastIfNext = IfNextBlocks.top();  
+        }
         LoopNext.pop();
         CaseTBlocks.pop();
         CaseFBlocks.pop();
-        IfNextBlocks.pop();
     }
     else
     {
