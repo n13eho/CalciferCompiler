@@ -518,7 +518,6 @@ void addMemoryOperation(BasicBlock* gb)
     memoryDecl* memShift = new memoryDecl(nullptr,gb,++gblock2spbias[gb]);
     for(auto b : gb->domBlock){
         for(auto it = newBlock[b].begin();it!=newBlock[b].end();it++){
-            dbg(**it);
             auto arm_ins = *it;
 
             //是否要加ldr
@@ -529,7 +528,6 @@ void addMemoryOperation(BasicBlock* gb)
                     ldr_ins->rd = dc;
                     ldr_ins->rs = memShift;
                     it=newBlock[b].insert(it,ldr_ins)+1;
-                    dbg(**it);
                 }
             }
 
