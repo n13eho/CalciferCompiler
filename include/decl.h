@@ -124,6 +124,7 @@ class addrDecl: public Decl{
 class armInstr{
     public:
     Decl* rd;
+    string comm;
     enum armInsType{add=1,sub,rsb,mul,div,mod,mov,push,pop,cmp,beq,bne,blt,ble,bgt,bge,blr,b,movlt,movle,movge,movgt,moveq,movne,ldr,str,call,ret};
     virtual ostream& output(ostream&out)const{
         out<<"@ NULL"<<endl;
@@ -482,6 +483,7 @@ class armMov:public armInstr{//ok
     virtual int getType(){return mov;}
     virtual ostream& output(ostream&out)const
     {
+        cout<<comm<<endl;
         if(rd->gettype() == Decl::addr_decl)
         { // rd是addr_decl
             if(rs->gettype() == Decl::addr_decl){

@@ -699,9 +699,10 @@ int usedMov(armMov* ins, BasicBlock* node)
     else if(raw->getOpType()==Instruction::Phi){
         //phi语句翻译的mov
         Value* rs = raw->getOp()[0];
-        dbg(rs->VName);
+        ins->comm = "@ phi to mov";
         if(Assign_rec[make_pair(rs,node)].size()==0){
             //原则上不会执行到这里
+            ins->comm = "@ phi to mov special";
             dbg("phi对这个块没意义");
             dbg(node);
             return -1;
@@ -855,10 +856,6 @@ void setUsed(BasicBlock* s)
     //init:把reachin里的定义建立好
     for(auto dc : reachin[s]){
         addAssign(dc->rawValue,s,dc);
-        if(s->BlockName=="ifNext"){
-            dbg(s);
-            dbg(dc->rawValue->VName);
-        }
     } 
     
     //对于每一条语句填used
