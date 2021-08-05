@@ -1141,11 +1141,21 @@ Value* LAndExpNode(GrammaNode* node,LinearIR *IR)
     if(node->son.size() == 1)
     {
         ret = EqExpNode(node->son[0],IR);
+        // dbg(node->son[0]->type);
+        if(EqExp_EQ_ != node->son[0]->type && EqExp_NEQ_ != node->son[0]->type &&
+            RelExp_LT_ != node->son[0]->type && RelExp_BG_ != node->son[0]->type &&
+            RelExp_LQ_ != node->son[0]->type && RelExp_BQ_!= node->son[0]->type)
+        {
+            /*
+            
         if(Ident_ == node->son[0]->type || AddExp_Add_ == node->son[0]->type ||
             AddExp_Sub_ == node->son[0]->type || MulExp_Mul_ == node->son[0]->type ||
             MulExp_Div_ == node->son[0]->type || MulExp_Mod_ == node->son[0]->type||
-            UnaryExp_ == node->son[0]->type||UnaryExp_func_ == node->son[0]->type)
-        {
+            UnaryExp_ == node->son[0]->type||UnaryExp_func_ == node->son[0]->type||
+            LVal_ == node->son[0]->type||LVal_Array_ == node->son[0]->type)
+            
+            */
+            // dbg(node->son[0]->str);
             Value* VL = ret;
             IntegerValue* RL = new IntegerValue("const0",node->son[0]->lineno,node->son[0]->var_scope,0,1);
             if(nullptr == FuncN && 0 == global)
@@ -1215,13 +1225,19 @@ Value* LAndExpNode(GrammaNode* node,LinearIR *IR)
             }
             
             Value* Condi = EqExpNode(node->son[i],IR);
-            
-            if(Ident_ == node->son[i]->type || AddExp_Add_ == node->son[i]->type ||
+            if(EqExp_EQ_ != node->son[i]->type && EqExp_NEQ_ != node->son[i]->type &&
+            RelExp_LT_ != node->son[i]->type && RelExp_BG_ != node->son[i]->type &&
+            RelExp_LQ_ != node->son[i]->type && RelExp_BQ_!= node->son[i]->type)
+            {                
+                
+                /*
+                if(Ident_ == node->son[i]->type || AddExp_Add_ == node->son[i]->type ||
             AddExp_Sub_ == node->son[i]->type || MulExp_Mul_ == node->son[i]->type ||
             MulExp_Div_ == node->son[i]->type || MulExp_Mod_ == node->son[i]->type||
-            UnaryExp_ == node->son[i]->type||UnaryExp_func_ == node->son[i]->type)
-            {                
-                // dbg("bbbbbbbbbbbbbbbbbbbbb");
+            UnaryExp_ == node->son[i]->type||UnaryExp_func_ == node->son[i]->type||
+            LVal_ == node->son[i]->type||LVal_Array_ == node->son[i]->type)
+                
+                */
                 //与常数0比较
                 IntegerValue* const0 = new IntegerValue("const0",node->son[i]->lineno,node->son[i]->var_scope,0,1);
                 vector<Value*> ops={Condi,const0};
@@ -1646,9 +1662,13 @@ Value* RelExpNode(GrammaNode* node,LinearIR *IR)
     }
     else
     {
-        //RelExp:AddExp
-        return AddExpNode(node,IR);
-        return nullptr;
+        Value* ret = AddExpNode(node,IR);
+        // dbg("rel add",node,node->str);
+        // if(node->son.size()>0)
+        // {
+        //     dbg(node->son[0],node->son[0]->str);
+        // }
+        return ret;
     }
 }
 
