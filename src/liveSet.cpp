@@ -189,11 +189,12 @@ void assignPhi(Instruction* instr,BasicBlock*node)
     varDecl* rd = new varDecl(val, node, Rcnt++);
     for(auto pred : node->pioneerBlock){
         //有phi的block中,前驱不一定都存在着val的decl,先把没有的去掉
-        int fl=0;
-        for(auto b:ssaIR->AssbyBlock[val]){
-            if(b==pred){fl=1;break;}
-        }
-        if(!fl)continue;
+        // int fl=0;
+        // for(auto b:ssaIR->AssbyBlock[val]){
+        //     if(b==pred){fl=1;break;}
+        // }
+        // if(!fl)continue;
+        //确实不能忽略每一个块
 
         armMov* ins = new armMov();
         ins->rd=rd;
@@ -698,9 +699,11 @@ int usedMov(armMov* ins, BasicBlock* node)
     else if(raw->getOpType()==Instruction::Phi){
         //phi语句翻译的mov
         Value* rs = raw->getOp()[0];
+        dbg(rs->VName);
         if(Assign_rec[make_pair(rs,node)].size()==0){
             //原则上不会执行到这里
             dbg("phi对这个块没意义");
+            dbg(node);
             return -1;
         }
         ins->rs = getDecl(rs,node);
@@ -852,12 +855,17 @@ void setUsed(BasicBlock* s)
     //init:把reachin里的定义建立好
     for(auto dc : reachin[s]){
         addAssign(dc->rawValue,s,dc);
+        if(s->BlockName=="ifNext"){
+            dbg(s);
+            dbg(dc->rawValue->VName);
+        }
     } 
     
     //对于每一条语句填used
     for(auto ins=newBlock[s].begin();ins!=newBlock[s].end();){
         if(usedIns(*ins,s)==-1){
             ins=newBlock[s].erase(ins);
+            if(ins==newBlock[s].end())break;
         }
         else ins++;
     }
