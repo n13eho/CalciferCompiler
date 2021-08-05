@@ -614,9 +614,9 @@ bool buildRIG(BasicBlock* gb)
         }
 
 //         2.5 for debug 先临时打印一下这些个in 和 out
-//            cout << "**** IN&OUT set of every armIns ****\n";
-//            for(auto dr: DomRoot)
-//                showSets(dr);
+        cout << "\n\n第" << 10-times_deadCode << "次 " << "**** IN&OUT set of every armIns ****\n";
+        for(auto dr: DomRoot)
+            showSets(dr);
 
         // 3 利用填好的in、out集合，建立冲突图，也是一个递归的过程
         connectDecl(block2dom[gb->domBlock[0]], gb);
@@ -629,18 +629,18 @@ bool buildRIG(BasicBlock* gb)
     if(RIG[gb].size() == 0)return true;
 
     // for debug 打印整张图看看
-//    dbg("neho -- RIG created and show");
-//    cout << "**** the RIG of " << gb->BlockName <<  "****\n";
-//    for(auto dnode: RIG[gb])
-//    {
-//        cout << "r" << dnode->dc << "\t";
-//        for(auto con_node: dnode->connectTo)
-//        {
-//            cout << "r" << con_node->dc << " ";
-//        }
-//        cout << "\n";
-//    }
-//    dbg("neho -- show RIG win");
+    dbg("neho -- RIG created and show");
+    cout << "**** the RIG of " << gb->BlockName <<  "****\n";
+    for(auto dnode: RIG[gb])
+    {
+        cout << "r" << dnode->dc << "\t";
+        for(auto con_node: dnode->connectTo)
+        {
+            cout << "r" << con_node->dc << " ";
+        }
+        cout << "\n";
+    }
+    dbg("neho -- show RIG win");
 
     // 5. filling colors!
     int success=0;

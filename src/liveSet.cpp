@@ -856,10 +856,10 @@ void setUsed(BasicBlock* s)
     for(auto dc : reachin[s]){
         addAssign(dc->rawValue,s,dc);
         if(s->BlockName=="ifNext"){
-            dbg(s);
-            dbg(dc->rawValue->VName);
+//            dbg(s);
+//            dbg(dc->rawValue->VName);
         }
-    } 
+    }
     
     //对于每一条语句填used
     for(auto ins=newBlock[s].begin();ins!=newBlock[s].end();){
