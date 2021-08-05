@@ -792,7 +792,6 @@ void usedCmp(armCmp* ins,BasicBlock* node)
     Instruction* raw = trance[ins];
     IntegerValue* r0=(IntegerValue*)raw->getOp()[0];
     IntegerValue* r1=(IntegerValue*)raw->getOp()[1];
-    if(r0->isConst)swap(r0,r1);
     ins->r1 = getDecl(r1,node);
     ins->r0 = getDecl(r0,node);
 }
