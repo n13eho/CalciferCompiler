@@ -648,6 +648,7 @@ void IfNode(GrammaNode* node,LinearIR *IR)
 
         if(bbNow->getLastIns()>0 && IR->getIns(bbNow->getLastIns())->getOpType() != Instruction::Jmp)
         {
+            bbNow->Link(next);
             Instruction* ins_jmp2 = new Instruction(IR->getInstCnt(),Instruction::Jmp,0);
             IR->InsertInstr(ins_jmp2);
             bbNow->Addins(ins_jmp2->getId());
@@ -655,8 +656,16 @@ void IfNode(GrammaNode* node,LinearIR *IR)
             ins_jmp2->setParent(bbNow);
             ins_jmp2->setJmpDestBlock(next);
         }
+        else if(bbNow->getLastIns()>0 && IR->getIns(bbNow->getLastIns())->getOpType() == Instruction::Jmp)
+        {
+
+        }
+        else
+        {
+            bbNow->Link(next);
+        }
         // cout<<"case T :bbNow "<<bbNow<<bbNow->BlockName<<endl;
-        bbNow->Link(next);
+        
         bbNow = next;
         bbNow->bType = BasicBlock::IfNext;
         IfNextBlocks.pop();
@@ -753,11 +762,13 @@ void IfElseNode(GrammaNode* node,LinearIR *IR)
 
         //     // cout<<"case T "<<bbNow->BlockName<<"link next"<<endl;
         // }
-
-        bbNow->Link(next);
+        
+        
         //T跳转至next
         if(bbNow->getLastIns()>0 && IR->getIns(bbNow->getLastIns())->getOpType() != Instruction::Jmp)
         {
+            bbNow->Link(next);
+            //块非空，且最后一条不是jmp
             Instruction* ins_br3 = new Instruction(IR->getInstCnt(),Instruction::Jmp,0);
             IR->InsertInstr(ins_br3);
             bbNow->Addins(ins_br3->getId());
@@ -765,6 +776,16 @@ void IfElseNode(GrammaNode* node,LinearIR *IR)
             // ins_br3->jmpDestBlock = next;
             ins_br3->setJmpDestBlock(next);
         }
+        else if(bbNow->getLastIns()>0 && IR->getIns(bbNow->getLastIns())->getOpType() == Instruction::Jmp)
+        {
+            //块非空，最后一条是jmp
+        }
+        else
+        {
+            //块空或者
+            bbNow->Link(next);
+        }
+        
         
         //F
         bbNow = caseF;
@@ -783,16 +804,26 @@ void IfElseNode(GrammaNode* node,LinearIR *IR)
             
         // }
         //此时bbNow不一定是caseF
-        bbNow->Link(next);
+        
         //F跳转至next
         if(bbNow->getLastIns()>0 && IR->getIns(bbNow->getLastIns())->getOpType() != Instruction::Jmp)
         {
+            bbNow->Link(next);
             Instruction* ins_br4 = new Instruction(IR->getInstCnt(),Instruction::Jmp,0);
             IR->InsertInstr(ins_br4);
             bbNow->Addins(ins_br4->getId());
             ins_br4->setParent(bbNow);
             // ins_br4->jmpDestBlock = next;
             ins_br4->setJmpDestBlock(next);
+        }
+        else if(bbNow->getLastIns()>0 && IR->getIns(bbNow->getLastIns())->getOpType() == Instruction::Jmp)
+        {
+            //块非空，最后一条是jmp
+        }
+        else
+        {
+            //块空
+            bbNow->Link(next);
         }
         bbNow = next;
         bbNow->bType = BasicBlock::IfNext;
