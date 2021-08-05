@@ -59,7 +59,12 @@ void printArm(DomTreenode* dn,BasicBlock* gb)
             //处理返回值
             if(call_ins->rd != NULL)
             {
-                calout<<"\tmov "<<*(call_ins->rd)<<", "<<"r0"<<endl;
+                if(call_ins->funcname == "__aeabi_idivmod"){
+                    calout<<"\tmov "<<*(call_ins->rd)<<", "<<"r1"<<endl;
+                }
+                else{
+                    calout<<"\tmov "<<*(call_ins->rd)<<", "<<"r0"<<endl;
+                }
             }
 
             //pop 所有寄存器//TODO: 应该pop用过的
@@ -134,7 +139,7 @@ void CalciferCodeGen(char *output_file_path)
 //    outputfile = outputfile + "S";
 
     calout.open(outputfile, std::ifstream::out);
-    calout<<"\t.arch armv7ve\n";
+    calout<<"\t.arch armv7a\n";
     calout<<"\t.data\n";
     for(auto fuhao : allValue)
     {
