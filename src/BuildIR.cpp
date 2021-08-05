@@ -620,8 +620,8 @@ void IfNode(GrammaNode* node,LinearIR *IR)
         next->BlockName = "ifNext";
         //条件所在基本块建立与caseT、next的联系
         // cout<<"cond :bbNow "<<bbNow<<bbNow->BlockName<<endl;
-        bbNow->Link(caseT);
-        bbNow->Link(next);
+        // bbNow->Link(caseT);
+        // bbNow->Link(next);
 
         caseT->setParnt(FuncN);
         next->setParnt(FuncN);
@@ -638,8 +638,9 @@ void IfNode(GrammaNode* node,LinearIR *IR)
         Instruction* ins_jmp = new Instruction(IR->getInstCnt(),Instruction::Jmp,0);
         IR->InsertInstr(ins_jmp);
         bbNow->Addins(ins_jmp->getId());
-        // ins_br->setParent(bbNow);
-        ins_jmp->jmpDestBlock = next;
+        ins_jmp->setParent(bbNow);
+        ins_jmp->setJmpDestBlock(next);
+        // ins_jmp->jmpDestBlock = next;
 
         bbNow = caseT;
         StmtNode(node->son[1],IR);
@@ -650,8 +651,9 @@ void IfNode(GrammaNode* node,LinearIR *IR)
             Instruction* ins_jmp2 = new Instruction(IR->getInstCnt(),Instruction::Jmp,0);
             IR->InsertInstr(ins_jmp2);
             bbNow->Addins(ins_jmp2->getId());
-            ins_jmp2->jmpDestBlock = next;
+            // ins_jmp2->jmpDestBlock = next;
             ins_jmp2->setParent(bbNow);
+            ins_jmp2->setJmpDestBlock(next);
         }
         // cout<<"case T :bbNow "<<bbNow<<bbNow->BlockName<<endl;
         bbNow->Link(next);
@@ -710,8 +712,8 @@ void IfElseNode(GrammaNode* node,LinearIR *IR)
         caseF->setParnt(FuncN);
         next->setParnt(FuncN);
         //更新基本块前驱、后继信息
-        bbNow->Link(caseT);
-        bbNow->Link(caseF);
+        // bbNow->Link(caseT);
+        // bbNow->Link(caseF);
 
         CaseTBlocks.push(caseT);
         CaseFBlocks.push(caseF);
@@ -729,7 +731,8 @@ void IfElseNode(GrammaNode* node,LinearIR *IR)
         IR->InsertInstr(ins_br2);
         bbNow->Addins(ins_br2->getId());
         ins_br2->setParent(bbNow);
-        ins_br2->jmpDestBlock = caseF;
+        ins_br2->setJmpDestBlock(caseF);
+        // ins_br2->jmpDestBlock = caseF;
 
         
 
@@ -759,7 +762,8 @@ void IfElseNode(GrammaNode* node,LinearIR *IR)
             IR->InsertInstr(ins_br3);
             bbNow->Addins(ins_br3->getId());
             ins_br3->setParent(bbNow);
-            ins_br3->jmpDestBlock = next;
+            // ins_br3->jmpDestBlock = next;
+            ins_br3->setJmpDestBlock(next);
         }
         
         //F
@@ -787,7 +791,8 @@ void IfElseNode(GrammaNode* node,LinearIR *IR)
             IR->InsertInstr(ins_br4);
             bbNow->Addins(ins_br4->getId());
             ins_br4->setParent(bbNow);
-            ins_br4->jmpDestBlock = next;
+            // ins_br4->jmpDestBlock = next;
+            ins_br4->setJmpDestBlock(next);
         }
         bbNow = next;
         bbNow->bType = BasicBlock::IfNext;
@@ -836,10 +841,11 @@ void WhileNode(GrammaNode* node,LinearIR *IR)
 
             bbNow->Link(condBlock);
             Instruction* jmpIns = new Instruction(IR->getInstCnt(),Instruction::Jmp,0);
-            jmpIns->jmpDestBlock = condBlock;
+            // jmpIns->jmpDestBlock = condBlock;
             IR->InsertInstr(jmpIns);
             bbNow->Addins(jmpIns->getId());
             jmpIns->setParent(bbNow);
+            jmpIns->setJmpDestBlock(condBlock);
 
             bbNow = condBlock;
         }
@@ -855,8 +861,7 @@ void WhileNode(GrammaNode* node,LinearIR *IR)
         CaseTBlocks.push(caseT);
         CaseFBlocks.push(next);
         IfNextBlocks.push(next);
-        //由于有条件短路，whilehead需要链接next
-        whileHead->Link(next);
+        
         CondNode(node->son[0],IR);
 
         //函数控制的基本块更新
@@ -874,11 +879,11 @@ void WhileNode(GrammaNode* node,LinearIR *IR)
         //条件不成立，跳转至next,该指令属于bbNow
         Instruction* ins_br = new Instruction(IR->getInstCnt(),Instruction::Jmp,0);
         IR->InsertInstr(ins_br);
-        ins_br->jmpDestBlock = next;
+        // ins_br->jmpDestBlock = next;
         
         bbNow->Addins(ins_br->getId());
         ins_br->setParent(bbNow);
-
+        ins_br->setJmpDestBlock(next);
         
         int condInsId = bbNow->getFirstIns();
         
@@ -892,10 +897,11 @@ void WhileNode(GrammaNode* node,LinearIR *IR)
         IntegerValue* jmpIns = new IntegerValue("jmpaddress",node->lineno,node->var_scope,condInsId,1);
         // ins_br3->setResult(jmpIns);
         IR->InsertInstr(ins_br3);
-        ins_br3->jmpDestBlock = whileHead;
+        // ins_br3->jmpDestBlock = whileHead;
 
         bbNow->Addins(ins_br3->getId());
         ins_br3->setParent(bbNow);
+        ins_br3->setJmpDestBlock(whileHead);
 
         bbNow = next;
         bbNow->bType = BasicBlock::IfNext;
@@ -966,7 +972,8 @@ void BreakNode(GrammaNode* node,LinearIR *IR)
     if(!LoopNext.empty())
     {
         BasicBlock* next = LoopNext.top().second;
-        ins_bk->jmpDestBlock = next;
+        // ins_bk->jmpDestBlock = next;
+        ins_bk->setJmpDestBlock(next);
         //next->Addins(ins_bk->getId());
         breakB->Link(next);
         bbNow = breakB;
@@ -1001,7 +1008,8 @@ void ContinueNode(GrammaNode* node,LinearIR *IR)
     {
         BasicBlock* whileB = LoopNext.top().first;
         continueB->Link(whileB);
-        ins_jmp->jmpDestBlock = whileB;
+        // ins_jmp->jmpDestBlock = whileB;
+        ins_jmp->setJmpDestBlock(whileB);
         bbNow = continueB;
     }
     
@@ -1054,6 +1062,7 @@ void LOrExpNode(GrammaNode* node,LinearIR *IR)
     cout<<"LOrExpNode cond cnt:"<<node->son.size()<<endl;
     if(node->son.size() == 1)
     {
+
         Value* Condi = LAndExpNode(node->son[0],IR);   
     }
     else
@@ -1080,13 +1089,16 @@ void LOrExpNode(GrammaNode* node,LinearIR *IR)
                 nextOrCond->setParnt(FuncN);
                 CaseFBlocks.push(nextOrCond);
                 Value* Condi = LAndExpNode(node->son[i],IR);
+                if(!CaseTBlocks.empty())
+                    bbNow->Link(CaseTBlocks.top());
                 bbNow->Link(nextOrCond);
                 CaseFBlocks.pop();
                 Instruction* jmpIns = new Instruction(IR->getInstCnt(),Instruction::Jmp,0);
-                jmpIns->jmpDestBlock = nextOrCond;
+                // jmpIns->jmpDestBlock = nextOrCond;
                 IR->InsertInstr(jmpIns);
                 bbNow->Addins(jmpIns->getId());
                 jmpIns->setParent(bbNow);
+                jmpIns->setJmpDestBlock(nextOrCond);
                 bbNow = nextOrCond;
             }
             else
@@ -1158,10 +1170,12 @@ Value* LAndExpNode(GrammaNode* node,LinearIR *IR)
             {
                 dbg("CaseTBlocks is empty");
             }
-            TJ->jmpDestBlock = CaseTBlocks.top();
+            // TJ->jmpDestBlock = CaseTBlocks.top();
             IR->InsertInstr(TJ);
             bbNow->Addins(TJ->getId());
             TJ->setParent(bbNow);
+            TJ->setJmpDestBlock(CaseTBlocks.top());
+            // bbNow->Link(CaseTBlocks.top());
 
             // Instruction* FJ = new Instruction(IR->getInstCnt(),Instruction::Jmp,0);
             // if(CaseFBlocks.empty())
@@ -1225,7 +1239,8 @@ Value* LAndExpNode(GrammaNode* node,LinearIR *IR)
                 {
                     if(!CaseFBlocks.empty())
                     {
-                        conbr->jmpDestBlock = CaseFBlocks.top();
+                        // conbr->jmpDestBlock = CaseFBlocks.top();
+                        conbr->setJmpDestBlock(CaseFBlocks.top());
                     }
                     else
                     {
@@ -1236,7 +1251,8 @@ Value* LAndExpNode(GrammaNode* node,LinearIR *IR)
                 {
                     if(!CaseTBlocks.empty())
                     {
-                        conbr->jmpDestBlock = CaseTBlocks.top();
+                        // conbr->jmpDestBlock = CaseTBlocks.top();
+                        conbr->setJmpDestBlock(CaseTBlocks.top());
                     }
                     else
                     {
@@ -1246,16 +1262,21 @@ Value* LAndExpNode(GrammaNode* node,LinearIR *IR)
                 CondCnt[CondCnt.size()-1]-=1;
             }
 
+            if(!CaseFBlocks.empty())
+                bbNow->Link(CaseFBlocks.top());
+
             if(nextOrCond != nullptr)
             {
                 // dbg("下一个condblock");
                 bbNow->Link(nextOrCond);
                 CaseTBlocks.pop();
                 Instruction* jmpIns = new Instruction(IR->getInstCnt(),Instruction::Jmp,0);
-                jmpIns->jmpDestBlock = nextOrCond;
+                // jmpIns->jmpDestBlock = nextOrCond;
                 IR->InsertInstr(jmpIns);
                 bbNow->Addins(jmpIns->getId());
                 jmpIns->setParent(bbNow);
+                jmpIns->setJmpDestBlock(nextOrCond);
+                // bbNow->Link(jmpIns->jmpDestBlock);
                 bbNow = nextOrCond;
             }
         }
@@ -1310,11 +1331,12 @@ Value* EqExpNode(GrammaNode* node,LinearIR *IR)
             {
                 dbg("CaseFBlocks is empty");
             }
-            FJ->jmpDestBlock = CaseFBlocks.top();
+            // FJ->jmpDestBlock = CaseFBlocks.top();
             IR->InsertInstr(FJ);
             bbNow->Addins(FJ->getId());
             FJ->setParent(bbNow);
-
+            FJ->setJmpDestBlock(CaseFBlocks.top());
+            // bbNow->Link(FJ->jmpDestBlock);
             CondCnt[CondCnt.size()-1]-=1;
 
         }
@@ -1333,10 +1355,12 @@ Value* EqExpNode(GrammaNode* node,LinearIR *IR)
             {
                 dbg("CaseTBlocks is empty");
             }
-            TJ->jmpDestBlock = CaseTBlocks.top();
+            // TJ->jmpDestBlock = CaseTBlocks.top();
             IR->InsertInstr(TJ);
             bbNow->Addins(TJ->getId());
             TJ->setParent(bbNow);
+            TJ->setJmpDestBlock(CaseTBlocks.top());
+            // bbNow->Link(TJ->jmpDestBlock);
         }
         return ret;
     }
@@ -1367,11 +1391,12 @@ Value* EqExpNode(GrammaNode* node,LinearIR *IR)
             {
                 dbg("CaseFBlocks is empty");
             }
-            FJ->jmpDestBlock = CaseFBlocks.top();
+            // FJ->jmpDestBlock = CaseFBlocks.top();
             IR->InsertInstr(FJ);
             bbNow->Addins(FJ->getId());
             FJ->setParent(bbNow);
-
+            FJ->setJmpDestBlock(CaseFBlocks.top());
+            // bbNow->Link(FJ->jmpDestBlock);
             CondCnt[CondCnt.size()-1]-=1;
 
         }
@@ -1385,10 +1410,12 @@ Value* EqExpNode(GrammaNode* node,LinearIR *IR)
             {
                 dbg("CaseTBlocks is empty");
             }
-            TJ->jmpDestBlock = CaseTBlocks.top();
+            // TJ->jmpDestBlock = CaseTBlocks.top();
             IR->InsertInstr(TJ);
             bbNow->Addins(TJ->getId());
             TJ->setParent(bbNow);
+            TJ->setJmpDestBlock(CaseTBlocks.top());
+            // bbNow->Link(TJ->jmpDestBlock);
         }
         return ret;
     }
@@ -1428,11 +1455,11 @@ Value* RelExpNode(GrammaNode* node,LinearIR *IR)
             {
                 dbg("CaseFBlocks is empty");
             }
-            FJ->jmpDestBlock = CaseFBlocks.top();
+            // FJ->jmpDestBlock = CaseFBlocks.top();
             IR->InsertInstr(FJ);
             bbNow->Addins(FJ->getId());
             FJ->setParent(bbNow);
-
+            FJ->setJmpDestBlock(CaseFBlocks.top());
             CondCnt[CondCnt.size()-1]-=1;
 
         }
@@ -1446,10 +1473,11 @@ Value* RelExpNode(GrammaNode* node,LinearIR *IR)
             {
                 dbg("CaseTBlocks is empty");
             }
-            TJ->jmpDestBlock = CaseTBlocks.top();
+            // TJ->jmpDestBlock = CaseTBlocks.top();
             IR->InsertInstr(TJ);
             bbNow->Addins(TJ->getId());
             TJ->setParent(bbNow);
+            TJ->setJmpDestBlock(CaseTBlocks.top());
         }
         return ret;
     }
@@ -1482,11 +1510,11 @@ Value* RelExpNode(GrammaNode* node,LinearIR *IR)
             {
                 dbg("CaseFBlocks is empty");
             }
-            FJ->jmpDestBlock = CaseFBlocks.top();
+            // FJ->jmpDestBlock = CaseFBlocks.top();
             IR->InsertInstr(FJ);
             bbNow->Addins(FJ->getId());
             FJ->setParent(bbNow);
-
+            FJ->setJmpDestBlock(CaseFBlocks.top());
             CondCnt[CondCnt.size()-1]-=1;
 
         }
@@ -1500,10 +1528,11 @@ Value* RelExpNode(GrammaNode* node,LinearIR *IR)
             {
                 dbg("CaseTBlocks is empty");
             }
-            TJ->jmpDestBlock = CaseTBlocks.top();
+            // TJ->jmpDestBlock = CaseTBlocks.top();
             IR->InsertInstr(TJ);
             bbNow->Addins(TJ->getId());
             TJ->setParent(bbNow);
+            TJ->setJmpDestBlock(CaseTBlocks.top());
         }
         return ret;
     }
@@ -1535,11 +1564,11 @@ Value* RelExpNode(GrammaNode* node,LinearIR *IR)
             {
                 dbg("CaseFBlocks is empty");
             }
-            FJ->jmpDestBlock = CaseFBlocks.top();
+            // FJ->jmpDestBlock = CaseFBlocks.top();
             IR->InsertInstr(FJ);
             bbNow->Addins(FJ->getId());
             FJ->setParent(bbNow);
-
+            FJ->setJmpDestBlock(CaseFBlocks.top());
             CondCnt[CondCnt.size()-1]-=1;
 
         }
@@ -1553,10 +1582,11 @@ Value* RelExpNode(GrammaNode* node,LinearIR *IR)
             {
                 dbg("CaseTBlocks is empty");
             }
-            TJ->jmpDestBlock = CaseTBlocks.top();
+            // TJ->jmpDestBlock = CaseTBlocks.top();
             IR->InsertInstr(TJ);
             bbNow->Addins(TJ->getId());
             TJ->setParent(bbNow);
+            TJ->setJmpDestBlock(CaseTBlocks.top());
         }
         return ret;
     }
@@ -1588,11 +1618,11 @@ Value* RelExpNode(GrammaNode* node,LinearIR *IR)
             {
                 dbg("CaseFBlocks is empty");
             }
-            FJ->jmpDestBlock = CaseFBlocks.top();
+            // FJ->jmpDestBlock = CaseFBlocks.top();
             IR->InsertInstr(FJ);
             bbNow->Addins(FJ->getId());
             FJ->setParent(bbNow);
-
+            FJ->setJmpDestBlock(CaseFBlocks.top());
             CondCnt[CondCnt.size()-1]-=1;
 
         }
@@ -1606,10 +1636,11 @@ Value* RelExpNode(GrammaNode* node,LinearIR *IR)
             {
                 dbg("CaseTBlocks is empty");
             }
-            TJ->jmpDestBlock = CaseTBlocks.top();
+            // TJ->jmpDestBlock = CaseTBlocks.top();
             IR->InsertInstr(TJ);
             bbNow->Addins(TJ->getId());
             TJ->setParent(bbNow);
+            TJ->setJmpDestBlock(CaseTBlocks.top());
         }
         return ret;
     }
@@ -2400,10 +2431,11 @@ void fixIfNext(LinearIR *IR,BasicBlock* node,int dep)
         else
         {
             Instruction* jmp = new Instruction(IR->getInstCnt(),Instruction::Jmp,0);
-            jmp->jmpDestBlock = node->LastIfNext;
+            // jmp->jmpDestBlock = node->LastIfNext;
             node->Addins(jmp->getId());
             jmp->setParent(node);
             IR->InsertInstr(jmp);
+            jmp->setJmpDestBlock(node->LastIfNext);
         }
     }
     for(auto i : node->succBlock)

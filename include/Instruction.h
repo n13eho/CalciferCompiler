@@ -75,6 +75,19 @@ public:
     std::vector<Value *> getOp(){return Operands;}
     Value* getResult(){return Result;}
     BasicBlock* getParent(){return ParentBasicblock;}
+
+    void setJmpDestBlock(BasicBlock* t)
+    {
+        this->jmpDestBlock = t;
+        if(this->ParentBasicblock != nullptr)
+        {
+            this->getParent()->Link(t);
+        }
+        else
+        {
+            std::cout<<"link error"<<std::endl;
+        }
+    }
     
     BasicBlock* jmpDestBlock=nullptr;
 
