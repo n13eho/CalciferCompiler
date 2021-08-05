@@ -700,13 +700,10 @@ int usedMov(armMov* ins, BasicBlock* node)
             //原则上不会执行到这里
             ins->comm = "@ phi to mov special";
             dbg("phi对这个块没意义");
-            dbg(node);
             return -1;
         }
         ins->rs = getDecl(rs,node);
-        dbg(rs->VName,*(ins->rs));
         addAssign(ins->rd->rawValue,node,ins->rd);
-        dbg(ins->rd->rawValue->VName,*(ins->rd));
         return 0;
     }
     else{
@@ -854,6 +851,10 @@ void setUsed(BasicBlock* s)
     //init:把reachin里的定义建立好
     for(auto dc : reachin[s]){
         addAssign(dc->rawValue,s,dc);
+        if(s->BlockName == "while"){
+            dbg(*dc);
+            dbg(dc->rawValue->VName);
+        }
     } 
     
     //对于每一条语句填used
