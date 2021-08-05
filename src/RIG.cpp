@@ -400,6 +400,7 @@ bool paintColor(BasicBlock* gb){
             if(colors[nx])continue;
             if(nx->dc==13 || (nx->dc >= 0 && nx->dc <= 3))continue;
             for(int i=5;i<=usedK;i++){
+                if(usedK == 14)continue; // 不能染上13，13要跳过
                 if(check_ok(nx,i)){
                     colors[nx]=i;
                     que.push(nx);
@@ -407,6 +408,7 @@ bool paintColor(BasicBlock* gb){
                 }
             }
             if(colors[nx]==0){
+                if(usedK == 13)usedK++; // 同上，不能染上13
                 colors[nx]=++usedK;
             }
         }
