@@ -302,6 +302,7 @@ void assignStr(Instruction* instr, BasicBlock* node)
 
             armAdd* calId = new armAdd();
             calId->rd = index;
+            calId->isAddr=1;
             calId->r1 = index; //usedadd里填r0, 应该填数组首地址
             trance[calId]=instr;
             newBlock[node].push_back(calId);
