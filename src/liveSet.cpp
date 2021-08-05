@@ -856,7 +856,15 @@ void setUsed(BasicBlock* s)
     //init:把reachin里的定义建立好
     for(auto dc : reachin[s]){
         addAssign(dc->rawValue,s,dc);
+<<<<<<< HEAD
     } 
+=======
+        if(s->BlockName=="ifNext"){
+//            dbg(s);
+//            dbg(dc->rawValue->VName);
+        }
+    }
+>>>>>>> f7931c29053df1e798bbb8ac7fc8884e74a1f551
     
     //对于每一条语句填used
     for(auto ins=newBlock[s].begin();ins!=newBlock[s].end();){
