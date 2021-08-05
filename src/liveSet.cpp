@@ -412,9 +412,10 @@ void assignCall(Instruction* instr, BasicBlock* node)
 {
     IntegerValue* rd=(IntegerValue*)instr->getResult();
     armPush* push_ins = new armPush();//先new一条push
+    varDecl *rdd = nullptr;
     if(rd!=nullptr){
         //如果有返回值,就需要把返回值放入rd
-        varDecl *rdd = new varDecl(rd,node,Rcnt++);
+        rdd = new varDecl(rd,node,Rcnt++);
         push_ins->exp = rdd;
     }
     trance[push_ins]=instr;
@@ -435,10 +436,10 @@ void assignCall(Instruction* instr, BasicBlock* node)
     }
 
     armCall* ins = new armCall();
+    ins->push_ins = push_ins;
 
     if(rd!=nullptr){//返回值.
         //如果有返回值,就需要把返回值放入rd
-        varDecl *rdd = new varDecl(rd,node,Rcnt++);
         ins->rd = rdd;
     }else ins->rd = nullptr;
     ins->funcname = instr->getOp()[0]->VName;
@@ -501,11 +502,15 @@ void assignIns(Instruction* ins,BasicBlock* node)
     }
     else if(ins->getOpType() == Instruction::Div)
     {
-        assignDiv(ins,node);
+        FunctionValue* func = new FunctionValue("__aeabi_idiv",-1,"",2, 1);
+        ins->Operands.insert(ins->Operands.begin(),func);
+        assignCall(ins,node);
     }
     else if(ins->getOpType() == Instruction::Mod)
     {
-        assignMod(ins,node);
+        FunctionValue* func = new FunctionValue("__aeabi_idivmod",-1,"",2, 1);
+        ins->Operands.insert(ins->Operands.begin(),func);
+        assignCall(ins,node);
     }
     else if(ins->getOpType() == Instruction::Assign)
     {
@@ -849,9 +854,10 @@ void usedCall(armCall* ins, BasicBlock* node)
 {
     //call的参数是内定的!
     for(auto rs : trance[ins]->getOp()){
+        if(rs == trance[ins]->getOp().front())continue;
         ins->rs.push_back(getDecl(rs,node));
     }
-    addAssign(ins->rd->rawValue,node,ins->rd);
+    if(ins->rd != nullptr)addAssign(ins->rd->rawValue,node,ins->rd);
 }
 void usedRet(armRet* ins, BasicBlock* node)
 {

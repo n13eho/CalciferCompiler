@@ -341,10 +341,38 @@ class armRet:public armInstr//ok
         return tem;
     }
 };
+
+class armPush:public armInstr{
+    //这个push是专门针对函数调用的
+public:
+    Decl* exp=nullptr;//这个不需要push
+    virtual int getType(){return push;}
+    virtual ostream& output(ostream&out)const
+    {
+        int rdNum = -1;  //函数返回值
+        if(exp!= NULL)
+        {
+            rdNum = VregNumofDecl(exp);
+            if(rdNum==0)out<<"\tpush {r1-r12}";
+            else if(rdNum == 12)out<<"\tpush {r0-r11}";
+            else{
+                out<<"\tpush {r0-r"<<rdNum-1<<", r"<<rdNum+1<<"-r12}";
+            }
+        }
+        else
+        {
+            out<<"\tpush {r0-r12}";
+        }
+        return out;
+    }
+};
 class armCall:public armInstr{//ok
     public:
     vector<Decl*>rs;
     string funcname;
+
+    armPush* push_ins = NULL; // 这条call指令对应的push指令指针
+
     virtual int getType(){return call;}
     virtual ostream& output(ostream&out)const
     {
@@ -597,29 +625,4 @@ class armMov:public armInstr{//ok
         tem.push_back(rs);
         return tem;
     }
-};
-
-class armPush:public armInstr{
-    //这个push是专门针对函数调用的
-    public:
-    Decl* exp=nullptr;//这个不需要push
-    virtual int getType(){return push;}
-    virtual ostream& output(ostream&out)const
-    {
-        int rdNum = -1;  //函数返回值
-        if(exp!= NULL)
-        {
-            rdNum = VregNumofDecl(exp);
-            if(rdNum==0)out<<"\tpush {r1-r12}"<<endl;
-            else if(rdNum == 12)out<<"\tpush {r0-r11}"<<endl;
-            else{
-                out<<"\tpush {r0-r"<<rdNum-1<<", r"<<rdNum+1<<"-r12}"<<endl;
-            }
-        }
-        else
-        {
-            out<<"\tpush {r0-r12}"<<endl;
-        }
-        return out;
-    } 
 };

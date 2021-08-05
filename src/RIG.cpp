@@ -425,10 +425,10 @@ void deleteDC(DomTreenode* dn, BasicBlock* gb)
     bool findDc;
     BasicBlock* b = dn->block;
     for(auto it = newBlock[b].begin(); it != newBlock[b].end(); it++)
-    {
+    {// 遍历指令
         if((*it)->rd != NULL)
         {
-            if(VregNumofDecl((*it)->rd)>=0&&VregNumofDecl((*it)->rd)<=3)continue;
+            if(VregNumofDecl((*it)->rd)>=0&&VregNumofDecl((*it)->rd)<=3)continue; // 0-3开后门
             findDc = false;
             for(auto rn: RIG[gb])
             {// 找该指令的左值是否出现在RIG[gb]中，如果该左值没有出现在RIG[gb]中，就删除这条指令
@@ -440,8 +440,13 @@ void deleteDC(DomTreenode* dn, BasicBlock* gb)
             }
             if(!findDc)
             {// 没找到这个dc就删除这条指令
-                if((*it)->getType()==armInstr::call){
-                    (*it)->rd = nullptr;
+                // 如果是改变全局变量，这里就不能删去这个call
+                // 并且要同时修改对应push的exp指针
+                if((*it)->getType()==armInstr::call){ // 害怕这个call函数修改了全局变量
+                    armCall* call_ins = (armCall*)(*it); // 先suxing
+//                    free(call_ins->rd); // free掉原来的decl实体(倒也不必，后边还有索引
+                    call_ins->push_ins->exp = nullptr;  // 处理call_ins对应的push ins的指针，指向空
+                    call_ins->rd = nullptr; // 再解决这条call_ins的rd的指针
                 }
                 else{
                     newBlock[b].erase(it--);
