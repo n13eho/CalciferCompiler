@@ -410,7 +410,16 @@ void assignjmp(Instruction* instr, BasicBlock* node)
 }
 void assignCall(Instruction* instr, BasicBlock* node)
 {
-
+    IntegerValue* rd=(IntegerValue*)instr->getResult();
+    armPush* push_ins = new armPush();//先new一条push
+    if(rd!=nullptr){
+        //如果有返回值,就需要把返回值放入rd
+        varDecl *rdd = new varDecl(rd,node,Rcnt++);
+        push_ins->exp = rdd;
+    }
+    trance[push_ins]=instr;
+    newBlock[node].push_back(push_ins);
+   
     //把参数移入死寄存器r0-r3;
     FunctionValue* func = (FunctionValue*)instr->getOp()[0];
     int Vnum = 0;
@@ -420,18 +429,23 @@ void assignCall(Instruction* instr, BasicBlock* node)
         armMov* mov_param = new armMov();
         mov_param->rd = new varDecl(param, node, Vnum++);
         mov_param->isaddress = true;
+
         newBlock[node].push_back(mov_param);
         trance[mov_param]=instr;
     }
 
     armCall* ins = new armCall();
+
+    if(rd!=nullptr){//返回值.
+        //如果有返回值,就需要把返回值放入rd
+        varDecl *rdd = new varDecl(rd,node,Rcnt++);
+        ins->rd = rdd;
+    }else ins->rd = nullptr;
+    ins->funcname = instr->getOp()[0]->VName;
+
     newBlock[node].push_back(ins);
     trance[ins]=instr;
-    ins->funcname = instr->getOp()[0]->VName;
-    //返回值.
-    IntegerValue* rd=(IntegerValue*)instr->getResult();
-    varDecl *rdd = new varDecl(rd,node,Rcnt++);
-    ins->rd=rdd;
+    
 }
 void assignRet(Instruction* instr, BasicBlock* node)
 {
@@ -834,6 +848,9 @@ void usedStr(armStr* ins,BasicBlock* node)
 void usedCall(armCall* ins, BasicBlock* node)
 {
     //call的参数是内定的!
+    for(auto rs : trance[ins]->getOp()){
+        ins->rs.push_back(getDecl(rs,node));
+    }
     addAssign(ins->rd->rawValue,node,ins->rd);
 }
 void usedRet(armRet* ins, BasicBlock* node)

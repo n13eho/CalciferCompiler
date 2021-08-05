@@ -11,22 +11,6 @@ void printArm(DomTreenode* dn,BasicBlock* gb)
         if(inst->getType()==armInstr::call){
             armCall* call_ins = (armCall*)inst;
 
-            //push 所有寄存器//TODO: 应该push用过的
-            int rdNum = -1;  //函数返回值
-            if(call_ins->rd != NULL)
-            {
-                rdNum = VregNumofDecl(call_ins->rd);
-                if(rdNum==0)calout<<"\tpush {r1-r12}"<<endl;
-                else if(rdNum == 12)calout<<"\tpush {r0-r11}"<<endl;
-                else{
-                    calout<<"\tpush {r0-r"<<rdNum-1<<", r"<<rdNum+1<<"-r12}"<<endl;
-                }
-            }
-            else
-            {
-                calout<<"\tpush {r0-r12}"<<endl;
-            }
-            
             //填写参数
             calout<<"@ mov params"<<endl;
             // 第5+个
@@ -68,12 +52,13 @@ void printArm(DomTreenode* dn,BasicBlock* gb)
             }
 
             //pop 所有寄存器//TODO: 应该pop用过的
-            if(rdNum == -1)
+            if(call_ins->rd == NULL)
             {
                 calout<<"\tpop {r0-r12}"<<endl;
             }
             else
             {
+                int rdNum = VregNumofDecl(call_ins->rd);
                 if(rdNum==0)calout<<"\tpop {r1-r12}"<<endl;
                 else if(rdNum == 12)calout<<"\tpop {r0-r11}"<<endl;
                 else{

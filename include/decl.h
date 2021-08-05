@@ -8,8 +8,6 @@
 #include "decl_related.h"
 
 
-
-
 class armInstr;
 
 
@@ -46,6 +44,9 @@ class Decl {
 //    }
 };
 
+
+
+int VregNumofDecl(Decl* d);
 
 extern map<int, vector<Decl*>> Vreg2Decls; // 寄存器编号对应的Decl*
 
@@ -598,3 +599,27 @@ class armMov:public armInstr{//ok
     }
 };
 
+class armPush:public armInstr{
+    //这个push是专门针对函数调用的
+    public:
+    Decl* exp=nullptr;//这个不需要push
+    virtual int getType(){return push;}
+    virtual ostream& output(ostream&out)const
+    {
+        int rdNum = -1;  //函数返回值
+        if(exp!= NULL)
+        {
+            rdNum = VregNumofDecl(exp);
+            if(rdNum==0)out<<"\tpush {r1-r12}"<<endl;
+            else if(rdNum == 12)out<<"\tpush {r0-r11}"<<endl;
+            else{
+                out<<"\tpush {r0-r"<<rdNum-1<<", r"<<rdNum+1<<"-r12}"<<endl;
+            }
+        }
+        else
+        {
+            out<<"\tpush {r0-r12}"<<endl;
+        }
+        return out;
+    } 
+};
