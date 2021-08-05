@@ -208,7 +208,6 @@ void ArmI2InOut(armInstr* ai)
 void fillInOut(BasicBlock* bb)
 {// 不断访问后继，直到访问到最后一个没有没有后继的block，一步一步算in 和 out
 
-//    dbg(block2lb[bb]);
     if(blockVisited[bb]==1) return; // 若已经访问过，则跳过
     blockVisited[bb] = true; // 标记访问
 
@@ -217,7 +216,6 @@ void fillInOut(BasicBlock* bb)
 
     armInstr* last_b_ins=newBlock[bb][newBlock[bb].size() - 1];
     outs[last_b_ins]={};
-//    dbg(bb->BlockName);
     for(auto succ: bb->succBlock)
     {// 先不断访问后继，递归下去
         fillInOut(succ);
@@ -248,7 +246,6 @@ void showSets(DomTreenode* dn)
     for(auto arm_ins: newBlock[b])
     {
         cout << *arm_ins;
-//        dbg(ins[arm_ins].size());
         cout << "\tins: ";
         for(auto in_decl: ins[arm_ins])
             cout << "r" << in_decl << " ";
@@ -345,8 +342,6 @@ void init_color(BasicBlock* gb)
 
         // 直接填死颜色
         colors[param_rignode] = ++usedK;
-//        dbg(gb->FuncV->FuncParams[i]->VName);
-//        dbg(param_rignode->dc, colors[param_rignode]);
     }
 
     //
@@ -691,7 +686,6 @@ void RigsterAlloc()
             // 如果图着色失败了，add memory operation.
             if(whenToadd++ > WHENTOMO)
                 addMemoryOperation(gb);
-            dbg(chosenOne);
             // 打印cost
             for(auto p: spilling_cost)
             {
