@@ -131,6 +131,7 @@ class armInstr{
         return out;
     }
     virtual int getType(){return 0;}
+    virtual string getDest(){return nullptr;}
     virtual vector<Decl*> getGen(){vector<Decl*> tem;return tem;}
 };
 ostream& operator<<(ostream&out,const armInstr& a);
@@ -391,6 +392,8 @@ class armB:public armInstr{//no need for RIG trans of IN/OUT set
     public:
     string lb;
     virtual int getType(){return beq;}
+    virtual string getDest(){return lb;}
+    
     virtual ostream& output(ostream&out)const
     {
         out<<"\tb "<<lb;
@@ -401,6 +404,7 @@ class armBeq:public armInstr{//no need for RIG trans of IN/OUT set
     public:
     string lb;
     virtual int getType(){return beq;}
+    virtual string getDest(){return lb;}
     virtual ostream& output(ostream&out)const
     {
         out<<"\tbeq "<<lb;
@@ -411,6 +415,7 @@ class armBne:public armInstr{//no need for RIG trans of IN/OUT set
     public:
     string lb;
     virtual int getType(){return beq;}
+    virtual string getDest(){return lb;}
     virtual ostream& output(ostream&out)const
     {
         out<<"\tbne "<<lb;
@@ -421,6 +426,7 @@ class armBlt:public armInstr{//no need for RIG trans of IN/OUT set
     public:
     string lb;
     virtual int getType(){return beq;}
+    virtual string getDest(){return lb;}
     virtual ostream& output(ostream&out)const
     {
         out<<"\tblt "<<lb;
@@ -431,6 +437,7 @@ class armBgt:public armInstr{//no need for RIG trans of IN/OUT set
     public:
     string lb;
     virtual int getType(){return beq;}
+    virtual string getDest(){return lb;}
     virtual ostream& output(ostream&out)const
     {
         out<<"\tbgt "<<lb;
@@ -441,6 +448,7 @@ class armBle:public armInstr{//no need for RIG trans of IN/OUT set
     public:
     string lb;
     virtual int getType(){return beq;}
+    virtual string getDest(){return lb;}
     virtual ostream& output(ostream&out)const
     {
         out<<"\tble "<<lb;
@@ -451,6 +459,7 @@ class armBge:public armInstr{//no need for RIG trans of IN/OUT set
     public:
     string lb;
     virtual int getType(){return beq;}
+    virtual string getDest(){return lb;}
     virtual ostream& output(ostream&out)const
     {
         out<<"\tbge "<<lb;
@@ -483,7 +492,7 @@ class armMov:public armInstr{//ok
     virtual int getType(){return mov;}
     virtual ostream& output(ostream&out)const
     {
-        cout<<comm<<endl;
+        if(comm.length())out<<comm<<endl;
         if(rd->gettype() == Decl::addr_decl)
         { // rd是addr_decl
             if(rs->gettype() == Decl::addr_decl){

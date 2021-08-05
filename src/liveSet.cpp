@@ -183,32 +183,28 @@ void assignSub(Instruction* instr,BasicBlock *node)
         trance[ins]=instr;
     }
 }
-void assignPhi(Instruction* instr,BasicBlock*node)
+void assignPhi(Instruction* instr, BasicBlock* node)
 {
     Value* val=instr->getOp()[0];    
     varDecl* rd = new varDecl(val, node, Rcnt++);
     for(auto pred : node->pioneerBlock){
-        //有phi的block中,前驱不一定都存在着val的decl,先把没有的去掉
-        // int fl=0;
-        // for(auto b:ssaIR->AssbyBlock[val]){
-        //     if(b==pred){fl=1;break;}
-        // }
-        // if(!fl)continue;
-        //确实不能忽略每一个块
-
-        armMov* ins = new armMov();
+        //phi语句块(node)的前驱是pred
+        armMov* ins = new armMov();//在node中,所有val都用rd,所以前驱要加mov
         ins->rd=rd;
-        auto pos = newBlock[pred].end();
-        //找到第一个不是跳转的指令.
-        while(((*(--pos))->getType() >= armInstr::beq && (*(pos))->getType() <= armInstr::b || 
-            (*(pos))->getType() == armInstr::ret || 
-            (*(pos))->getType() == armInstr::call && (*(pos))->rd->rawValue!=val))
-        {
-            if(pos==newBlock[pred].begin())break;//防止RE
+        auto pos = newBlock[pred].begin();
+        //找到跳转到node的指令
+        for(;pos!=newBlock[pred].end();pos++){
+            auto ins_now = *pos;
+            if(ins_now->getType() <= armInstr::b&&ins_now->getType() >= armInstr::beq){
+                string dest = ins_now->getDest();
+                if(dest == block2lb[node]){
+                    break;
+                }
+            }
         }
-        if(!((*(pos))->getType() >= armInstr::beq && (*(pos))->getType() <= armInstr::b ||
-            (*(pos))->getType() == armInstr::ret ||
-            (*(pos))->getType() == armInstr::call && (*(pos))->rd->rawValue!=val))pos++;
+        //如果没找到, 那一定是顺序的, 就在最后加//TODO: 或许可以优化掉吧
+
+        //加入指令
         newBlock[pred].insert(pos,ins);
         trance[ins]=instr;
     }
@@ -708,7 +704,9 @@ int usedMov(armMov* ins, BasicBlock* node)
             return -1;
         }
         ins->rs = getDecl(rs,node);
+        dbg(rs->VName,*(ins->rs));
         addAssign(ins->rd->rawValue,node,ins->rd);
+        dbg(ins->rd->rawValue->VName,*(ins->rd));
         return 0;
     }
     else{
@@ -856,15 +854,7 @@ void setUsed(BasicBlock* s)
     //init:把reachin里的定义建立好
     for(auto dc : reachin[s]){
         addAssign(dc->rawValue,s,dc);
-<<<<<<< HEAD
     } 
-=======
-        if(s->BlockName=="ifNext"){
-//            dbg(s);
-//            dbg(dc->rawValue->VName);
-        }
-    }
->>>>>>> f7931c29053df1e798bbb8ac7fc8884e74a1f551
     
     //对于每一条语句填used
     for(auto ins=newBlock[s].begin();ins!=newBlock[s].end();){
