@@ -851,10 +851,6 @@ void setUsed(BasicBlock* s)
     //init:把reachin里的定义建立好
     for(auto dc : reachin[s]){
         addAssign(dc->rawValue,s,dc);
-        if(s->BlockName == "while"){
-            dbg(*dc);
-            dbg(dc->rawValue->VName);
-        }
     } 
     
     //对于每一条语句填used
