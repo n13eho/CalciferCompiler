@@ -23,6 +23,13 @@ public:
     //this作为前驱、succ作为后继
     void Link(BasicBlock* succ)
     {
+        for(auto bb:this->succBlock)
+        {
+            if(bb == succ)
+            {
+                return;
+            }
+        }
         // std::cout<<this->BlockName<<" link with "<<succ->BlockName<<std::endl;
         this->succBlock.push_back(succ);
         succ->pioneerBlock.push_back(this);

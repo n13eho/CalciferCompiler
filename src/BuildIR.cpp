@@ -816,6 +816,7 @@ void WhileNode(GrammaNode* node,LinearIR *IR)
 {
     if(node->son.size() == 2)
     {
+        
         if(nullptr == FuncN && 0 == global)
         {
             return ;
@@ -843,7 +844,7 @@ void WhileNode(GrammaNode* node,LinearIR *IR)
             bbNow = condBlock;
         }
         BasicBlock* whileHead = bbNow;
-        
+        // dbg("while block",bbNow);
         BasicBlock* caseT = new BasicBlock(BasicBlock::Basic);
         caseT->BlockName = "whileTrue";
         //while body下一个基本块
@@ -854,7 +855,8 @@ void WhileNode(GrammaNode* node,LinearIR *IR)
         CaseTBlocks.push(caseT);
         CaseFBlocks.push(next);
         IfNextBlocks.push(next);
-
+        //由于有条件短路，whilehead需要链接next
+        whileHead->Link(next);
         CondNode(node->son[0],IR);
 
         //函数控制的基本块更新
