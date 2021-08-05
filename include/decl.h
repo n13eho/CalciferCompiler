@@ -125,7 +125,7 @@ class armInstr{
     public:
     Decl* rd;
     string comm;
-    enum armInsType{add=1,sub,rsb,mul,div,mod,mov,push,pop,cmp,beq,bne,blt,ble,bgt,bge,blr,b,movlt,movle,movge,movgt,moveq,movne,ldr,str,call,ret};
+    enum armInsType{add=1,sub,rsb,mul,div,mod,mov,push,pop,cmp,beq,bne,blt,ble,bgt,bge,blr,b,movlt,movle,movge,movgt,moveq,movne,ldr,str,call,ret,lsl};
     virtual ostream& output(ostream&out)const{
         out<<"@ NULL"<<endl;
         return out;
@@ -206,6 +206,31 @@ class armAdd:public armInstr//ok
     }
 };
 
+class armLsl:public armInstr//ok
+{
+    public:
+    Decl *sh,*rs;
+    int isaddr = 0 ;
+    virtual int getType(){return lsl;}
+    virtual ostream& output(ostream&out)const
+    {
+        if(isaddr == 1){
+            out<<"\tlsl r"<<((addrDecl*)rd)->Vreg<<", r"<<((addrDecl*)rs)->Vreg<<", "<<*sh;
+        }
+        else{
+            // out<<"\tlsl "<<*rd<<", "<<*rs<<", "<<*sh;
+            //TODO: 向add学习!
+            out<<"zhe bu ke neng ";
+        }
+        return out;
+    }
+    virtual vector<Decl*> getGen()
+    {
+        vector<Decl*> tem;
+        tem.push_back(rs);
+        return tem;
+    }
+};
 class armSub:public armInstr//ok
 {
     public:

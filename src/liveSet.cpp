@@ -29,6 +29,8 @@ ostream& operator<<(ostream&out,const Decl& a){
 map<BasicBlock*, vector<armInstr*>> newBlock;
 map<armInstr*,Instruction*> trance;
 
+void addAssign(Value* val, BasicBlock* node, Decl* dc);
+
 void strGlobal(Instruction* instr, BasicBlock* node, Decl* src)
 {
     //src以前是个全局变量
@@ -225,6 +227,45 @@ void assignLdr(Instruction* instr, BasicBlock* node)
         //数组的某个数, 目标寄存器是var
         varDecl *rd = new varDecl(rdval,node,Rcnt++);
         ins->rd=rd;
+
+        //如果是数组的话,需要看index是不是常数
+        if(instr->getOp().size()==2){
+            // 这是一条加载数组数的指令
+            ArrayValue* arr_val = (ArrayValue*)instr->getOp()[0];
+            IntegerValue* id_val = (IntegerValue*)instr->getOp()[1];
+            
+            if(id_val->isConst==0){
+                //这个id是计算出来的变量,需要加一条add指令来计算地址
+                //这里需要一个野value来算地址
+                Value* idval = new Value("calAddrldr", -1, "");
+                addrDecl* addr_id = new addrDecl(idval, node, Rcnt++);
+                addAssign(idval, node, addr_id);//一次性使用, 所以加上就行.
+
+                //以下乘4
+                armLsl* mul4 = new armLsl();
+                mul4->isaddr = 1;
+                mul4->rd = addr_id; 
+                mul4->sh = new constDecl(nullptr, node, 2);
+                trance[mul4]=instr;
+                newBlock[node].push_back(mul4);
+
+                armAdd* cal_id = new armAdd();
+                cal_id->isAddr = 1;
+                cal_id->rd = addr_id;
+                cal_id->r1 = addr_id;//偏移地址,(used里面还需要填数组首地址)
+                trance[cal_id]=instr;
+                newBlock[node].push_back(cal_id);
+                
+                //这里就可以填地址了!
+                ins->rs = addr_id;
+                if(arr_val->getScope() != "1"){
+                    ins->bias = 1;//栈中的数组下表从1开始
+                }
+
+            }
+            
+        }
+
         trance[ins]=instr;
     }
     if(rdval->getScope()=="1"&&rdval->getType()<=2){
@@ -232,15 +273,6 @@ void assignLdr(Instruction* instr, BasicBlock* node)
         globalDecl* rs = new globalDecl(rdval, node, rdval->VName);
         ins->rs=rs;
     }
-    // else if(rdval->isPara>4){
-    //     //形参也可以写全
-    //     memoryDecl* rs = new memoryDecl(rdval, node);
-
-    //     //第5个形参放在sp+4的位置, 第6个形参放在sp+8的位置, 依此类推...
-    //     int id=rdval->isPara-4;
-    //     rs->bias = id;
-    //     ins->rs=rs;am
-    // }
     newBlock[node].push_back(ins);
 }
 void assignStr(Instruction* instr, BasicBlock* node)
@@ -257,13 +289,29 @@ void assignStr(Instruction* instr, BasicBlock* node)
         //应该增加一条 add index, 数组首地址, index 
         IntegerValue* index_val = (IntegerValue*)instr->getOp()[1];
         if(index_val->isConst==0){
+            Value* idval = new Value("calAddrstr", -1, "");
+            addrDecl* index = new addrDecl(idval, node, Rcnt++);
+            addAssign(idval, node, index);
+
+            armLsl* mul4 = new armLsl();
+            mul4->rd = index; 
+            mul4->sh = new constDecl(nullptr, node, 2);
+            mul4->isaddr = 1;
+            trance[mul4]=instr;
+            newBlock[node].push_back(mul4);
+
             armAdd* calId = new armAdd();
-            addrDecl* index = new addrDecl(index_val, node, Rcnt++);
             calId->rd = index;
+            calId->r1 = index; //usedadd里填r0, 应该填数组首地址
             trance[calId]=instr;
             newBlock[node].push_back(calId);
+
+            //这里就可以填地址了
+            ins->rs = index;
+            if(rdval->getScope() != "1"){
+                ins->bias = 1;//栈中的数组下表从1开始
+            }
         }
-        
     }
     else if(rdval->isPara>4){
         memoryDecl* rs = new memoryDecl(rdval, node);
@@ -362,6 +410,7 @@ void assignjmp(Instruction* instr, BasicBlock* node)
 }
 void assignCall(Instruction* instr, BasicBlock* node)
 {
+
     //把参数移入死寄存器r0-r3;
     FunctionValue* func = (FunctionValue*)instr->getOp()[0];
     int Vnum = 0;
@@ -586,11 +635,15 @@ void usedAdd(armAdd* ins,BasicBlock* node)
         return ;
     }
     if(raw->getOpType() == Instruction::Store){
-        //这是一条计算数组下标的语句
+        //这是一条计算str数组下标的语句
         ins->r0 = getDecl(raw->getOp()[0],node);
-        ins->r1 = getDecl(raw->getOp()[1],node);
         addAssign(ins->rd->rawValue,node,ins->rd);
-        ins->isAddr=1;
+        return;
+    }
+    if(raw->getOpType() == Instruction::Load){
+        // 这是一条计算ldr数组下表的语句
+        ins->r0 = getDecl(raw->getOp()[0],node);
+        addAssign(ins->rd->rawValue,node,ins->rd);
         return;
     }
     IntegerValue* r0 = (IntegerValue*)raw->getOp()[0];
@@ -687,7 +740,7 @@ int usedMov(armMov* ins, BasicBlock* node)
         //这里对于没有初值的变量的处理
         IntegerValue* temval = (IntegerValue*)ins->rd->rawValue;
         IntegerValue* rs= new IntegerValue("tt",-1,"",1);
-        if(temval->isConst) rs->RealValue=temval->RealValue;//如果是常量初始化(const int后面有一条莫名其妙的语句...为了翻译它)
+        if(temval->isConst) return -1;//如果是常量初始化(const int后面有一条莫名其妙的语句...为了翻译它)
         ins->rs = getDecl(rs,node);
         addAssign(ins->rd->rawValue,node,ins->rd);
         return 0;
@@ -734,15 +787,17 @@ void usedLdr(armLdr* ins,BasicBlock* node)
     }
     Value* rawop = raw->getOp()[0];
     if(rawop->getType()==2){ // 2是数组
-        if(rawop->isPara>4){ // 形参第5+是数组
-            ins->rs = getDecl(rawop,node);
-            ins->bias = ((IntegerValue*)raw->getOp()[1])->RealValue+1;
-        }
-        else if(raw->getOp().size()<2){ // 是因为要使用全局数组，加载进来
+        if(raw->getOp().size()<2){ // 是因为要使用全局数组，加载进来
         }
         else{
-            ins->rs = getDecl(rawop,node);
-            ins->bias = ((IntegerValue*)raw->getOp()[1])->RealValue+1;
+            //形参的数组跟栈里的数组一样
+            IntegerValue* id = (IntegerValue*)raw->getOp()[1];
+            if(id->isConst){
+                ins->rs = getDecl(rawop,node);
+                if(rawop->getScope()=="1")
+                    ins->bias = id->RealValue;
+                else ins->bias = id->RealValue+1;
+            }
         }
     }
     addAssign(ins->rd->rawValue,node,ins->rd);
@@ -762,9 +817,7 @@ void usedStr(armStr* ins,BasicBlock* node)
         if(r1->isConst){
             ins->bias = r1->RealValue+1;
             ins->rs = getDecl(r0,node);
-        }
-        else{
-            ins->rs = getDecl(r1,node);
+            if(r0->getScope()=="1")ins->bias--;
         }
     }
     else if(raw->getResult()&& raw->getResult()->getScope()=="1"){
@@ -797,6 +850,21 @@ void usedMoveq(armMoveq* ins, BasicBlock* node)
 void usedMovne(armMovne* ins, BasicBlock* node)
 {
     addAssign(ins->rd->rawValue,node,ins->rd);
+}
+
+void usedLsl(armLsl* ins, BasicBlock* node)
+{
+    auto raw = trance[ins];
+    if(raw->getOpType() == Instruction::Load){
+        IntegerValue* bs = (IntegerValue*)raw->getOp()[1];
+        ins->rs = getDecl(bs, node);
+        return ;
+    }
+    if(raw->getOpType() == Instruction::Store){
+        IntegerValue* bs = (IntegerValue*)raw->getOp()[1];
+        ins->rs = getDecl(bs, node);
+        return ;
+    }
 }
 
 int usedIns(armInstr* ins,BasicBlock* node)
@@ -842,6 +910,9 @@ int usedIns(armInstr* ins,BasicBlock* node)
     }
     else if(ins->getType() == armInstr::movne){
         usedMovne((armMovne*)ins,node);
+    }
+    else if(ins->getType() == armInstr::lsl){
+        usedLsl((armLsl*)ins,node);
     }
     return 0;
 }

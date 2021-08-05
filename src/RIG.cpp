@@ -200,9 +200,18 @@ void ArmI2InOut(armInstr* ai)
             rsb_ai->r1->gen_used.push_back(ai);
         }
     }
-
-
-
+    else if(ai->getType() == armInstr::lsl)
+    {// r1 maybe imm/const, but r0 is var_decl for sure
+        armLsl* lsl_ai = (armLsl*)ai;
+        ins[ai].erase(VregNumofDecl(lsl_ai->rd));
+        ins[ai].insert(VregNumofDecl(lsl_ai->rs));
+        lsl_ai->rs->gen_used.push_back(ai);
+        if(notConst(lsl_ai->sh))
+        {
+            ins[ai].insert(VregNumofDecl(lsl_ai->sh));
+            lsl_ai->sh->gen_used.push_back(ai);
+        }
+    }
 }
 
 void fillInOut(BasicBlock* bb)
