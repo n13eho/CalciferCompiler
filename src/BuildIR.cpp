@@ -1144,7 +1144,7 @@ Value* LAndExpNode(GrammaNode* node,LinearIR *IR)
         if(Ident_ == node->son[0]->type || AddExp_Add_ == node->son[0]->type ||
             AddExp_Sub_ == node->son[0]->type || MulExp_Mul_ == node->son[0]->type ||
             MulExp_Div_ == node->son[0]->type || MulExp_Mod_ == node->son[0]->type||
-            UnaryExp_ == node->son[0]->type)
+            UnaryExp_ == node->son[0]->type||UnaryExp_func_ == node->son[0]->type)
         {
             Value* VL = ret;
             IntegerValue* RL = new IntegerValue("const0",node->son[0]->lineno,node->son[0]->var_scope,0,1);
@@ -1219,7 +1219,7 @@ Value* LAndExpNode(GrammaNode* node,LinearIR *IR)
             if(Ident_ == node->son[i]->type || AddExp_Add_ == node->son[i]->type ||
             AddExp_Sub_ == node->son[i]->type || MulExp_Mul_ == node->son[i]->type ||
             MulExp_Div_ == node->son[i]->type || MulExp_Mod_ == node->son[i]->type||
-            UnaryExp_ == node->son[i]->type)
+            UnaryExp_ == node->son[i]->type||UnaryExp_func_ == node->son[i]->type)
             {                
                 // dbg("bbbbbbbbbbbbbbbbbbbbb");
                 //与常数0比较
