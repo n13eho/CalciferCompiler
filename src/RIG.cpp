@@ -374,7 +374,7 @@ bool paintColor(BasicBlock* gb){
     s_point.clear();
     for(auto node: RIG[gb]){
         if(colors[node])continue;
-        if(node->dc==13 || (node->dc >= 0 && node->dc <= 3))continue; // 开后门
+        if(node->dc==13 || (node->dc >= 0 && node->dc <= 3))continue; // 开后门: 不给13,0,1,2,3染
         if((int)node->connectTo.size()>maxdu){
             s_point.clear();
             s_point.push_back(node);
@@ -387,7 +387,7 @@ bool paintColor(BasicBlock* gb){
     //1.2 add s_point，非联通的图可以重新使用参数个数/4
 
     if(s_point.size() == 0)return true;// 表示这个函数只用了参数分到的寄存器，没用其他的寄存器，因此直接返回true
-    colors[s_point[0]] = 5;
+    colors[s_point[0]] = 5;//由于不能然1,2,3,4,所以从5开始
     que.push(s_point[0]);
     //2. BFS coloring
     while(!que.empty()){
@@ -400,7 +400,7 @@ bool paintColor(BasicBlock* gb){
             if(colors[nx])continue;
             if(nx->dc==13 || (nx->dc >= 0 && nx->dc <= 3))continue;
             for(int i=5;i<=usedK;i++){
-                if(usedK == 14)continue; // 不能染上13，13要跳过
+                if(i == 14)continue; // 不能染上13，13要跳过
                 if(check_ok(nx,i)){
                     colors[nx]=i;
                     que.push(nx);
@@ -640,18 +640,18 @@ bool buildRIG(BasicBlock* gb)
     if(RIG[gb].size() == 0)return true;
 
     // for debug 打印整张图看看
-    dbg("neho -- RIG created and show");
-    cout << "**** the RIG of " << gb->BlockName <<  "****\n";
-    for(auto dnode: RIG[gb])
-    {
-        cout << "r" << dnode->dc << "\t";
-        for(auto con_node: dnode->connectTo)
-        {
-            cout << "r" << con_node->dc << " ";
-        }
-        cout << "\n";
-    }
-    dbg("neho -- show RIG win");
+    // dbg("neho -- RIG created and show");
+    // cout << "**** the RIG of " << gb->BlockName <<  "****\n";
+    // for(auto dnode: RIG[gb])
+    // {
+    //     cout << "r" << dnode->dc << "\t";
+    //     for(auto con_node: dnode->connectTo)
+    //     {
+    //         cout << "r" << con_node->dc << " ";
+    //     }
+    //     cout << "\n";
+    // }
+    // dbg("neho -- show RIG win");
 
     // 5. filling colors!
     int success=0;
@@ -708,8 +708,8 @@ void RigsterAlloc()
                 cout << p.first <<"\t" << p.second <<endl;
             }
 
-            for(auto dr: DomRoot)
-                showDecl(dr);
+            // for(auto dr: DomRoot)
+            //     showDecl(dr);
         }
     }
 

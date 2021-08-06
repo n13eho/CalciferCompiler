@@ -79,7 +79,7 @@ void printArm(DomTreenode* dn,BasicBlock* gb)
             //以下是return 语句干的事情
             //恢复栈帧
             calout<<"@ this is a ret"<<endl;
-            if(gblock2spbias[gb])calout<<"\tadd sp, sp, #"<<gblock2spbias[gb]*4<<endl;
+            if(gblock2spbias[gb])calout<<"\tadd sp, sp, #"<<(gblock2spbias[gb]+1)*4<<endl;
             //pop lr
             calout<<"\tpop {lr}"<<endl;
             //放返回值
@@ -116,7 +116,7 @@ void transFunc(BasicBlock* node)
     //push lr
     calout<<"\tpush {lr}"<<endl;
     //修改sp
-    if(gblock2spbias[node])calout<<"\tsub sp, sp, #"<<gblock2spbias[node]*4<<endl;
+    if(gblock2spbias[node])calout<<"\tsub sp, sp, #"<<(gblock2spbias[node]+1)*4<<endl;
     //输出这个函数的指令
     printArm(block2dom[node->domBlock[0]],node);
 
