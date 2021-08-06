@@ -36,6 +36,11 @@ int VregNumofDecl(Decl* d)
         addrDecl* add_d = (addrDecl*)d;
         return add_d->Vreg;
     }
+    else if(d->gettype() == Decl::reg_decl){
+        regDecl* reg_d = (regDecl*)d;
+        if(reg_d->Rreg > 3)dbg("regDecl出问题了");
+        return reg_d->Rreg; // 只有可能是0，1，2，3
+    }
     return 789;
 }
 
@@ -279,7 +284,7 @@ void showSets(DomTreenode* dn)
 RIGnode* ForCnode(int d, BasicBlock* gb)
 {// find or create a new RIGnode
     RIGnode* ret_n;
-    if(rigNodeCreated[d] != 0)
+    if(rigNodeCreated[d] != nullptr)
     {//建立过，在已有的graph中找出来
         ret_n = rigNodeCreated[d];
     }
