@@ -208,8 +208,6 @@ void assignPhi(Instruction* instr, BasicBlock* node)
         //如果没找到, 那一定是顺序的, 就在最后加//TODO: 或许可以优化掉吧
 
         //加入指令
-        dbg(block2lb[node]);
-        dbg(**pos);
         newBlock[pred].insert(pos,ins);
         trance[ins]=instr;
     }
@@ -449,6 +447,7 @@ void assignCall(Instruction* instr, BasicBlock* node)
 
     if(rd!=nullptr){//返回值.
         //如果有返回值,就需要把返回值放入rd
+        rdd = new varDecl(rd, node, Rcnt++);
         ins->rd = rdd;
     }else ins->rd = nullptr;
     ins->funcname = instr->getOp()[0]->VName;
@@ -563,7 +562,7 @@ void assignIns(Instruction* ins,BasicBlock* node)
             calAddr->rd = rd;
             varDecl* r0 = new varDecl(nullptr, node, 13);//这是sp寄存器
             calAddr->r0=r0;
-            constDecl* r1 = new constDecl(nullptr, node, (gblock2spbias[node->parent_])*4);//这是数组首地址偏移，从低地址向高地址存
+            constDecl* r1 = new constDecl(nullptr, node, (gblock2spbias[node->parent_]+1)*4);//这是数组首地址偏移，从低地址向高地址存
             calAddr->r1=r1;
             int size = ((IntegerValue*)ins->getOp()[1])->RealValue;
             gblock2spbias[node->parent_]+=size;
@@ -858,7 +857,7 @@ void usedStr(armStr* ins,BasicBlock* node)
 
     if(raw->getOpType() == Instruction:: Call){
         //这里专门处理call的5+参数
-        ins->rd = getDecl(raw->getOp()[ins->bias],node);
+        ins->rd = getDecl(ins->rs->rawValue,node);
         return ;
     }
 
@@ -1002,7 +1001,6 @@ void showDecl(DomTreenode* sd)
     cout<<endl;
     cout<<block2lb[s]<<':'<<endl;
     for(auto ins:newBlock[s]){
-        // cout<<'\t';
         cout<<*ins<<endl;
     }
     for(auto nx:sd->son){

@@ -1,6 +1,7 @@
 #include"CalciferCodeGen.h"
 
 ofstream calout;
+map<Value*, BasicBlock*> func2block;
 
 void printArm(DomTreenode* dn,BasicBlock* gb)
 {
@@ -38,7 +39,7 @@ void printArm(DomTreenode* dn,BasicBlock* gb)
             //以下是return 语句干的事情
             //恢复栈帧
             calout<<"@ this is a ret"<<endl;
-            if(gblock2spbias[gb])calout<<"\tadd sp, sp, #"<<(gblock2spbias[gb]+1)*4<<endl;
+            if(gblock2spbias[gb])calout<<"\tadd sp, sp, #"<<(gblock2spbias[gb])*4<<endl;
             //pop lr
             calout<<"\tpop {lr, r4-r12}"<<endl;
             //放返回值
@@ -55,8 +56,10 @@ void printArm(DomTreenode* dn,BasicBlock* gb)
             else calout<<*inst<<endl;
         }
         else if(inst->getType() == armInstr::str && trance[inst]->getOpType()==Instruction::Call){
-            armStr* str_param = (armStr*) inst;
-            str_param->bias = gblock2spbias[gb]+10-4;//+1是将来要lr//FIXME:+9是还有保存现场//因为形参load是从sp+4开始,这个bias以前存的是他是第几个参数
+            memoryDecl* str_param = (memoryDecl*) ((armStr*)inst)->rs;
+            BasicBlock* func_node = func2block[(trance[inst])->getOp()[0]];
+            dbg(gblock2spbias[func_node]);
+            str_param->bias += -(gblock2spbias[func_node]+10)-5;//+1是将来要lr//FIXME:+9是还有保存现场//因为形参load是从sp+4开始,这个bias以前存的是他是第几个参数
             calout<<*inst<<endl;
         }
         else{
@@ -88,8 +91,15 @@ void transFunc(BasicBlock* node)
   
 }
 
+
 void CalciferCodeGen(char *output_file_path)
 {
+
+    //我需要funcv到gb的映射
+    for(auto i :IR1->Blocks){
+        if(i==IR1->Blocks.front())continue;
+        func2block[i->FuncV]=i;
+    }
 
     string outputfile = output_file_path;
 //    outputfile = outputfile.substr(0, outputfile.length()-2);
