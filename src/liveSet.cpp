@@ -233,7 +233,7 @@ void assignLdr(Instruction* instr, BasicBlock* node)
             // 这是一条加载数组数的指令
             ArrayValue* arr_val = (ArrayValue*)instr->getOp()[0];
             IntegerValue* id_val = (IntegerValue*)instr->getOp()[1];
-            
+            dbg(id_val->isConst, id_val->VName);
             if(id_val->isConst==0){
                 //这个id是计算出来的变量,需要加一条add指令来计算地址
                 //这里需要一个野value来算地址
@@ -258,9 +258,6 @@ void assignLdr(Instruction* instr, BasicBlock* node)
                 
                 //这里就可以填地址了!
                 ins->rs = addr_id;
-                if(arr_val->getScope() != "1"){
-                    ins->bias = 1;//栈中的数组下表从1开始
-                }
 
             }
             
@@ -309,9 +306,6 @@ void assignStr(Instruction* instr, BasicBlock* node)
 
             //这里就可以填地址了
             ins->rs = index;
-            if(rdval->getScope() != "1"){
-                ins->bias = 1;//栈中的数组下表从1开始
-            }
         }
     }
     else if(rdval->isPara>4){
@@ -555,10 +549,10 @@ void assignIns(Instruction* ins,BasicBlock* node)
             calAddr->rd = rd;
             varDecl* r0 = new varDecl(nullptr, node, 13);//这是sp寄存器
             calAddr->r0=r0;
-            constDecl* r1 = new constDecl(nullptr, node, (gblock2spbias[node->parent_]+1)*4);//这是数组首地址偏移，从低地址向高地址存
+            constDecl* r1 = new constDecl(nullptr, node, (gblock2spbias[node->parent_])*4);//这是数组首地址偏移，从低地址向高地址存
             calAddr->r1=r1;
             int size = ((IntegerValue*)ins->getOp()[1])->RealValue;
-            gblock2spbias[node->parent_]+=size;
+            gblock2spbias[node->parent_]+=size+1;
             
             newBlock[node].push_back(calAddr);
             trance[calAddr]=ins;//添加指令
@@ -813,9 +807,7 @@ void usedLdr(armLdr* ins,BasicBlock* node)
             IntegerValue* id = (IntegerValue*)raw->getOp()[1];
             if(id->isConst){
                 ins->rs = getDecl(rawop,node);
-                if(rawop->getScope()=="1")
-                    ins->bias = id->RealValue;
-                else ins->bias = id->RealValue+1;
+                ins->bias = id->RealValue;
             }
         }
     }
@@ -834,9 +826,8 @@ void usedStr(armStr* ins,BasicBlock* node)
         ins->rd = getDecl(r2,node);
 
         if(r1->isConst){
-            ins->bias = r1->RealValue+1;
+            ins->bias = r1->RealValue;
             ins->rs = getDecl(r0,node);
-            if(r0->getScope()=="1")ins->bias--;
         }
     }
     else if(raw->getResult()&& raw->getResult()->getScope()=="1"){

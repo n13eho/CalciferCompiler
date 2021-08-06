@@ -526,7 +526,7 @@ void addMemoryOperation(BasicBlock* gb)
             chosenOne = dc_vreg;
         }
     }
-    memoryDecl* memShift = new memoryDecl(nullptr,gb,++gblock2spbias[gb]);
+    memoryDecl* memShift = new memoryDecl(nullptr,gb,gblock2spbias[gb]++);
     for(auto b : gb->domBlock){
         for(auto it = newBlock[b].begin();it!=newBlock[b].end();it++){
             auto arm_ins = *it;
