@@ -588,6 +588,11 @@ void calReach(BasicBlock* s)
         //减去这个语句定义的decl对应的val的decl
         Decl* dc=ins->rd;//这个语句对应的decl
         if(dc == nullptr)continue;
+        //如果是死寄存器也要continue
+        if(dc->gettype() == Decl::var_decl){
+            varDecl* dead = (varDecl*)dc;
+            if(dead->Vreg<14) continue;
+        }
         Value* val=dc->rawValue;//要修改的val
         for(auto dead=reachout[s].begin();dead!=reachout[s].end(); ){
             Decl* deadDc=*dead;//当前在集合中的decl
@@ -611,6 +616,11 @@ void calReach(BasicBlock* s)
 
 void addAssign(Value* val, BasicBlock* node, Decl* dc)
 {
+    //r0-r1是死寄存器
+    if(dc->gettype() == Decl::var_decl){
+        varDecl* dead = (varDecl*)dc;
+        if(dead->Vreg<14)return ;
+    }
     auto key=make_pair(val,node);
     Assign_rec[key].push_back(dc);
 }
@@ -654,6 +664,7 @@ void usedAdd(armAdd* ins,BasicBlock* node)
         addAssign(ins->rd->rawValue,node,ins->rd);
         return;
     }
+
     if(raw->getOpType() == Instruction::Load){
         // 这是一条计算ldr数组下表的语句
         ins->r0 = getDecl(raw->getOp()[0],node);
