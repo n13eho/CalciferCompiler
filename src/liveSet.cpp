@@ -31,6 +31,7 @@ map<BasicBlock*, vector<armInstr*>> newBlock;
 map<armInstr*,Instruction*> trance;
 
 void addAssign(Value* val, BasicBlock* node, Decl* dc);
+Decl* getDecl(Value* val, BasicBlock* node);
 
 void strGlobal(Instruction* instr, BasicBlock* node, Decl* src)
 {
@@ -410,16 +411,20 @@ void assignCall(Instruction* instr, BasicBlock* node)
 
     //后5个参数需要放入内存
     for(int i=5; i<instr->getOp().size();i++){
+
         if(instr->getOp()[i]->getType() == 1){
             //如果这个要存的数是一个立即数的话, 还需要加一条mov
             IntegerValue* imm_val = (IntegerValue*)instr->getOp()[i];
-            armMov* imm_mov = new armMov();
-            varDecl* imm_decl = new varDecl(imm_val, node, Rcnt++);
+            if(imm_val->isConst){
+                armMov* imm_mov = new armMov();
+                varDecl* imm_decl = new varDecl(imm_val, node, Rcnt++);
 
-            imm_mov->rd = imm_decl;
+                imm_mov->rd = imm_decl;
+                imm_mov->rs = getDecl(imm_val,node);
 
-            newBlock[node].push_back(imm_mov);
-            trance[imm_mov]=instr;
+                newBlock[node].push_back(imm_mov);
+                trance[imm_mov]=instr;
+            }
         }
 
         armStr* str_param = new armStr();
@@ -760,7 +765,8 @@ void usedRsb(armRsb* ins,BasicBlock* node)
 int usedMov(armMov* ins, BasicBlock* node)
 {
     Instruction* raw = trance[ins];
-    if(raw->getOpType() == Instruction::Store){
+    if(raw->getOpType() == Instruction::Store ||
+        (raw->getOpType() == Instruction::Call&&ins->rs!=nullptr)){//这个条件筛选出来的是call中的str出现立即数的情况
         //为了处理str立即数特别加上的一条mov指令
         addAssign(ins->rd->rawValue,node,ins->rd); // 原来的value，node，新增的dc(rd)
         return 0;
@@ -886,7 +892,7 @@ void usedStr(armStr* ins,BasicBlock* node)
 }
 void usedCall(armCall* ins, BasicBlock* node)
 {
-    for(auto i=1;i<=min(4,(int)trance[ins]->getOp().size());i++){
+    for(auto i=1;i<=min(4,(int)trance[ins]->getOp().size()-1);i++){
         regDecl* param = new regDecl(nullptr, node, i-1);
         ins->rs.push_back(param);
     }
