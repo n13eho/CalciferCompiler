@@ -305,7 +305,7 @@ void VarDefNode(GrammaNode* node,LinearIR *IR)
                             //用memset
                             memset_flag = 1;
                             IntegerValue* const00 = new IntegerValue("const0",node->lineno,node->var_scope,0,1);
-                            IntegerValue* arraysize = new IntegerValue("ArraySize",node->lineno,node->var_scope,total,1);
+                            IntegerValue* arraysize = new IntegerValue("ArraySize",node->lineno,node->var_scope,total*4,1);
                             FunctionValue* funcMemset = new FunctionValue("memset",node->lineno,node->var_scope,3,0);
                             std::vector<Value*> op = {funcMemset,VL,const00,arraysize};//调用的函数value、数组首地址、0、memset数组的大小
                             CreateIns(node,IR,Instruction::Call,4,op,nullptr);
@@ -2287,7 +2287,8 @@ Value* LValArrayNode(GrammaNode* node,LinearIR *IR)
         ArrayValue* lval = (ArrayValue*)SymbolTable->askItem(node->son[0]);
         std::vector<unsigned> NumOfDimension_ = lval->getDimen();
         //索引
-        Value* index = nullptr;
+        IntegerValue* index = new IntegerValue("index",node->lineno,node->var_scope,0);
+//        Value* index = nullptr;
         //Exps_节点
         GrammaNode* p_node = node->son[1];
         //维度长度累乘
@@ -2298,8 +2299,18 @@ Value* LValArrayNode(GrammaNode* node,LinearIR *IR)
         {
             if(p_node->son.size()-1 == i)
             {
-                index = AddExpNode(p_node->son[i],IR);
-                ((IntegerValue*)index)->isConst = 0;
+                if(nullptr == FuncN && 0 == global)
+                {
+                    return index;
+                }
+                //属于某个函数且该指令为首指令，新建一个基本块，并建立联系
+                if(nullptr == bbNow)
+                {
+                    bbNow = GetPresentBlock(FuncN,BasicBlock::If);
+                }
+                Value* lasti = AddExpNode(p_node->son[i],IR);
+                vector<Value*> ops = {lasti};
+                CreateIns(node,IR,Instruction::Assign,1,ops,index);
                 // dbg("index is const?",((IntegerValue*)index)->isConst);
                 int dimen = NumOfDimension_[i];
                 accum = new IntegerValue("dimen",node->lineno,node->var_scope,dimen,1);

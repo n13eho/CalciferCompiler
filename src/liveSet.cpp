@@ -236,7 +236,6 @@ void assignLdr(Instruction* instr, BasicBlock* node)
             // 这是一条加载数组数的指令
             ArrayValue* arr_val = (ArrayValue*)instr->getOp()[0];
             IntegerValue* id_val = (IntegerValue*)instr->getOp()[1];
-            dbg(id_val->isConst, id_val->VName);
             if(id_val->isConst==0){
                 //这个id是计算出来的变量,需要加一条add指令来计算地址
                 //这里需要一个野value来算地址
@@ -555,7 +554,7 @@ void assignIns(Instruction* ins,BasicBlock* node)
             constDecl* r1 = new constDecl(nullptr, node, (gblock2spbias[node->parent_])*4);//这是数组首地址偏移，从低地址向高地址存
             calAddr->r1=r1;
             int size = ((IntegerValue*)ins->getOp()[1])->RealValue;
-            gblock2spbias[node->parent_]+=size+1;
+            gblock2spbias[node->parent_]+=size;
             
             newBlock[node].push_back(calAddr);
             trance[calAddr]=ins;//添加指令

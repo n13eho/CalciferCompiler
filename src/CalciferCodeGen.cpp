@@ -124,7 +124,7 @@ void CalciferCodeGen(char *output_file_path)
 //    outputfile = outputfile + "S";
 
     calout.open(outputfile, std::ifstream::out);
-    calout<<"\t.arch armv7ve\n";
+    calout<<"\t.arch armv7a\n";
     calout<<"\t.data\n";
     for(auto fuhao : allValue)
     {
