@@ -2491,14 +2491,13 @@ void adjust_IR_ins(LinearIR *IR)
     {
         Instruction::InsType inst_op = (Instruction::InsType)presenIns->getOpType();
 
+        BasicBlock * oldBasicBlock = presenIns->getParent();
+
+        std::list<int>::iterator it;
+        it = std::find(oldBasicBlock->InstrList.begin(), oldBasicBlock->InstrList.end(), presenIns->getId());
+
         if(inst_op == Instruction::Call && presenIns->Operands.size() > 1)
         {
-            BasicBlock * oldBasicBlock = presenIns->getParent();
-
-            std::list<int>::iterator it;
-            it = std::find(oldBasicBlock->InstrList.begin(), oldBasicBlock->InstrList.end(), presenIns->getId());
-            // 肯定存在
-
             int arg_cnt = 0;
 
             std::vector<Value *> new_arg_operands;
@@ -2566,6 +2565,32 @@ void adjust_IR_ins(LinearIR *IR)
 
                 presenIns->setResult(Rn_Values[0]);
             }
+        } else if(inst_op == Instruction::Div || inst_op == Instruction::Mod) {
+#if 0
+            Value * arg1 = presenIns->Operands[1];
+            Value * arg2 = presenIns->Operands[2];
+
+            // 转换成Call调用
+            Instruction* arg1_new_assign = new Instruction(inst_total_cnt ++,Instruction::Assign, 1);
+            arg1_new_assign->addOperand(arg1);
+            arg1_new_assign->setResult(Rn_Values[0]);
+            SymbolTable->addItem(new GrammaNode(), Rn_Values[0]);
+            oldBasicBlock->InstrList.insert(it, arg1_new_assign->getId());
+            arg1_new_assign->setParent(oldBasicBlock);
+            NewInstList.push_back(arg1_new_assign);
+
+            Instruction* arg2_new_assign = new Instruction(inst_total_cnt ++,Instruction::Assign, 1);
+            arg2_new_assign->addOperand(arg1);
+            arg2_new_assign->setResult(Rn_Values[1]);
+            SymbolTable->addItem(new GrammaNode(), Rn_Values[1]);
+            oldBasicBlock->InstrList.insert(it, arg2_new_assign->getId());
+            arg2_new_assign->setParent(oldBasicBlock);
+            NewInstList.push_back(arg2_new_assign);
+
+            Instruction* inst_call = new Instruction(inst_total_cnt ++,Instruction::Call, 1);
+#endif
+            
+            NewInstList.push_back(presenIns);
         } else {
             NewInstList.push_back(presenIns);
         }

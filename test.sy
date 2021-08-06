@@ -1,15 +1,15 @@
-int test(int a, int b, int c, int d, int e)
+int test(int a, int b, int c, int d, int e, int f, int g)
 {
     b = a + c;
 
-    return a + b + c + d + e;
+    return a + b + c + d + e + f + g + c;
 }
 
 int main(){
 
     int x = 3, y =6;
 
-    y = test(x, x, y, y, x);
+    y = test(x, x, y, y, x, x+y, x -y);
 
     return y;
 }

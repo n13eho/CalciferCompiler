@@ -44,32 +44,6 @@ void printArm(DomTreenode* dn,BasicBlock* gb)
             else{
                 calout<<"\tbl "<<call_ins->funcname<<endl;
             }
-
-            //处理返回值
-            if(call_ins->rd != NULL)
-            {
-                if(call_ins->funcname == "__aeabi_idivmod"){
-                    calout<<"\tmov "<<*(call_ins->rd)<<", "<<"r1"<<endl;
-                }
-                else{
-                    calout<<"\tmov "<<*(call_ins->rd)<<", "<<"r0"<<endl;
-                }
-            }
-
-            //pop 所有寄存器//TODO: 应该pop用过的
-            if(call_ins->rd == NULL)
-            {
-                calout<<"\tpop {r0-r12}"<<endl;
-            }
-            else
-            {
-                int rdNum = VregNumofDecl(call_ins->rd);
-                if(rdNum==0)calout<<"\tpop {r1-r12}"<<endl;
-                else if(rdNum == 12)calout<<"\tpop {r0-r11}"<<endl;
-                else{
-                    calout<<"\tpop {r0-r"<<rdNum-1<<", r"<<rdNum+1<<"-r12}"<<endl;
-                }
-            }
         }
         else if(inst->getType()==armInstr::ret){
             //以下是return 语句干的事情
