@@ -79,7 +79,7 @@ int main(int argc, char *argv[])
         // cout << "\n\n"; show_block(globalBlock, 0,nullptr,0); // 打印基本块，查看phi结点
         liveSets();//重命名
 
-        dbg("neho's start");
+//        dbg("neho's start");
         // 寄存器分配：虚拟寄存器->real寄存器。变量活性分析，建立冲突图；
         RigsterAlloc();
 

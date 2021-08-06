@@ -540,6 +540,9 @@ void addMemoryOperation(BasicBlock* gb)
             chosenOne = dc_vreg;
         }
     }
+
+    dbg(chosenOne);
+
     memoryDecl* memShift = new memoryDecl(nullptr,gb,gblock2spbias[gb]++);
     for(auto b : gb->domBlock){
         for(auto it = newBlock[b].begin();it!=newBlock[b].end();it++){

@@ -9,6 +9,8 @@ void printArm(DomTreenode* dn,BasicBlock* gb)
     calout<<block2lb[b]<<":\n";
     
     for(auto inst:newBlock[b]){
+
+        dbg(*inst);
         if(inst->getType()==armInstr::call){
             armCall* call_ins = (armCall*)inst;
 
@@ -58,7 +60,6 @@ void printArm(DomTreenode* dn,BasicBlock* gb)
         else if(inst->getType() == armInstr::str && trance[inst]->getOpType()==Instruction::Call){
             memoryDecl* str_param = (memoryDecl*) ((armStr*)inst)->rs;
             BasicBlock* func_node = func2block[(trance[inst])->getOp()[0]];
-            dbg(gblock2spbias[func_node]);
             str_param->bias += -(gblock2spbias[func_node]+10)-5;//+1是将来要lr//FIXME:+9是还有保存现场//因为形参load是从sp+4开始,这个bias以前存的是他是第几个参数
             calout<<*inst<<endl;
         }
