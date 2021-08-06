@@ -552,7 +552,7 @@ void assignIns(Instruction* ins,BasicBlock* node)
             constDecl* r1 = new constDecl(nullptr, node, (gblock2spbias[node->parent_])*4);//这是数组首地址偏移，从低地址向高地址存
             calAddr->r1=r1;
             int size = ((IntegerValue*)ins->getOp()[1])->RealValue;
-            gblock2spbias[node->parent_]+=size+1;
+            gblock2spbias[node->parent_]+=size;
             
             newBlock[node].push_back(calAddr);
             trance[calAddr]=ins;//添加指令

@@ -2287,7 +2287,8 @@ Value* LValArrayNode(GrammaNode* node,LinearIR *IR)
         ArrayValue* lval = (ArrayValue*)SymbolTable->askItem(node->son[0]);
         std::vector<unsigned> NumOfDimension_ = lval->getDimen();
         //索引
-        Value* index = nullptr;
+        IntegerValue* index = new IntegerValue("index",node->lineno,node->var_scope,0);
+//        Value* index = nullptr;
         //Exps_节点
         GrammaNode* p_node = node->son[1];
         //维度长度累乘
@@ -2298,8 +2299,9 @@ Value* LValArrayNode(GrammaNode* node,LinearIR *IR)
         {
             if(p_node->son.size()-1 == i)
             {
-                index = AddExpNode(p_node->son[i],IR);
-                ((IntegerValue*)index)->isConst = 0;
+                Value* lasti = AddExpNode(p_node->son[i],IR);
+                vector<Value*> ops = {lasti};
+                CreateIns(node,IR,Instruction::Assign,1,ops,index);
                 // dbg("index is const?",((IntegerValue*)index)->isConst);
                 int dimen = NumOfDimension_[i];
                 accum = new IntegerValue("dimen",node->lineno,node->var_scope,dimen,1);
