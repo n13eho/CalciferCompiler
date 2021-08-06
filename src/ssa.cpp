@@ -1,10 +1,13 @@
+#include <map>
+#include <set>
+#include <queue>
+
 #include "ssa.h"
 #include "decl.h"
 #include "semanticAnalyze.h"
 #include "Instruction.h"
 #include"BuildIR.h"
 #include "dbg.h"
-#include<bits/stdc++.h>
 using namespace std;
 
 ssa* ssaIR=new ssa();
@@ -201,7 +204,7 @@ void setAssbyBlock(BasicBlock* s)
 {
     for(auto i:s->InstrList)
     {
-        Instruction *ins = IR1->InstList[i];
+        Instruction *ins = IR1->getIns(i);
         if(ins->getOpType()>=Instruction::Add&&ins->getOpType()<=Instruction::LogicOr)
             addAssbyBlock(ins->getResult(),s);
         else if(ins->getOpType()==Instruction::Load){
@@ -237,7 +240,7 @@ void placePhi()
                     if(val==nullptr)dbg(cnttem);
                     ins->addOperand(val);
                     IR1->InsertInstr(ins);
-                    d->InstrList.insert(d->InstrList.begin(),IR1->InstList.size()-1);
+                    d->InstrList.insert(d->InstrList.begin(),IR1->getInstList().size()-1);
                     phiPos.insert(d);
 
                     phiIns[d]=1;
@@ -277,7 +280,7 @@ void getssa()
                 int iffind=0;
                 for(auto eb:b->domBlock){
                     for(auto it = eb->InstrList.begin();it!=eb->InstrList.end();it++){
-                        Instruction *ins = IR1->InstList[(*it)];
+                        Instruction *ins = IR1->getIns((*it));
                         int fl=hasUsedGlobal(ins,gbval);
                         if(fl){
                             if(gbval->getType() != 2)
@@ -288,7 +291,7 @@ void getssa()
                                 ins_addr2content->addOperand(gbval);
                                 //加入这条语句
                                 IR1->InsertInstr(ins_addr2content);
-                                b->domBlock[0]->InstrList.push_front(IR1->InstList.size()-1);
+                                b->domBlock[0]->InstrList.push_front(IR1->getInstList().size()-1);
                             }
                             //一条加载全局变量的语句
                             Instruction *insld = new Instruction(-1,Instruction::Load,1);
@@ -296,7 +299,7 @@ void getssa()
                             insld->addOperand(gbval);
                             //加入这条语句
                             IR1->InsertInstr(insld);
-                            b->domBlock[0]->InstrList.push_front(IR1->InstList.size()-1);
+                            b->domBlock[0]->InstrList.push_front(IR1->getInstList().size()-1);
 
                             iffind=1;
                             break;
@@ -313,7 +316,7 @@ void getssa()
          for(auto b:gb->domBlock){
              for(auto it = b->InstrList.begin(); it != b->InstrList.end(); it++)
              {
-                 Instruction *ins_c = IR1->InstList[(*it)];
+                 Instruction *ins_c = IR1->getIns(*it);
                  int antiType = ins_c->getOpType();
                  if(antiType == Instruction::Mul || antiType == Instruction::Div || antiType == Instruction::Mod)
                  {//找到这三种指令
@@ -331,7 +334,7 @@ void getssa()
                             ins_c->Operands[i] = dummyVal;
                             // 在它前面插入这条Instruction
                             IR1->InsertInstr(ins_ass);
-                            b->InstrList.insert(it, IR1->InstList.size() - 1);
+                            b->InstrList.insert(it, IR1->getInstList().size() - 1);
                         }
                     }
                  }
@@ -344,7 +347,7 @@ void getssa()
     for(auto i: IR1->Blocks){
         if(i->domBlock.size())buildDomTree(i);
     }
-//    dbg("build tree win!");
+    dbg("build tree win!");
     //计算df;
     for(auto i : IR1->Blocks){
         if(i->domBlock.size()){

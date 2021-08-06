@@ -29,7 +29,7 @@ class Decl {
     Decl(){}
     ~Decl(){}
 
-    enum declType{const_decl=1, var_decl, global_decl, memory_decl, addr_decl};
+    enum declType{const_decl=1, var_decl, global_decl, memory_decl, addr_decl, reg_decl};
 
     Decl(Value *_rawValue, BasicBlock *_rawBlock) : rawValue(_rawValue), rawBlock(_rawBlock){};
     virtual ostream& output(ostream&out)const{
@@ -121,6 +121,25 @@ class addrDecl: public Decl{
 
     virtual int gettype()const{return 5;}
 };
+
+class regDecl: public Decl{
+public:
+    int Vreg;
+    int bias=0;
+
+    regDecl(Value *_rawValue, BasicBlock *_rawBlock):Decl(_rawValue,_rawBlock){};
+    regDecl(Value *_rawValue, BasicBlock *_rawBlock,int _Vreg):Decl(_rawValue,_rawBlock),Vreg(_Vreg){
+        Vreg2Decls[Vreg].push_back(this);
+    };
+
+    virtual ostream& output(ostream&out)const{
+        out<<"r"<<Vreg;
+        return out;
+    }
+
+    virtual int gettype()const{return declType::reg_decl;}
+};
+
 
 class armInstr{
     public:
@@ -580,6 +599,9 @@ class armMov:public armInstr{//ok
             else{
                 out<<"\tstr "<<*rs<<", "<<*rd;
             }
+        }
+        else if(rd->gettype() == Decl::reg_decl) {
+            out<<"\tmov "<<*rd<<", "<<*rs;
         }
         else
         { // rd就是var_decl

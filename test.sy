@@ -1,0 +1,15 @@
+int test(int a, int b, int c, int d, int e)
+{
+    b = a + c;
+
+    return a + b + c + d + e;
+}
+
+int main(){
+
+    int x = 3, y =6;
+
+    y = test(x, x, y, y, x);
+
+    return y;
+}

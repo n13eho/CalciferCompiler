@@ -1,4 +1,6 @@
-#include<bits/stdc++.h>
+// #include<bits/stdc++.h>
+#include <map>
+#include <set>
 #include"../include/debug.h"
 using namespace std;
 
@@ -22,7 +24,7 @@ std::map<int, string> DEBUG_insOP = {{Instruction::InsType::Add, "+"}, {Instruct
 void printIns(int id)
 {
     
-    Instruction* presenIns = IR1->InstList[id];
+    Instruction* presenIns = IR1->getIns(id);
     cout << presenIns->getId() << "\t" << DEBUG_insOP[presenIns->getOpType()] << "\t";
 
     if(presenIns->getOpType() == Instruction::Jmp|| presenIns->getOpType() == Instruction::ConBr)

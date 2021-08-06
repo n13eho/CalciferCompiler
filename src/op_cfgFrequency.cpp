@@ -1,3 +1,5 @@
+#include <math.h>
+
 #include"RIG.h"
 #include"op_cfgFrequency.h"
 const double eps = 1e-9;
@@ -44,7 +46,7 @@ void dfsF(BasicBlock* b)
         
         if(b->BlockName=="while"){//while
             for(auto insid: b->InstrList){
-                auto ins = IR1->InstList[insid];
+                auto ins = IR1->getIns(insid);
                 if(ins->getOpType() >= Instruction::ArithEq && ins->getOpType()<=Instruction::ArithGQ){
                     IntegerValue* r0 = (IntegerValue*)ins->getOp()[0];
                     IntegerValue* r1 = (IntegerValue*)ins->getOp()[1];
@@ -74,7 +76,7 @@ void dfsF(BasicBlock* b)
             // 现在, 我们的做法是:
             // 如果都是常数, 就1:0或者0:1; 否则就1:1;
             for(auto insid: b->InstrList){
-                auto ins = IR1->InstList[insid];
+                auto ins = IR1->getIns(insid);
                 if(ins->getOpType() >= Instruction::ArithEq && ins->getOpType()<=Instruction::ArithGQ){
                     IntegerValue* r0 = (IntegerValue*)ins->getOp()[0];
                     IntegerValue* r1 = (IntegerValue*)ins->getOp()[1];

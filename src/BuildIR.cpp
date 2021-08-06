@@ -36,6 +36,15 @@ stack<BasicBlock*> IfNextBlocks;
 map<BasicBlock*,int> visited;
 int funCNext = 0;
 
+extern int cnt;
+extern string name;
+
+Value * Rn_Values[4] = {
+    new RegValue("r" + to_string(0) , 0),
+    new RegValue("r" + to_string(1) , 1),
+    new RegValue("r" + to_string(2) , 2),
+    new RegValue("r" + to_string(3) , 3),
+};
 
 BasicBlock* GetPresentBlock(BasicBlock* funcP,BasicBlock::BlockType t)
 {
@@ -2067,7 +2076,7 @@ Value* UnaryExpNode(GrammaNode* node,LinearIR *IR)
             {
                 bbNow = GetPresentBlock(FuncN,BasicBlock::Basic);
             }
-            
+
             Instruction* ins_new = new Instruction(IR->getInstCnt(),Instruction::Call,para_num+1);
             ins_new->addOperand(called);
             if(called->Result == 1)
@@ -2412,10 +2421,9 @@ void show_IR_ins(LinearIR *IR)
     cout<<"InsID\tOP\targ1\targ2\tresult\n";
     Instruction* presenIns;
     
-    for(int i=0; i<IR->InstList.size(); i++)
+    for(Instruction* presenIns : IR->getInstList())
     {
         // 当前指令
-        presenIns = IR->InstList[i];
         cout << presenIns->getId() << "\t";
 //        dbg(presenIns->getId());
         cout<< DEBUG_insOP[presenIns->getOpType()] << "\t";
@@ -2470,6 +2478,101 @@ void show_IR_ins(LinearIR *IR)
     for(auto i: IR->Blocks)
         cout<<i<<" ";
     cout<<"\n\n\n";
+}
+
+// 打印当前IR中的所有指令
+void adjust_IR_ins(LinearIR *IR)
+{
+
+    std::vector<Instruction*> NewInstList;
+    int inst_total_cnt = IR->getInstCnt();
+
+    for(Instruction* presenIns : IR->getInstList())
+    {
+        Instruction::InsType inst_op = (Instruction::InsType)presenIns->getOpType();
+
+        if(inst_op == Instruction::Call && presenIns->Operands.size() > 1)
+        {
+            BasicBlock * oldBasicBlock = presenIns->getParent();
+
+            std::list<int>::iterator it;
+            it = std::find(oldBasicBlock->InstrList.begin(), oldBasicBlock->InstrList.end(), presenIns->getId());
+            // 肯定存在
+
+            int arg_cnt = 0;
+
+            std::vector<Value *> new_arg_operands;
+            for(Value* arg : presenIns->Operands) {
+                if(arg_cnt == 0) {
+                    // 函数名，过滤
+                    new_arg_operands.push_back(arg);
+                    arg_cnt ++;
+                    continue;
+                }
+
+                Instruction* ins_new = new Instruction(inst_total_cnt ++,Instruction::Assign,1);
+
+                Value * arg_value;
+
+                if(arg_cnt <= 4) {
+                    arg_value = Rn_Values[arg_cnt - 1 ];
+                } else {
+                    arg_value = new IntegerValue(name + to_string(cnt ++), -1, "000", 0, true);
+                }
+
+                ins_new->addOperand(arg);
+                ins_new->setResult(arg_value);
+
+                // 增加一个define
+                SymbolTable->addItem(new GrammaNode(), arg_value);
+
+                // 向基本块加入指令
+                oldBasicBlock->InstrList.insert(it, ins_new->getId());
+
+                // oldBasicBlock->domBlock
+
+                // 标识该条指令所属的基本块
+                ins_new->setParent(oldBasicBlock);
+
+                NewInstList.push_back(ins_new);
+
+                new_arg_operands.push_back(arg_value);
+                arg_cnt ++;
+            }
+
+            presenIns->Operands = new_arg_operands;
+
+            NewInstList.push_back(presenIns);
+
+            if(presenIns->getResult()) {
+
+                // 如果有返回值，则增加Assign指令，由R0寄存器到返回值变量上
+                Instruction* ins_new = new Instruction(inst_total_cnt ++,Instruction::Assign,1);
+                ins_new->addOperand(Rn_Values[0]);
+                ins_new->setResult(presenIns->getResult());
+
+                // 向基本块加入指令
+                if(it == oldBasicBlock->InstrList.end()) {
+                    oldBasicBlock->InstrList.push_back(ins_new->getId());
+                } else {
+                    it ++;
+                    oldBasicBlock->InstrList.insert(it, ins_new->getId());
+                }
+
+                // 标识该条指令所属的基本块
+                ins_new->setParent(oldBasicBlock);
+
+                NewInstList.push_back(ins_new);
+
+                presenIns->setResult(Rn_Values[0]);
+            }
+        } else {
+            NewInstList.push_back(presenIns);
+        }
+    }
+
+    IR->getInstList() = NewInstList;
+    IR->InstCnt = NewInstList.size();
 }
 
 void fixIfNext(LinearIR *IR,BasicBlock* node,int dep)

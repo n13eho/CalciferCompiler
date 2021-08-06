@@ -131,7 +131,7 @@ void Visitblock(LinearIR *IR)
 
                     for (list<int>::iterator it = IR->Blocks[i]->domBlock[j]->InstrList.begin(); it != IR->Blocks[i]->domBlock[j]->InstrList.end(); ++it)
                     {
-                        if (IR->InstList[*it]->getOpType() == Instruction::Jmp && *it != IR->Blocks[i]->domBlock[j]->InstrList.back()) //找到jmp指令
+                        if (IR->getIns(*it)->getOpType() == Instruction::Jmp && *it != IR->Blocks[i]->domBlock[j]->InstrList.back()) //找到jmp指令
                         {
                             it++;
                             while (it != IR->Blocks[i]->domBlock[j]->InstrList.end())
@@ -146,7 +146,7 @@ void Visitblock(LinearIR *IR)
                 //return 语句后的指令删除
                 for (list<int>::iterator it = IR->Blocks[i]->domBlock[j]->InstrList.begin(); it != IR->Blocks[i]->domBlock[j]->InstrList.end(); ++it)
                 {
-                    if (IR->InstList[*it]->getOpType() == Instruction::Ret && *it != IR->Blocks[i]->domBlock[j]->InstrList.back())
+                    if (IR->getIns(*it)->getOpType() == Instruction::Ret && *it != IR->Blocks[i]->domBlock[j]->InstrList.back())
                     {
                         it++;
                         cout << *it << endl;

@@ -1,44 +1,40 @@
+#include <fstream>
+#include <iostream>
 #include"CalciferCodeGen.h"
 
-ofstream calout;
+using namespace std;
+
+std::ofstream calout;
 
 void printArm(DomTreenode* dn,BasicBlock* gb)
 {
     BasicBlock* b = dn->block;
     calout<<block2lb[b]<<":\n";
-    
+
+    // 遍历所有的call
+    for(auto inst:newBlock[b]) {
+        if (inst->getType() == armInstr::call) {
+            armCall* call_ins = (armCall*)inst;
+
+            // 第5+个
+            int tem_bias = gblock2spbias[gb]+1; // bias初始值从gblock2spbias[gb]+1开始，是因为最上面存着lr
+
+            // 传参的参数倒着放
+            for(int i = (int)call_ins->rs.size() - 1;i>=4;i--,tem_bias--) {
+                auto p = call_ins->rs[i];
+
+                if(p->gettype() == Decl::addr_decl){
+                    addrDecl* addr_p = (addrDecl*)p;
+                    addr_p->bias = -1 * tem_bias * 4;
+                }
+            }
+        }
+    }
+
     for(auto inst:newBlock[b]){
         if(inst->getType()==armInstr::call){
             armCall* call_ins = (armCall*)inst;
 
-            //填写参数
-            calout<<"@ mov params"<<endl;
-            // 第5+个
-            int tem_bias = gblock2spbias[gb]+1; // bias初始值从gblock2spbias[gb]+1开始，是因为最上面存着lr
-            // 传参的参数倒着放
-            for(int i=(int)call_ins->rs.size() - 1;i>=4;i--,tem_bias--){
-                auto p =call_ins->rs[i];
-                if(p->gettype()==Decl::const_decl){
-                    //if const
-                    calout<<"\tmov r6, "<<*p<<endl;
-                    calout<<"\tstr r6, [sp, #-"<<tem_bias*4<<"]"<<endl;
-                }
-                else{ // 这里的p也是只传值，不传地址
-                    calout<<"\tstr ";
-                    if(p->gettype() == Decl::addr_decl){
-                        addrDecl* addr_p = (addrDecl*)p;
-                        calout << "r" << addr_p->Vreg;
-                    }
-                    else{
-
-                        calout << *p;
-                    }
-                    calout << ", [sp, #-"<<tem_bias*4<<"]"<<endl;
-                }
-            }
-
-            //跳转
-            calout<<"@ jmp"<<endl;
             if(call_ins->funcname == "starttime"){
                 calout << "\tbl _sysy_starttime\n";
             }

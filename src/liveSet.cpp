@@ -70,10 +70,22 @@ void assignMov(Instruction* instr, BasicBlock* node)
     armMov *ins=new armMov();
     newBlock[node].push_back(ins);
     trance[ins]=instr;
-    if(instr->getResult()->getType()==1){
-        IntegerValue* rd=(IntegerValue*)instr->getResult();
-        varDecl *rdd = new varDecl(rd,node,Rcnt++);
+
+    if(instr->getResult()->getType() == VType::VReg) {
+        RegValue* rd=(RegValue*)instr->getResult();
+        regDecl *rdd = new regDecl(rd,node,rd->RealValue);
         ins->rd=rdd;
+    } else if(instr->getResult()->getType()==1){
+        IntegerValue* rd=(IntegerValue*)instr->getResult();
+
+        Decl *rdd;
+        if(rd->isMem) {
+            rdd = new addrDecl(rd, node, 13);
+        } else {
+            rdd = new varDecl(rd,node,Rcnt++);
+        }
+        ins->rd=rdd;
+
         if(instr->getResult()->getScope()=="1"&&instr->getResult()!=instr->getOp()[0]){
             //目标如果是一个全局变量，那么应该在赋值完加入两条指令，用于更新全局段
             //否则，多个函数更新无法保存
@@ -407,19 +419,9 @@ void assignjmp(Instruction* instr, BasicBlock* node)
 }
 void assignCall(Instruction* instr, BasicBlock* node)
 {
-    IntegerValue* rd=(IntegerValue*)instr->getResult();
-    armPush* push_ins = new armPush();//先new一条push
-    varDecl *rdd = nullptr;
-    if(rd!=nullptr){
-        //如果有返回值,就需要把返回值放入rd
-        rdd = new varDecl(rd,node,Rcnt++);
-        push_ins->exp = rdd;
-    }
-    trance[push_ins]=instr;
-    newBlock[node].push_back(push_ins);
-   
     //把参数移入死寄存器r0-r3;
     FunctionValue* func = (FunctionValue*)instr->getOp()[0];
+#if 0
     int Vnum = 0;
     for(auto param : instr->getOp()){
         if(param==instr->getOp().front())continue;
@@ -427,23 +429,20 @@ void assignCall(Instruction* instr, BasicBlock* node)
         armMov* mov_param = new armMov();
         mov_param->rd = new varDecl(param, node, Vnum++);
         mov_param->isaddress = true;
-
         newBlock[node].push_back(mov_param);
         trance[mov_param]=instr;
     }
+#endif
 
     armCall* ins = new armCall();
-    ins->push_ins = push_ins;
-
-    if(rd!=nullptr){//返回值.
-        //如果有返回值,就需要把返回值放入rd
-        ins->rd = rdd;
-    }else ins->rd = nullptr;
-    ins->funcname = instr->getOp()[0]->VName;
-
     newBlock[node].push_back(ins);
     trance[ins]=instr;
-    
+    ins->funcname = instr->getOp()[0]->VName;
+
+    //返回值.
+    RegValue* rd=(RegValue*)instr->getResult();
+    regDecl *rdd = new regDecl(rd,node,rd->RealValue);
+    ins->rd=rdd;
 }
 void assignRet(Instruction* instr, BasicBlock* node)
 {
@@ -565,12 +564,13 @@ void setDecl(BasicBlock *s)
 {
     for(auto id=s->InstrList.begin();id!=s->InstrList.end();++id){
         int i = *id;
-        auto ins =IR1->InstList[i];
+        auto ins =IR1->getIns(i);
+
         if(ins->getOpType() >= Instruction::ArithEq && ins->getOpType()<=Instruction::ArithGQ){
-            auto insbT=IR1->InstList[i+1];
+            auto insbT=IR1->getNexIns(i);
             assignLogic(ins,s,insbT->jmpDestBlock);
         }
-        else assignIns(IR1->InstList[i],s);
+        else assignIns(IR1->getIns(i),s);
     }
     DomTreenode* node=block2dom[s];
     for(auto son:node->son){
@@ -641,7 +641,13 @@ void addAssign(Value* val, BasicBlock* node, Decl* dc)
 
 Decl* getDecl(Value* val, BasicBlock* node)
 {
-    if(val->getType()==1){
+
+//    dbg(val->VName);
+    if(val->getType() == VType::VReg) {
+
+        return Assign_rec[make_pair(val,node)].back();
+
+    } else if(val->getType()==1){
         IntegerValue* intval = (IntegerValue*)val;
         if(intval->isConst&&Assign_rec[make_pair(intval,node)].size()==0){
             //常数的话,直接新建一个返回
@@ -749,6 +755,7 @@ void usedRsb(armRsb* ins,BasicBlock* node)
 int usedMov(armMov* ins, BasicBlock* node)
 {
     Instruction* raw = trance[ins];
+
     if(raw->getOpType() == Instruction::Store){
         //为了处理str立即数特别加上的一条mov指令
         addAssign(ins->rd->rawValue,node,ins->rd); // 原来的value，node，新增的dc(rd)
@@ -1007,8 +1014,8 @@ void liveSets()
     //1.1 最后才能考虑phi
     for(auto b:phiPos){
         for(auto i:b->InstrList){
-            if(IR1->InstList[i]->getOpType()==Instruction::Phi){
-                assignPhi(IR1->InstList[i],b);
+            if(IR1->getIns(i)->getOpType()==Instruction::Phi){
+                assignPhi(IR1->getIns(i),b);
             }
         }
     }

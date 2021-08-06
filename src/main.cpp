@@ -1,3 +1,5 @@
+#include <getopt.h>
+#include <string.h>
 #include "../include/sysy_node.hpp"
 #include "../include/semanticAnalyze.h" //语义检查
 #include "../include/BuildIR.h"
@@ -25,7 +27,9 @@ int main(int argc, char *argv[])
 {
     // 初始参数文件
     char *input_file = nullptr, *output_file = nullptr;
-    for(int ch; (ch = getopt(argc, argv, "So:")) != -1;)
+    int optLevel = 0;
+
+    for(int ch; (ch = getopt(argc, argv, "SO:o:")) != -1;)
     {
         switch(ch)
         {
@@ -35,10 +39,14 @@ int main(int argc, char *argv[])
                 output_file = strdup(optarg);
                 dbg(output_file);
                 break;
+            case 'O':
+                optLevel = atoi(optarg);;
+                break;
             default:
                 break;
         }
     }
+
     // 处理input_file
     input_file = argv[argc-1];
 
@@ -67,10 +75,15 @@ int main(int argc, char *argv[])
         VisitAST(Droot, IR1); // 从ast：建立四元式 + 得出block的信息
         // cout << "\n\n"; show_block(globalBlock, 0);
         // Visitblock(IR1); // 删除空结点
+        // show_IR_ins(IR1); // 打印指令
+
+        adjust_IR_ins(IR1);
+
         show_IR_ins(IR1); // 打印指令
 
         // SSA
         getssa();//建立支配树以及支配边界 -->
+
         show_cfg();
 
         // 计算每个block的frequency， 可以和上面一步的SSA并行

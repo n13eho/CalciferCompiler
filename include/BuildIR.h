@@ -1,7 +1,8 @@
 #pragma once
+#include <map>
 #include "Instruction.h"
 #include "../include/sysy_node.hpp"
-#include<bits/stdc++.h>
+// #include<bits/stdc++.h>
 using namespace std;
 
 //线性IR，存储所有四元式
@@ -23,14 +24,49 @@ class LinearIR
 
     int getInstCnt(){return InstCnt;}
 
-    Instruction* getIns(int index){return InstList[index];}
+    Instruction* getIns(int index)
+    {
+        for(Instruction * inst : InstList) {
+            if(inst->getId() == index) {
+                return inst;
+            }
+        }
 
-    std::vector<Instruction*> InstList;
+        return nullptr;
+    }
+
+    Instruction* getNexIns(int index)
+    {
+        Instruction* nextInst = nullptr;
+        bool find = false;
+
+        for(Instruction * inst : InstList) {
+
+            if(find) {
+                nextInst = inst;
+            }
+
+            if(inst->getId() == index) {
+                find = true;
+            }
+        }
+
+        return nextInst;
+    }
+
+    std::vector<Instruction*> & getInstList()
+    {
+        return InstList;
+    }
+
     int InstCnt=0;
     //记录所有的顶层的block
     std::vector<BasicBlock*> Blocks;
     //将函数的value与对应的basicblock对应
     map<Value*,BasicBlock*> FuncMap;
+
+protected:
+    std::vector<Instruction*> InstList;
 };
 
 void VisitAST(GrammaNode* DRoot,LinearIR *IR);
@@ -84,5 +120,7 @@ private:
 
 // 打印当前IR中的所有指令
 void show_IR_ins(LinearIR *IR);
+void adjust_IR_ins(LinearIR *IR);
+
 void fixIfNext(LinearIR *IR,BasicBlock* node,int dep);
 extern LinearIR *IR1;

@@ -1,3 +1,10 @@
+#include <map>
+#include <set>
+#include <queue>
+#include <algorithm>
+#include <random>
+#include <chrono>
+
 #include"RIG.h"
 #include"op_cfgFrequency.h"
 // input at liveSet.h
@@ -35,7 +42,12 @@ int VregNumofDecl(Decl* d)
     {
         addrDecl* add_d = (addrDecl*)d;
         return add_d->Vreg;
+    } else if(d->gettype() == Decl::reg_decl) {
+        // 寄存器变量
+        regDecl * reg_d = (regDecl*)d;
+        return reg_d->Vreg;
     }
+
     return 789;
 }
 
@@ -113,6 +125,7 @@ void ArmI2InOut(armInstr* ai)
     {
         armMov* mov_ai = (armMov*)ai;
         ins[ai].erase(VregNumofDecl(mov_ai->rd));
+
         if(notConst(mov_ai->rs))
         {
             ins[ai].insert(VregNumofDecl(mov_ai->rs));
@@ -161,9 +174,15 @@ void ArmI2InOut(armInstr* ai)
     else if(ai->getType() == armInstr::armInsType::call)
     {
         armCall* call_ai = (armCall*)ai;
+
         // call 有返回值，需要kill掉
         if(call_ai->rd != NULL)
             ins[ai].erase(VregNumofDecl(call_ai->rd));
+
+        ins[ai].erase(0);
+        ins[ai].erase(1);
+        ins[ai].erase(2);
+        ins[ai].erase(3);
 
         // rs内全是gen
         for(auto r: call_ai->rs)
@@ -174,19 +193,20 @@ void ArmI2InOut(armInstr* ai)
                 r->gen_used.push_back(ai);
             }
         }
-
     }
     else if(ai->getType() == armInstr::armInsType::ret)
     {
         armRet* ret_ai = (armRet*)ai;
 
         // rs is gen
-        if(ret_ai->rs != NULL)
-            if(notConst(ret_ai->rs))
-            {
+        if(ret_ai->rs != NULL) {
+            if (notConst(ret_ai->rs)) {
                 ins[ai].insert(VregNumofDecl(ret_ai->rs));
                 ret_ai->rs->gen_used.push_back(ai);
             }
+
+            ins[ai].erase(0);
+        }
     }
     else if(ai->getType() == armInstr::rsb)
     {// r1 maybe imm/const, but r0 is var_decl for sure
@@ -369,12 +389,20 @@ bool check_ok(RIGnode* n, int c)
 }
 
 bool paintColor(BasicBlock* gb){
+
+    // obtain a time-based seed:
+    unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+
     //1. 找到所有起点;
     int maxdu=-1;
     s_point.clear();
     for(auto node: RIG[gb]){
         if(colors[node])continue;
+#if 0
         if(node->dc==13 || (node->dc >= 0 && node->dc <= 3))continue; // 开后门
+#else
+        if(node->dc==13)continue; // 开后门
+#endif
         if((int)node->connectTo.size()>maxdu){
             s_point.clear();
             s_point.push_back(node);
@@ -383,7 +411,7 @@ bool paintColor(BasicBlock* gb){
         else if(node->connectTo.size()==maxdu)s_point.push_back(node);
     }
     //1.1random
-    random_shuffle(s_point.begin(),s_point.end());
+    shuffle(s_point.begin(),s_point.end(), std::default_random_engine(seed));
     //1.2 add s_point，非联通的图可以重新使用参数个数/4
 
     if(s_point.size() == 0)return true;// 表示这个函数只用了参数分到的寄存器，没用其他的寄存器，因此直接返回true
@@ -394,11 +422,15 @@ bool paintColor(BasicBlock* gb){
         RIGnode* now = que.front();
         que.pop();
         // 随机的访问now所连的点
-        random_shuffle(now->connectTo.begin(),now->connectTo.end());
+        shuffle(now->connectTo.begin(),now->connectTo.end(), std::default_random_engine(seed));
         for(auto nx:now->connectTo){
             //对nx尝试每一种颜色
             if(colors[nx])continue;
+#if 0
             if(nx->dc==13 || (nx->dc >= 0 && nx->dc <= 3))continue;
+#else
+            if(nx->dc==13 || (nx->dc >= 0 && nx->dc <= 3))continue;
+#endif
             for(int i=5;i<=usedK;i++){
                 if(usedK == 14)continue; // 不能染上13，13要跳过
                 if(check_ok(nx,i)){
@@ -414,7 +446,11 @@ bool paintColor(BasicBlock* gb){
         }
     }
     for(auto node: RIG[gb]){
+#if 0
         if(node->dc==13 || (node->dc >= 0 && node->dc <= 3))continue;
+#else
+        if(node->dc==13)continue;
+#endif
         if(colors[node]==0)return paintColor(gb);
     }
     return true;
@@ -499,7 +535,11 @@ int chosenOne = -1;
 
 void spillCost(BasicBlock* gb){
     for(auto node: RIG[gb]){
+#if 0
         if(node->dc==13 || (node->dc >= 0 && node->dc <= 3))continue;
+#else
+        if(node->dc==13)continue;
+#endif
         auto dc_vreg= node->dc;
         spilling_cost[dc_vreg] = 0; // 清零
         for(auto dc: Vreg2Decls[dc_vreg])
@@ -519,7 +559,11 @@ void addMemoryOperation(BasicBlock* gb)
     // 选出cost最小的dc
     double mincost = 1e18;
     for(auto node : RIG[gb]){
+#if 0
         if(node->dc==13 || (node->dc >= 0 && node->dc <= 3))continue;
+#else
+        if(node->dc==13)continue;
+#endif
         int dc_vreg= node->dc;
         if(spilling_cost[dc_vreg]<mincost){
             mincost = spilling_cost[dc_vreg];
@@ -559,7 +603,11 @@ void changeVreg(BasicBlock *gb)
 {
     for(auto rigN: colors)
     {
+#if 0
         if(rigN.first->dc==13 || (rigN.first->dc >= 0 && rigN.first->dc <= 3))continue;
+#else
+        if(rigN.first->dc==13)continue;
+#endif
         int dc_vreg = rigN.first->dc;
         for(auto dc: Vreg2Decls[dc_vreg])
         {// 就将每一个decl的vreg批量改了
@@ -590,7 +638,11 @@ void updateV2Ds()
     {
         for(auto dc: p.second)
         {
+#if 0
             if(VregNumofDecl(dc)==13 || (VregNumofDecl(dc) >= 0 && VregNumofDecl(dc) <= 3))continue;
+#else
+            if(VregNumofDecl(dc)==13)continue;
+#endif
             temp_Vreg2Decls[VregNumofDecl(dc)].push_back(dc);
         }
     }
@@ -628,6 +680,8 @@ bool buildRIG(BasicBlock* gb)
         // cout << "\n\n第" << 10-times_deadCode << "次 " << "**** IN&OUT set of every armIns ****\n";
         // for(auto dr: DomRoot)
         //     showSets(dr);
+        for(auto dr: DomRoot)
+            showSets(dr);
 
         // 3 利用填好的in、out集合，建立冲突图，也是一个递归的过程
         connectDecl(block2dom[gb->domBlock[0]], gb);

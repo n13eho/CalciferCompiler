@@ -10,7 +10,8 @@ enum VType{
     VArray,
     VFunction,
     //立即数
-    VImm
+    VImm,
+    VReg
 };
 
 
@@ -52,20 +53,25 @@ class IntegerValue:public Value
     public:
     DEFINE_CLASSOF(Value, p->valueType == VType::VInteger);
     virtual int getType(){return 1;}
-    IntegerValue(std::string name_,int line,std::string scope,int _isConst):Value(name_,line,scope){isConst=_isConst;}
+    IntegerValue(std::string name_,int line,std::string scope,int _isConst, bool _isMem = false):Value(name_,line,scope)
+    {
+        isConst=_isConst;
+        isMem = _isMem;
+    }
+
     IntegerValue(std::string name_,int line,std::string scope,int intValue,int _isConst):Value(name_,line,scope)
     {
         isConst = _isConst;
         RealValue=intValue;
         valueType = VType::VInteger;
+        isMem = false;
     }
 
     int getValue(){return RealValue;}
     void setValue(int intValue){RealValue=intValue;}
     int RealValue=0;
     int isConst=-1; // 0代表它不是一个cosnt，1代表是。初值为-1
-    
-
+    bool isMem = false;
 };
 
 class ArrayValue:public Value
@@ -149,5 +155,27 @@ class ImmValue:public Value
 
     // private:
     //立即数的值
+    int RealValue;
+};
+
+class RegValue:public Value
+{
+public:
+    DEFINE_CLASSOF(Value, p->valueType == VType::VImm);
+
+    virtual int getType(){return VType::VReg;}
+
+    //立即数必须给值,行号和scope没必要？---要的吧。。
+    RegValue(std::string name_, int intValue):Value(name_)
+    {
+        RealValue = intValue;
+        valueType = VType::VReg;
+    }
+
+    //获取立即数的值
+    int getValue() { return RealValue;}
+
+    // private:
+    // 寄存器编号
     int RealValue;
 };
