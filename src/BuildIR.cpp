@@ -2299,6 +2299,15 @@ Value* LValArrayNode(GrammaNode* node,LinearIR *IR)
         {
             if(p_node->son.size()-1 == i)
             {
+                if(nullptr == FuncN && 0 == global)
+                {
+                    return index;
+                }
+                //属于某个函数且该指令为首指令，新建一个基本块，并建立联系
+                if(nullptr == bbNow)
+                {
+                    bbNow = GetPresentBlock(FuncN,BasicBlock::If);
+                }
                 Value* lasti = AddExpNode(p_node->son[i],IR);
                 vector<Value*> ops = {lasti};
                 CreateIns(node,IR,Instruction::Assign,1,ops,index);
