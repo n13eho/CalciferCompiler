@@ -379,8 +379,6 @@ class armCall:public armInstr{//ok
     vector<Decl*>rs;
     string funcname;
 
-    armPush* push_ins = NULL; // 这条call指令对应的push指令指针
-
     virtual int getType(){return call;}
     virtual ostream& output(ostream&out)const
     {
@@ -590,19 +588,24 @@ class armMov:public armInstr{//ok
             }
         }
         else
-        { // rd就是var_decl
+        { // rd就是var_decl 或者 reg_decl
+            // 1 rs 是addr_decl的时候
             if(rs->gettype() == Decl::addr_decl && !isaddress){ // ldr 进来值
                 out << "@@mov trans to ldr to get it's value\n";
-                out<<"\tldr "<<*rd<<", "<<*rs;
+//                out<<"\tldr "<<*rd<<", "<<*rs;
+                out<<"\tldr "<<*rd<<", "<<*rs << "\t@ rs 是个地址";
             }
             else if(rs->gettype() == Decl::addr_decl && isaddress){ // address is exactly what i want
                 out << "@@address is exactly what i want\n";
                 out<<"\tmov "<<*rd<<", r"<<((addrDecl*)rs)->Vreg;
             }
 
+            // 2 rs 是memory_decl，原则上不可能出现
             else if(rs->gettype()==Decl:: memory_decl){
                 dbg("不可能出现");
             }
+
+            // 3 rs是const_decl 立即数
             else if(rs->gettype() == Decl::const_decl){ // rs是立即数的话要分为三种情况讨论
                 constDecl* const_rs = (constDecl*)rs;
 
@@ -628,6 +631,8 @@ class armMov:public armInstr{//ok
                 }
 
             }
+
+            // 4 rs是var和reg
             else{
                 out<<"\tmov "<<*rd<<", "<<*rs;
             }
