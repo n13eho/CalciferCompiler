@@ -23,8 +23,17 @@ void printArm(DomTreenode* dn,BasicBlock* gb)
                     calout<<"\tmov r6, "<<*p<<endl;
                     calout<<"\tstr r6, [sp, #-"<<tem_bias*4<<"]"<<endl;
                 }
-                else{
-                    calout<<"\tstr "<<*p<<", [sp, #-"<<tem_bias*4<<"]"<<endl;
+                else{ // 这里的p也是只传值，不传地址
+                    calout<<"\tstr ";
+                    if(p->gettype() == Decl::addr_decl){
+                        addrDecl* addr_p = (addrDecl*)p;
+                        calout << "r" << addr_p->Vreg;
+                    }
+                    else{
+
+                        calout << *p;
+                    }
+                    calout << ", [sp, #-"<<tem_bias*4<<"]"<<endl;
                 }
             }
 

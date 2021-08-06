@@ -424,7 +424,14 @@ class armStr:public armInstr{//ok
     virtual int getType(){return str;}
     virtual ostream& output(ostream&out)const
     {
-        out<<"\tstr "<<*rd;
+        out<<"\tstr "; //<<*rd;
+        if(rd->gettype() == Decl::addr_decl){ // 只需要存储地址，把壳脱了
+            addrDecl* addr_rd = (addrDecl*)rd;
+            out << "r" << addr_rd->Vreg;
+        }
+        else{
+            out << *rd;
+        }
         if(bias){
             
             out<<", [r"<<((addrDecl*)rs)->Vreg<<", #"<<bias*4<<"]"<<"\t@ this is array....";//TODO: 这里以后要改.
