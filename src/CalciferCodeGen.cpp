@@ -70,6 +70,7 @@ void printArm(DomTreenode* dn,BasicBlock* gb)
                 int rdNum = VregNumofDecl(call_ins->rd);
                 if(rdNum==0)calout<<"\tpop {r1-r12}"<<endl;
                 else if(rdNum == 12)calout<<"\tpop {r0-r11}"<<endl;
+                else if(rdNum == 11)calout << "\tpop {r0-r10, r12}" << endl;
                 else{
                     calout<<"\tpop {r0-r"<<rdNum-1<<", r"<<rdNum+1<<"-r12}"<<endl;
                 }

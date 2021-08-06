@@ -355,6 +355,7 @@ public:
             rdNum = VregNumofDecl(exp);
             if(rdNum==0)out<<"\tpush {r1-r12}";
             else if(rdNum == 12)out<<"\tpush {r0-r11}";
+            else if(rdNum == 11)out << "\tpush {r0-r10, r12}";
             else{
                 out<<"\tpush {r0-r"<<rdNum-1<<", r"<<rdNum+1<<"-r12}";
             }
