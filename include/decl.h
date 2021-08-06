@@ -29,7 +29,7 @@ class Decl {
     Decl(){}
     ~Decl(){}
 
-    enum declType{const_decl=1, var_decl, global_decl, memory_decl, addr_decl};
+    enum declType{const_decl=1, var_decl, global_decl, memory_decl, addr_decl, reg_decl};
 
     Decl(Value *_rawValue, BasicBlock *_rawBlock) : rawValue(_rawValue), rawBlock(_rawBlock){};
     virtual ostream& output(ostream&out)const{
@@ -111,15 +111,22 @@ class addrDecl: public Decl{
         else out<<"[r"<<Vreg<<", #"<<bias<<"]";
         return out;
     }
-//    ostream & output(ostream &out,bool fl)const{
-//        if(fl)out<<*this;//输出带括号的
-//        else{
-//            out<<"r"<<Vreg;
-//        }
-//        return out;
-//    }
 
     virtual int gettype()const{return 5;}
+};
+
+class regDecl: public Decl{
+public:
+    int Rreg;
+    regDecl(Value *_rawValue, BasicBlock *_rawBlock):Decl(_rawValue,_rawBlock){};
+    regDecl(Value *_rawValue, BasicBlock *_rawBlock,int _Rreg):Decl(_rawValue,_rawBlock),Rreg(_Rreg){
+    };
+    virtual ostream& output(ostream&out)const{
+        out<<"r"<<Rreg;
+        return out;
+    }
+
+    virtual int gettype()const{return 6;}
 };
 
 class armInstr{

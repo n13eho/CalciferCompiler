@@ -165,7 +165,13 @@ void ArmI2InOut(armInstr* ai)
         if(call_ai->rd != NULL)
             ins[ai].erase(VregNumofDecl(call_ai->rd));
 
-        // rs内全是gen
+        // 0-3号全部kill掉
+        ins[ai].erase(0);
+        ins[ai].erase(1);
+        ins[ai].erase(2);
+        ins[ai].erase(3);
+
+        // rs内全是gen (这部分不变)
         for(auto r: call_ai->rs)
         {
             if(notConst(r))
@@ -374,7 +380,7 @@ bool paintColor(BasicBlock* gb){
     s_point.clear();
     for(auto node: RIG[gb]){
         if(colors[node])continue;
-        if(node->dc==13 || (node->dc >= 0 && node->dc <= 3))continue; // 开后门: 不给13,0,1,2,3染
+        if(node->dc==13)continue; // 开后门: 不给13染
         if((int)node->connectTo.size()>maxdu){
             s_point.clear();
             s_point.push_back(node);
@@ -398,8 +404,8 @@ bool paintColor(BasicBlock* gb){
         for(auto nx:now->connectTo){
             //对nx尝试每一种颜色
             if(colors[nx])continue;
-            if(nx->dc==13 || (nx->dc >= 0 && nx->dc <= 3))continue;
-            for(int i=5;i<=usedK;i++){
+            if(nx->dc==13)continue;
+            for(int i=1;i<=usedK;i++){ // 还是从1开始
                 if(i == 14)continue; // 不能染上13，13要跳过
                 if(check_ok(nx,i)){
                     colors[nx]=i;
@@ -414,7 +420,7 @@ bool paintColor(BasicBlock* gb){
         }
     }
     for(auto node: RIG[gb]){
-        if(node->dc==13 || (node->dc >= 0 && node->dc <= 3))continue;
+        if(node->dc==13)continue;
         if(colors[node]==0)return paintColor(gb);
     }
     return true;
@@ -428,7 +434,7 @@ void deleteDC(DomTreenode* dn, BasicBlock* gb)
     {// 遍历指令
         if((*it)->rd != NULL)
         {
-            if(VregNumofDecl((*it)->rd)>=0&&VregNumofDecl((*it)->rd)<=3)continue; // 0-3开后门
+//            if(VregNumofDecl((*it)->rd)>=0&&VregNumofDecl((*it)->rd)<=3)continue; // 0-3开后门
             findDc = false;
             for(auto rn: RIG[gb])
             {// 找该指令的左值是否出现在RIG[gb]中，如果该左值没有出现在RIG[gb]中，就删除这条指令
@@ -499,7 +505,7 @@ int chosenOne = -1;
 
 void spillCost(BasicBlock* gb){
     for(auto node: RIG[gb]){
-        if(node->dc==13 || (node->dc >= 0 && node->dc <= 3))continue;
+        if(node->dc==13)continue;
         auto dc_vreg= node->dc;
         spilling_cost[dc_vreg] = 0; // 清零
         for(auto dc: Vreg2Decls[dc_vreg])
@@ -519,7 +525,7 @@ void addMemoryOperation(BasicBlock* gb)
     // 选出cost最小的dc
     double mincost = 1e18;
     for(auto node : RIG[gb]){
-        if(node->dc==13 || (node->dc >= 0 && node->dc <= 3))continue;
+        if(node->dc==13)continue;
         int dc_vreg= node->dc;
         if(spilling_cost[dc_vreg]<mincost){
             mincost = spilling_cost[dc_vreg];
@@ -559,7 +565,7 @@ void changeVreg(BasicBlock *gb)
 {
     for(auto rigN: colors)
     {
-        if(rigN.first->dc==13 || (rigN.first->dc >= 0 && rigN.first->dc <= 3))continue;
+        if(rigN.first->dc==13)continue;
         int dc_vreg = rigN.first->dc;
         for(auto dc: Vreg2Decls[dc_vreg])
         {// 就将每一个decl的vreg批量改了
@@ -590,7 +596,7 @@ void updateV2Ds()
     {
         for(auto dc: p.second)
         {
-            if(VregNumofDecl(dc)==13 || (VregNumofDecl(dc) >= 0 && VregNumofDecl(dc) <= 3))continue;
+            if(VregNumofDecl(dc)==13)continue;
             temp_Vreg2Decls[VregNumofDecl(dc)].push_back(dc);
         }
     }
