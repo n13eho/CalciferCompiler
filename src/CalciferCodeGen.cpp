@@ -82,7 +82,7 @@ void transFunc(BasicBlock* node)
     calout<<"\t.fnstart\n";
 
     //push lr
-    calout<<"\tpush {lr, r4-r12}"<<endl;
+    calout<<"\tpush {r4-r12, lr}"<<endl;
     //修改sp
     if(gblock2spbias[node])calout<<"\tsub sp, sp, #"<<(gblock2spbias[node]+1)*4<<endl;
     //输出这个函数的指令
