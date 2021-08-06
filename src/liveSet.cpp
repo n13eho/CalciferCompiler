@@ -7,6 +7,7 @@ output: newIR
 */
 
 map<BasicBlock*, string> block2lb;
+map<string, BasicBlock*> lb2block;
 map<BasicBlock*, int> gblock2spbias;
 int Bcnt;
 string lb=".LB";
@@ -207,6 +208,8 @@ void assignPhi(Instruction* instr, BasicBlock* node)
         //如果没找到, 那一定是顺序的, 就在最后加//TODO: 或许可以优化掉吧
 
         //加入指令
+        dbg(block2lb[node]);
+        dbg(**pos);
         newBlock[pred].insert(pos,ins);
         trance[ins]=instr;
     }
@@ -587,7 +590,17 @@ void calReach(BasicBlock* s)
     for(auto ins:newBlock[s]){
         //减去这个语句定义的decl对应的val的decl
         Decl* dc=ins->rd;//这个语句对应的decl
-        if(dc == nullptr)continue;
+        if(dc == nullptr){
+            //如果是跳转指令的话，需要更新跳转目的的块的reachin
+            if(ins->getType()>=armInstr::b||ins->getType()<=armInstr::beq)continue;
+            string dest = ins->getDest();
+            BasicBlock* sucBlock = lb2block[dest];
+            for(auto i : reachout[s]){
+                reachin[sucBlock].insert(i);
+            }
+            if(!visReach[sucBlock])calReach(sucBlock);
+            continue;
+        }
         //如果是死寄存器也要continue
         if(dc->gettype() == Decl::var_decl){
             varDecl* dead = (varDecl*)dc;
@@ -606,11 +619,13 @@ void calReach(BasicBlock* s)
         reachout[s].insert(dc);
     }
     for(auto suc:s->succBlock){
-        //完善后继的reachin
-        for(auto i : reachout[s]){
-            reachin[suc].insert(i);
+        if(!visReach[suc]){
+            //没有被跳转的后继，就需要继续
+            for(auto i : reachout[s]){
+                reachin[suc].insert(i);
+            }
+            calReach(suc);
         }
-        if(!visReach[suc])calReach(suc);
     }
 }
 
@@ -980,6 +995,7 @@ void liveSets()
     for(auto b:IR1->Blocks){
         for(auto eb: b->domBlock){
             block2lb[eb]=lb+to_string(Bcnt++);
+            lb2block[block2lb[eb]]=eb;
             newBlock[eb]={};
         }
     }
