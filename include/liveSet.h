@@ -12,3 +12,4 @@ void showDecl(DomTreenode* sd);
 extern map<BasicBlock*, vector<armInstr*>> newBlock;
 extern map<BasicBlock*, int> gblock2spbias;
 extern map< pair<Value*,BasicBlock*>, vector<Decl*> > Assign_rec;
+extern map<armInstr*,Instruction*> trance;

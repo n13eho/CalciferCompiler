@@ -386,7 +386,19 @@ bool paintColor(BasicBlock* gb){
     //1.2 add s_point，非联通的图可以重新使用参数个数/4
 
     if(s_point.size() == 0)return true;// 表示这个函数只用了参数分到的寄存器，没用其他的寄存器，因此直接返回true
-    colors[s_point[0]] = 1;//由于不能然1,2,3,4,所以从5开始(现在可以了，重新从1开始)
+    //给起点染色
+    for(int i=1;i<=usedK;i++){
+        if(i==14)continue;
+        if(check_ok(s_point[0],i)){
+            colors[s_point[0]]=i;
+            break;
+        }
+    }
+    if(colors[s_point[0]]==0){
+        if(usedK == 13)usedK++; // 同上，不能染上13
+        colors[s_point[0]]=++usedK;
+    }
+    // 起点入队
     que.push(s_point[0]);
     //2. BFS coloring
     while(!que.empty()){
