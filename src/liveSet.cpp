@@ -233,7 +233,6 @@ void assignLdr(Instruction* instr, BasicBlock* node)
             // 这是一条加载数组数的指令
             ArrayValue* arr_val = (ArrayValue*)instr->getOp()[0];
             IntegerValue* id_val = (IntegerValue*)instr->getOp()[1];
-            dbg(id_val->isConst, id_val->VName);
             if(id_val->isConst==0){
                 //这个id是计算出来的变量,需要加一条add指令来计算地址
                 //这里需要一个野value来算地址

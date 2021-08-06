@@ -305,7 +305,7 @@ void VarDefNode(GrammaNode* node,LinearIR *IR)
                             //用memset
                             memset_flag = 1;
                             IntegerValue* const00 = new IntegerValue("const0",node->lineno,node->var_scope,0,1);
-                            IntegerValue* arraysize = new IntegerValue("ArraySize",node->lineno,node->var_scope,total,1);
+                            IntegerValue* arraysize = new IntegerValue("ArraySize",node->lineno,node->var_scope,total*4,1);
                             FunctionValue* funcMemset = new FunctionValue("memset",node->lineno,node->var_scope,3,0);
                             std::vector<Value*> op = {funcMemset,VL,const00,arraysize};//调用的函数value、数组首地址、0、memset数组的大小
                             CreateIns(node,IR,Instruction::Call,4,op,nullptr);
