@@ -2258,7 +2258,7 @@ Value* PrimaryExpNode(GrammaNode* node,LinearIR *IR)
         {
             bbNow = GetPresentBlock(FuncN,BasicBlock::Basic);
         }
-
+        dbg(((IntegerValue*)index)->isConst);
         Instruction* ins_load = new Instruction(IR->getInstCnt(),Instruction::Load,2);
         ins_load->addOperand(lval);
         ins_load->addOperand(index);
@@ -2299,6 +2299,8 @@ Value* LValArrayNode(GrammaNode* node,LinearIR *IR)
             if(p_node->son.size()-1 == i)
             {
                 index = AddExpNode(p_node->son[i],IR);
+                ((IntegerValue*)index)->isConst = 0;
+                // dbg("index is const?",((IntegerValue*)index)->isConst);
                 int dimen = NumOfDimension_[i];
                 accum = new IntegerValue("dimen",node->lineno,node->var_scope,dimen,1);
 //                accum = new ImmValue("dimen",dimen);
@@ -2359,6 +2361,7 @@ Value* LValArrayNode(GrammaNode* node,LinearIR *IR)
         // ins_load->addOperand(index);
         // ins_load->setResult(ret);
         // IR->InsertInstr(ins_load);
+        // dbg("index is const?",((IntegerValue*)index)->isConst);
         return index;
     }
     else
