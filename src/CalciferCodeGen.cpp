@@ -11,32 +11,6 @@ void printArm(DomTreenode* dn,BasicBlock* gb)
         if(inst->getType()==armInstr::call){
             armCall* call_ins = (armCall*)inst;
 
-            //填写参数
-            calout<<"@ mov params"<<endl;
-            // 第5+个
-            int tem_bias = gblock2spbias[gb]+1; // bias初始值从gblock2spbias[gb]+1开始，是因为最上面存着lr
-            // 传参的参数倒着放
-            for(int i=(int)call_ins->rs.size() - 1;i>=4;i--,tem_bias--){
-                auto p =call_ins->rs[i];
-                if(p->gettype()==Decl::const_decl){
-                    //if const
-                    calout<<"\tmov r6, "<<*p<<endl;
-                    calout<<"\tstr r6, [sp, #-"<<tem_bias*4<<"]"<<endl;
-                }
-                else{ // 这里的p也是只传值，不传地址
-                    calout<<"\tstr ";
-                    if(p->gettype() == Decl::addr_decl){
-                        addrDecl* addr_p = (addrDecl*)p;
-                        calout << "r" << addr_p->Vreg;
-                    }
-                    else{
-
-                        calout << *p;
-                    }
-                    calout << ", [sp, #-"<<tem_bias*4<<"]"<<endl;
-                }
-            }
-
             //跳转
             calout<<"@ jmp"<<endl;
             if(call_ins->funcname == "starttime"){
@@ -59,22 +33,6 @@ void printArm(DomTreenode* dn,BasicBlock* gb)
                     calout<<"\tmov "<<*(call_ins->rd)<<", "<<"r0"<<endl;
                 }
             }
-
-            //pop 所有寄存器//TODO: 应该pop用过的
-            if(call_ins->rd == NULL)
-            {
-                calout<<"\tpop {r0-r12}"<<endl;
-            }
-            else
-            {
-                int rdNum = VregNumofDecl(call_ins->rd);
-                if(rdNum==0)calout<<"\tpop {r1-r12}"<<endl;
-                else if(rdNum == 12)calout<<"\tpop {r0-r11}"<<endl;
-                else if(rdNum == 11)calout << "\tpop {r0-r10, r12}" << endl;
-                else{
-                    calout<<"\tpop {r0-r"<<rdNum-1<<", r"<<rdNum+1<<"-r12}"<<endl;
-                }
-            }
         }
         else if(inst->getType()==armInstr::ret){
             //以下是return 语句干的事情
@@ -82,7 +40,7 @@ void printArm(DomTreenode* dn,BasicBlock* gb)
             calout<<"@ this is a ret"<<endl;
             if(gblock2spbias[gb])calout<<"\tadd sp, sp, #"<<(gblock2spbias[gb]+1)*4<<endl;
             //pop lr
-            calout<<"\tpop {lr}"<<endl;
+            calout<<"\tpop {lr, r4-r12}"<<endl;
             //放返回值
             calout<<*inst<<endl;  
             calout<<"@ end of return "<<endl;
@@ -95,6 +53,11 @@ void printArm(DomTreenode* dn,BasicBlock* gb)
                 calout<<"\tldr "<<*inst_mov->rd<<", "<<*inst_mov->rs<<endl;
             }
             else calout<<*inst<<endl;
+        }
+        else if(inst->getType() == armInstr::str && trance[inst]->getOpType()==Instruction::Call){
+            armStr* str_param = (armStr*) inst;
+            str_param->bias = gblock2spbias[gb]+10-4;//+1是将来要lr//FIXME:+9是还有保存现场//因为形参load是从sp+4开始,这个bias以前存的是他是第几个参数
+            calout<<*inst<<endl;
         }
         else{
             // calout<<"\t";
@@ -115,7 +78,7 @@ void transFunc(BasicBlock* node)
     calout<<"\t.fnstart\n";
 
     //push lr
-    calout<<"\tpush {lr}"<<endl;
+    calout<<"\tpush {lr, r4-r12}"<<endl;
     //修改sp
     if(gblock2spbias[node])calout<<"\tsub sp, sp, #"<<(gblock2spbias[node]+1)*4<<endl;
     //输出这个函数的指令

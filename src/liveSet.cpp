@@ -129,7 +129,7 @@ void assignDiv(Instruction* instr,BasicBlock *node)
     for(auto param : instr->getOp()){
         if(Vnum>3)break; //加前4个参数的mov
         armMov* mov_param = new armMov();
-        mov_param->rd = new varDecl(param, node, Vnum++);
+        mov_param->rd = new regDecl(param, node, Vnum++);
         mov_param->isaddress = true;
         newBlock[node].push_back(mov_param);
         trance[mov_param]=instr;
@@ -408,24 +408,37 @@ void assignjmp(Instruction* instr, BasicBlock* node)
 void assignCall(Instruction* instr, BasicBlock* node)
 {
     IntegerValue* rd=(IntegerValue*)instr->getResult();
-    armPush* push_ins = new armPush();//先new一条push
     varDecl *rdd = nullptr;
-    if(rd!=nullptr){
-        //如果有返回值,就需要把返回值放入rd
-        rdd = new varDecl(rd,node,Rcnt++);
-        push_ins->exp = rdd;
+
+    //后5个参数需要放入内存
+    for(int i=5; i<instr->getOp().size();i++){
+        if(instr->getOp()[i]->getType() == 1){
+            //如果这个要存的数是一个立即数的话, 还需要加一条mov
+            IntegerValue* imm_val = (IntegerValue*)instr->getOp()[i];
+            armMov* imm_mov = new armMov();
+            varDecl* imm_decl = new varDecl(imm_val, node, Rcnt++);
+
+            imm_mov->rd = imm_decl;
+
+            newBlock[node].push_back(imm_mov);
+            trance[imm_mov]=instr;
+        }
+
+        armStr* str_param = new armStr();
+        memoryDecl* addr = new memoryDecl(instr->getOp()[i],node,i);//暂时不能填偏移, 这里的偏移指的是第几个参数
+        str_param->rs = addr;
+
+        newBlock[node].push_back(str_param);
+        trance[str_param]=instr;
     }
-    trance[push_ins]=instr;
-    newBlock[node].push_back(push_ins);
-   
+
     //把参数移入死寄存器r0-r3;
-    FunctionValue* func = (FunctionValue*)instr->getOp()[0];
     int Vnum = 0;
     for(auto param : instr->getOp()){
         if(param==instr->getOp().front())continue;
         if(Vnum>3)break; //加前4个参数的mov
         armMov* mov_param = new armMov();
-        mov_param->rd = new varDecl(param, node, Vnum++);
+        mov_param->rd = new regDecl(param, node, Vnum++);
         mov_param->isaddress = true;
 
         newBlock[node].push_back(mov_param);
@@ -433,7 +446,6 @@ void assignCall(Instruction* instr, BasicBlock* node)
     }
 
     armCall* ins = new armCall();
-    ins->push_ins = push_ins;
 
     if(rd!=nullptr){//返回值.
         //如果有返回值,就需要把返回值放入rd
@@ -644,7 +656,7 @@ Decl* getDecl(Value* val, BasicBlock* node)
     if(val->getType()==1){
         IntegerValue* intval = (IntegerValue*)val;
         if(intval->isConst&&Assign_rec[make_pair(intval,node)].size()==0){
-            //常数的话,直接新建一个返回
+            //常数的话且没有寄存器的话, 直接新建一个返回
             constDecl* ret=new constDecl(intval,node,intval->RealValue);
             return ret;
         }
@@ -843,6 +855,13 @@ void usedStr(armStr* ins,BasicBlock* node)
     //str 应该没有需要链接的目的操作数
     //源操作数是rd！！！！(至少global是这样)
     Instruction* raw = trance[ins];
+
+    if(raw->getOpType() == Instruction:: Call){
+        //这里专门处理call的5+参数
+        ins->rd = getDecl(raw->getOp()[ins->bias],node);
+        return ;
+    }
+
     if(raw->getOp().size()>1){
         //这说明是一个数组的str
         IntegerValue* r2=(IntegerValue*)raw->getOp()[2]; //这个是要存的数
@@ -868,10 +887,13 @@ void usedStr(armStr* ins,BasicBlock* node)
 }
 void usedCall(armCall* ins, BasicBlock* node)
 {
-    //call的参数是内定的!
-    for(auto rs : trance[ins]->getOp()){
-        if(rs == trance[ins]->getOp().front())continue;
-        ins->rs.push_back(getDecl(rs,node));
+    for(auto i=1;i<=min(4,(int)trance[ins]->getOp().size());i++){
+        regDecl* param = new regDecl(nullptr, node, i-1);
+        ins->rs.push_back(param);
+    }
+    for(int i=5;i<trance[ins]->getOp().size();i++)
+    {
+        ins->rs.push_back(getDecl(trance[ins]->getOp()[i],node));
     }
     if(ins->rd != nullptr)addAssign(ins->rd->rawValue,node,ins->rd);
 }
