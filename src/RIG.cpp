@@ -11,7 +11,7 @@ map<armInstr*, set<int>> outs; // 公用复用的out集合
 // visited block 每个顶层模块内的block
 map<BasicBlock*, bool> blockVisited;
 // created RIGnode 该decl(现在是这个寄存器编号int)是否已经创建了对应的RIGnode
-map<int, bool> rigNodeCreated;
+map<int, RIGnode*> rigNodeCreated;
 // vregNumber 到 使用这个编号的decl 的集合，用于找到这些decl，来自LiveSet.cpp
 // 这是个临时用于转存的map
 map<int, vector<Decl*>> temp_Vreg2Decls;
@@ -279,21 +279,14 @@ void showSets(DomTreenode* dn)
 RIGnode* ForCnode(int d, BasicBlock* gb)
 {// find or create a new RIGnode
     RIGnode* ret_n;
-    if(rigNodeCreated[d])
+    if(rigNodeCreated[d] != 0)
     {//建立过，在已有的graph中找出来
-        for(auto existNode: RIG[gb])
-        {
-            if(existNode->dc == d)
-            {
-                ret_n = existNode;
-                break;
-            }
-        }
+        ret_n = rigNodeCreated[d];
     }
     else
     {//没建立过，new出来
         ret_n = new RIGnode(d);
-        rigNodeCreated[d] = true;
+        rigNodeCreated[d] = ret_n;
         RIG[gb].push_back(ret_n);
     }
 
@@ -393,7 +386,7 @@ bool paintColor(BasicBlock* gb){
     //1.2 add s_point，非联通的图可以重新使用参数个数/4
 
     if(s_point.size() == 0)return true;// 表示这个函数只用了参数分到的寄存器，没用其他的寄存器，因此直接返回true
-    colors[s_point[0]] = 5;//由于不能然1,2,3,4,所以从5开始
+    colors[s_point[0]] = 1;//由于不能然1,2,3,4,所以从5开始(现在可以了，重新从1开始)
     que.push(s_point[0]);
     //2. BFS coloring
     while(!que.empty()){
@@ -474,6 +467,7 @@ void specialInsDelete(DomTreenode* sd)
             armMov* mov_ai = (armMov*)(*it);
             if(VregNumofDecl(mov_ai->rd) == VregNumofDecl(mov_ai->rs) && mov_ai->rd->gettype() == mov_ai->rs->gettype())
             {// 两个寄存器的number一样的话就删除 && 类型不一样的话（0731出现 mov r0 [r0]也给删了的闹剧）
+                // TODO:新来了个reg_decl, 它不会被删掉，后面要删掉
                 newBlock[s].erase(it--);
             }
         }
