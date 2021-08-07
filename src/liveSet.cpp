@@ -768,7 +768,12 @@ void usedRsb(armRsb* ins,BasicBlock* node)
 int usedMov(armMov* ins, BasicBlock* node)
 {
     Instruction* raw = trance[ins];
-    if(raw->getOpType() == Instruction::Store ||
+    if(raw==nullptr){
+        //这是为了mov形参加载的
+        addAssign(ins->rd->rawValue,node,ins->rd);
+        return 0;
+    }
+    else if(raw->getOpType() == Instruction::Store ||
         (raw->getOpType() == Instruction::Call&&ins->rs!=nullptr)){//这个条件筛选出来的是call中的str出现立即数的情况
         //为了处理str立即数特别加上的一条mov指令
         addAssign(ins->rd->rawValue,node,ins->rd); // 原来的value，node，新增的dc(rd)
@@ -1018,6 +1023,8 @@ void showDecl(DomTreenode* sd)
     }
 }
 
+
+
 void liveSets()
 {
     //0. 添加label
@@ -1062,17 +1069,27 @@ void liveSets()
         }
     }
 
+    // 2.1 为每一个函数开始添加mov指令
+    for(auto rt:DomRoot){
+        FunctionValue* func=rt->func;
+        BasicBlock* b1=rt->block;
+        for(auto i=0;i<min(4,(int)func->FuncParams.size());i++){
+            varDecl* xc = new varDecl(func->FuncParams[i],b1,Rcnt++); //为形参创建临时变量
+            armMov* xc_mov = new armMov();//需要将死寄存器的值mov到刚刚创建好的临时变量.
+            xc_mov->rd = xc; 
+            xc_mov->rs = new regDecl(func->FuncParams[i],b1,i);
+            xc_mov->isaddress = 1;
+
+            //将语句加入块
+            newBlock[b1].insert(newBlock[b1].begin(), xc_mov);
+            trance[xc_mov]=nullptr;
+        }  
+    }
+    //计算reach in/out
     int MAXiter=reachset_times;
     while(MAXiter--){
         for(auto rt:DomRoot){
             visReach.clear();
-            //刚进入函数的时候已有的形参需要首先加入进 reachin
-            BasicBlock* b1=rt->block;
-            FunctionValue* func=rt->func;
-            for(auto i=0;i<min(4,(int)func->FuncParams.size());i++){
-                varDecl* xc = new varDecl(func->FuncParams[i],b1,Rcnt++);
-                reachin[b1].insert(xc);
-            }  
             calReach(rt->block);
         }
     }
