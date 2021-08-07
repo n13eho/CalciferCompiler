@@ -383,20 +383,6 @@ void init_color(BasicBlock* gb)
     // 别的需要用到寄存器的，从参数个数开始染色
     colors.clear();
 
-    // 首先就把r0-r3的参数编号内定了
-    usedK = 0;
-    for(auto i=0 ; i<min(4,(int)gb->FuncV->FuncParams.size()) ; i++)
-    {
-        auto param_value = gb->FuncV->FuncParams[i];
-        Decl* param_dc = Assign_rec[make_pair(param_value,gb->domBlock[0])][reachset_times-1];
-        // 789 预警
-        if(VregNumofDecl(param_dc) == 789)dbg("789 出现！！！！！");
-        RIGnode* param_rignode = ForCnode(make_pair(VregNumofDecl(param_dc), param_dc->gettype()), gb); //RIGnode建立好了
-
-        // 直接填死颜色
-        colors[param_rignode] = ++usedK;
-    }
-
     usedK = 5;
 
 }
