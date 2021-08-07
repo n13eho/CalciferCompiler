@@ -194,15 +194,15 @@ void ArmI2InOut(armInstr* ai)
 //            }
 //        }
 
-        Decl* r;
-        for(int i=4; i<call_ai->rs.size(); i++){
-            r = call_ai->rs[i];
-            if(notConst(r))
-            {
-                ins[ai].insert(make_pair(VregNumofDecl(r), r->gettype()));
-                r->gen_used.push_back(ai);
-            }
-        }
+        // Decl* r;
+        // for(int i=4; i<call_ai->rs.size(); i++){
+        //     r = call_ai->rs[i];
+        //     if(notConst(r))
+        //     {
+        //         ins[ai].insert(make_pair(VregNumofDecl(r), r->gettype()));
+        //         r->gen_used.push_back(ai);
+        //     }
+        // }
 
     }
     else if(ai->getType() == armInstr::armInsType::ret)
@@ -596,7 +596,9 @@ void all2mem(BasicBlock* gb)
             //是否要加ldr
             vector<Decl*> rs = arm_ins->getGen();
             for(auto dc : rs){
-                if(arm_ins->getType() != armInstr:: call){
+                if(arm_ins->getType() != armInstr:: call 
+                    && dc->gettype() != Decl::const_decl 
+                    && dc->gettype() != Decl::memory_decl){
                     armLdr* ldr_ins= new armLdr();
                     ldr_ins->rd = dc;
                     ldr_ins->rs = forc_memShift(dc, gb);
@@ -768,7 +770,7 @@ bool buildRIG(BasicBlock* gb)
      }
 
     // 5. filling colors!
-    trytimes = 3;
+    trytimes = 1;
     while(trytimes--){
         init_color(gb);
         if(paintColor(gb)){

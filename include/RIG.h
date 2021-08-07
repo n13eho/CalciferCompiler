@@ -5,7 +5,7 @@
 #include"liveSet.h"
 #include"dbg.h"
 
-#define K 5
+#define K 13
 
 struct RIGnode
 {
