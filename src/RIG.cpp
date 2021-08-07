@@ -55,13 +55,18 @@ void ArmI2InOut(armInstr* ai)
         // out[s] - kill[s]
         ins[ai].erase(make_pair(VregNumofDecl(add_ai->rd), add_ai->rd->gettype()));
         // gen[s] U (out[s] - kill[s])
-        ins[ai].insert(make_pair(VregNumofDecl(add_ai->r0), add_ai->r0->gettype()));
+        // ban掉13寄存器
+        if(VregNumofDecl(add_ai->r0) != 13){
+            // 不是13号再往gen集合里面加
+            ins[ai].insert(make_pair(VregNumofDecl(add_ai->r0), add_ai->r0->gettype()));
+        }
         add_ai->r0->gen_used.push_back(ai); // 图着色溢出的1.2
         // 当它只有是var register的时候才insert，否则就不insert
         if(notConst(add_ai->r1))
         {
             ins[ai].insert(make_pair(VregNumofDecl(add_ai->r1), add_ai->r1->gettype()));
             add_ai->r1->gen_used.push_back(ai);
+
         }
     }
     else if(ai->getType() == armInstr::armInsType::moveq)
