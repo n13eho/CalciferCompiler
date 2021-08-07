@@ -11,7 +11,7 @@ map<armInstr*, set<pair<int, int> >> outs; // 公用复用的out集合
 // visited block 每个顶层模块内的block
 map<BasicBlock*, bool> blockVisited;
 // created RIGnode 该decl(现在是这个寄存器编号int)是否已经创建了对应的RIGnode
-map<int, RIGnode*> rigNodeCreated;
+map<pair<int, int>, RIGnode*> rigNodeCreated;
 // vregNumber 到 使用这个编号的decl 的集合，用于找到这些decl，来自LiveSet.cpp
 // 这是个临时用于转存的map
 map<int, vector<Decl*>> temp_Vreg2Decls;
@@ -286,10 +286,10 @@ void showSets(DomTreenode* dn)
         cout << *arm_ins;
         cout << "\tins: ";
         for(auto in_decl: ins[arm_ins])
-            cout << "r" << in_decl.first << " ";
+            cout << (in_decl.second == 6 ? "r" : "") << in_decl.first << " ";
         cout << "\touts: ";
         for(auto out_decl: outs[arm_ins])
-            cout << "r"  << out_decl.first << " ";
+            cout << (out_decl.second == 6 ? "r" : "") << out_decl.first << " ";
         cout << "\n";
     }
     // 递归打印剩下的
@@ -304,28 +304,28 @@ RIGnode* ForCnode(pair<int, int> d_p, BasicBlock* gb)
     RIGnode* ret_n;
     if(d_p.second == Decl::reg_decl)
     {// 就要返回一个reg_decl类型的node
-        if(rigNodeCreated[d_p.first] != nullptr
-            && rigNodeCreated[d_p.first]->dc_type == Decl::reg_decl
-            && d_p.first == rigNodeCreated[d_p.first]->dc){
-            ret_n = rigNodeCreated[d_p.first];
+        if(rigNodeCreated[d_p] != nullptr
+            && rigNodeCreated[d_p]->dc_type == Decl::reg_decl
+            && d_p.first == rigNodeCreated[d_p]->dc){
+            ret_n = rigNodeCreated[d_p];
 //            dbg(d_p.first);
         }
         else{
             ret_n = new RIGnode(d_p.first, d_p.second);
-            rigNodeCreated[d_p.first] = ret_n;
+            rigNodeCreated[d_p] = ret_n;
             RIG[gb].push_back(ret_n);
         }
     }
     else
     {// 返回一个不是reg_decl类型的node
-        if(rigNodeCreated[d_p.first] != nullptr
-            && rigNodeCreated[d_p.first]->dc_type != Decl::reg_decl
-            && d_p.first == rigNodeCreated[d_p.first]->dc){
-            ret_n = rigNodeCreated[d_p.first];
+        if(rigNodeCreated[d_p] != nullptr
+            && rigNodeCreated[d_p]->dc_type != Decl::reg_decl
+            && d_p.first == rigNodeCreated[d_p]->dc){
+            ret_n = rigNodeCreated[d_p];
         }
         else{
             ret_n = new RIGnode(d_p.first, d_p.second);
-            rigNodeCreated[d_p.first] = ret_n;
+            rigNodeCreated[d_p] = ret_n;
             RIG[gb].push_back(ret_n);
         }
     }
@@ -401,7 +401,7 @@ bool check_ok(RIGnode* n, int c)
 {
     for(auto con: n->connectTo){
         if(con->dc_type == Decl::reg_decl){ // 如果连接的node是reg_decl的话
-//            dbg(n->dc, c, con->dc);
+            dbg(n->dc, c, con->dc); // 当前node的number，向然的颜色，相连reg 的颜色
             if(c == con->dc + 1)return false;
         }
         else if(!colors[con]){
@@ -744,10 +744,10 @@ bool buildRIG(BasicBlock* gb)
             fillInOut(gb->domBlock[0]);
         }
 
-//         2.5 for debug 先临时打印一下这些个in 和 out
-        // cout << "\n\n第" << 10-times_deadCode << "次 " << "**** IN&OUT set of every armIns ****\n";
-        // for(auto dr: DomRoot)
-        //     showSets(dr);
+//         2.5 for debug 先linshi临时打印一下这些个in 和 out
+//         cout << "\n\n**** IN&OUT set ****\n";
+//         for(auto dr: DomRoot)
+//             showSets(dr);
 
         // 3 利用填好的in、out集合，建立冲突图，也是一个递归的过程
         connectDecl(block2dom[gb->domBlock[0]], gb);
@@ -766,7 +766,7 @@ bool buildRIG(BasicBlock* gb)
          cout << ((dnode->dc_type == Decl::reg_decl) ? "r" : "") << dnode->dc << "\t";
          for(auto con_node: dnode->connectTo)
          {
-             cout << ((dnode->dc_type == Decl::reg_decl) ? "r" : "") << con_node->dc << " ";
+             cout << ((con_node->dc_type == Decl::reg_decl) ? "r" : "") << con_node->dc << " ";
          }
          cout << "\n";
      }
@@ -783,6 +783,7 @@ bool buildRIG(BasicBlock* gb)
                cout << ((node->dc_type == Decl::reg_decl) ? "r" : "")  << node->dc << " " << colors[node]-1 << endl;
            }
 
+
             //如果成功了就break; 否则使用颜色过多就再试一次（最多5次）
             if(usedK <= K)break;
         }
@@ -796,7 +797,15 @@ bool buildRIG(BasicBlock* gb)
 
     // 此条不专门针对 mov r0, r0; TODO：之后可以在里面加上针对其他ir指令的优化
     specialInsDelete(block2dom[gb->domBlock[0]]);
-//    dbg("specialIns Deleted");
+
+
+#if 1
+    // final show instruction agian, this time with limited k registers
+    cout << "****Arm Instruction with limited Registers ****\n";
+    for(auto dr: DomRoot)
+        showDecl(dr);
+#endif
+
 
     if(usedK>K){ // 染色失败
         cout<<"failed\n";
@@ -844,8 +853,6 @@ void RigsterAlloc()
             cout << "****add mem ****\n";
             for(auto dr: DomRoot)
                 showDecl(dr);
-            spill_failed = buildRIG(gb);
-            spill_failed = buildRIG(gb);
             spill_failed = buildRIG(gb);
         // }
     }
