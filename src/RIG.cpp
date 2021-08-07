@@ -11,7 +11,7 @@ map<armInstr*, set<pair<int, int> >> outs; // 公用复用的out集合
 // visited block 每个顶层模块内的block
 map<BasicBlock*, bool> blockVisited;
 // created RIGnode 该decl(现在是这个寄存器编号int)是否已经创建了对应的RIGnode
-map<pair<int, int>, RIGnode*> rigNodeCreated;
+map<pair<int, bool>, RIGnode*> rigNodeCreated;
 // vregNumber 到 使用这个编号的decl 的集合，用于找到这些decl，来自LiveSet.cpp
 // 这是个临时用于转存的map
 map<int, vector<Decl*>> temp_Vreg2Decls;
@@ -305,28 +305,28 @@ RIGnode* ForCnode(pair<int, int> d_p, BasicBlock* gb)
     RIGnode* ret_n;
     if(d_p.second == Decl::reg_decl)
     {// 就要返回一个reg_decl类型的node
-        if(rigNodeCreated[d_p] != nullptr
-            && rigNodeCreated[d_p]->dc_type == Decl::reg_decl
-            && d_p.first == rigNodeCreated[d_p]->dc){
-            ret_n = rigNodeCreated[d_p];
+        if(rigNodeCreated[make_pair(d_p.first, true)] != nullptr
+        && rigNodeCreated[make_pair(d_p.first, true)]->dc_type == Decl::reg_decl
+        && d_p.first == rigNodeCreated[make_pair(d_p.first, true)]->dc){
+            ret_n = rigNodeCreated[make_pair(d_p.first, true)];
 //            dbg(d_p.first);
         }
         else{
             ret_n = new RIGnode(d_p.first, d_p.second);
-            rigNodeCreated[d_p] = ret_n;
+            rigNodeCreated[make_pair(d_p.first, true)] = ret_n;
             RIG[gb].push_back(ret_n);
         }
     }
     else
     {// 返回一个不是reg_decl类型的node
-        if(rigNodeCreated[d_p] != nullptr
-            && rigNodeCreated[d_p]->dc_type != Decl::reg_decl
-            && d_p.first == rigNodeCreated[d_p]->dc){
-            ret_n = rigNodeCreated[d_p];
+        if(rigNodeCreated[make_pair(d_p.first, false)] != nullptr
+        && rigNodeCreated[make_pair(d_p.first, false)]->dc_type != Decl::reg_decl
+        && d_p.first == rigNodeCreated[make_pair(d_p.first, false)]->dc){
+            ret_n = rigNodeCreated[make_pair(d_p.first, false)];
         }
         else{
             ret_n = new RIGnode(d_p.first, d_p.second);
-            rigNodeCreated[d_p] = ret_n;
+            rigNodeCreated[make_pair(d_p.first, false)] = ret_n;
             RIG[gb].push_back(ret_n);
         }
     }
