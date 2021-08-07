@@ -57,7 +57,7 @@ void printArm(DomTreenode* dn,BasicBlock* gb)
             }
             else calout<<*inst<<endl;
         }
-        else if(inst->getType() == armInstr::str && trance[instr]!=nullptr && trance[inst]->getOpType()==Instruction::Call){
+        else if(inst->getType() == armInstr::str && trance[inst]!=nullptr && trance[inst]->getOpType()==Instruction::Call){
             //加上不为空的判断是为了跳过spill产生的str指令
             memoryDecl* str_param = (memoryDecl*) ((armStr*)inst)->rs;
             BasicBlock* func_node = func2block[(trance[inst])->getOp()[0]];
