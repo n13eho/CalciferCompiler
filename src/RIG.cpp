@@ -28,6 +28,7 @@ bool notConst(Decl* d)
 
 int VregNumofDecl(Decl* d)
 {// 主要是返回这个decl对应的寄存器变化vreg；有vreg的只有两中decl，分别是var和address
+    if(d == nullptr) return 789;
     if(d->gettype() == Decl::var_decl)
     {
         varDecl* var_d = (varDecl*)d;

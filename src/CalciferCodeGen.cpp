@@ -46,8 +46,9 @@ void printArm(DomTreenode* dn,BasicBlock* gb)
             if(gblock2spbias[gb]){
                 if(!isValid8bit(((gblock2spbias[gb]+1)*4))){
                     int lucky = 7;
-                    calout << "\tmovw r7, #" << (gblock2spbias[gb]+1)*4 << endl;
-                    calout << "\tadd sp, sp, r7" << endl;
+                    if(VregNumofDecl((((armRet*)inst)->rs))==7)lucky++;
+                    calout << "\tmovw r" << lucky << ", #" << (gblock2spbias[gb]+1)*4 << endl;
+                    calout << "\tadd sp, sp, r" << lucky << endl;
                 }
                 else{
                     calout<<"\tadd sp, sp, #"<<(gblock2spbias[gb]+1)*4<<endl;
