@@ -40,9 +40,20 @@ void printArm(DomTreenode* dn,BasicBlock* gb)
             //以下是return 语句干的事情
             //恢复栈帧
             calout<<"@ this is a ret"<<endl;
-            if(gblock2spbias[gb])calout<<"\tadd sp, sp, #"<<(gblock2spbias[gb]+1)*4<<endl;
             //pop lr //FIXME: 现在加到了ret的输出中
 //            calout<<"\tpop {r4-r12, lr}"<<endl;
+
+            if(gblock2spbias[gb]){
+                if(!isValid8bit(((gblock2spbias[gb]+1)*4))){
+                    int lucky = 7;
+                    calout << "\tmovw r7, #" << (gblock2spbias[gb]+1)*4 << endl;
+                    calout << "\tadd sp, sp, r7" << endl;
+                }
+                else{
+                    calout<<"\tadd sp, sp, #"<<(gblock2spbias[gb]+1)*4<<endl;
+                }
+                
+            }
             //放返回值
             calout<<*inst<<endl;  
             calout<<"@ end of return "<<endl;
@@ -84,7 +95,17 @@ void transFunc(BasicBlock* node)
     //push lr
     calout<<"\tpush {r4-r12, lr}"<<endl;
     //修改sp
-    if(gblock2spbias[node])calout<<"\tsub sp, sp, #"<<(gblock2spbias[node]+1)*4<<endl;
+    
+    if(gblock2spbias[node]){
+        // 这里的sub常量也需要像mov那样考虑,如果不是合法的话,就是用movw; 但是还有一种它大得过分的情况,这里先不考虑 // FIXME
+        if(!isValid8bit((gblock2spbias[node]+1)*4)){
+            calout << "\tmovw r7, #" << (gblock2spbias[node]+1)*4 << endl;
+            calout << "\tsub sp, sp, r7" << endl;
+        }
+        else{
+            calout<<"\tsub sp, sp, #"<<(gblock2spbias[node]+1)*4<<endl;
+        }
+    }
     //输出这个函数的指令
     printArm(block2dom[node->domBlock[0]],node);
 
