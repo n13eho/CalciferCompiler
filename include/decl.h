@@ -122,7 +122,7 @@ public:
     regDecl(Value *_rawValue, BasicBlock *_rawBlock,int _Rreg):Decl(_rawValue,_rawBlock),Rreg(_Rreg){
     };
     virtual ostream& output(ostream&out)const{
-        out<<"t"<<Rreg;
+        out<<"r"<<Rreg;
         return out;
     }
 
