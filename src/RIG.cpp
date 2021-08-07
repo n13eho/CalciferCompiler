@@ -706,16 +706,16 @@ bool buildRIG(BasicBlock* gb)
     if(RIG[gb].size() == 0)return true;
 
     // for debug 打印整张图看看
-     cout << "**** the RIG of " << gb->BlockName <<  "****\n";
-     for(auto dnode: RIG[gb])
-     {
-         cout << ((dnode->dc_type == Decl::reg_decl) ? "r" : "") << dnode->dc << "\t";
-         for(auto con_node: dnode->connectTo)
-         {
-             cout << ((dnode->dc_type == Decl::reg_decl) ? "r" : "") << con_node->dc << " ";
-         }
-         cout << "\n";
-     }
+    //  cout << "**** the RIG of " << gb->BlockName <<  "****\n";
+    //  for(auto dnode: RIG[gb])
+    //  {
+    //      cout << ((dnode->dc_type == Decl::reg_decl) ? "r" : "") << dnode->dc << "\t";
+    //      for(auto con_node: dnode->connectTo)
+    //      {
+    //          cout << ((dnode->dc_type == Decl::reg_decl) ? "r" : "") << con_node->dc << " ";
+    //      }
+    //      cout << "\n";
+    //  }
 
     // 5. filling colors!
     int success=0;

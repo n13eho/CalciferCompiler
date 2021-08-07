@@ -621,6 +621,9 @@ void calReach(BasicBlock* s)
             varDecl* dead = (varDecl*)dc;
             if(dead->Vreg<14) continue;
         }
+        // 如果是传参使用的0123也要continue
+        if(dc->gettype()==Decl::reg_decl)continue;
+        
         Value* val=dc->rawValue;//要修改的val
         for(auto dead=reachout[s].begin();dead!=reachout[s].end(); ){
             Decl* deadDc=*dead;//当前在集合中的decl
