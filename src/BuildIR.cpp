@@ -1090,7 +1090,7 @@ void LOrExpNode(GrammaNode* node,LinearIR *IR)
 {
     CondLogi.push_back(Instruction::LogicOr);
     CondCnt.push_back(node->son.size());
-    cout<<"LOrExpNode cond cnt:"<<node->son.size()<<endl;
+//    cout<<"LOrExpNode cond cnt:"<<node->son.size()<<endl;
     if(node->son.size() == 1)
     {
 
@@ -1168,7 +1168,7 @@ Value* LAndExpNode(GrammaNode* node,LinearIR *IR)
     CondLogi.push_back(Instruction::LogicAnd);
     Value* ret = new Value("tr",node->lineno,node->var_scope);
     CondCnt.push_back(node->son.size());
-    cout<<"LAndExpNode cond cnt:"<<node->son.size()<<endl;
+//    cout<<"LAndExpNode cond cnt:"<<node->son.size()<<endl;
     if(node->son.size() == 1)
     {
         ret = EqExpNode(node->son[0],IR);
@@ -2258,7 +2258,7 @@ Value* PrimaryExpNode(GrammaNode* node,LinearIR *IR)
         {
             bbNow = GetPresentBlock(FuncN,BasicBlock::Basic);
         }
-        dbg(((IntegerValue*)index)->isConst);
+//        dbg(((IntegerValue*)index)->isConst);
         Instruction* ins_load = new Instruction(IR->getInstCnt(),Instruction::Load,2);
         ins_load->addOperand(lval);
         ins_load->addOperand(index);

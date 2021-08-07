@@ -457,11 +457,8 @@ void deleteDC(DomTreenode* dn, BasicBlock* gb)
             if(!findDc)
             {// 没找到这个dc就删除这条指令
                 // 如果是改变全局变量，这里就不能删去这个call
-                // 并且要同时修改对应push的exp指针
                 if((*it)->getType()==armInstr::call){ // 害怕这个call函数修改了全局变量
                     armCall* call_ins = (armCall*)(*it); // 先suxing
-//                    free(call_ins->rd); // free掉原来的decl实体(倒也不必，后边还有索引
-                    call_ins->push_ins->exp = nullptr;  // 处理call_ins对应的push ins的指针，指向空
                     call_ins->rd = nullptr; // 再解决这条call_ins的rd的指针
                 }
                 else{
@@ -543,6 +540,9 @@ void addMemoryOperation(BasicBlock* gb)
             chosenOne = dc_vreg;
         }
     }
+
+    dbg(chosenOne);
+
     memoryDecl* memShift = new memoryDecl(nullptr,gb,gblock2spbias[gb]++);
     for(auto b : gb->domBlock){
         for(auto it = newBlock[b].begin();it!=newBlock[b].end();it++){
@@ -565,7 +565,7 @@ void addMemoryOperation(BasicBlock* gb)
                 str_ins->rd = arm_ins->rd;
                 str_ins->rs = memShift;
                 it=newBlock[b].insert(it+1,str_ins);
-               dbg(**it);
+//               dbg(**it);
 
             }
         }
@@ -694,7 +694,7 @@ bool buildRIG(BasicBlock* gb)
 
     // 此条不专门针对 mov r0, r0; TODO：之后可以在里面加上针对其他ir指令的优化
     specialInsDelete(block2dom[gb->domBlock[0]]);
-    dbg("specialIns Deleted");
+//    dbg("specialIns Deleted");
 
     if(usedK>K){ // 染色失败
         return false;
@@ -719,11 +719,11 @@ void RigsterAlloc()
             // 如果图着色失败了，add memory operation.
             if(whenToadd++ > WHENTOMO)
                 addMemoryOperation(gb);
-            // 打印cost
-            for(auto p: spilling_cost)
-            {
-                cout << p.first <<"\t" << p.second <<endl;
-            }
+//            // 打印cost
+//            for(auto p: spilling_cost)
+//            {
+//                cout << p.first <<"\t" << p.second <<endl;
+//            }
 
             // for(auto dr: DomRoot)
             //     showDecl(dr);
