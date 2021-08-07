@@ -41,8 +41,8 @@ void printArm(DomTreenode* dn,BasicBlock* gb)
             //恢复栈帧
             calout<<"@ this is a ret"<<endl;
             if(gblock2spbias[gb])calout<<"\tadd sp, sp, #"<<(gblock2spbias[gb]+1)*4<<endl;
-            //pop lr
-            calout<<"\tpop {r4-r12, lr}"<<endl;
+            //pop lr //FIXME: 现在加到了ret的输出中
+//            calout<<"\tpop {r4-r12, lr}"<<endl;
             //放返回值
             calout<<*inst<<endl;  
             calout<<"@ end of return "<<endl;

@@ -338,6 +338,8 @@ class armRet:public armInstr//ok
         if(rs!=nullptr)out<<"\tmov r0, "<<*rs<<endl;
         //TODO: 这里要求每个函数都需要有个一return指令..
         //TODO：或许还有一些堆栈操作..
+        //恢复现场
+        out<<"\tpop {r4-r12, lr}"<<endl;
         out<<"\tbx lr";
         return out;
     }

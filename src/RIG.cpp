@@ -601,7 +601,7 @@ void all2mem(BasicBlock* gb)
                     && dc->gettype() != Decl::memory_decl
                     && dc->gettype() != Decl::global_decl){
                     
-                    if(VregNumofDecl(dc)<K-2)continue;//留两个吧,(凭直觉)
+                    if(VregNumofDecl(dc)<K-3)continue;//留两个吧,(凭直觉)
                     
                     armLdr* ldr_ins= new armLdr();
                     ldr_ins->rd = dc;
@@ -616,7 +616,7 @@ void all2mem(BasicBlock* gb)
                 && arm_ins->getType() != armInstr::str 
                 && arm_ins->rd->gettype() != Decl::reg_decl){
                 
-                if(VregNumofDecl(arm_ins->rd)<K-2)continue;//留两个吧,(凭直觉)
+                if(VregNumofDecl(arm_ins->rd)<K-3)continue;//留两个吧,(凭直觉)
 
                 armStr* str_ins= new armStr();
                 str_ins->rd = arm_ins->rd;
