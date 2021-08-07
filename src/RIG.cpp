@@ -401,7 +401,7 @@ bool check_ok(RIGnode* n, int c)
 {
     for(auto con: n->connectTo){
         if(con->dc_type == Decl::reg_decl){ // 如果连接的node是reg_decl的话
-            dbg(n->dc, c, con->dc); // 当前node的number，向然的颜色，相连reg 的颜色
+//            dbg(n->dc, c, con->dc); // 当前node的number，向然的颜色，相连reg 的颜色
             if(c == con->dc + 1)return false;
         }
         else if(!colors[con]){
@@ -802,7 +802,7 @@ bool buildRIG(BasicBlock* gb)
     updateV2Ds();
 
     // 此条不专门针对 mov r0, r0; TODO：之后可以在里面加上针对其他ir指令的优化
-    // specialInsDelete(block2dom[gb->domBlock[0]]);
+     specialInsDelete(block2dom[gb->domBlock[0]]);
 
 
 #if 1
@@ -831,8 +831,8 @@ void RigsterAlloc()
         if(gb->domBlock.size() == 0)continue;
         int whenToadd = 0;
         int temp_debug = 0;
-        bool spill_failed = true;
-#if 0
+        bool spill_failed = false;
+#if 1
        while(!buildRIG(gb)){
            dbg("染色失败！");
            if(temp_debug++ > 4){
@@ -854,16 +854,15 @@ void RigsterAlloc()
 
         if(spill_failed){
 #endif
-            spill_failed = buildRIG(gb);
             dbg("全放内存");
             all2mem(gb);
             cout << "****add mem ****\n";
             for(auto dr: DomRoot)
                 showDecl(dr);
             spill_failed = buildRIG(gb);
-            spill_failed = buildRIG(gb);
-            spill_failed = buildRIG(gb);
-        // }
+//            spill_failed = buildRIG(gb);
+//            spill_failed = buildRIG(gb);
+         }
     }
 
 
