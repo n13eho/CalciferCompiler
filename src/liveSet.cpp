@@ -607,7 +607,7 @@ void calReach(BasicBlock* s)
         Decl* dc=ins->rd;//这个语句对应的decl
         if(dc == nullptr){
             //如果是跳转指令的话，需要更新跳转目的的块的reachin
-            if(ins->getType()>=armInstr::b||ins->getType()<=armInstr::beq)continue;
+            if(ins->getType()>armInstr::b||ins->getType()<armInstr::beq)continue;
             string dest = ins->getDest();
             BasicBlock* sucBlock = lb2block[dest];
             for(auto i : reachout[s]){
