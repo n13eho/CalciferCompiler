@@ -429,7 +429,7 @@ bool paintColor(BasicBlock* gb){
         else if(node->connectTo.size()==maxdu)s_point.push_back(node);
     }
     //1.1random
-    random_shuffle(s_point.begin(),s_point.end());
+    // random_shuffle(s_point.begin(),s_point.end());
     //1.2 add s_point，非联通的图可以重新使用参数个数/4
 
     if(s_point.size() == 0)return true;// 表示这个函数只用了参数分到的寄存器，没用其他的寄存器，因此直接返回true
@@ -455,7 +455,7 @@ bool paintColor(BasicBlock* gb){
         RIGnode* now = que.front();
         que.pop();
         // 随机的访问now所连的点
-        random_shuffle(now->connectTo.begin(),now->connectTo.end());
+        // random_shuffle(now->connectTo.begin(),now->connectTo.end());
         for(auto nx:now->connectTo){
             //对nx尝试每一种颜色
             if(colors[nx])continue;
@@ -669,7 +669,7 @@ void updateV2Ds()
 
 bool buildRIG(BasicBlock* gb)
 {
-    srand(time(0));
+    // srand(time(0));
 
     int times_deadCode = 10;
     while(times_deadCode--)
@@ -719,7 +719,7 @@ bool buildRIG(BasicBlock* gb)
 
     // 5. filling colors!
     int success=0;
-    trytimes = 5;
+    trytimes = 1;
     while(trytimes--){
         init_color(gb);
         if(paintColor(gb)){
