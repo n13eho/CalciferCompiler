@@ -458,8 +458,8 @@ bool paintColor(BasicBlock* gb){
         // random_shuffle(now->connectTo.begin(),now->connectTo.end());
         for(auto nx:now->connectTo){
             //对nx尝试每一种颜色
-            if(colors[nx])continue;
-            if(nx->dc==13)continue;
+            if(colors[nx] || nx->dc==13)continue;
+
             for(int i=1;i<=usedK;i++){ // 还是从1开始
                 if(i == 14)continue; // 不能染上13，13要跳过
                 if(check_ok(nx,i)){
@@ -596,7 +596,7 @@ void all2mem(BasicBlock* gb)
             //是否要加ldr
             vector<Decl*> rs = arm_ins->getGen();
             for(auto dc : rs){
-                if(1){
+                if(arm_ins->getType() != armInstr:: call){
                     armLdr* ldr_ins= new armLdr();
                     ldr_ins->rd = dc;
                     ldr_ins->rs = forc_memShift(dc, gb);
@@ -605,7 +605,10 @@ void all2mem(BasicBlock* gb)
             }
 
             //是否要加str: rd非空&&编号相等&&不能在一条str前加一个str指令
-            if(arm_ins->rd != nullptr && arm_ins->getType() != armInstr::str){
+            if(arm_ins->rd != nullptr 
+                && arm_ins->getType() != armInstr::str 
+                && arm_ins->rd->gettype() != Decl::reg_decl){
+
                 armStr* str_ins= new armStr();
                 str_ins->rd = arm_ins->rd;
                 str_ins->rs = forc_memShift(arm_ins->rd, gb);
@@ -753,28 +756,28 @@ bool buildRIG(BasicBlock* gb)
     if(RIG[gb].size() == 0)return true;
 
     // for debug 打印整张图看看
-    //  cout << "**** the RIG of " << gb->BlockName <<  "****\n";
-    //  for(auto dnode: RIG[gb])
-    //  {
-    //      cout << ((dnode->dc_type == Decl::reg_decl) ? "r" : "") << dnode->dc << "\t";
-    //      for(auto con_node: dnode->connectTo)
-    //      {
-    //          cout << ((dnode->dc_type == Decl::reg_decl) ? "r" : "") << con_node->dc << " ";
-    //      }
-    //      cout << "\n";
-    //  }
+     cout << "**** the RIG of " << gb->BlockName <<  "****\n";
+     for(auto dnode: RIG[gb])
+     {
+         cout << ((dnode->dc_type == Decl::reg_decl) ? "r" : "") << dnode->dc << "\t";
+         for(auto con_node: dnode->connectTo)
+         {
+             cout << ((dnode->dc_type == Decl::reg_decl) ? "r" : "") << con_node->dc << " ";
+         }
+         cout << "\n";
+     }
 
     // 5. filling colors!
-    int success=0;
-    trytimes = 1;
+    trytimes = 3;
     while(trytimes--){
         init_color(gb);
         if(paintColor(gb)){
 
-//            dbg("color，该全局块染色情况");
-//            for(auto node: RIG[gb]){
-//                cout << node->dc << " " << colors[node] << endl;
-//            }
+           dbg("color，该全局块染色情况");
+            cout << "**** 该全局块染色情况 ****" << endl;
+           for(auto node: RIG[gb]){
+               cout << ((node->dc_type == Decl::reg_decl) ? "r" : "")  << node->dc << " " << colors[node]-1 << endl;
+           }
 
             //如果成功了就break; 否则使用颜色过多就再试一次（最多5次）
             if(usedK <= K)break;
@@ -792,6 +795,7 @@ bool buildRIG(BasicBlock* gb)
 //    dbg("specialIns Deleted");
 
     if(usedK>K){ // 染色失败
+        cout<<"failed\n";
         return false;
     }
     dbg("染色成功！");
@@ -832,8 +836,12 @@ void RigsterAlloc()
         if(spill_failed){
             dbg("全放内存");
             all2mem(gb);
+            cout << "****add mem ****\n";
+            for(auto dr: DomRoot)
+                showDecl(dr);
             spill_failed = buildRIG(gb);
-
+            spill_failed = buildRIG(gb);
+            spill_failed = buildRIG(gb);
         }
     }
 
