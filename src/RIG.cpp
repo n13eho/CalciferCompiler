@@ -574,6 +574,49 @@ void spillCost(BasicBlock* gb){
     }
 }
 
+map<Decl*, memoryDecl*> spill_dc2memdc; // spilling失败之后，记录每一个dc对应放在哪里的memdecl
+
+memoryDecl* forc_memShift(Decl* d, BasicBlock* gb){
+    // 找得到就返回已经有了的, 没找到就new一个回去
+
+    memoryDecl* ret_m = spill_dc2memdc[d];
+    if(ret_m == nullptr){
+        ret_m = new memoryDecl(nullptr,gb,gblock2spbias[gb]++);
+        spill_dc2memdc[d] = ret_m; // 更新映射
+    }
+    return ret_m;
+}
+
+void all2mem(BasicBlock* gb)
+{
+    for(auto b : gb->domBlock){
+        for(auto it = newBlock[b].begin();it!=newBlock[b].end();it++){
+            auto arm_ins = *it;
+
+            //是否要加ldr
+            vector<Decl*> rs = arm_ins->getGen();
+            for(auto dc : rs){
+                if(1){
+                    armLdr* ldr_ins= new armLdr();
+                    ldr_ins->rd = dc;
+                    ldr_ins->rs = forc_memShift(dc, gb);
+                    it=newBlock[b].insert(it,ldr_ins)+1;
+                }
+            }
+
+            //是否要加str: rd非空&&编号相等&&不能在一条str前加一个str指令
+            if(arm_ins->rd != nullptr && arm_ins->getType() != armInstr::str){
+                armStr* str_ins= new armStr();
+                str_ins->rd = arm_ins->rd;
+                str_ins->rs = forc_memShift(arm_ins->rd, gb);
+                it=newBlock[b].insert(it+1,str_ins);
+            }
+
+        }
+    }
+
+}
+
 void addMemoryOperation(BasicBlock* gb)
 {
     // 计算cost
@@ -605,17 +648,21 @@ void addMemoryOperation(BasicBlock* gb)
                     ldr_ins->rd = dc;
                     ldr_ins->rs = memShift;
                     it=newBlock[b].insert(it,ldr_ins)+1;
+
+                    // 建立映射
+                    spill_dc2memdc[dc] = memShift;
                 }
             }
 
-            //是否要加str
+            //是否要加str: rd非空&&编号相等&&不能在一条str前加一个str指令
             if(arm_ins->rd != nullptr && VregNumofDecl(arm_ins->rd)==chosenOne && arm_ins->getType()!=armInstr::str){
                 armStr* str_ins= new armStr();
                 str_ins->rd = arm_ins->rd;
                 str_ins->rs = memShift;
                 it=newBlock[b].insert(it+1,str_ins);
-//               dbg(**it);
 
+                // 建立映射
+                spill_dc2memdc[arm_ins->rd] = memShift;
             }
         }
     }
@@ -760,13 +807,18 @@ void RigsterAlloc()
         // 跳过第一个全局变量，core dump，可能有隐患
         if(gb->domBlock.size() == 0)continue;
         int whenToadd = 0;
-//        int temp_debug = 0;
-        while(!buildRIG(gb)){
-//            if(temp_debug++ > 6)break;
-            dbg("染色失败！");
+        int temp_debug = 0;
+        bool spill_failed = true;
+
+//        while(!buildRIG(gb)){
+//            dbg("染色失败！");
+//            if(temp_debug++ > 4){
+//                spill_failed = true;
+//                break;
+//            }
             // 如果图着色失败了，add memory operation.
-            if(whenToadd++ > WHENTOMO)
-                addMemoryOperation(gb);
+//            if(whenToadd++ > WHENTOMO)
+//                addMemoryOperation(gb);
 //            // 打印cost
 //            for(auto p: spilling_cost)
 //            {
@@ -775,8 +827,17 @@ void RigsterAlloc()
 
             // for(auto dr: DomRoot)
             //     showDecl(dr);
+//        }
+
+        if(spill_failed){
+            dbg("全放内存");
+            all2mem(gb);
+            spill_failed = buildRIG(gb);
+
         }
     }
+
+
 
     // final show instruction agian, this time with limited k registers
     cout << "****Arm Instruction with limited Registers ****\n";
