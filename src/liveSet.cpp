@@ -109,7 +109,7 @@ void assignMul(Instruction* instr,BasicBlock *node)
     /**
      * op1一定是varDecl，op2可能是varDecl或者imm：只有当imm是不合法的时候再new一个新的mov指令
      * */
-    if(op2->isConst && !isValid8bit(op2->RealValue)){
+    if(op2->isConst){
         armMov* mul_mov = new armMov();
         mul_mov->rd = new varDecl(op2, node, Rcnt++);
         newBlock[node].push_back(mul_mov);
