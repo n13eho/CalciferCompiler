@@ -763,7 +763,6 @@ void usedRsb(armRsb* ins,BasicBlock* node)
         ins->r1 = getDecl(r1,node);
     }
     ins->r0 = getDecl(r0,node);
-    if(ins->rs==ins->rd) return -1;
     addAssign(ins->rd->rawValue,node,ins->rd);
 }
 int usedMov(armMov* ins, BasicBlock* node)
@@ -1095,6 +1094,6 @@ void liveSets()
     for(auto gb:IR1->Blocks){
         if(gb->domBlock.size()==0)continue;
         FunctionValue* func = gb->FuncV;
-        if(func->getParamCnt()>4)gblock2spbias[gb]=(func->getParamCnt()-4); //TODO：数组的话,  再说
+        if(func->getParamCnt()>4)gblock2spbias[gb]=(func->getParamCnt()-4)+1; //TODO：数组的话,  再说
     }
 }

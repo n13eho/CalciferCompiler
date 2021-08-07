@@ -598,7 +598,11 @@ void all2mem(BasicBlock* gb)
             for(auto dc : rs){
                 if(arm_ins->getType() != armInstr:: call 
                     && dc->gettype() != Decl::const_decl 
-                    && dc->gettype() != Decl::memory_decl){
+                    && dc->gettype() != Decl::memory_decl
+                    && dc->gettype() != Decl::global_decl){
+                    
+                    if(VregNumofDecl(dc)<K-2)continue;//留两个吧,(凭直觉)
+                    
                     armLdr* ldr_ins= new armLdr();
                     ldr_ins->rd = dc;
                     ldr_ins->rs = forc_memShift(dc, gb);
@@ -611,6 +615,8 @@ void all2mem(BasicBlock* gb)
             if(arm_ins->rd != nullptr 
                 && arm_ins->getType() != armInstr::str 
                 && arm_ins->rd->gettype() != Decl::reg_decl){
+                
+                if(VregNumofDecl(arm_ins->rd)<K-2)continue;//留两个吧,(凭直觉)
 
                 armStr* str_ins= new armStr();
                 str_ins->rd = arm_ins->rd;
@@ -796,7 +802,7 @@ bool buildRIG(BasicBlock* gb)
     updateV2Ds();
 
     // 此条不专门针对 mov r0, r0; TODO：之后可以在里面加上针对其他ir指令的优化
-    specialInsDelete(block2dom[gb->domBlock[0]]);
+    // specialInsDelete(block2dom[gb->domBlock[0]]);
 
 
 #if 1
@@ -848,11 +854,14 @@ void RigsterAlloc()
 
         if(spill_failed){
 #endif
+            spill_failed = buildRIG(gb);
             dbg("全放内存");
             all2mem(gb);
             cout << "****add mem ****\n";
             for(auto dr: DomRoot)
                 showDecl(dr);
+            spill_failed = buildRIG(gb);
+            spill_failed = buildRIG(gb);
             spill_failed = buildRIG(gb);
         // }
     }
