@@ -10,7 +10,6 @@ void printArm(DomTreenode* dn,BasicBlock* gb)
     
     for(auto inst:newBlock[b]){
 
-        dbg(*inst);
         if(inst->getType()==armInstr::call){
             armCall* call_ins = (armCall*)inst;
 
@@ -20,7 +19,7 @@ void printArm(DomTreenode* dn,BasicBlock* gb)
                 calout << "\tbl _sysy_starttime\n";
             }
             else if(call_ins->funcname == "stoptime"){
-                calout << "\tbl _sysy_stoptime\n";
+                calout << "\tbl _sysy_stopti    me\n";
             }
             else{
                 calout<<"\tbl "<<call_ins->funcname<<endl;
@@ -43,7 +42,7 @@ void printArm(DomTreenode* dn,BasicBlock* gb)
             calout<<"@ this is a ret"<<endl;
             if(gblock2spbias[gb])calout<<"\tadd sp, sp, #"<<(gblock2spbias[gb])*4<<endl;
             //pop lr
-            calout<<"\tpop {lr, r4-r12}"<<endl;
+            calout<<"\tpop {r4-r12, lr}"<<endl;
             //放返回值
             calout<<*inst<<endl;  
             calout<<"@ end of return "<<endl;
