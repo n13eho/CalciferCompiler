@@ -414,6 +414,8 @@ class armLdr:public armInstr{//ok??????????? //TODO: now array is different!
                 out<<", "<<*rs;
             }
         }
+
+        out << "\t@ " << comm;
         return out;
     }
     virtual vector<Decl*> getGen()
@@ -445,6 +447,8 @@ class armStr:public armInstr{//ok
         else{
             out<<", "<<*rs;
         }
+
+        out << "\t@ " << comm;
         return out;
     }
     virtual vector<Decl*> getGen()

@@ -603,6 +603,7 @@ void all2mem(BasicBlock* gb)
                     ldr_ins->rd = dc;
                     ldr_ins->rs = forc_memShift(dc, gb);
                     it=newBlock[b].insert(it,ldr_ins)+1;
+                    ldr_ins->comm = "ttt";
                 }
             }
 
@@ -615,6 +616,7 @@ void all2mem(BasicBlock* gb)
                 str_ins->rd = arm_ins->rd;
                 str_ins->rs = forc_memShift(arm_ins->rd, gb);
                 it=newBlock[b].insert(it+1,str_ins);
+                str_ins->comm = "ttt";
             }
 
         }
@@ -815,27 +817,28 @@ void RigsterAlloc()
         int whenToadd = 0;
         int temp_debug = 0;
         bool spill_failed = true;
-
-//        while(!buildRIG(gb)){
-//            dbg("染色失败！");
-//            if(temp_debug++ > 4){
-//                spill_failed = true;
-//                break;
-//            }
+#if 0
+       while(!buildRIG(gb)){
+           dbg("染色失败！");
+           if(temp_debug++ > 4){
+               spill_failed = true;
+               break;
+           }
             // 如果图着色失败了，add memory operation.
-//            if(whenToadd++ > WHENTOMO)
-//                addMemoryOperation(gb);
-//            // 打印cost
-//            for(auto p: spilling_cost)
-//            {
-//                cout << p.first <<"\t" << p.second <<endl;
-//            }
+           if(whenToadd++ > WHENTOMO)
+               addMemoryOperation(gb);
+           // 打印cost
+           for(auto p: spilling_cost)
+           {
+               cout << p.first <<"\t" << p.second <<endl;
+           }
 
-            // for(auto dr: DomRoot)
-            //     showDecl(dr);
-//        }
+            for(auto dr: DomRoot)
+                showDecl(dr);
+       }
 
         if(spill_failed){
+#endif
             dbg("全放内存");
             all2mem(gb);
             cout << "****add mem ****\n";
@@ -844,7 +847,7 @@ void RigsterAlloc()
             spill_failed = buildRIG(gb);
             spill_failed = buildRIG(gb);
             spill_failed = buildRIG(gb);
-        }
+        // }
     }
 
 
