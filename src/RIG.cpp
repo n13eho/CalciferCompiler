@@ -185,8 +185,18 @@ void ArmI2InOut(armInstr* ai)
         ins[ai].insert(make_pair(3, 6));
 
         // rs内全是gen (这部分不变)
-        for(auto r: call_ai->rs)
-        {
+//        for(auto r: call_ai->rs)
+//        {
+//            if(notConst(r))
+//            {
+//                ins[ai].insert(make_pair(VregNumofDecl(r), r->gettype()));
+//                r->gen_used.push_back(ai);
+//            }
+//        }
+
+        Decl* r;
+        for(int i=4; i<call_ai->rs.size(); i++){
+            r = call_ai->rs[i];
             if(notConst(r))
             {
                 ins[ai].insert(make_pair(VregNumofDecl(r), r->gettype()));
@@ -294,9 +304,13 @@ RIGnode* ForCnode(pair<int, int> d_p, BasicBlock* gb)
     RIGnode* ret_n;
     if(d_p.second == Decl::reg_decl)
     {// 就要返回一个reg_decl类型的node
-        if(rigNodeCreated[d_p.first] != nullptr && rigNodeCreated[d_p.first]->dc_type == Decl::reg_decl){
+        if(rigNodeCreated[d_p.first] != nullptr
+            && rigNodeCreated[d_p.first]->dc_type == Decl::reg_decl
+            && d_p.first == rigNodeCreated[d_p.first]->dc){
             ret_n = rigNodeCreated[d_p.first];
-        } else {
+//            dbg(d_p.first);
+        }
+        else{
             ret_n = new RIGnode(d_p.first, d_p.second);
             rigNodeCreated[d_p.first] = ret_n;
             RIG[gb].push_back(ret_n);
@@ -304,9 +318,12 @@ RIGnode* ForCnode(pair<int, int> d_p, BasicBlock* gb)
     }
     else
     {// 返回一个不是reg_decl类型的node
-        if(rigNodeCreated[d_p.first] != nullptr && rigNodeCreated[d_p.first]->dc_type != Decl::reg_decl){
+        if(rigNodeCreated[d_p.first] != nullptr
+            && rigNodeCreated[d_p.first]->dc_type != Decl::reg_decl
+            && d_p.first == rigNodeCreated[d_p.first]->dc){
             ret_n = rigNodeCreated[d_p.first];
-        } else {
+        }
+        else{
             ret_n = new RIGnode(d_p.first, d_p.second);
             rigNodeCreated[d_p.first] = ret_n;
             RIG[gb].push_back(ret_n);
@@ -384,7 +401,7 @@ bool check_ok(RIGnode* n, int c)
 {
     for(auto con: n->connectTo){
         if(con->dc_type == Decl::reg_decl){ // 如果连接的node是reg_decl的话
-            dbg(n->dc, c, con->dc);
+//            dbg(n->dc, c, con->dc);
             if(c == con->dc + 1)return false;
         }
         else if(!colors[con]){
@@ -507,11 +524,6 @@ void specialInsDelete(DomTreenode* sd)
         if((*it)->getType() == armInstr::mov)
         {
             armMov* mov_ai = (armMov*)(*it);
-//            if(VregNumofDecl(mov_ai->rd) == VregNumofDecl(mov_ai->rs) && mov_ai->rd->gettype() == mov_ai->rs->gettype())
-//            {// 两个寄存器的number一样的话就删除 && 类型不一样的话（0731出现 mov r0 [r0]也给删了的闹剧）
-//                // TODO:新来了个reg_decl, 它不会被删掉，后面要删掉
-//                newBlock[s].erase(it--);
-//            }
 
             if(VregNumofDecl(mov_ai->rd) == VregNumofDecl(mov_ai->rs)){
                 if(mov_ai->rs->gettype() == Decl::addr_decl){ // 如果rs是地址类型的，就不删
@@ -697,10 +709,10 @@ bool buildRIG(BasicBlock* gb)
      cout << "**** the RIG of " << gb->BlockName <<  "****\n";
      for(auto dnode: RIG[gb])
      {
-         cout << "r" << dnode->dc << "\t";
+         cout << ((dnode->dc_type == Decl::reg_decl) ? "r" : "") << dnode->dc << "\t";
          for(auto con_node: dnode->connectTo)
          {
-             cout << "r" << con_node->dc << " ";
+             cout << ((dnode->dc_type == Decl::reg_decl) ? "r" : "") << con_node->dc << " ";
          }
          cout << "\n";
      }
@@ -712,10 +724,10 @@ bool buildRIG(BasicBlock* gb)
         init_color(gb);
         if(paintColor(gb)){
 
-            dbg("color，该全局块染色情况");
-            for(auto node: RIG[gb]){
-                cout << node->dc << " " << colors[node] << endl;
-            }
+//            dbg("color，该全局块染色情况");
+//            for(auto node: RIG[gb]){
+//                cout << node->dc << " " << colors[node] << endl;
+//            }
 
             //如果成功了就break; 否则使用颜色过多就再试一次（最多5次）
             if(usedK <= K)break;
