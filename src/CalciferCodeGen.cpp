@@ -47,7 +47,7 @@ void printArm(DomTreenode* dn,BasicBlock* gb)
             calout<<*inst<<endl;  
             calout<<"@ end of return "<<endl;
         }
-        else if(inst->getType()==armInstr::mov){
+        else if(inst->getType()==armInstr::mov && trance[inst]!=nullptr && trance[inst]->getOpType()!=Instruction::Call){
             armMov *inst_mov = (armMov*)inst;
             if(VregNumofDecl(inst_mov->rd) == VregNumofDecl(inst_mov->rs)){
                 //这里其实是专门为加载全局变量值而产生的ldr指令

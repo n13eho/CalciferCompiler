@@ -10,9 +10,10 @@
 struct RIGnode
 {
     int dc;
+    int dc_type;
     vector<RIGnode*> connectTo;
 
-    explicit RIGnode(int x){dc = x;}
+    RIGnode(int x, int decl_type){dc = x; dc_type = decl_type;}
 };
 
 
