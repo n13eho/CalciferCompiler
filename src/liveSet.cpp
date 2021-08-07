@@ -623,7 +623,7 @@ void calReach(BasicBlock* s)
         }
         // 如果是传参使用的0123也要continue
         if(dc->gettype()==Decl::reg_decl)continue;
-        
+
         Value* val=dc->rawValue;//要修改的val
         for(auto dead=reachout[s].begin();dead!=reachout[s].end(); ){
             Decl* deadDc=*dead;//当前在集合中的decl
@@ -763,6 +763,7 @@ void usedRsb(armRsb* ins,BasicBlock* node)
         ins->r1 = getDecl(r1,node);
     }
     ins->r0 = getDecl(r0,node);
+    if(ins->rs==ins->rd) return -1;
     addAssign(ins->rd->rawValue,node,ins->rd);
 }
 int usedMov(armMov* ins, BasicBlock* node)
@@ -815,6 +816,7 @@ int usedMov(armMov* ins, BasicBlock* node)
             return -1;
         }
         ins->rs = getDecl(rs,node);
+        if(ins->rs==ins->rd) return -1;
         addAssign(ins->rd->rawValue,node,ins->rd);
         return 0;
     }
