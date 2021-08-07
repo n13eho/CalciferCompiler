@@ -760,9 +760,9 @@ void RigsterAlloc()
         // 跳过第一个全局变量，core dump，可能有隐患
         if(gb->domBlock.size() == 0)continue;
         int whenToadd = 0;
-//        int temp_debug = 0;
+       int temp_debug = 0;
         while(!buildRIG(gb)){
-//            if(temp_debug++ > 6)break;
+           if(temp_debug++ > 3)break;
             dbg("染色失败！");
             // 如果图着色失败了，add memory operation.
             if(whenToadd++ > WHENTOMO)
