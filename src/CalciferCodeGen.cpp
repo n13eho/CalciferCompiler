@@ -40,7 +40,7 @@ void printArm(DomTreenode* dn,BasicBlock* gb)
             //以下是return 语句干的事情
             //恢复栈帧
             calout<<"@ this is a ret"<<endl;
-            if(gblock2spbias[gb])calout<<"\tadd sp, sp, #"<<(gblock2spbias[gb])*4<<endl;
+            if(gblock2spbias[gb])calout<<"\tadd sp, sp, #"<<(gblock2spbias[gb]+1)*4<<endl;
             //pop lr
             calout<<"\tpop {r4-r12, lr}"<<endl;
             //放返回值

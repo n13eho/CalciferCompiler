@@ -178,6 +178,12 @@ void ArmI2InOut(armInstr* ai)
         ins[ai].erase(make_pair(2, 6));
         ins[ai].erase(make_pair(3, 6));
 
+        // 0-3号再全部gen出来
+        ins[ai].insert(make_pair(0, 6));
+        ins[ai].insert(make_pair(1, 6));
+        ins[ai].insert(make_pair(2, 6));
+        ins[ai].insert(make_pair(3, 6));
+
         // rs内全是gen (这部分不变)
         for(auto r: call_ai->rs)
         {
@@ -368,7 +374,7 @@ void init_color(BasicBlock* gb)
         colors[param_rignode] = ++usedK;
     }
 
-    usedK = 1;
+    usedK = 5;
 
 }
 
@@ -705,13 +711,14 @@ bool buildRIG(BasicBlock* gb)
     while(trytimes--){
         init_color(gb);
         if(paintColor(gb)){
+
+            dbg("color，该全局块染色情况");
+            for(auto node: RIG[gb]){
+                cout << node->dc << " " << colors[node] << endl;
+            }
+
             //如果成功了就break; 否则使用颜色过多就再试一次（最多5次）
             if(usedK <= K)break;
-
-//            dbg("color，该全局块染色情况");
-//            for(auto node: RIG[gb]){
-//                cout << node->dc << " " << colors[node] << endl;
-//            }
         }
     }
 
