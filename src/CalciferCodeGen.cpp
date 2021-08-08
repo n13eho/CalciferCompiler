@@ -19,7 +19,7 @@ void printArm(DomTreenode* dn,BasicBlock* gb)
                 calout << "\tbl _sysy_starttime\n";
             }
             else if(call_ins->funcname == "stoptime"){
-                calout << "\tbl _sysy_stopti    me\n";
+                calout << "\tbl _sysy_stoptime\n";
             }
             else{
                 calout<<"\tbl "<<call_ins->funcname<<endl;
