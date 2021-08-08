@@ -634,7 +634,7 @@ class armMov:public armInstr{//ok
 #endif
                     // 听曾sir的直接ldr伪指令 ldr r9, =#1923
                     out << "@@@ the mov turn to ldr cause the illegal immediate integer\n";
-                    out << "\tldr " << *rd << ", =" << *rs << "\t@@@";
+                    out << "\tldr " << *rd << ", =" << const_rs->value << "\t@@@";
 
 
                 }
