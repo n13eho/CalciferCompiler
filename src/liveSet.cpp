@@ -96,6 +96,7 @@ void assignAdd(Instruction* instr,BasicBlock *node)
     //这里只关心赋值.
     varDecl *resd = new varDecl(res,node,Rcnt++);
     ins->rd = resd;
+    ins->isAddr = instr->getAddressHead();
     //newblock多了一条指令
     newBlock[node].push_back(ins);
     trance[ins]=instr;

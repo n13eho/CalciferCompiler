@@ -36,6 +36,8 @@ stack<BasicBlock*> IfNextBlocks;
 map<BasicBlock*,int> visited;
 int funCNext = 0;
 
+int func_param_address = 0;
+
 
 BasicBlock* GetPresentBlock(BasicBlock* funcP,BasicBlock::BlockType t)
 {
@@ -380,7 +382,6 @@ void VarDefNode(GrammaNode* node,LinearIR *IR)
             }
             if(0 == global)
             {
-
                 int total = 1;
                 if(VarDef_array_ == p_node->type)
                 {
@@ -391,6 +392,28 @@ void VarDefNode(GrammaNode* node,LinearIR *IR)
                 }
                 AllocCreate(p_node,IR,VL,total);
 
+            }
+            else
+            {
+                //是否是全局变量数组
+                if(VL->getType() == 2)
+                {
+                    int total = 1;
+                    if(VarDef_array_ == p_node->type)
+                    {
+                        for(int j = 0;j<((ArrayValue*)VL)->NumOfDimension.size();j++)
+                        {
+                            total*=((ArrayValue*)VL)->NumOfDimension[j];
+                        }
+                    }
+                    IntegerValue* const0_ = new IntegerValue("const0",node->lineno,node->var_scope,0,1);
+                    vector<Value*> chuzhi;
+                    while(total--)
+                    {
+                        chuzhi.push_back(const0_);
+                    }
+                    ((ArrayValue*)VL)->ArrayInitList.assign(chuzhi.begin(),chuzhi.end());
+                }
             }
             Instruction* ins_new = new Instruction(IR->getInstCnt(),Instruction::Assign,0);
             ins_new->setResult(VL);
@@ -2259,13 +2282,23 @@ Value* PrimaryExpNode(GrammaNode* node,LinearIR *IR)
             bbNow = GetPresentBlock(FuncN,BasicBlock::Basic);
         }
 //        dbg(((IntegerValue*)index)->isConst);
-        Instruction* ins_load = new Instruction(IR->getInstCnt(),Instruction::Load,2);
+        Instruction* ins_load = nullptr;
+        if(func_param_address == 1)
+        {
+            ins_load = new Instruction(IR->getInstCnt(),Instruction::Add,2);
+            ins_load->setAddressHead(1);
+        }
+        else
+        {
+            ins_load = new Instruction(IR->getInstCnt(),Instruction::Load,2);
+        }
         ins_load->addOperand(lval);
         ins_load->addOperand(index);
         ins_load->setResult(ret);
         IR->InsertInstr(ins_load);
         bbNow->Addins(ins_load->getId());
         ins_load->setParent(bbNow);
+        func_param_address = 0;
         return ret;
     }
     else if(IntConst_O_ == node->type || IntConst_D_ == node->type || IntConst_H_ == node->type)
@@ -2286,6 +2319,12 @@ Value* LValArrayNode(GrammaNode* node,LinearIR *IR)
         //数组
         ArrayValue* lval = (ArrayValue*)SymbolTable->askItem(node->son[0]);
         std::vector<unsigned> NumOfDimension_ = lval->getDimen();
+        int size_dimen = NumOfDimension_.size();
+        int real_dimen = node->son[1]->son.size();
+        if(size_dimen != real_dimen)
+        {
+            func_param_address = 1;
+        }
         //索引
         IntegerValue* index = new IntegerValue("index",node->lineno,node->var_scope,0);
 //        Value* index = nullptr;
