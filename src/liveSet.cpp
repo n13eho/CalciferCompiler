@@ -567,7 +567,7 @@ void assignIns(Instruction* ins,BasicBlock* node)
             calAddr->rd = rd;
             varDecl* r0 = new varDecl(nullptr, node, 13);//这是sp寄存器
             calAddr->r0=r0;
-            constDecl* r1 = new constDecl(nullptr, node, (gblock2spbias[node->parent_]+1)*4);//这是数组首地址偏移，从低地址向高地址存
+            constDecl* r1 = new constDecl(nullptr, node, (gblock2spbias[node->parent_])*4);//这是数组首地址偏移，从低地址向高地址存
             calAddr->r1=r1;
             int size = ((IntegerValue*)ins->getOp()[1])->RealValue;
             gblock2spbias[node->parent_]+=size;
@@ -624,6 +624,12 @@ void calReach(BasicBlock* s)
         // 如果是传参使用的0123也要continue
         if(dc->gettype()==Decl::reg_decl)continue;
 
+        //原来是常量也要去掉, 这个就是针对常量添加的指令
+        if(dc->rawValue->getType() == 1){
+            IntegerValue* intval = (IntegerValue*)dc->rawValue;
+            if(intval->isConst ==1)continue;
+        }
+
         Value* val=dc->rawValue;//要修改的val
         for(auto dead=reachout[s].begin();dead!=reachout[s].end(); ){
             Decl* deadDc=*dead;//当前在集合中的decl
@@ -668,6 +674,7 @@ Decl* getDecl(Value* val, BasicBlock* node)
             return ret;
         }
         else{
+             if(intval->isConst)dbg(val->VName);
             //其他就返回上一次赋值
             return Assign_rec[make_pair(intval,node)].back();
         }
@@ -782,7 +789,10 @@ int usedMov(armMov* ins, BasicBlock* node)
     else if(raw->getOpType() == Instruction::Mul){
         // 为了处理mul的第二个操作数立即数特别加上的一条mov指令
         // 直接复制下面的cmp家的
+        dbg(ins->rd->rawValue->VName,((IntegerValue*)ins->rd->rawValue)->isConst);
+
         ins->rs = getDecl(ins->rd->rawValue, node);
+        dbg(*(ins->rs));
         addAssign(ins->rd->rawValue, node, ins->rd);
         return 0;
     }
@@ -1061,7 +1071,7 @@ void liveSets()
             armLdr* ldr_ins = new armLdr();
             varDecl* rd = new varDecl(func->FuncParams[i],b1,Rcnt++);
             ldr_ins->rd = rd;
-            memoryDecl* rs = new memoryDecl(func->FuncParams[i],b1,i-3);
+            memoryDecl* rs = new memoryDecl(func->FuncParams[i],b1,i-4);
             ldr_ins->rs = rs;
             //把这条指令加到这个函数调用的入口
             trance[ldr_ins]=nullptr;//代表形参特有的ldr
@@ -1111,6 +1121,6 @@ void liveSets()
     for(auto gb:IR1->Blocks){
         if(gb->domBlock.size()==0)continue;
         FunctionValue* func = gb->FuncV;
-        if(func->getParamCnt()>4)gblock2spbias[gb]=(func->getParamCnt()-4)+1; //TODO：数组的话,  再说
+        if(func->getParamCnt()>4)gblock2spbias[gb]+=(func->getParamCnt()-4); //TODO：数组的话,  再说
     }
 }

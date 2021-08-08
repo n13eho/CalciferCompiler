@@ -797,7 +797,7 @@ bool buildRIG(BasicBlock* gb)
      specialInsDelete(block2dom[gb->domBlock[0]]);
 
 
-#if 1
+#if 0
     // final show instruction agian, this time with limited k registers
     cout << "****Arm Instruction with limited Registers ****\n";
     for(auto dr: DomRoot)
