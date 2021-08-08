@@ -105,10 +105,15 @@ void assignMul(Instruction* instr,BasicBlock *node)
 
     IntegerValue* op2 = (IntegerValue*)(instr->getOp()[1]);
     IntegerValue* op1 = (IntegerValue*)(instr->getOp()[0]);
-    if(op1->isConst == 1)swap(op1,op2);
     /**
-     * op1一定是varDecl，op2可能是varDecl或者imm：只有当imm是不合法的时候再new一个新的mov指令
+     * op1也不一定是varDecl，op2可能是varDecl或者imm：只有当imm是不合法的时候再new一个新的mov指令
      * */
+    if(op1->isConst){
+        armMov* mul_mov = new armMov();
+        mul_mov->rd = new varDecl(op1, node, Rcnt++);
+        newBlock[node].push_back(mul_mov);
+        trance[mul_mov] = instr;
+    }
     if(op2->isConst){
         armMov* mul_mov = new armMov();
         mul_mov->rd = new varDecl(op2, node, Rcnt++);
@@ -723,7 +728,6 @@ void usedMul(armMul* ins,BasicBlock* node)
     Instruction* raw = trance[ins];
     IntegerValue* r0 = (IntegerValue*)raw->getOp()[0];
     IntegerValue* r1 = (IntegerValue*)raw->getOp()[1];
-    if(r0->isConst)swap(r0,r1);
     ins->r0 = getDecl(r0,node);
     ins->r1 = getDecl(r1,node);
     addAssign(ins->rd->rawValue,node,ins->rd);
