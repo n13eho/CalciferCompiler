@@ -231,7 +231,7 @@ void ArmI2InOut(armInstr* ai)
     {// r1 maybe imm/const, but r0 is var_decl for sure
         armRsb* rsb_ai = (armRsb*)ai;
         ins[ai].erase(make_pair(VregNumofDecl(rsb_ai->rd), rsb_ai->rd->gettype() == Decl::reg_decl));
-        ins[ai].insert(make_pair(VregNumofDecl(rsb_ai->r0), rsb_ai->r0->gettype()));
+        ins[ai].insert(make_pair(VregNumofDecl(rsb_ai->r0), rsb_ai->r0->gettype() == Decl::reg_decl));
         rsb_ai->r0->gen_used.push_back(ai);
         if(notConst(rsb_ai->r1))
         {
