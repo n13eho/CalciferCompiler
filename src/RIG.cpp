@@ -1,12 +1,12 @@
 #include"RIG.h"
 #include"op_cfgFrequency.h"
 // input at liveSet.h
-   /*map<BasicBlock*, vector<armInstr*>> newBlock;*/
+/*map<BasicBlock*, vector<armInstr*>> newBlock;*/
 
 // output
 map<BasicBlock*, vector<RIGnode*>> RIG; // THE graph
-map<armInstr*, set<pair<int, int> >> ins; // 每条arm指令对应的in集合，要记得清空
-map<armInstr*, set<pair<int, int> >> outs; // 公用复用的out集合
+map<armInstr*, set<pair<int, bool> >> ins; // 每条arm指令对应的in集合，要记得清空
+map<armInstr*, set<pair<int, bool> >> outs; // 公用复用的out集合
 
 // visited block 每个顶层模块内的block
 map<BasicBlock*, bool> blockVisited;
@@ -53,18 +53,18 @@ void ArmI2InOut(armInstr* ai)
     {
         armAdd* add_ai = (armAdd*)ai; // 向子类塑性
         // out[s] - kill[s]
-        ins[ai].erase(make_pair(VregNumofDecl(add_ai->rd), add_ai->rd->gettype()));
+        ins[ai].erase(make_pair(VregNumofDecl(add_ai->rd), add_ai->rd->gettype() == Decl::reg_decl));
         // gen[s] U (out[s] - kill[s])
         // ban掉13寄存器
         if(VregNumofDecl(add_ai->r0) != 13){
             // 不是13号再往gen集合里面加
-            ins[ai].insert(make_pair(VregNumofDecl(add_ai->r0), add_ai->r0->gettype()));
+            ins[ai].insert(make_pair(VregNumofDecl(add_ai->r0), add_ai->r0->gettype() == Decl::reg_decl));
         }
         add_ai->r0->gen_used.push_back(ai); // 图着色溢出的1.2
         // 当它只有是var register的时候才insert，否则就不insert
         if(notConst(add_ai->r1))
         {
-            ins[ai].insert(make_pair(VregNumofDecl(add_ai->r1), add_ai->r1->gettype()));
+            ins[ai].insert(make_pair(VregNumofDecl(add_ai->r1), add_ai->r1->gettype() == Decl::reg_decl));
             add_ai->r1->gen_used.push_back(ai);
 
         }
@@ -74,61 +74,61 @@ void ArmI2InOut(armInstr* ai)
         armMoveq* moveq_ai = (armMoveq*)ai;
 
         // moveq的rd是kill集合,只需要erase
-        ins[ai].erase(make_pair(VregNumofDecl(moveq_ai->rd), moveq_ai->rd->gettype()));
+        ins[ai].erase(make_pair(VregNumofDecl(moveq_ai->rd), moveq_ai->rd->gettype() == Decl::reg_decl));
     }
     else if(ai->getType() == armInstr::armInsType::movne)
     {
         armMovne* movne_ai = (armMovne*)ai;
 
         // 只需要erase
-        ins[ai].erase(make_pair(VregNumofDecl(movne_ai->rd), movne_ai->rd->gettype()));
+        ins[ai].erase(make_pair(VregNumofDecl(movne_ai->rd), movne_ai->rd->gettype() == Decl::reg_decl));
     }
     else if(ai->getType() == armInstr::armInsType::sub)
     {
         armSub* sub_ai = (armSub*)ai;
-        ins[ai].erase(make_pair(VregNumofDecl(sub_ai->rd), sub_ai->rd->gettype()));
-        ins[ai].insert(make_pair(VregNumofDecl(sub_ai->r0), sub_ai->r0->gettype()));
+        ins[ai].erase(make_pair(VregNumofDecl(sub_ai->rd), sub_ai->rd->gettype() == Decl::reg_decl));
+        ins[ai].insert(make_pair(VregNumofDecl(sub_ai->r0), sub_ai->r0->gettype() == Decl::reg_decl));
         sub_ai->r0->gen_used.push_back(ai);
         if(notConst(sub_ai->r1))
         {
-            ins[ai].insert(make_pair(VregNumofDecl(sub_ai->r1), sub_ai->r1->gettype()));
+            ins[ai].insert(make_pair(VregNumofDecl(sub_ai->r1), sub_ai->r1->gettype() == Decl::reg_decl));
             sub_ai->r1->gen_used.push_back(ai);
         }
     }
     else if(ai->getType() == armInstr::armInsType::mul)
     {
         armMul* mul_ai = (armMul*)ai;
-        ins[ai].erase(make_pair(VregNumofDecl(mul_ai->rd), mul_ai->rd->gettype()));
-        ins[ai].insert(make_pair(VregNumofDecl(mul_ai->r0), mul_ai->r0->gettype()));
-        ins[ai].insert(make_pair(VregNumofDecl(mul_ai->r1), mul_ai->r1->gettype())); // 由于ssa处已经将三个操作数都确保成了寄存器，因此这里就不判断是否为立即数了
+        ins[ai].erase(make_pair(VregNumofDecl(mul_ai->rd), mul_ai->rd->gettype() == Decl::reg_decl));
+        ins[ai].insert(make_pair(VregNumofDecl(mul_ai->r0), mul_ai->r0->gettype() == Decl::reg_decl));
+        ins[ai].insert(make_pair(VregNumofDecl(mul_ai->r1), mul_ai->r1->gettype() == Decl::reg_decl)); // 由于ssa处已经将三个操作数都确保成了寄存器，因此这里就不判断是否为立即数了
         mul_ai->r0->gen_used.push_back(ai);
         mul_ai->r1->gen_used.push_back(ai);
     }
     else if(ai->getType() == armInstr::armInsType::div)
     {
         armDiv* div_ai = (armDiv*)ai;
-        ins[ai].erase(make_pair(VregNumofDecl(div_ai->rd), div_ai->rd->gettype()));
-        ins[ai].insert(make_pair(VregNumofDecl(div_ai->r0), div_ai->r0->gettype()));
-        ins[ai].insert(make_pair(VregNumofDecl(div_ai->r1), div_ai->r1->gettype())); // 由于ssa处已经将三个操作数都确保成了寄存器，因此这里就不判断是否为立即数了
+        ins[ai].erase(make_pair(VregNumofDecl(div_ai->rd), div_ai->rd->gettype() == Decl::reg_decl));
+        ins[ai].insert(make_pair(VregNumofDecl(div_ai->r0), div_ai->r0->gettype() == Decl::reg_decl));
+        ins[ai].insert(make_pair(VregNumofDecl(div_ai->r1), div_ai->r1->gettype() == Decl::reg_decl)); // 由于ssa处已经将三个操作数都确保成了寄存器，因此这里就不判断是否为立即数了
         div_ai->r0->gen_used.push_back(ai);
         div_ai->r1->gen_used.push_back(ai);
     }
     else if(ai->getType() == armInstr::armInsType::mod)
     {
         armMod* mod_ai = (armMod*)ai;
-        ins[ai].erase(make_pair(VregNumofDecl(mod_ai->rd), mod_ai->rd->gettype()));
-        ins[ai].insert(make_pair(VregNumofDecl(mod_ai->r0), mod_ai->r0->gettype()));
-        ins[ai].insert(make_pair(VregNumofDecl(mod_ai->r1), mod_ai->r1->gettype())); // 由于ssa处已经将三个操作数都确保成了寄存器，因此这里就不判断是否为立即数了
+        ins[ai].erase(make_pair(VregNumofDecl(mod_ai->rd), mod_ai->rd->gettype() == Decl::reg_decl));
+        ins[ai].insert(make_pair(VregNumofDecl(mod_ai->r0), mod_ai->r0->gettype() == Decl::reg_decl));
+        ins[ai].insert(make_pair(VregNumofDecl(mod_ai->r1), mod_ai->r1->gettype() == Decl::reg_decl)); // 由于ssa处已经将三个操作数都确保成了寄存器，因此这里就不判断是否为立即数了
         mod_ai->r0->gen_used.push_back(ai);
         mod_ai->r1->gen_used.push_back(ai);
     }
     else if(ai->getType() == armInstr::armInsType::mov)
     {
         armMov* mov_ai = (armMov*)ai;
-        ins[ai].erase(make_pair(VregNumofDecl(mov_ai->rd), mov_ai->rd->gettype()));
+        ins[ai].erase(make_pair(VregNumofDecl(mov_ai->rd), mov_ai->rd->gettype() == Decl::reg_decl));
         if(notConst(mov_ai->rs))
         {
-            ins[ai].insert(make_pair(VregNumofDecl(mov_ai->rs), mov_ai->rs->gettype()));
+            ins[ai].insert(make_pair(VregNumofDecl(mov_ai->rs), mov_ai->rs->gettype() == Decl::reg_decl));
             mov_ai->rs->gen_used.push_back(ai);
         }
     }
@@ -136,11 +136,11 @@ void ArmI2InOut(armInstr* ai)
     {
         armCmp* cmp_ai = (armCmp*)ai;
         // cmp 指令没有kill集合，因此没有decl来erase，只有两个操作数来进行insert
-        ins[ai].insert(make_pair(VregNumofDecl(cmp_ai->r0), cmp_ai->r0->gettype()));
+        ins[ai].insert(make_pair(VregNumofDecl(cmp_ai->r0), cmp_ai->r0->gettype() == Decl::reg_decl));
         cmp_ai->r0->gen_used.push_back(ai);
         if(notConst(cmp_ai->r1))
         {
-            ins[ai].insert(make_pair(VregNumofDecl(cmp_ai->r1), cmp_ai->r1->gettype()));
+            ins[ai].insert(make_pair(VregNumofDecl(cmp_ai->r1), cmp_ai->r1->gettype() == Decl::reg_decl));
             cmp_ai->r1->gen_used.push_back(ai);
         }
     }
@@ -148,13 +148,13 @@ void ArmI2InOut(armInstr* ai)
     {
         armStr* str_ai = (armStr*)ai;
         //str指令是的rd是gen集
-        ins[ai].insert(make_pair(VregNumofDecl(str_ai->rd), str_ai->rd->gettype()));
+        ins[ai].insert(make_pair(VregNumofDecl(str_ai->rd), str_ai->rd->gettype() == Decl::reg_decl));
         str_ai->rd->gen_used.push_back(ai);
 
         // str 的rs是[r0]这种情况的话，r0也是他的gen。PS:rs处只有可能是addr_decl和mem_decl
         if(str_ai->rs->gettype() == Decl::addr_decl)
         {
-            ins[ai].insert(make_pair(VregNumofDecl(str_ai->rs), str_ai->rs->gettype()));
+            ins[ai].insert(make_pair(VregNumofDecl(str_ai->rs), str_ai->rs->gettype() == Decl::reg_decl));
             str_ai->rs->gen_used.push_back(ai);
         }
     }
@@ -162,12 +162,12 @@ void ArmI2InOut(armInstr* ai)
     {
         armLdr* ldr_ai = (armLdr*)ai;
         //ldr指令是的rd是kill集
-        ins[ai].erase(make_pair(VregNumofDecl(ldr_ai->rd), ldr_ai->rd->gettype()));
+        ins[ai].erase(make_pair(VregNumofDecl(ldr_ai->rd), ldr_ai->rd->gettype() == Decl::reg_decl));
 
         //ldr 的rs是[r0]这种情况，r0是他的gen。PS：rs处只有可能是 global_decl, memory_decl, addr_decl
         if(ldr_ai->rs->gettype() == Decl::addr_decl)
         {
-            ins[ai].insert(make_pair(VregNumofDecl(ldr_ai->rs), ldr_ai->rs->gettype()));
+            ins[ai].insert(make_pair(VregNumofDecl(ldr_ai->rs), ldr_ai->rs->gettype() == Decl::reg_decl));
             ldr_ai->rs->gen_used.push_back(ai);
         }
     }
@@ -176,29 +176,29 @@ void ArmI2InOut(armInstr* ai)
         armCall* call_ai = (armCall*)ai;
         // call 有返回值，需要kill掉
         if(call_ai->rd != NULL)
-            ins[ai].erase(make_pair(VregNumofDecl(call_ai->rd), call_ai->rd->gettype()));
+            ins[ai].erase(make_pair(VregNumofDecl(call_ai->rd), call_ai->rd->gettype() == Decl::reg_decl));
 
         // 0-3号全部kill掉
-        ins[ai].erase(make_pair(0, 6));
-        ins[ai].erase(make_pair(1, 6));
-        ins[ai].erase(make_pair(2, 6));
-        ins[ai].erase(make_pair(3, 6));
+        ins[ai].erase(make_pair(0, true));
+        ins[ai].erase(make_pair(1, true));
+        ins[ai].erase(make_pair(2, true));
+        ins[ai].erase(make_pair(3, true));
 
         // 0-3号再全部gen出来
-        ins[ai].insert(make_pair(0, 6));
-        ins[ai].insert(make_pair(1, 6));
-        ins[ai].insert(make_pair(2, 6));
-        ins[ai].insert(make_pair(3, 6));
+        ins[ai].insert(make_pair(0, true));
+        ins[ai].insert(make_pair(1, true));
+        ins[ai].insert(make_pair(2, true));
+        ins[ai].insert(make_pair(3, true));
 
         // rs内全是gen (这部分不变)
-//        for(auto r: call_ai->rs)
-//        {
-//            if(notConst(r))
-//            {
-//                ins[ai].insert(make_pair(VregNumofDecl(r), r->gettype()));
-//                r->gen_used.push_back(ai);
-//            }
-//        }
+        //        for(auto r: call_ai->rs)
+        //        {
+        //            if(notConst(r))
+        //            {
+        //                ins[ai].insert(make_pair(VregNumofDecl(r), r->gettype()));
+        //                r->gen_used.push_back(ai);
+        //            }
+        //        }
 
         // Decl* r;
         // for(int i=4; i<call_ai->rs.size(); i++){
@@ -219,31 +219,31 @@ void ArmI2InOut(armInstr* ai)
         if(ret_ai->rs != NULL)
             if(notConst(ret_ai->rs))
             {
-                ins[ai].insert(make_pair(VregNumofDecl(ret_ai->rs), ret_ai->rs->gettype()));
+                ins[ai].insert(make_pair(VregNumofDecl(ret_ai->rs), ret_ai->rs->gettype() == Decl::reg_decl));
                 ret_ai->rs->gen_used.push_back(ai);
             }
     }
     else if(ai->getType() == armInstr::rsb)
     {// r1 maybe imm/const, but r0 is var_decl for sure
         armRsb* rsb_ai = (armRsb*)ai;
-        ins[ai].erase(make_pair(VregNumofDecl(rsb_ai->rd), rsb_ai->rd->gettype()));
+        ins[ai].erase(make_pair(VregNumofDecl(rsb_ai->rd), rsb_ai->rd->gettype() == Decl::reg_decl));
         ins[ai].insert(make_pair(VregNumofDecl(rsb_ai->r0), rsb_ai->r0->gettype()));
         rsb_ai->r0->gen_used.push_back(ai);
         if(notConst(rsb_ai->r1))
         {
-            ins[ai].insert(make_pair(VregNumofDecl(rsb_ai->r1), rsb_ai->r1->gettype()));
+            ins[ai].insert(make_pair(VregNumofDecl(rsb_ai->r1), rsb_ai->r1->gettype() == Decl::reg_decl));
             rsb_ai->r1->gen_used.push_back(ai);
         }
     }
     else if(ai->getType() == armInstr::lsl)
     {// r1 maybe imm/const, but r0 is var_decl for sure
         armLsl* lsl_ai = (armLsl*)ai;
-        ins[ai].erase(make_pair(VregNumofDecl(lsl_ai->rd), lsl_ai->rd->gettype()));
-        ins[ai].insert(make_pair(VregNumofDecl(lsl_ai->rs), lsl_ai->rs->gettype()));
+        ins[ai].erase(make_pair(VregNumofDecl(lsl_ai->rd), lsl_ai->rd->gettype() == Decl::reg_decl));
+        ins[ai].insert(make_pair(VregNumofDecl(lsl_ai->rs), lsl_ai->rs->gettype() == Decl::reg_decl));
         lsl_ai->rs->gen_used.push_back(ai);
         if(notConst(lsl_ai->sh))
         {
-            ins[ai].insert(make_pair(VregNumofDecl(lsl_ai->sh), lsl_ai->sh->gettype()));
+            ins[ai].insert(make_pair(VregNumofDecl(lsl_ai->sh), lsl_ai->sh->gettype() == Decl::reg_decl));
             lsl_ai->sh->gen_used.push_back(ai);
         }
     }
@@ -314,7 +314,7 @@ RIGnode* ForCnode(pair<int, int> d_p, BasicBlock* gb)
         && rigNodeCreated[make_pair(d_p.first, true)]->dc_type == Decl::reg_decl
         && d_p.first == rigNodeCreated[make_pair(d_p.first, true)]->dc){
             ret_n = rigNodeCreated[make_pair(d_p.first, true)];
-//            dbg(d_p.first);
+            //            dbg(d_p.first);
         }
         else{
             ret_n = new RIGnode(d_p.first, d_p.second);
@@ -360,7 +360,7 @@ void connectDecl(DomTreenode* dn, BasicBlock* gb)
                     RIGnode* other_node = ForCnode(other_decl, gb);
                     // 如果这条边已经连接过了，就不用加了
                     if(find(n->connectTo.begin(), n->connectTo.end(), other_node) != n->connectTo.end())
-                         continue;
+                        continue;
                     n->connectTo.push_back(other_node);
                 }
             }
@@ -393,7 +393,7 @@ bool check_ok(RIGnode* n, int c)
 {
     for(auto con: n->connectTo){
         if(con->dc_type == Decl::reg_decl){ // 如果连接的node是reg_decl的话
-//            dbg(n->dc, c, con->dc); // 当前node的number，向然的颜色，相连reg 的颜色
+            //            dbg(n->dc, c, con->dc); // 当前node的number，向然的颜色，相连reg 的颜色
             if(c == con->dc + 1)return false;
         }
         else if(!colors[con]){
@@ -431,7 +431,7 @@ bool paintColor(BasicBlock* gb){
         if(i==14)continue;
         if(check_ok(s_point[0],i)){
             colors[s_point[0]]=i;
-//            if(s_point[0]->dc == 21)
+            //            if(s_point[0]->dc == 21)
             break;
         }
     }
@@ -481,7 +481,7 @@ void deleteDC(DomTreenode* dn, BasicBlock* gb)
     {// 遍历指令
         if((*it)->rd != NULL)
         {
-//            if(VregNumofDecl((*it)->rd)>=0&&VregNumofDecl((*it)->rd)<=3)continue; // 0-3开后门
+            //            if(VregNumofDecl((*it)->rd)>=0&&VregNumofDecl((*it)->rd)<=3)continue; // 0-3开后门
             findDc = false;
             for(auto rn: RIG[gb])
             {// 找该指令的左值是否出现在RIG[gb]中，如果该左值没有出现在RIG[gb]中，就删除这条指令
@@ -589,9 +589,9 @@ void all2mem(BasicBlock* gb)
             vector<Decl*> rs = arm_ins->getGen();
             for(auto dc : rs){
                 if(arm_ins->getType() != armInstr:: call 
-                    && dc->gettype() != Decl::const_decl 
-                    && dc->gettype() != Decl::memory_decl
-                    && dc->gettype() != Decl::global_decl){
+                && dc->gettype() != Decl::const_decl
+                && dc->gettype() != Decl::memory_decl
+                && dc->gettype() != Decl::global_decl){
                     
                     if(VregNumofDecl(dc)<K-3)continue;//留两个吧,(凭直觉)
                     
@@ -605,8 +605,8 @@ void all2mem(BasicBlock* gb)
 
             //是否要加str: rd非空&&编号相等&&不能在一条str前加一个str指令
             if(arm_ins->rd != nullptr 
-                && arm_ins->getType() != armInstr::str 
-                && arm_ins->rd->gettype() != Decl::reg_decl){
+            && arm_ins->getType() != armInstr::str
+            && arm_ins->rd->gettype() != Decl::reg_decl){
                 
                 if(VregNumofDecl(arm_ins->rd)<K-3)continue;//留两个吧,(凭直觉)
 
@@ -700,7 +700,7 @@ void changeVreg(BasicBlock *gb)
 
 void updateV2Ds()
 {
-     // init
+    // init
     temp_Vreg2Decls.clear();
 
     // 存入temp_Vreg2Decls
@@ -733,7 +733,7 @@ bool buildRIG(BasicBlock* gb)
         rigNodeCreated.clear();
         ins.clear();
         outs.clear();
-//        dbg("neho -- init: clear sets and graph");
+        //        dbg("neho -- init: clear sets and graph");
 
         // 2 开始从第一个domblock递归，填满in 和 out 集合
         int times_RIG = TIMES_RIG;
@@ -742,10 +742,10 @@ bool buildRIG(BasicBlock* gb)
             fillInOut(gb->domBlock[0]);
         }
 
-//         2.5 for debug 先linshi临时打印一下这些个in 和 out
-//         cout << "\n\n**** IN&OUT set ****\n";
-//         for(auto dr: DomRoot)
-//             showSets(dr);
+        //         2.5 for debug 先linshi临时打印一下这些个in 和 out
+        //         cout << "\n\n**** IN&OUT set ****\n";
+        //         for(auto dr: DomRoot)
+        //             showSets(dr);
 
         // 3 利用填好的in、out集合，建立冲突图，也是一个递归的过程
         connectDecl(block2dom[gb->domBlock[0]], gb);
@@ -753,21 +753,21 @@ bool buildRIG(BasicBlock* gb)
         // 4 deleting dead code
         deleteDC(block2dom[gb->domBlock[0]], gb);
     }
-//    dbg("neho -- fill in/out sets");
+    //    dbg("neho -- fill in/out sets");
     // 根本没有分配寄存器，直接返回真
     if(RIG[gb].size() == 0)return true;
 
     // for debug 打印整张图看看
-     cout << "**** the RIG of " << gb->BlockName <<  "****\n";
-     for(auto dnode: RIG[gb])
-     {
-         cout << ((dnode->dc_type == Decl::reg_decl) ? "r" : "") << dnode->dc << "\t";
-         for(auto con_node: dnode->connectTo)
-         {
-             cout << ((con_node->dc_type == Decl::reg_decl) ? "r" : "") << con_node->dc << " ";
-         }
-         cout << "\n";
-     }
+    cout << "**** the RIG of " << gb->BlockName <<  "****\n";
+    for(auto dnode: RIG[gb])
+    {
+        cout << ((dnode->dc_type == Decl::reg_decl) ? "r" : "") << dnode->dc << "\t";
+        for(auto con_node: dnode->connectTo)
+        {
+            cout << ((con_node->dc_type == Decl::reg_decl) ? "r" : "") << con_node->dc << " ";
+        }
+        cout << "\n";
+    }
 
     // 5. filling colors!
     trytimes = 1;
@@ -775,11 +775,11 @@ bool buildRIG(BasicBlock* gb)
         init_color(gb);
         if(paintColor(gb)){
 
-           dbg("color，该全局块染色情况");
+            dbg("color，该全局块染色情况");
             cout << "**** 该全局块染色情况 ****" << endl;
-           for(auto node: RIG[gb]){
-               cout << ((node->dc_type == Decl::reg_decl) ? "r" : "")  << node->dc << " " << colors[node]-1 << endl;
-           }
+            for(auto node: RIG[gb]){
+                cout << ((node->dc_type == Decl::reg_decl) ? "r" : "")  << node->dc << " " << colors[node]-1 << endl;
+            }
 
 
             //如果成功了就break; 否则使用颜色过多就再试一次（最多5次）
@@ -794,7 +794,7 @@ bool buildRIG(BasicBlock* gb)
     updateV2Ds();
 
     // 此条不专门针对 mov r0, r0; TODO：之后可以在里面加上针对其他ir指令的优化
-     specialInsDelete(block2dom[gb->domBlock[0]]);
+    specialInsDelete(block2dom[gb->domBlock[0]]);
 
 
 #if 0
@@ -825,24 +825,24 @@ void RigsterAlloc()
         int temp_debug = 0;
         bool spill_failed = false;
 #if 1
-       while(!buildRIG(gb)){
-           dbg("染色失败！");
-           if(temp_debug++ > 4){
-               spill_failed = true;
-               break;
-           }
+        while(!buildRIG(gb)){
+            dbg("染色失败！");
+            if(temp_debug++ > 4){
+                spill_failed = true;
+                break;
+            }
             // 如果图着色失败了，add memory operation.
-           if(whenToadd++ > WHENTOMO)
-               addMemoryOperation(gb);
-           // 打印cost
-           for(auto p: spilling_cost)
-           {
-               cout << p.first <<"\t" << p.second <<endl;
-           }
+            if(whenToadd++ > WHENTOMO)
+                addMemoryOperation(gb);
+            // 打印cost
+            for(auto p: spilling_cost)
+            {
+                cout << p.first <<"\t" << p.second <<endl;
+            }
 
             for(auto dr: DomRoot)
                 showDecl(dr);
-       }
+        }
 
         if(spill_failed){
 #endif
@@ -852,9 +852,9 @@ void RigsterAlloc()
             for(auto dr: DomRoot)
                 showDecl(dr);
             spill_failed = buildRIG(gb);
-//            spill_failed = buildRIG(gb);
-//            spill_failed = buildRIG(gb);
-         }
+            //            spill_failed = buildRIG(gb);
+            //            spill_failed = buildRIG(gb);
+        }
     }
 
 

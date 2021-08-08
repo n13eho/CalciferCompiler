@@ -632,8 +632,8 @@ class armMov:public armInstr{//ok
 
                     // 2 这里的mov要变成ldr，然后再ldr一遍获得它的值
                     out << "@@@ the mov turn to ldr cause the illegal immediate integer\n";
-                    out << "\tldr " << *rd << ", " << "=" << imm_value->VName << "\n";
-                    out << "\tldr " << *rd << ", [" << *rd << "]";
+                    out << "\tldr " << *rd << ", " << "=" << imm_value->VName << "\t@@@\n";
+                    out << "\tldr " << *rd << ", [" << *rd << "]" << "\t@@@";
                 }
 
             }
