@@ -161,7 +161,7 @@ void CalciferCodeGen(char *output_file_path)
                         if(repeat_cnt>0)
                         {
                             calout<<"\n\t.zero ";
-                            calout<<to_string(repeat_cnt).data();
+                            calout<<to_string(repeat_cnt*4).data();
                             repeat_cnt = 0;
                         }
                         calout<<"\n\t.word ";
@@ -175,7 +175,7 @@ void CalciferCodeGen(char *output_file_path)
                 if(repeat_cnt>0)
                 {
                     calout<<"\n\t.zero ";
-                    calout<<to_string(repeat_cnt).data();
+                    calout<<to_string(repeat_cnt*4).data();
                     repeat_cnt = 0;
                 }
                 //后续多个0 采用.fill cnt 4 0格式 todo
@@ -204,7 +204,7 @@ void CalciferCodeGen(char *output_file_path)
                         if(repeat_cnt>0)
                         {
                             calout<<"\n\t.zero ";
-                            calout<<to_string(repeat_cnt).data();
+                            calout<<to_string(repeat_cnt*4).data();
                             repeat_cnt = 0;
                         }
                         calout<<"\n\t.word ";
@@ -218,7 +218,7 @@ void CalciferCodeGen(char *output_file_path)
                 if(repeat_cnt>0)
                 {
                     calout<<"\n\t.zero ";
-                    calout<<to_string(repeat_cnt).data();
+                    calout<<to_string(repeat_cnt*4).data();
                     repeat_cnt = 0;
                 }
                 calout<<endl;
