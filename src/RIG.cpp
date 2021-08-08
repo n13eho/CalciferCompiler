@@ -529,9 +529,9 @@ void specialInsDelete(DomTreenode* sd)
             armMov* mov_ai = (armMov*)(*it);
 
             if(VregNumofDecl(mov_ai->rd) == VregNumofDecl(mov_ai->rs)
-                && mov_ai->rd->gettype() == mov_ai->rs->gettype()){ // 如果两者是同样类型的才删去
+                && (mov_ai->rd->gettype() == mov_ai->rs->gettype())){ // 如果两者是同样类型的才删去
                 if(mov_ai->rs->gettype() == Decl::addr_decl){ // 如果rs是地址类型的，就不删
-                    continue;
+                    continue; // ldr r0, r0
                 }
                 else{ // 如果rs不是地址类型的，那么任意mov的rd 和 rs number相同的话就都能删，管你是不是regdecl
                     newBlock[s].erase(it--);

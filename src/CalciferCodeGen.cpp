@@ -64,7 +64,9 @@ void printArm(DomTreenode* dn,BasicBlock* gb)
             if(VregNumofDecl(inst_mov->rd) == VregNumofDecl(inst_mov->rs)){
                 //这里其实是专门为加载全局变量值而产生的ldr指令
                 //tqy:如果能活到这里的mov，一定是mov r0, [r0]这样的指令
-                calout<<"\tldr "<<*inst_mov->rd<<", "<<*inst_mov->rs<<endl;
+                if(inst_mov->rs->gettype() == Decl::addr_decl)
+                    calout<<"\tldr "<<*inst_mov->rd<<", "<<*inst_mov->rs<<endl;
+//                dbg(inst_mov->rd->gettype(), inst_mov->rs->gettype());
             }
             else calout<<*inst<<endl;
         }
