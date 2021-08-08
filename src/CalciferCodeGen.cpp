@@ -161,7 +161,7 @@ void CalciferCodeGen(char *output_file_path)
                         if(repeat_cnt>0)
                         {
                             calout<<"\n\t.zero ";
-                            calout<<to_string(repeat_cnt).data();
+                            calout<<to_string(repeat_cnt*4).data();
                             repeat_cnt = 0;
                         }
                         calout<<"\n\t.word ";
@@ -175,7 +175,7 @@ void CalciferCodeGen(char *output_file_path)
                 if(repeat_cnt>0)
                 {
                     calout<<"\n\t.zero ";
-                    calout<<to_string(repeat_cnt).data();
+                    calout<<to_string(repeat_cnt*4).data();
                     repeat_cnt = 0;
                 }
                 //后续多个0 采用.fill cnt 4 0格式 todo
@@ -186,6 +186,12 @@ void CalciferCodeGen(char *output_file_path)
                 //变量数组
                 calout<<val->VName.data()<<":";
                 std::vector<Value*> ele = val->ArrayInitList;
+                // dbg("全局变量数组：",ele.size());
+                // for(auto v :ele)
+                // {
+                //     dbg(((IntegerValue*)v)->getValue());
+                // }
+
                 int repeat_cnt = 0;
                 for(auto vv : ele)
                 {
@@ -198,7 +204,7 @@ void CalciferCodeGen(char *output_file_path)
                         if(repeat_cnt>0)
                         {
                             calout<<"\n\t.zero ";
-                            calout<<to_string(repeat_cnt).data();
+                            calout<<to_string(repeat_cnt*4).data();
                             repeat_cnt = 0;
                         }
                         calout<<"\n\t.word ";
@@ -212,7 +218,7 @@ void CalciferCodeGen(char *output_file_path)
                 if(repeat_cnt>0)
                 {
                     calout<<"\n\t.zero ";
-                    calout<<to_string(repeat_cnt).data();
+                    calout<<to_string(repeat_cnt*4).data();
                     repeat_cnt = 0;
                 }
                 calout<<endl;

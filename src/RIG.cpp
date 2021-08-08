@@ -296,10 +296,10 @@ void showSets(DomTreenode* dn)
         std::cout << *arm_ins;
         std::cout << "\tins: ";
         for(auto in_decl: ins[arm_ins])
-            std::cout << (in_decl.second == 6 ? "r" : "") << in_decl.first << " ";
+            std::cout << (in_decl.second == 1 ? "r" : "") << in_decl.first << " ";
         std::cout << "\touts: ";
         for(auto out_decl: outs[arm_ins])
-            std::cout << (out_decl.second == 6 ? "r" : "") << out_decl.first << " ";
+            std::cout << (out_decl.second == 1 ? "r" : "") << out_decl.first << " ";
         std::cout << "\n";
     }
     // 递归打印剩下的
@@ -760,9 +760,9 @@ bool buildRIG(BasicBlock* gb)
         }
 
         //         2.5 for debug 先linshi临时打印一下这些个in 和 out
-        //         cout << "\n\n**** IN&OUT set ****\n";
-        //         for(auto dr: DomRoot)
-        //             showSets(dr);
+                cout << "\n\n**** IN&OUT set ****\n";
+                for(auto dr: DomRoot)
+                    showSets(dr);
 
         // 3 利用填好的in、out集合，建立冲突图，也是一个递归的过程
         connectDecl(block2dom[gb->domBlock[0]], gb);

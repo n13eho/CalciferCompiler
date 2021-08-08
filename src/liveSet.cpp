@@ -96,6 +96,7 @@ void assignAdd(Instruction* instr,BasicBlock *node)
     //这里只关心赋值.
     varDecl *resd = new varDecl(res,node,Rcnt++);
     ins->rd = resd;
+    ins->isAddr = instr->getAddressHead();
     //newblock多了一条指令
     newBlock[node].push_back(ins);
     trance[ins]=instr;
@@ -679,7 +680,6 @@ Decl* getDecl(Value* val, BasicBlock* node)
             return ret;
         }
         else{
-             if(intval->isConst)dbg(val->VName);
             //其他就返回上一次赋值
             return Assign_rec[make_pair(intval,node)].back();
         }
@@ -793,10 +793,8 @@ int usedMov(armMov* ins, BasicBlock* node)
     else if(raw->getOpType() == Instruction::Mul){
         // 为了处理mul的第二个操作数立即数特别加上的一条mov指令
         // 直接复制下面的cmp家的
-        dbg(ins->rd->rawValue->VName,((IntegerValue*)ins->rd->rawValue)->isConst);
 
         ins->rs = getDecl(ins->rd->rawValue, node);
-        dbg(*(ins->rs));
         addAssign(ins->rd->rawValue, node, ins->rd);
         return 0;
     }
@@ -830,7 +828,6 @@ int usedMov(armMov* ins, BasicBlock* node)
         if(Assign_rec[make_pair(rs,node)].size()==0){
             //原则上不会执行到这里
             ins->comm = "@ phi to mov special";
-            dbg("phi对这个块没意义");
             return -1;
         }
         ins->rs = getDecl(rs,node);
