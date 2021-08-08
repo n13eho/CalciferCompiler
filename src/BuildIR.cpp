@@ -36,6 +36,8 @@ stack<BasicBlock*> IfNextBlocks;
 map<BasicBlock*,int> visited;
 int funCNext = 0;
 
+int func_param_address = 0;
+
 
 BasicBlock* GetPresentBlock(BasicBlock* funcP,BasicBlock::BlockType t)
 {
@@ -2259,13 +2261,22 @@ Value* PrimaryExpNode(GrammaNode* node,LinearIR *IR)
             bbNow = GetPresentBlock(FuncN,BasicBlock::Basic);
         }
 //        dbg(((IntegerValue*)index)->isConst);
-        Instruction* ins_load = new Instruction(IR->getInstCnt(),Instruction::Load,2);
+        Instruction* ins_load = nullptr;
+        if(func_param_address == 1)
+        {
+            ins_load = new Instruction(IR->getInstCnt(),Instruction::Add,2);
+        }
+        else
+        {
+            ins_load = new Instruction(IR->getInstCnt(),Instruction::Load,2);
+        }
         ins_load->addOperand(lval);
         ins_load->addOperand(index);
         ins_load->setResult(ret);
         IR->InsertInstr(ins_load);
         bbNow->Addins(ins_load->getId());
         ins_load->setParent(bbNow);
+        func_param_address = 0;
         return ret;
     }
     else if(IntConst_O_ == node->type || IntConst_D_ == node->type || IntConst_H_ == node->type)
@@ -2286,6 +2297,12 @@ Value* LValArrayNode(GrammaNode* node,LinearIR *IR)
         //数组
         ArrayValue* lval = (ArrayValue*)SymbolTable->askItem(node->son[0]);
         std::vector<unsigned> NumOfDimension_ = lval->getDimen();
+        int size_dimen = NumOfDimension_.size();
+        int real_dimen = node->son[1]->son.size();
+        if(size_dimen != real_dimen)
+        {
+            func_param_address = 1;
+        }
         //索引
         IntegerValue* index = new IntegerValue("index",node->lineno,node->var_scope,0);
 //        Value* index = nullptr;
