@@ -186,6 +186,12 @@ void CalciferCodeGen(char *output_file_path)
                 //变量数组
                 calout<<val->VName.data()<<":";
                 std::vector<Value*> ele = val->ArrayInitList;
+                // dbg("全局变量数组：",ele.size());
+                // for(auto v :ele)
+                // {
+                //     dbg(((IntegerValue*)v)->getValue());
+                // }
+
                 int repeat_cnt = 0;
                 for(auto vv : ele)
                 {

@@ -382,7 +382,6 @@ void VarDefNode(GrammaNode* node,LinearIR *IR)
             }
             if(0 == global)
             {
-
                 int total = 1;
                 if(VarDef_array_ == p_node->type)
                 {
@@ -393,6 +392,28 @@ void VarDefNode(GrammaNode* node,LinearIR *IR)
                 }
                 AllocCreate(p_node,IR,VL,total);
 
+            }
+            else
+            {
+                //是否是全局变量数组
+                if(VL->getType() == 2)
+                {
+                    int total = 1;
+                    if(VarDef_array_ == p_node->type)
+                    {
+                        for(int j = 0;j<((ArrayValue*)VL)->NumOfDimension.size();j++)
+                        {
+                            total*=((ArrayValue*)VL)->NumOfDimension[j];
+                        }
+                    }
+                    IntegerValue* const0_ = new IntegerValue("const0",node->lineno,node->var_scope,0,1);
+                    vector<Value*> chuzhi;
+                    while(total--)
+                    {
+                        chuzhi.push_back(const0_);
+                    }
+                    ((ArrayValue*)VL)->ArrayInitList.assign(chuzhi.begin(),chuzhi.end());
+                }
             }
             Instruction* ins_new = new Instruction(IR->getInstCnt(),Instruction::Assign,0);
             ins_new->setResult(VL);
