@@ -528,7 +528,8 @@ void specialInsDelete(DomTreenode* sd)
         {
             armMov* mov_ai = (armMov*)(*it);
 
-            if(VregNumofDecl(mov_ai->rd) == VregNumofDecl(mov_ai->rs)){
+            if(VregNumofDecl(mov_ai->rd) == VregNumofDecl(mov_ai->rs)
+                && mov_ai->rd->gettype() == mov_ai->rs->gettype()){ // 如果两者是同样类型的才删去
                 if(mov_ai->rs->gettype() == Decl::addr_decl){ // 如果rs是地址类型的，就不删
                     continue;
                 }
