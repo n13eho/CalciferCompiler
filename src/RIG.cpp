@@ -663,6 +663,9 @@ void addMemoryOperation(BasicBlock* gb)
             //是否要加ldr
             vector<Decl*> rs = arm_ins->getGen();
             for(auto dc : rs){
+
+                if(dc->gettype() == Decl::reg_decl)continue;//需要跳过死寄存器
+
                 if(VregNumofDecl(dc)==chosenOne){
                     armLdr* ldr_ins= new armLdr();
                     ldr_ins->rd = dc;
@@ -677,6 +680,9 @@ void addMemoryOperation(BasicBlock* gb)
 
             //是否要加str: rd非空&&编号相等&&不能在一条str前加一个str指令
             if(arm_ins->rd != nullptr && VregNumofDecl(arm_ins->rd)==chosenOne && arm_ins->getType()!=armInstr::str){
+
+                if(arm_ins->rd->gettype() == Decl::reg_decl)continue;//需要跳过死寄存器
+
                 armStr* str_ins= new armStr();
                 str_ins->rd = arm_ins->rd;
                 str_ins->rs = memShift;
