@@ -286,17 +286,17 @@ void fillInOut(BasicBlock* bb)
 void showSets(DomTreenode* dn)
 {
     BasicBlock* b = dn->block;
-    cout << block2lb[b] << endl;
+    std::cout << block2lb[b] << endl;
     for(auto arm_ins: newBlock[b])
     {
-        cout << *arm_ins;
-        cout << "\tins: ";
+        std::cout << *arm_ins;
+        std::cout << "\tins: ";
         for(auto in_decl: ins[arm_ins])
-            cout << (in_decl.second == 6 ? "r" : "") << in_decl.first << " ";
-        cout << "\touts: ";
+            std::cout << (in_decl.second == 6 ? "r" : "") << in_decl.first << " ";
+        std::cout << "\touts: ";
         for(auto out_decl: outs[arm_ins])
-            cout << (out_decl.second == 6 ? "r" : "") << out_decl.first << " ";
-        cout << "\n";
+            std::cout << (out_decl.second == 6 ? "r" : "") << out_decl.first << " ";
+        std::cout << "\n";
     }
     // 递归打印剩下的
     for(auto nx: dn->son)
@@ -566,9 +566,9 @@ void spillCost(BasicBlock* gb){
     }
 }
 
-map<Decl*, memoryDecl*> spill_dc2memdc; // spilling失败之后，记录每一个dc对应放在哪里的memdecl
+map<RIGnode*, memoryDecl*> spill_dc2memdc; // spilling失败之后，记录每个node对应放在哪里的memdecl
 
-memoryDecl* forc_memShift(Decl* d, BasicBlock* gb){
+memoryDecl* forc_memShift(RIGnode* d, BasicBlock* gb){
     // 找得到就返回已经有了的, 没找到就new一个回去
 
     memoryDecl* ret_m = spill_dc2memdc[d];
@@ -594,10 +594,9 @@ void all2mem(BasicBlock* gb)
                 && dc->gettype() != Decl::global_decl){
                     
                     if(VregNumofDecl(dc)<K-3)continue;//留两个吧,(凭直觉)
-                    
                     armLdr* ldr_ins= new armLdr();
                     ldr_ins->rd = dc;
-                    ldr_ins->rs = forc_memShift(dc, gb);
+                    ldr_ins->rs = forc_memShift(ForCnode(make_pair(VregNumofDecl(dc),dc->gettype() == Decl::reg_decl),gb), gb);
                     it=newBlock[b].insert(it,ldr_ins)+1;
                     ldr_ins->comm = "ttt";
                 }
@@ -609,10 +608,12 @@ void all2mem(BasicBlock* gb)
             && arm_ins->rd->gettype() != Decl::reg_decl){
                 
                 if(VregNumofDecl(arm_ins->rd)<K-3)continue;//留两个吧,(凭直觉)
-
+                if(VregNumofDecl(arm_ins->rd)==789){
+                    dbg("789error");
+                }
                 armStr* str_ins= new armStr();
                 str_ins->rd = arm_ins->rd;
-                str_ins->rs = forc_memShift(arm_ins->rd, gb);
+                str_ins->rs = forc_memShift(ForCnode(make_pair(VregNumofDecl(arm_ins->rd),arm_ins->rd->gettype() == Decl::reg_decl),gb), gb);
                 it=newBlock[b].insert(it+1,str_ins);
                 str_ins->comm = "ttt";
             }
@@ -628,6 +629,7 @@ void addMemoryOperation(BasicBlock* gb)
     spillCost(gb);
 
     // 选出cost最小的dc
+    RIGnode* chosenNode = nullptr;
     double mincost = 1e18;
     for(auto node : RIG[gb]){
         if(node->dc==13)continue;
@@ -635,12 +637,14 @@ void addMemoryOperation(BasicBlock* gb)
         if(spilling_cost[dc_vreg]<mincost){
             mincost = spilling_cost[dc_vreg];
             chosenOne = dc_vreg;
+            chosenNode = node;
         }
     }
 
     dbg(chosenOne);
 
     memoryDecl* memShift = new memoryDecl(nullptr,gb,gblock2spbias[gb]++);
+    spill_dc2memdc[chosenNode]=memShift;
     for(auto b : gb->domBlock){
         for(auto it = newBlock[b].begin();it!=newBlock[b].end();it++){
             auto arm_ins = *it;
@@ -652,10 +656,11 @@ void addMemoryOperation(BasicBlock* gb)
                     armLdr* ldr_ins= new armLdr();
                     ldr_ins->rd = dc;
                     ldr_ins->rs = memShift;
+                    ldr_ins->comm = "spill load";
                     it=newBlock[b].insert(it,ldr_ins)+1;
 
                     // 建立映射
-                    spill_dc2memdc[dc] = memShift;
+                    // spill_dc2memdc[dc] = memShift;
                 }
             }
 
@@ -664,10 +669,11 @@ void addMemoryOperation(BasicBlock* gb)
                 armStr* str_ins= new armStr();
                 str_ins->rd = arm_ins->rd;
                 str_ins->rs = memShift;
+                str_ins->comm = "spill store";
                 it=newBlock[b].insert(it+1,str_ins);
 
                 // 建立映射
-                spill_dc2memdc[arm_ins->rd] = memShift;
+                // spill_dc2memdc[arm_ins->rd] = memShift;
             }
         }
     }
@@ -758,15 +764,15 @@ bool buildRIG(BasicBlock* gb)
     if(RIG[gb].size() == 0)return true;
 
     // for debug 打印整张图看看
-    cout << "**** the RIG of " << gb->BlockName <<  "****\n";
+    std::cout << "**** the RIG of " << gb->BlockName <<  "****\n";
     for(auto dnode: RIG[gb])
     {
-        cout << ((dnode->dc_type == Decl::reg_decl) ? "r" : "") << dnode->dc << "\t";
+        std::cout << ((dnode->dc_type == Decl::reg_decl) ? "r" : "") << dnode->dc << "\t";
         for(auto con_node: dnode->connectTo)
         {
-            cout << ((con_node->dc_type == Decl::reg_decl) ? "r" : "") << con_node->dc << " ";
+            std::cout << ((con_node->dc_type == Decl::reg_decl) ? "r" : "") << con_node->dc << " ";
         }
-        cout << "\n";
+        std::cout << "\n";
     }
 
     // 5. filling colors!
@@ -776,9 +782,9 @@ bool buildRIG(BasicBlock* gb)
         if(paintColor(gb)){
 
             dbg("color，该全局块染色情况");
-            cout << "**** 该全局块染色情况 ****" << endl;
+            std::cout << "**** 该全局块染色情况 ****" << endl;
             for(auto node: RIG[gb]){
-                cout << ((node->dc_type == Decl::reg_decl) ? "r" : "")  << node->dc << " " << colors[node]-1 << endl;
+                std::cout << ((node->dc_type == Decl::reg_decl) ? "r" : "")  << node->dc << " " << colors[node]-1 << endl;
             }
 
 
@@ -799,14 +805,14 @@ bool buildRIG(BasicBlock* gb)
 
 #if 0
     // final show instruction agian, this time with limited k registers
-    cout << "****Arm Instruction with limited Registers ****\n";
+    std::cout << "****Arm Instruction with limited Registers ****\n";
     for(auto dr: DomRoot)
         showDecl(dr);
 #endif
 
 
     if(usedK>K){ // 染色失败
-        cout<<"failed\n";
+        std::cout<<"failed\n";
         return false;
     }
     dbg("染色成功！");
@@ -837,7 +843,7 @@ void RigsterAlloc()
             // 打印cost
             for(auto p: spilling_cost)
             {
-                cout << p.first <<"\t" << p.second <<endl;
+                std::cout << p.first <<"\t" << p.second <<endl;
             }
 
             for(auto dr: DomRoot)
@@ -848,7 +854,7 @@ void RigsterAlloc()
 #endif
             dbg("全放内存");
             all2mem(gb);
-            cout << "****add mem ****\n";
+            std::cout << "****add mem ****\n";
             for(auto dr: DomRoot)
                 showDecl(dr);
             spill_failed = buildRIG(gb);
@@ -860,7 +866,7 @@ void RigsterAlloc()
 
 
     // final show instruction agian, this time with limited k registers
-    cout << "****Arm Instruction with limited Registers ****\n";
+    std::cout << "****Arm Instruction with limited Registers ****\n";
     for(auto dr: DomRoot)
         showDecl(dr);
 }

@@ -1037,8 +1037,9 @@ void showDecl(DomTreenode* sd)
 
 void liveSets()
 {
-    //0. 添加label
+    //0. 添加label, gblock2spbias归零
     for(auto b:IR1->Blocks){
+        gblock2spbias[b]=0;
         for(auto eb: b->domBlock){
             block2lb[eb]=lb+to_string(Bcnt++);
             lb2block[block2lb[eb]]=eb;
