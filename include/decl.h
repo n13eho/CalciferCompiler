@@ -622,18 +622,21 @@ class armMov:public armInstr{//ok
 //                    dbg(const_rs->value);
                     out<<"\tmovw "<<*rd<<", "<<*rs;
                 }
-                else{ // 这里得用个什么字面池了，可能就有4096偏移的限制，并不知道怎么处理，先用 FIXME: limitation of 4096
-//                    dbg(const_rs->value);
-                    // 1 先往allValue里面扔一个新的integerValue，要么扔，要么从原先的找出来对应的
-//                    IntegerValue* imm_valuew = new IntegerValue(imm_vname+to_string(imm_cnt++), 999, "1", const_rs->value, 0);
-//                    allValue.insert(imm_valuew);
-
+                else{
+                    // 这里得用个什么字面池了，可能就有4096偏移的限制，并不知道怎么处理，先用 FIXME: limitation of 4096
+#if 0
                     IntegerValue* imm_value = findimmValue(const_rs->value);
 
                     // 2 这里的mov要变成ldr，然后再ldr一遍获得它的值
                     out << "@@@ the mov turn to ldr cause the illegal immediate integer\n";
                     out << "\tldr " << *rd << ", " << "=" << imm_value->VName << "\t@@@\n";
                     out << "\tldr " << *rd << ", [" << *rd << "]" << "\t@@@";
+#endif
+                    // 听曾sir的直接ldr伪指令 ldr r9, =#1923
+                    out << "@@@ the mov turn to ldr cause the illegal immediate integer\n";
+                    out << "\tldr " << *rd << ", =" << *rs << "\t@@@";
+
+
                 }
 
             }

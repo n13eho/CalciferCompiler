@@ -125,7 +125,11 @@ void ArmI2InOut(armInstr* ai)
     else if(ai->getType() == armInstr::armInsType::mov)
     {
         armMov* mov_ai = (armMov*)ai;
-        ins[ai].erase(make_pair(VregNumofDecl(mov_ai->rd), mov_ai->rd->gettype() == Decl::reg_decl));
+        if(mov_ai->rs->gettype() != Decl::reg_decl){
+            // 这里专门处理函数开头形参的移动到临时变量的mov指令
+            // 如果rs的类型是reg_decl，那么这个时候就不用kill掉rd，专门让他产生冲突
+            ins[ai].erase(make_pair(VregNumofDecl(mov_ai->rd), mov_ai->rd->gettype() == Decl::reg_decl));
+        }
         if(notConst(mov_ai->rs))
         {
             ins[ai].insert(make_pair(VregNumofDecl(mov_ai->rs), mov_ai->rs->gettype() == Decl::reg_decl));
