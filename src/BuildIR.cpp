@@ -2265,6 +2265,7 @@ Value* PrimaryExpNode(GrammaNode* node,LinearIR *IR)
         if(func_param_address == 1)
         {
             ins_load = new Instruction(IR->getInstCnt(),Instruction::Add,2);
+            ins_load->setAddressHead(1);
         }
         else
         {

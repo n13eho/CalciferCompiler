@@ -65,6 +65,7 @@ public:
     {
 //        std::cout<<"InsID:"<<id<<" type:"<<ins_type<<" Operator nums:"<<oprands_num<<std::endl;
         Result = nullptr;
+        AddressHead = 0;
     }
     void setId(int id){InstrId=id;}
     void addOperand(Value* opd){Operands.push_back(opd);}
@@ -94,6 +95,10 @@ public:
     //操作数列表  neho于7.27将它从private中移了出来，由于需要改动原来的op
     std::vector<Value *> Operands;
 
+    void setAddressHead(int v){this->AddressHead = 1;}
+
+    int getAddressHead(){return this->AddressHead;}
+
 private:
     //instruction id
     int InstrId;
@@ -106,6 +111,8 @@ private:
     unsigned OpNums;
     //本条指令属于的基本块
     BasicBlock* ParentBasicblock;
+    //用于判断加法指令中操作数是否是数组首地址
+    int AddressHead = 0;
 };
 
 
