@@ -305,19 +305,19 @@ void showSets(DomTreenode* dn)
     }
 }
 
-RIGnode* ForCnode(pair<int, int> d_p, BasicBlock* gb)
+RIGnode* ForCnode(pair<int, bool> d_p, BasicBlock* gb)
 {// find or create a new RIGnode
     RIGnode* ret_n;
-    if(d_p.second == Decl::reg_decl)
+    if(d_p.second == true)
     {// 就要返回一个reg_decl类型的node
         if(rigNodeCreated[make_pair(d_p.first, true)] != nullptr
-        && rigNodeCreated[make_pair(d_p.first, true)]->dc_type == Decl::reg_decl
+        && rigNodeCreated[make_pair(d_p.first, true)]->typeIsREG == true
         && d_p.first == rigNodeCreated[make_pair(d_p.first, true)]->dc){
             ret_n = rigNodeCreated[make_pair(d_p.first, true)];
             //            dbg(d_p.first);
         }
         else{
-            ret_n = new RIGnode(d_p.first, d_p.second);
+            ret_n = new RIGnode(d_p.first, d_p.second); // d_p.second=true
             rigNodeCreated[make_pair(d_p.first, true)] = ret_n;
             RIG[gb].push_back(ret_n);
         }
@@ -325,12 +325,12 @@ RIGnode* ForCnode(pair<int, int> d_p, BasicBlock* gb)
     else
     {// 返回一个不是reg_decl类型的node
         if(rigNodeCreated[make_pair(d_p.first, false)] != nullptr
-        && rigNodeCreated[make_pair(d_p.first, false)]->dc_type != Decl::reg_decl
+        && rigNodeCreated[make_pair(d_p.first, false)]->typeIsREG == false
         && d_p.first == rigNodeCreated[make_pair(d_p.first, false)]->dc){
             ret_n = rigNodeCreated[make_pair(d_p.first, false)];
         }
         else{
-            ret_n = new RIGnode(d_p.first, d_p.second);
+            ret_n = new RIGnode(d_p.first, d_p.second); // d_p.second=false
             rigNodeCreated[make_pair(d_p.first, false)] = ret_n;
             RIG[gb].push_back(ret_n);
         }
@@ -392,8 +392,8 @@ vector<RIGnode*> s_point; // 起点
 bool check_ok(RIGnode* n, int c)
 {
     for(auto con: n->connectTo){
-        if(con->dc_type == Decl::reg_decl){ // 如果连接的node是reg_decl的话
-            //            dbg(n->dc, c, con->dc); // 当前node的number，向然的颜色，相连reg 的颜色
+        if(con->typeIsREG == true){ // 如果连接的node是reg_decl的话
+//            dbg(n->dc, c, con->dc); // 当前node的number，向然的颜色，相连reg 的颜色
             if(c == con->dc + 1)return false;
         }
         else if(!colors[con]){
@@ -403,6 +403,13 @@ bool check_ok(RIGnode* n, int c)
             return false;
         }
     }
+
+#if 0
+    if(n->dc == 34){
+        dbg(c);
+    }
+#endif
+
     return true;
 }
 
@@ -767,10 +774,10 @@ bool buildRIG(BasicBlock* gb)
     std::cout << "**** the RIG of " << gb->BlockName <<  "****\n";
     for(auto dnode: RIG[gb])
     {
-        std::cout << ((dnode->dc_type == Decl::reg_decl) ? "r" : "") << dnode->dc << "\t";
+        std::cout << ((dnode->typeIsREG) ? "r" : "") << dnode->dc << "\t";
         for(auto con_node: dnode->connectTo)
         {
-            std::cout << ((con_node->dc_type == Decl::reg_decl) ? "r" : "") << con_node->dc << " ";
+            std::cout << ((con_node->typeIsREG) ? "r" : "") << con_node->dc << " ";
         }
         std::cout << "\n";
     }
@@ -784,7 +791,7 @@ bool buildRIG(BasicBlock* gb)
             dbg("color，该全局块染色情况");
             std::cout << "**** 该全局块染色情况 ****" << endl;
             for(auto node: RIG[gb]){
-                std::cout << ((node->dc_type == Decl::reg_decl) ? "r" : "")  << node->dc << " " << colors[node]-1 << endl;
+                std::cout << ((node->typeIsREG) ? "r" : "")  << node->dc << " " << colors[node]-1 << endl;
             }
 
 

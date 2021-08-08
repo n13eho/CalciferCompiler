@@ -10,10 +10,10 @@
 struct RIGnode
 {
     int dc;
-    int dc_type;
+    bool typeIsREG;
     vector<RIGnode*> connectTo;
 
-    RIGnode(int x, int decl_type){dc = x; dc_type = decl_type;}
+    RIGnode(int x, bool isreg){dc = x; typeIsREG = isreg;}
 };
 
 
