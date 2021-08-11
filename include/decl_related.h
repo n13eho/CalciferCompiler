@@ -27,5 +27,3 @@ extern int imm_cnt;
 
 
 bool isValid8bit(int num);
-
-IntegerValue* findimmValue(int num);

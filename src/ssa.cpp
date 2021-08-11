@@ -24,10 +24,6 @@ map<DomTreenode*,DomTreenode*> ancestor;
 map<DomTreenode*,DomTreenode*> label;
 int dfscnt=0;
 
-// mul, div, mod 为了消除常数新增一条assign语句所需要用到的临时变量的value的名字
-string mdm_name = "mdm";
-int mdm_cnt = 0;
-
 // 为了给decl.h放imm立即数处理
 string imm_vname = "imm";
 int imm_cnt = 0;
@@ -217,6 +213,7 @@ void placePhi()
 {
     int cnttem = 0 ;
     for(auto val : allValue){
+        if(val->isTemp == 1) continue;
         cnttem++;
         phiIns.clear();
         Added.clear();
@@ -307,38 +304,6 @@ void getssa()
             }
         }
     }
-
-    //0.1 处理 mul,div,mod 使得他的源操作数没有常量. 有常量的话,就在这条四元式之前加入一条assign
-    // for(auto gb:IR1->Blocks){
-    //     for(auto b:gb->domBlock){
-    //         for(auto it = b->InstrList.begin(); it != b->InstrList.end(); it++)
-    //         {
-    //             Instruction *ins_c = IR1->InstList[(*it)];
-    //             int antiType = ins_c->getOpType();
-    //             if(antiType == Instruction::Mul || antiType == Instruction::Div || antiType == Instruction::Mod)
-    //             {//找到这三种指令
-    //             for(int i=0; i < ins_c->Operands.size(); i++)
-    //             {// 对两个操作数都扫一遍
-    //                 auto opVaule = ins_c->Operands[i];
-    //                 if(opVaule->getType() == 1 && ((IntegerValue*)opVaule)->isConst == 1)
-    //                 {// 是常数，则在前面加一条assign语句
-    //                     //这条assign语句
-    //                     Instruction* ins_ass = new Instruction(-1, Instruction::Assign, 1);
-    //                     ins_ass->addOperand(opVaule); // 新指令的操作数应该是这个现成的const
-    //                     IntegerValue* dummyVal = new IntegerValue(mdm_name + to_string(mdm_cnt++), opVaule->lineno, opVaule->var_scope, 0);
-    //                     ins_ass->setResult(dummyVal); // 新指令的result应该是一个新的Value，有一个中间temp变量
-    //                     // 还需要把当前的这个opValue换成新的dummyVal
-    //                     ins_c->Operands[i] = dummyVal;
-    //                     // 在它前面插入这条Instruction
-    //                     IR1->InsertInstr(ins_ass);
-    //                     b->InstrList.insert(it, IR1->InstList.size() - 1);
-    //                 }
-    //             }
-    //             }
-    //         }
-    //     }
-    // }
-
     //计算控制树
     //Lenguar-Tarjan 稍改...
     for(auto i: IR1->Blocks){

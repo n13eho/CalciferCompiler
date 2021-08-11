@@ -45,6 +45,7 @@ class Value
     // Value类型
     int valueType;
     int isPara=0; // 代表他是第几个参数
+    int isTemp = 0 ;//是不是临时变量
 };
 
 class IntegerValue:public Value

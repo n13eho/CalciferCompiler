@@ -66,11 +66,12 @@ int main(int argc, char *argv[])
 //        show_SymbleTable(SymbolTable); // 打印符号表
         VisitAST(Droot, IR1); // 从ast：建立四元式 + 得出block的信息
 //       show_IR_ins(IR1); // 打印指令
-//        show_cfg();
         // cout << "\n\n"; show_block(globalBlock, 0);
         // Visitblock(IR1); // 删除空结点
         // SSA
         getssa();//建立支配树以及支配边界 -->
+        show_cfg();
+        // return 0;
 
         // 计算每个block的frequency， 可以和上面一步的SSA并行
         getFrequency(); // 是addMemoryOperation(RIG.cpp)的1.1

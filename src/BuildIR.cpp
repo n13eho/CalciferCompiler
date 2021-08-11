@@ -67,6 +67,7 @@ void AllocCreate(GrammaNode* node,LinearIR *IR,Value* VL,int space_size)
     Instruction* ins_alloc = new Instruction(IR->getInstCnt(),Instruction::Alloc,2);
     ins_alloc->addOperand(VL);
     IntegerValue* space  = new IntegerValue("space",node->lineno,node->var_scope,space_size,1);
+    space->isTemp = 1;
     ins_alloc->addOperand((Value*)space);
     IR->InsertInstr(ins_alloc);
 
@@ -308,6 +309,8 @@ void VarDefNode(GrammaNode* node,LinearIR *IR)
                             memset_flag = 1;
                             IntegerValue* const00 = new IntegerValue("const0",node->lineno,node->var_scope,0,1);
                             IntegerValue* arraysize = new IntegerValue("ArraySize",node->lineno,node->var_scope,total*4,1);
+                            const00->isTemp = 1;
+                            arraysize->isTemp = 1;
                             FunctionValue* funcMemset = new FunctionValue("memset",node->lineno,node->var_scope,3,0);
                             std::vector<Value*> op = {funcMemset,VL,const00,arraysize};//调用的函数value、数组首地址、0、memset数组的大小
                             CreateIns(node,IR,Instruction::Call,4,op,nullptr);
@@ -317,6 +320,7 @@ void VarDefNode(GrammaNode* node,LinearIR *IR)
                             if(memset_flag && array_init[j]->getName() == "const0")
                                 continue;
                             IntegerValue* index = new IntegerValue("index",node->lineno,node->var_scope,j,1);
+                            index->isTemp = 1;
                             std::vector<Value*> op = {VL,index,array_init[j]};
                             cout<<"store "<<array_init[j]->getName()<<" to index "<<j<<endl;
                             CreateIns(node,IR,Instruction::Store,3,op,nullptr);
@@ -407,6 +411,7 @@ void VarDefNode(GrammaNode* node,LinearIR *IR)
                         }
                     }
                     IntegerValue* const0_ = new IntegerValue("const0",node->lineno,node->var_scope,0,1);
+                    const0_->isTemp = 1;
                     vector<Value*> chuzhi;
                     while(total--)
                     {
@@ -949,6 +954,7 @@ void WhileNode(GrammaNode* node,LinearIR *IR)
         //插入跳转到cond语句的跳转语句
         Instruction* ins_br3 = new Instruction(IR->getInstCnt(),Instruction::Jmp,0);
         IntegerValue* jmpIns = new IntegerValue("jmpaddress",node->lineno,node->var_scope,condInsId,1);
+        jmpIns->isTemp = 1;
         // ins_br3->setResult(jmpIns);
         IR->InsertInstr(ins_br3);
         // ins_br3->jmpDestBlock = whileHead;
@@ -1190,6 +1196,7 @@ Value* LAndExpNode(GrammaNode* node,LinearIR *IR)
 {
     CondLogi.push_back(Instruction::LogicAnd);
     Value* ret = new Value("tr",node->lineno,node->var_scope);
+    ret->isTemp = 1;
     CondCnt.push_back(node->son.size());
 //    cout<<"LAndExpNode cond cnt:"<<node->son.size()<<endl;
     if(node->son.size() == 1)
@@ -1212,6 +1219,7 @@ Value* LAndExpNode(GrammaNode* node,LinearIR *IR)
             // dbg(node->son[0]->str);
             Value* VL = ret;
             IntegerValue* RL = new IntegerValue("const0",node->son[0]->lineno,node->son[0]->var_scope,0,1);
+            RL->isTemp = 1;
             if(nullptr == FuncN && 0 == global)
             {
                 throw BuildIRError(VL->lineno, VL->VName, "错误6");
@@ -1294,6 +1302,7 @@ Value* LAndExpNode(GrammaNode* node,LinearIR *IR)
                 */
                 //与常数0比较
                 IntegerValue* const0 = new IntegerValue("const0",node->son[i]->lineno,node->son[i]->var_scope,0,1);
+                const0->isTemp = 1;
                 vector<Value*> ops={Condi,const0};
                 if(CondCnt.back()>1)
                     CreateIns(node,IR,Instruction::ArithEq,2,ops,nullptr);
@@ -1765,11 +1774,13 @@ Value* InitValNode(GrammaNode* node,LinearIR *IR)
         for(int j=0; j < d_len*cur_dimen;j++)
         {
             IntegerValue* const0 = new IntegerValue("const0",node->lineno,node->var_scope,0,1);
+            const0->isTemp = 1;
             array_init.push_back((Value*)const0);
 //            dbg("push a zero in array_init");
         }
 
         IntegerValue* ret = new IntegerValue("sub matrix size",node->lineno,node->var_scope,init_list.size(),1);
+        ret->isTemp = 1;
         return (Value*) ret;
     }
     else if(InitVal_ == node->type)
@@ -1780,6 +1791,7 @@ Value* InitValNode(GrammaNode* node,LinearIR *IR)
             GrammaNode* p_node = node->son[0];
             // dbg("p_node",p_node->type);
             IntegerValue* ret= new IntegerValue("t1",p_node->lineno,p_node->var_scope,d_len*cur_dimen,1);
+            ret->isTemp = 1;
             int cnt = 0;
             // cout<<"初值son个数:"<<p_node->son.size()<<endl;
             for(int i=0;i<p_node->son.size();i++)
@@ -1813,6 +1825,7 @@ Value* InitValNode(GrammaNode* node,LinearIR *IR)
                     for(int j=0;j < (d_len - (pos % d_len)) % d_len ;j++)
                     {
                         IntegerValue* const0 = new IntegerValue("const0",p_node->lineno,p_node->var_scope,0,1);
+                        const0->isTemp = 1;
                         array_init.push_back((Value*)const0);
                         // dbg("push a zero in array_init");
                         // init_list.push_back((Value*)const0);
@@ -1836,6 +1849,7 @@ Value* InitValNode(GrammaNode* node,LinearIR *IR)
             for(int j = cnt;j<d_len*cur_dimen;j++)
             {
                 IntegerValue* const0 = new IntegerValue("const0",p_node->lineno,p_node->var_scope,0,1);
+                const0->isTemp = 1;
                 array_init.push_back((Value*)const0);
                 // dbg("push a zero in array_init");
             }
@@ -2136,6 +2150,7 @@ Value* UnaryExpNode(GrammaNode* node,LinearIR *IR)
             if(called->getName() == "starttime" || called->getName() == "stoptime")
             {
                 IntegerValue* lineV = new IntegerValue("lineno",node->lineno,node->var_scope,node->lineno,1);
+                lineV->isTemp = 1;
                 vector<Value*> ops = {called,lineV};
                 CreateIns(node,IR,Instruction::Call,2,ops,0);
             }
@@ -2224,6 +2239,7 @@ Value* UnaryExpNode(GrammaNode* node,LinearIR *IR)
                     bbNow = GetPresentBlock(FuncN,BasicBlock::Basic);
                 }
                 IntegerValue* const0 = new IntegerValue("const0",node->lineno,node->var_scope,0,1);
+                const0->isTemp  =1;
                 ins_new = new Instruction(IR->getInstCnt(),Instruction::UnaryNot,1);
                 ins_new->addOperand(arg1);
                 ins_new->addOperand(const0);
@@ -2327,6 +2343,7 @@ Value* LValArrayNode(GrammaNode* node,LinearIR *IR)
         }
         //索引
         IntegerValue* index = new IntegerValue("index",node->lineno,node->var_scope,0);
+        index->isTemp = 1;
 //        Value* index = nullptr;
         //Exps_节点
         GrammaNode* p_node = node->son[1];
@@ -2353,16 +2370,18 @@ Value* LValArrayNode(GrammaNode* node,LinearIR *IR)
                 // dbg("index is const?",((IntegerValue*)index)->isConst);
                 int dimen = NumOfDimension_[i];
                 accum = new IntegerValue("dimen",node->lineno,node->var_scope,dimen,1);
+                accum->isTemp = 1;
 //                accum = new ImmValue("dimen",dimen);
             }
             else
             {
                 int dimen = NumOfDimension_[i];
                 IntegerValue* present_dimen = new IntegerValue("dimen",node->lineno,node->var_scope,dimen,1);
+                present_dimen->isTemp = 1;
                 //当前维度的索引
                 Value* present_index = AddExpNode(p_node->son[i],IR);
                 Value* arg3 = new IntegerValue("t"+std::to_string(i),node->lineno,node->var_scope,0);
-
+                arg3->isTemp = 1;
                 if(nullptr == FuncN && 0 == global)
                 {
                     throw BuildIRError(arg3->lineno, arg3->VName, "错误20");

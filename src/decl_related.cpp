@@ -27,18 +27,3 @@ bool isValid8bit(int num)
     }
     return false;
 }
-
-IntegerValue* findimmValue(int num)
-{ // 找到或者new一个立即数对应的IntegerValue
-    for(auto iter: imm2immV)
-    {
-        if(iter.first == num){
-            return iter.second;
-        }
-    }
-    // 否则就是没找见，新new一个扔到allValue里面，然后建立这个映射
-    IntegerValue* imm_value = new IntegerValue(imm_vname+std::to_string(imm_cnt++), 999, "1", num, 0);
-    allValue.insert(imm_value);
-    imm2immV[num] = imm_value;
-    return imm_value;
-}
