@@ -25,9 +25,9 @@ message("Performance test: ${PERF_TEST}")
 enable_testing()
 
 # test files
-file(GLOB function_test2020 "sysyruntime2021/function_test2020/*.sy")
 file(GLOB function_test2021 "sysyruntime2021/function_test2021/*.sy")
-file(GLOB performance_test2021_pre "sysyruntime2021/performance_test2021_pre/*.sy")
+file(GLOB function_hidden2021 "sysyruntime2021/functional_hidden2021/*.sy")
+file(GLOB performance_test2021 "sysyruntime2021/performance_test2021/*.sy")
 file(GLOB custom_test_cases "test_sets/*.sy")
 
 # output .S file path
@@ -37,8 +37,8 @@ set(output_file_path "/mnt/w/Compiler/calcifercompiler/test_sets/outputS")
 # test which cases
 set(all_test_cases "")
 if (FUNC_TEST)
-    set(all_test_cases ${all_test_cases} ${function_test2020})
     set(all_test_cases ${all_test_cases} ${function_test2021})
+    set(all_test_cases ${all_test_cases} ${function_hidden2021})
 endif()
 if (PERF_TEST)
     set(all_test_cases ${all_test_cases} ${performance_test2021_pre})
