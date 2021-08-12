@@ -721,8 +721,26 @@ void setDecl(BasicBlock *s)
 }
 
 map<BasicBlock*, set<Decl*>> reachin,reachout;
+map<BasicBlock*, set<Decl*>> old_reachin,old_reachout;
 map<BasicBlock*, bool> visReach;
 map< pair<Value*,BasicBlock*>, vector<Decl*> > Assign_rec;
+
+bool isChaanged(){
+    // copy from RIG.cpp
+    for(auto p: reachin){
+        if(p.second.size() != old_reachin[p.first].size()){
+            // 如果大小不相等，返回真
+            return true;
+        }
+    }
+    for(auto p: reachout){
+        if(p.second.size() != old_reachout[p.first].size()){
+            // 如果大小不相等，返回真
+            return true;
+        }
+    }
+    return false; // 没有改变过
+}
 
 void calReach(BasicBlock* s)
 {
@@ -1225,11 +1243,20 @@ void liveSets()
         }  
     }
     //计算reach in/out
-    int MAXiter=reachset_times;
-    while(MAXiter--){
-        for(auto rt:DomRoot){
+    for(auto rt:DomRoot){
+        while(1){
+            //更新old
+            old_reachin.clear();
+            old_reachin.insert(reachin.begin(), reachin.end());
+            old_reachout.clear();
+            old_reachout.insert(reachout.begin(), reachout.end());
+            
+            //计算新的
             visReach.clear();
             calReach(rt->block);
+
+            //对比，看是否没变了
+            if(!isChaanged())break;
         }
     }
 //    dbg("syy -- reach sets win!");
