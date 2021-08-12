@@ -131,24 +131,26 @@ void assignMul(Instruction* instr,BasicBlock *node)
 }
 void assignDiv(Instruction* instr,BasicBlock *node)
 {
-    //call需要内定0123
-    int Vnum = 0;
-    for(auto param : instr->getOp()){
-        if(Vnum>3)break; //加前4个参数的mov
-        armMov* mov_param = new armMov();
-        mov_param->rd = new regDecl(param, node, Vnum++);
-        mov_param->isaddress = true;
-        newBlock[node].push_back(mov_param);
-        trance[mov_param]=instr;
+    IntegerValue* op2 = (IntegerValue*)(instr->getOp()[1]);
+    IntegerValue* op1 = (IntegerValue*)(instr->getOp()[0]);
+
+    if(op1->isConst){
+        armMov* div_mov = new armMov();
+        div_mov->rd = new varDecl(op1, node, Rcnt++);
+        newBlock[node].push_back(div_mov);
+        trance[div_mov] = instr;
+    }
+    if(op2->isConst){
+        armMov* div_mov = new armMov();
+        div_mov->rd = new varDecl(op2, node, Rcnt++);
+        newBlock[node].push_back(div_mov);
+        trance[div_mov] = instr;
     }
 
-    armCall *ins=new armCall();
+    armDiv *ins=new armDiv();
     IntegerValue* res=(IntegerValue*)instr->getResult();
     varDecl *resd = new varDecl(res,node,Rcnt++);
     ins->rd = resd;
-
-    ins->funcname = "__aeabi_idiv";
-
     newBlock[node].push_back(ins);
     trance[ins]=instr;
 }
@@ -521,9 +523,7 @@ void assignIns(Instruction* ins,BasicBlock* node)
     }
     else if(ins->getOpType() == Instruction::Div)
     {
-        FunctionValue* func = new FunctionValue("__aeabi_idiv",-1,"",2, 1);
-        ins->Operands.insert(ins->Operands.begin(),func);
-        assignCall(ins,node);
+        assignDiv(ins,node);
     }
     else if(ins->getOpType() == Instruction::Mod)
     {
@@ -790,7 +790,7 @@ int usedMov(armMov* ins, BasicBlock* node)
         addAssign(ins->rd->rawValue,node,ins->rd); // 原来的value，node，新增的dc(rd)
         return 0;
     }
-    else if(raw->getOpType() == Instruction::Mul){
+    else if(raw->getOpType() == Instruction::Mul||raw->getOpType() == Instruction::Div){
         // 为了处理mul的第二个操作数立即数特别加上的一条mov指令
         // 直接复制下面的cmp家的
 
