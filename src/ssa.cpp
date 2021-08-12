@@ -69,6 +69,7 @@ void compress(DomTreenode* v)
 DomTreenode* eval(DomTreenode* v)
 {
     //eval: 在并查集中到根路径中semi最小的点
+    dbg(ancestor[v]);
     if(ancestor[v]==0)return v;//如果是根
     else{
         compress(v);//进行路径压缩

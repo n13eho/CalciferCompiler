@@ -159,26 +159,26 @@ void assignDiv(Instruction* instr,BasicBlock *node)
 }
 void assignMod(Instruction* instr,BasicBlock *node)
 {
-    //call需要内定0123
-    int Vnum = 0;
-    for(auto param : instr->getOp()){
-        if(Vnum>3)break; //加前4个参数的mov
-        armMov* mov_param = new armMov();
-        mov_param->rd = new varDecl(param, node, Vnum++);
-        mov_param->isaddress = true;
-        newBlock[node].push_back(mov_param);
-        trance[mov_param]=instr;
-    }
+    //mod rd, r0, r1 应该翻译成
+    //sdiv rd, r0, r1 
+    //mul rd, rd, r1
+    //sub rd, r0, rd
+    //在assign阶段,rd需要填, 其余分别在各自used阶段的分类讨论中改
+    assignDiv(instr, node);
 
-    armCall *ins=new armCall();
     IntegerValue* res=(IntegerValue*)instr->getResult();
-    varDecl *resd = new varDecl(res,node,Rcnt++);
-    ins->rd = resd;
+    IntegerValue* op2 = (IntegerValue*)(instr->getOp()[1]);
+    IntegerValue* op1 = (IntegerValue*)(instr->getOp()[0]);
 
-    ins->funcname = "__aeabi_idivmod";
+    armMul* mod_mul = new armMul();//mul rd, rd, r1
+    mod_mul->rd = new varDecl(res, node, Rcnt++);
+    newBlock[node].push_back(mod_mul);
+    trance[mod_mul]=instr;
 
-    newBlock[node].push_back(ins);
-    trance[ins]=instr;
+    armSub* mod_sub = new armSub();//sub rd, r0, rd
+    mod_sub->rd = new varDecl(res, node, Rcnt++);
+    newBlock[node].push_back(mod_sub);
+    trance[mod_sub]=instr;
 }
 void assignSub(Instruction* instr,BasicBlock *node)
 {
@@ -530,9 +530,7 @@ void assignIns(Instruction* ins,BasicBlock* node)
     }
     else if(ins->getOpType() == Instruction::Mod)
     {
-        FunctionValue* func = new FunctionValue("__aeabi_idivmod",-1,"",2, 1);
-        ins->Operands.insert(ins->Operands.begin(),func);
-        assignCall(ins,node);
+        assignMod(ins, node);
     }
     else if(ins->getOpType() == Instruction::Assign)
     {
@@ -731,9 +729,16 @@ void usedMul(armMul* ins,BasicBlock* node)
     Instruction* raw = trance[ins];
     IntegerValue* r0 = (IntegerValue*)raw->getOp()[0];
     IntegerValue* r1 = (IntegerValue*)raw->getOp()[1];
-    ins->r0 = getDecl(r0,node);
-    ins->r1 = getDecl(r1,node);
-    addAssign(ins->rd->rawValue,node,ins->rd);
+    if(raw->getOpType() == Instruction:: Mod){
+        ins->r0 = getDecl(ins->rd->rawValue,node);
+        ins->r1 = getDecl(r1,node);
+        addAssign(ins->rd->rawValue,node,ins->rd);
+    }
+    else{
+        ins->r0 = getDecl(r0,node);
+        ins->r1 = getDecl(r1,node);
+        addAssign(ins->rd->rawValue,node,ins->rd);
+    }
 }
 void usedDiv(armDiv* ins,BasicBlock* node)
 {
@@ -758,10 +763,19 @@ void usedSub(armSub* ins,BasicBlock* node)
     Instruction* raw = trance[ins];
     IntegerValue* r0 = (IntegerValue*)raw->getOp()[0];
     IntegerValue* r1 = (IntegerValue*)raw->getOp()[1];
-    if(r0->isConst)swap(r0,r1);
-    ins->r0 = getDecl(r0,node);
-    ins->r1 = getDecl(r1,node);
-    addAssign(ins->rd->rawValue,node,ins->rd);
+    if(raw->getOpType() == Instruction:: Mod){
+        //如果是mod产生的sub rd, r0, rd
+        ins->r0 = getDecl(r0,node);
+        ins->r1 = getDecl(ins->rd->rawValue,node);
+        addAssign(ins->rd->rawValue,node,ins->rd);
+        return ;
+    }
+    else{
+        if(r0->isConst)swap(r0,r1);
+        ins->r0 = getDecl(r0,node);
+        ins->r1 = getDecl(r1,node);
+        addAssign(ins->rd->rawValue,node,ins->rd);
+    }
 }
 void usedRsb(armRsb* ins,BasicBlock* node)
 {
@@ -793,7 +807,9 @@ int usedMov(armMov* ins, BasicBlock* node)
         addAssign(ins->rd->rawValue,node,ins->rd); // 原来的value，node，新增的dc(rd)
         return 0;
     }
-    else if(raw->getOpType() == Instruction::Mul||raw->getOpType() == Instruction::Div){
+    else if(raw->getOpType() == Instruction::Mul||
+            raw->getOpType() == Instruction::Div||
+            raw->getOpType() == Instruction::Mod){
         // 为了处理mul的第二个操作数立即数特别加上的一条mov指令
         // 直接复制下面的cmp家的
 

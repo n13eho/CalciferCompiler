@@ -908,12 +908,8 @@ void RigsterAlloc()
             for(auto dr: DomRoot)
                 showDecl(dr);
             spill_failed = buildRIG(gb);
-            //            spill_failed = buildRIG(gb);
-            //            spill_failed = buildRIG(gb);
         }
     }
-
-
 
     // final show instruction agian, this time with limited k registers
     std::cout << "****Arm Instruction with limited Registers ****\n";
