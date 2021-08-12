@@ -770,9 +770,12 @@ bool buildRIG(BasicBlock* gb)
 {
     // srand(time(0));
 
-    int times_deadCode = 10; // 删10次是怕删不全
-    while(times_deadCode--)
+    int old_gb_ins_count = -1; // 记录上一次这个gb全局块的指令数量
+    while(true)
     {
+        // 0 首先记录这个gb当前的指令个数
+        old_gb_ins_count = gbarmCnt[gb]; // FIXME:这里是一个map，gb对应的键值
+
         // 1 init clear out
         for(auto node:RIG[gb]){free(node);}
         RIG[gb].clear();
@@ -808,8 +811,11 @@ bool buildRIG(BasicBlock* gb)
 
         // 4 deleting dead code
         deleteDC(block2dom[gb->domBlock[0]], gb);
+
+        // 5 判断，指令数量书否相同，相同就跳出去，否则就继续
+        if(old_gb_ins_count == gbarmCnt[gb]) // FIXME:改为map中，gb对应的键值
+            break;
     }
-    //    dbg("neho -- fill in/out sets");
     // 根本没有分配寄存器，直接返回真
     if(RIG[gb].size() == 0)return true;
 

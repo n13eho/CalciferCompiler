@@ -775,22 +775,7 @@ void IfElseNode(GrammaNode* node,LinearIR *IR)
 
         //T
         bbNow = caseT;
-        StmtNode(node->son[1],IR);
-        // //如果此分支不存在break、continue、ret
-        // if(linkNext(bbNow,IR))
-        // {
-        //     //此时bbNow不一定是caseT
-        //     bbNow->Link(next);
-        //     //T跳转至next
-        //     Instruction* ins_br = new Instruction(IR->getInstCnt(),Instruction::Jmp,0);
-        //     IR->InsertInstr(ins_br);
-        //     caseT->Addins(ins_br->getId());
-        //     ins_br->setParent(caseT);
-        //     ins_br->jmpDestBlock = next;
-
-        //     // cout<<"case T "<<bbNow->BlockName<<"link next"<<endl;
-        // }
-        
+        StmtNode(node->son[1],IR);        
         
         //T跳转至next
         if(bbNow->getLastIns()>0 && IR->getIns(bbNow->getLastIns())->getOpType() != Instruction::Jmp)
@@ -818,19 +803,6 @@ void IfElseNode(GrammaNode* node,LinearIR *IR)
         //F
         bbNow = caseF;
         StmtNode(node->son[2],IR);
-        //如果此分支不存在break、continue、ret
-        // if(linkNext(bbNow,IR))
-        // {
-        //     //此时bbNow不一定是caseF
-        //     bbNow->Link(next);
-        //     //T跳转至next
-        //     Instruction* ins_br = new Instruction(IR->getInstCnt(),Instruction::Jmp,0);
-        //     IR->InsertInstr(ins_br);
-        //     caseF->Addins(ins_br->getId());
-        //     ins_br->setParent(caseF);
-        //     ins_br->jmpDestBlock = next;
-            
-        // }
         //此时bbNow不一定是caseF
         
         //F跳转至next
@@ -863,12 +835,17 @@ void IfElseNode(GrammaNode* node,LinearIR *IR)
         }
         else
         {
-            bbNow->LastIfNext = IfNextBlocks.top();  
+            bbNow->LastIfNext = IfNextBlocks.top();
         }
 
         CaseFBlocks.pop();
         CaseTBlocks.pop();
-        
+
+        if(next->pioneerBlock.size() == 0)
+        {
+            DeleteBlockWithNoPio(next,IR);
+            next = nullptr;
+        }
 
     }
     else
@@ -949,19 +926,30 @@ void WhileNode(GrammaNode* node,LinearIR *IR)
         //T
         bbNow = caseT;
         StmtNode(node->son[1],IR);
-        bbNow->Link(whileHead);
+        //dbg("while case T link with while head",bbNow,bbNow->BlockName,whileHead,whileHead->BlockName);
+        if(bbNow->pioneerBlock.size() != 0)
+        {
+            bbNow->Link(whileHead);
+            //插入跳转到cond语句的跳转语句
+            Instruction* ins_br3 = new Instruction(IR->getInstCnt(),Instruction::Jmp,0);
+            IntegerValue* jmpIns = new IntegerValue("jmpaddress",node->lineno,node->var_scope,condInsId,1);
+            jmpIns->isTemp = 1;
+            // ins_br3->setResult(jmpIns);
+            IR->InsertInstr(ins_br3);
+            // ins_br3->jmpDestBlock = whileHead;
 
-        //插入跳转到cond语句的跳转语句
-        Instruction* ins_br3 = new Instruction(IR->getInstCnt(),Instruction::Jmp,0);
-        IntegerValue* jmpIns = new IntegerValue("jmpaddress",node->lineno,node->var_scope,condInsId,1);
-        jmpIns->isTemp = 1;
-        // ins_br3->setResult(jmpIns);
-        IR->InsertInstr(ins_br3);
-        // ins_br3->jmpDestBlock = whileHead;
-
-        bbNow->Addins(ins_br3->getId());
-        ins_br3->setParent(bbNow);
-        ins_br3->setJmpDestBlock(whileHead);
+            bbNow->Addins(ins_br3->getId());
+            ins_br3->setParent(bbNow);
+            ins_br3->setJmpDestBlock(whileHead);
+        }
+        else
+        {
+            if(bbNow->pioneerBlock.size() == 0)
+            {
+                DeleteBlockWithNoPio(bbNow,IR);
+                bbNow = nullptr;
+            }
+        }       
 
         bbNow = next;
         bbNow->bType = BasicBlock::IfNext;
@@ -978,6 +966,9 @@ void WhileNode(GrammaNode* node,LinearIR *IR)
         LoopNext.pop();
         CaseTBlocks.pop();
         CaseFBlocks.pop();
+        
+        
+
     }
     else
     {
@@ -1012,12 +1003,12 @@ void BreakNode(GrammaNode* node,LinearIR *IR)
         //error
         return;
     }
-    BasicBlock* breakB = CreateBlock(BasicBlock::Break);
-    breakB->BlockName = "break";
-    FuncN->AddDom(breakB);
-    breakB->setParnt(FuncN);
+    // BasicBlock* breakB = CreateBlock(BasicBlock::Break);
+    // breakB->BlockName = "break";
+    // FuncN->AddDom(breakB);
+    // breakB->setParnt(FuncN);
     
-    bbNow->Link(breakB);
+    // bbNow->Link(breakB);
     
 
 
@@ -1025,8 +1016,8 @@ void BreakNode(GrammaNode* node,LinearIR *IR)
     Instruction* ins_bk = new Instruction(IR->getInstCnt(),Instruction::Jmp,0);
 
     //operand todo
-    breakB->Addins(ins_bk->getId());
-    ins_bk->setParent(breakB);
+    bbNow->Addins(ins_bk->getId());
+    ins_bk->setParent(bbNow);
     IR->InsertInstr(ins_bk);
 
     if(!LoopNext.empty())
@@ -1035,8 +1026,8 @@ void BreakNode(GrammaNode* node,LinearIR *IR)
         // ins_bk->jmpDestBlock = next;
         ins_bk->setJmpDestBlock(next);
         //next->Addins(ins_bk->getId());
-        breakB->Link(next);
-        bbNow = breakB;
+        bbNow->Link(next);
+        bbNow = bbNow;
     }
     
 }
@@ -1052,25 +1043,26 @@ void ContinueNode(GrammaNode* node,LinearIR *IR)
         return;
     }   
     
-    BasicBlock* continueB = CreateBlock(BasicBlock::Continue);
-    continueB->BlockName = "continue";
-    FuncN->AddDom(continueB);
-    continueB->setParnt(FuncN);
+    // BasicBlock* continueB = CreateBlock(BasicBlock::Continue);
+    // continueB->BlockName = "continue";
+    // FuncN->AddDom(continueB);
+    // continueB->setParnt(FuncN);
 
-    bbNow->Link(continueB);
+    // bbNow->Link(continueB);
 
     Instruction* ins_jmp = new Instruction(IR->getInstCnt(),Instruction::Jmp,0);
     //operand todo
     IR->InsertInstr(ins_jmp);
-    continueB->Addins(ins_jmp->getId());
-    ins_jmp->setParent(continueB);
+    //continueB change to bbNow
+    bbNow->Addins(ins_jmp->getId());
+    ins_jmp->setParent(bbNow);
     if(!LoopNext.empty())
     {
         BasicBlock* whileB = LoopNext.top().first;
-        continueB->Link(whileB);
+        bbNow->Link(whileB);
         // ins_jmp->jmpDestBlock = whileB;
         ins_jmp->setJmpDestBlock(whileB);
-        bbNow = continueB;
+        bbNow = bbNow;
     }
     
 
@@ -2461,73 +2453,119 @@ bool linkNext(BasicBlock* node,LinearIR *IR)
     }
 }
 
+//delete next
+void DeleteBlockWithNoPio(BasicBlock* node,LinearIR *IR)
+{
+    //Func中dom删除next
+    dbg(node->BlockName,node,node->pioneerBlock.size(),node->succBlock.size());
+    std::vector<BasicBlock*>::iterator it;
+    for (it = FuncN->domBlock.begin(); it != FuncN->domBlock.end();)
+	{
+		if (*it == node)
+		{
+            // dbg("funcN delete dom block");
+			it = FuncN->domBlock.erase(it++);
+		}
+		else
+		{
+			it++;
+		}
+	}
+   //找到next的succ，递归删除
+    for (it = node->succBlock.begin(); it != node->succBlock.end();)
+	{//遍历node的后继*it，在*it对应块的前驱中删去node，然后将*it从node的后继中删除
+        BasicBlock* tmp = *it;
+        dbg(tmp->BlockName,tmp);
+        std::vector<BasicBlock*>::iterator it2;
+        for (it2 = tmp->pioneerBlock.begin(); it2 != tmp->pioneerBlock.end();)
+        {
+            // dbg(*it2);
+            if(*it2 == node)
+            {
+                // dbg("删除当前后继块的前驱连接");
+                it2 = tmp->pioneerBlock.erase(it2++);
+                break;
+            }
+            it2++;
+        }
+        if(tmp->pioneerBlock.size() == 0)
+        {
+            // dbg("递归");
+            DeleteBlockWithNoPio(tmp,IR);
+        }
+        
+        // dbg("删除当前后继块的连接",*it);
+        it = node->succBlock.erase(it++);
+	}
+   
+}
 
 // 打印当前IR中的所有指令
 void show_IR_ins(LinearIR *IR)
 {
-    cout<<"\n\n";
+    cerr<<"\n\n";
     dbg("Instruction List:");
-    cout<<"InsID\tOP\targ1\targ2\tresult\n";
+    cerr<<"InsID\tOP\targ1\targ2\tresult\n";
     Instruction* presenIns;
     
     for(int i=0; i<IR->InstList.size(); i++)
     {
         // 当前指令
         presenIns = IR->InstList[i];
-        cout << presenIns->getId() << "\t";
+        cerr << presenIns->getId() << "\t";
 //        dbg(presenIns->getId());
-        cout<< DEBUG_insOP[presenIns->getOpType()] << "\t";
+        cerr<< DEBUG_insOP[presenIns->getOpType()] << "\t";
 //        dbg(DEBUG_insOP[presenIns->getOpType()]);
-        cout<<presenIns->getParent()<<"\t";
+        cerr<<presenIns->getParent()<<"\t";
 //        dbg(presenIns->getParent());
         if(presenIns->getOpType() == Instruction::Jmp|| presenIns->getOpType() == Instruction::ConBr)
         {
             if(nullptr != presenIns->jmpDestBlock)
             {
-                cout<<presenIns->jmpDestBlock->BlockName<< presenIns->jmpDestBlock->getFirstIns()<<endl;
+                cerr<<presenIns->jmpDestBlock->BlockName<< presenIns->jmpDestBlock->getFirstIns()<<endl;
             }
             // if(nullptr!=presenIns->getResult())
                 // cout<<((IntegerValue*)presenIns->getResult())->RealValue<<endl;
             else
-                cout<<endl;
+                cerr<<endl;
             continue;
         }
         if(presenIns->getOpType() == Instruction::Alloc)
         {
-            std::cout <<presenIns->getOp()[0]->VName<<" space size:"<<((IntegerValue*)(presenIns->getOp()[1]))->getValue()<<endl;
+            std::cerr <<presenIns->getOp()[0]->VName<<" space size:"<<((IntegerValue*)(presenIns->getOp()[1]))->getValue()<<endl;
             continue;
         }
         if(presenIns->getOpType() == Instruction::Store)
         {
-            std::cout<<presenIns->getOp()[0]->VName<<" ["<<((IntegerValue*)presenIns->getOp()[1])->getValue()<<"]: "<<(presenIns->getOp()[2])->getName()<<endl;
+            std::cerr<<presenIns->getOp()[0]->VName<<" ["<<((IntegerValue*)presenIns->getOp()[1])->getValue()<<"]: "<<(presenIns->getOp()[2])->getName()<<endl;
             continue;
         }
         for(int i = 0; i < presenIns->getOp().size(); i++)
         {
             // std::cout << presenIns->getOp()[i]<< " \t";
-            std::cout << presenIns->getOp()[i]->VName << "\t";
+            std::cerr << presenIns->getOp()[i]->VName << "\t";
 //            dbg(presenIns->getOp()[i]->VName);
         }
-        if(presenIns->getOp().size() == 1) cout << "\t";
+        if(presenIns->getOp().size() == 1) cerr << "\t";
         if(presenIns->getOpType() == Instruction::InsType::Ret)
         { // Retrun 语句没有reslut，访问空0 segmentation fault
-            cout << endl;
+            cerr << endl;
         }
         else
         {
 //            dbg(presenIns->getId());
 //            dbg(presenIns->getResult());
             if(presenIns->getResult()!=nullptr)
-                cout << presenIns->getResult()->VName << endl;
+                cerr << presenIns->getResult()->VName << endl;
             else
-                cout<<endl;
+                cerr<<endl;
         }
     }
-    cout<<"\n\n";
+    cerr<<"\n\n";
 
     for(auto i: IR->Blocks)
-        cout<<i<<" ";
-    cout<<"\n\n\n";
+        cerr<<i<<" ";
+    cerr<<"\n\n\n";
 }
 
 void fixIfNext(LinearIR *IR,BasicBlock* node,int dep)
