@@ -5,8 +5,12 @@
 
 // output
 map<BasicBlock*, vector<RIGnode*>> RIG; // THE graph
+
 map<armInstr*, set<pair<int, bool> >> ins; // 每条arm指令对应的in集合，要记得清空
 map<armInstr*, set<pair<int, bool> >> outs; // 公用复用的out集合
+
+map<armInstr*, set<pair<int, bool> >> old_ins;
+
 
 // visited block 每个顶层模块内的block
 map<BasicBlock*, bool> blockVisited;
@@ -742,12 +746,27 @@ void updateV2Ds()
     Vreg2Decls.insert(temp_Vreg2Decls.begin(), temp_Vreg2Decls.end());
 }
 
+// 比较old_in和in；判断In/Out集合是否改变
+/*
+map<armInstr*, set<pair<int, bool> >> ins;
+map<armInstr*, set<pair<int, bool> >> old_ins;*/
+bool InOutChanged()
+{
+    for(auto p: ins){
+        if(p.second.size() != old_ins[p.first].size()){
+            // 如果大小不相等，返回真
+            return true;
+        }
+    }
+    return false; // 没有改变过
+}
 
+// 创建冲突图、并判断是否能染色染出来
 bool buildRIG(BasicBlock* gb)
 {
     // srand(time(0));
 
-    int times_deadCode = 10;
+    int times_deadCode = 10; // 删10次是怕删不全
     while(times_deadCode--)
     {
         // 1 init clear out
@@ -757,19 +776,28 @@ bool buildRIG(BasicBlock* gb)
         rigNodeCreated.clear();
         ins.clear();
         outs.clear();
-        //        dbg("neho -- init: clear sets and graph");
 
         // 2 开始从第一个domblock递归，填满in 和 out 集合
-        int times_RIG = TIMES_RIG;
-        while(times_RIG--){
+        while(true){
+            // 清空
             blockVisited.clear();
+
+            // 把old存起来
+            old_ins.clear();
+            old_ins.insert(ins.begin(), ins.end());
+
+            // 计算新的
             fillInOut(gb->domBlock[0]);
+
+            // 对比，看是否没变了
+            if(!InOutChanged())
+                break;
         }
 
-        //         2.5 for debug 先linshi临时打印一下这些个in 和 out
-                cout << "\n\n**** IN&OUT set ****\n";
-                for(auto dr: DomRoot)
-                    showSets(dr);
+        // 2.5 for debug 先linshi临时打印一下这些个in 和 out
+        cout << "\n\n**** IN&OUT set ****\n";
+        for(auto dr: DomRoot)
+            showSets(dr);
 
         // 3 利用填好的in、out集合，建立冲突图，也是一个递归的过程
         connectDecl(block2dom[gb->domBlock[0]], gb);
