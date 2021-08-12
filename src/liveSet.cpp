@@ -591,6 +591,7 @@ void assignIns(Instruction* ins,BasicBlock* node)
 void assignLA(Instruction *instr, BasicBlock* node)
 {
     IntegerValue* res = (IntegerValue*)instr->getResult();
+    if(res==nullptr)dbg(instr->getOp().size(),instr->getOpType());
     varDecl* resd = new varDecl(res, node, Rcnt++);
     //op1 copy from assignLogic
     IntegerValue* op1 = (IntegerValue*)(instr->getOp()[0]);

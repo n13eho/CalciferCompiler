@@ -1235,9 +1235,12 @@ Value* LAndExpNode(GrammaNode* node,LinearIR *IR)
             {
                 bbNow = GetPresentBlock(FuncN,BasicBlock::Basic);
             }
+            Value* Result = new Value("res",node->lineno,node->var_scope);
+            Result->isTemp = 1;
             Instruction* ins_neq = new Instruction(IR->getInstCnt(),Instruction::ArithNeq,2);
             ins_neq->addOperand(VL);
             ins_neq->addOperand((Value*)RL);
+            ins_neq->setResult(Result);
             IR->InsertInstr(ins_neq);
             bbNow->Addins(ins_neq->getId());
             ins_neq->setParent(bbNow);
@@ -1309,10 +1312,12 @@ Value* LAndExpNode(GrammaNode* node,LinearIR *IR)
                 IntegerValue* const0 = new IntegerValue("const0",node->son[i]->lineno,node->son[i]->var_scope,0,1);
                 const0->isTemp = 1;
                 vector<Value*> ops={Condi,const0};
+                Value* Result = new Value("res",node->lineno,node->var_scope);
+                Result->isTemp = 1;
                 if(CondCnt.back()>1)
-                    CreateIns(node,IR,Instruction::ArithEq,2,ops,nullptr);
+                    CreateIns(node,IR,Instruction::ArithEq,2,ops,Result);
                 else
-                    CreateIns(node,IR,Instruction::ArithNeq,2,ops,nullptr);
+                    CreateIns(node,IR,Instruction::ArithNeq,2,ops,Result);
                 
                 Instruction* conbr = new Instruction(IR->getInstCnt(),Instruction::ConBr,0);
                 // //向基本块加入指令

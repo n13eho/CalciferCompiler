@@ -77,7 +77,7 @@ int main(int argc, char *argv[])
         // cout << "\n\n"; show_block(globalBlock, 0);
         // Visitblock(IR1); // 删除空结点
         // SSA
-        // show_cfg();
+        show_cfg();
         getssa();//建立支配树以及支配边界 -->
         // return 0;
 
