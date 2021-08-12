@@ -33,7 +33,10 @@ int main(int argc, char *argv[])
                 break; // 啥也不干，为了测评机
             case 'o':
                 output_file = strdup(optarg);
-                dbg(output_file);
+#if DEBUG_ON
+               dbg(output_file);
+#endif
+                
                 break;
             default:
                 break;
@@ -45,7 +48,10 @@ int main(int argc, char *argv[])
     // 处理output_file: 这里处理成传参
 
     // show in/out put info
+#if DEBUG_ON
     dbg(input_file, output_file);
+               
+#endif
 
     // 输入提醒
     if (input_file == nullptr)
@@ -69,7 +75,7 @@ int main(int argc, char *argv[])
         // cout << "\n\n"; show_block(globalBlock, 0);
         // Visitblock(IR1); // 删除空结点
         // SSA
-        show_cfg();
+        // show_cfg();
         getssa();//建立支配树以及支配边界 -->
         // return 0;
 

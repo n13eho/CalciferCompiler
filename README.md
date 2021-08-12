@@ -15,6 +15,13 @@ cmake ..
 make
 ```
 
+## debug
+
+DEBUG_ON 1 means printing debug information
+DEBUG_ON is defined in "Value.h" and "sysy_node.hpp"
+
+
+
 ## run
 
 - run a single test: ./test_set/test.c

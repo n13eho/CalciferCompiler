@@ -86,7 +86,10 @@ public:
         }
         else
         {
+#if DEBUG_ON
             std::cout<<"link error"<<std::endl;
+#endif
+            
         }
     }
     

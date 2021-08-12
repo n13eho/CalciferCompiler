@@ -69,7 +69,10 @@ void compress(DomTreenode* v)
 DomTreenode* eval(DomTreenode* v)
 {
     //eval: 在并查集中到根路径中semi最小的点
-    dbg(ancestor[v]);
+#if DEBUG_ON
+    dbg(ancestor[v]);           
+#endif
+    
     if(ancestor[v]==0)return v;//如果是根
     else{
         compress(v);//进行路径压缩
@@ -232,7 +235,13 @@ void placePhi()
                 if(!phiIns[d]){
                     //add d one phi about val;
                     Instruction* ins=new Instruction(-1,Instruction::Phi,1);
-                    if(val==nullptr)dbg(cnttem);
+                    if(val==nullptr)
+                    {
+#if DEBUG_ON
+                        dbg(cnttem);
+#endif
+                        
+                    }
                     ins->addOperand(val);
                     IR1->InsertInstr(ins);
                     d->InstrList.insert(d->InstrList.begin(),IR1->InstList.size()-1);
@@ -333,6 +342,9 @@ void getssa()
 //    dbg("get all value win!");
     //抄它!  002_SSA比较清楚的说明_Lecture23.4up.pdf
     placePhi();
+#if DEBUG_ON
     dbg("place phi win!");
+               
+#endif
 
 }

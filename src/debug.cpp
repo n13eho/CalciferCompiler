@@ -85,11 +85,21 @@ void show_block(BasicBlock* node,int dep,BasicBlock* father,int way)
     }
      for(auto i : node->succBlock)
      {
-         if(!vis[i])show_block(i,dep,node,1);
+         if(!vis[i]){
+#if DEBUG_ON
+            show_block(i,dep,node,1);  
+#endif
+            
+        }
      }
     for(auto i : node->domBlock)
     {
-        if(!vis[i])show_block(i,dep+1,node,2);
+        if(!vis[i]){
+#if DEBUG_ON
+            show_block(i,dep+1,node,2);   
+#endif
+            
+            }
     }
 }
 map<BasicBlock*, bool> viscfg;

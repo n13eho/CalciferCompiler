@@ -4,6 +4,7 @@
 
 #include <string>
 #include <vector>
+#define DEBUG_ON 1
 
 enum VType{
     VInteger=0,

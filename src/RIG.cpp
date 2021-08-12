@@ -660,8 +660,9 @@ void addMemoryOperation(BasicBlock* gb)
             chosenNode = node;
         }
     }
-
-    dbg(chosenOne);
+#if DEBUG_ON
+    dbg(chosenOne);           
+#endif
 
     memoryDecl* memShift = new memoryDecl(nullptr,gb,gblock2spbias[gb]++);
     spill_dc2memdc[chosenNode]=memShift;
@@ -800,12 +801,13 @@ bool buildRIG(BasicBlock* gb)
             if(!InOutChanged())
                 break;
         }
-
+#if DEBUG_ON
         // 2.5 for debug 先linshi临时打印一下这些个in 和 out
         cout << "\n\n**** IN&OUT set ****\n";
         for(auto dr: DomRoot)
-            showSets(dr);
-
+            showSets(dr);     
+#endif
+        
         // 3 利用填好的in、out集合，建立冲突图，也是一个递归的过程
         connectDecl(block2dom[gb->domBlock[0]], gb);
 
@@ -819,6 +821,7 @@ bool buildRIG(BasicBlock* gb)
     // 根本没有分配寄存器，直接返回真
     if(RIG[gb].size() == 0)return true;
 
+#if DEBUG_ON
     // for debug 打印整张图看看
     std::cout << "**** the RIG of " << gb->BlockName <<  "****\n";
     for(auto dnode: RIG[gb])
@@ -829,19 +832,23 @@ bool buildRIG(BasicBlock* gb)
             std::cout << ((con_node->typeIsREG) ? "r" : "") << con_node->dc << " ";
         }
         std::cout << "\n";
-    }
+    }          
+#endif
+    
 
     // 5. filling colors!
     trytimes = 1;
     while(trytimes--){
         init_color(gb);
         if(paintColor(gb)){
-
+#if DEBUG_ON
             dbg("color，该全局块染色情况");
             std::cout << "**** 该全局块染色情况 ****" << endl;
             for(auto node: RIG[gb]){
-                std::cout << ((node->typeIsREG) ? "r" : "")  << node->dc << " " << colors[node]-1 << endl;
-            }
+            std::cout << ((node->typeIsREG) ? "r" : "")  << node->dc << " " << colors[node]-1 << endl;  }
+#endif
+
+            
 
 
             //如果成功了就break; 否则使用颜色过多就再试一次（最多5次）
@@ -859,7 +866,7 @@ bool buildRIG(BasicBlock* gb)
     specialInsDelete(block2dom[gb->domBlock[0]],gb);
 
 
-#if 0
+#if DEBUG_ON
     // final show instruction agian, this time with limited k registers
     std::cout << "****Arm Instruction with limited Registers ****\n";
     for(auto dr: DomRoot)
@@ -868,10 +875,16 @@ bool buildRIG(BasicBlock* gb)
 
 
     if(usedK>K){ // 染色失败
-        std::cout<<"failed\n";
+#if DEBUG_ON
+         std::cout<<"failed\n";      
+#endif
+        
         return false;
     }
+#if DEBUG_ON
     dbg("染色成功！");
+               
+#endif
     return true;
 }
 
@@ -886,7 +899,7 @@ void RigsterAlloc()
         int whenToadd = 0;
         int temp_debug = 0;
         bool spill_failed = false;
-#if 0
+#if DEBUG_ON
         while(!buildRIG(gb)){
             dbg("染色失败！");
             if(temp_debug++ > 4){
@@ -908,17 +921,22 @@ void RigsterAlloc()
 
 #endif
         if(!buildRIG(gb)){
-            dbg("全放内存");
+#if DEBUG_ON
+             dbg("全放内存");
             all2mem(gb);
             std::cout << "****add mem ****\n";
             for(auto dr: DomRoot)
-                showDecl(dr);
+                showDecl(dr);  
+#endif
+            
             spill_failed = buildRIG(gb);
         }
     }
-
+#if DEBUG_ON
     // final show instruction agian, this time with limited k registers
     std::cout << "****Arm Instruction with limited Registers ****\n";
     for(auto dr: DomRoot)
-        showDecl(dr);
+        showDecl(dr);           
+#endif
+
 }
