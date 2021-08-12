@@ -23,50 +23,50 @@ void printIns(int id)
 {
     
     Instruction* presenIns = IR1->InstList[id];
-    cout << presenIns->getId() << "\t" << DEBUG_insOP[presenIns->getOpType()] << "\t";
+    cerr << presenIns->getId() << "\t" << DEBUG_insOP[presenIns->getOpType()] << "\t";
 
     if(presenIns->getOpType() == Instruction::Jmp|| presenIns->getOpType() == Instruction::ConBr)
     {
         if(nullptr != presenIns->jmpDestBlock)
         {
-            cout<<presenIns->jmpDestBlock->BlockName << presenIns->jmpDestBlock->getFirstIns()<<endl;
+            cerr<<presenIns->jmpDestBlock->BlockName << presenIns->jmpDestBlock->getFirstIns()<<endl;
         }
         // if(nullptr!=presenIns->getResult())
-            // cout<<((IntegerValue*)presenIns->getResult())->RealValue<<endl;
+            // cerr<<((IntegerValue*)presenIns->getResult())->RealValue<<endl;
         else
-            cout<<endl;
+            cerr<<endl;
         return ;
     }
     if(presenIns->getOpType() == Instruction::Alloc)
     {
-        std::cout <<presenIns->getOp()[0]->VName<<" space size:"<<((IntegerValue*)(presenIns->getOp()[1]))->getValue()<<endl;
+        std::cerr <<presenIns->getOp()[0]->VName<<" space size:"<<((IntegerValue*)(presenIns->getOp()[1]))->getValue()<<endl;
         return;
     }
     if(presenIns->getOpType() == Instruction::Phi)
     {
-        std::cout <<presenIns->getOp()[0]->VName<<endl;
+        std::cerr <<presenIns->getOp()[0]->VName<<endl;
         return;
     }
     if(presenIns->getOpType() == Instruction::Store)
     {
-        std::cout<<presenIns->getOp()[0]->VName<<" ["<<((IntegerValue*)presenIns->getOp()[1])->getValue()<<"]: "<<(presenIns->getOp()[2])->getName()<<endl;
+        std::cerr<<presenIns->getOp()[0]->VName<<" ["<<((IntegerValue*)presenIns->getOp()[1])->getValue()<<"]: "<<(presenIns->getOp()[2])->getName()<<endl;
         return;
     }
-    for(int i = 0; i < presenIns->getOp().size(); i++)std::cout << presenIns->getOp()[i]->VName << ":"<<((IntegerValue*)presenIns->getOp()[i])->RealValue<< "\t";
-    if(presenIns->getOp().size() == 1) cout << "\t";
+    for(int i = 0; i < presenIns->getOp().size(); i++)std::cerr << presenIns->getOp()[i]->VName << ":"<<((IntegerValue*)presenIns->getOp()[i])->RealValue<< "\t";
+    if(presenIns->getOp().size() == 1) cerr << "\t";
 
     // ready to try template of casting
 
     if(presenIns->getOpType() == Instruction::InsType::Ret)
     { // Retrun 语句没有reslut，访问空0 segmentation fault
-        cout << endl;
+        cerr << endl;
     }
     else
     {
         if(presenIns->getResult()!=nullptr)
-            cout << presenIns->getResult()->VName << endl;
+            cerr << presenIns->getResult()->VName << endl;
         else
-            cout<<endl;
+            cerr<<endl;
     }
 }
 
@@ -74,13 +74,13 @@ void show_block(BasicBlock* node,int dep,BasicBlock* father,int way)
 {
 
     vis[node]=1;
-    for(int i=1;i<=dep*4;i++)cout<<' ';
-    // cout<<DEBUG_blkOP[node->bType]<<endl;
-    cout<<node;
-    if(father!=nullptr)cout<<"("<<father<<")"<<"["<<way<<"]"<<endl;
-    else cout<<endl;
+    for(int i=1;i<=dep*4;i++)cerr<<' ';
+    // cerr<<DEBUG_blkOP[node->bType]<<endl;
+    cerr<<node;
+    if(father!=nullptr)cerr<<"("<<father<<")"<<"["<<way<<"]"<<endl;
+    else cerr<<endl;
     for(auto i : node->InstrList){
-        for(int i=1;i<=dep*4;i++)cout<<' ';
+        for(int i=1;i<=dep*4;i++)cerr<<' ';
         printIns(i);
     }
      for(auto i : node->succBlock)
@@ -99,7 +99,7 @@ void outputsuc(BasicBlock* s)
 {
     viscfg[s]=1;
     for(auto eb:s->succBlock){
-        cout<<"succ:";
+        cerr<<"succ:";
         dbg(eb);
         dbg(eb->BlockName);
         for(auto i : eb->InstrList)
@@ -116,17 +116,17 @@ void show_cfg()
         for(auto i : gb->InstrList)
             printIns(i);
         for(auto b:gb->domBlock){
-            cout<<"dom:";
+            cerr<<"dom:";
             dbg(b);
             dbg(b->BlockName);
             for(auto i : b->InstrList)
                 printIns(i);
             if(!viscfg[b])outputsuc(b);
-            cout<<endl;
+            cerr<<endl;
         }
-        cout<<endl;
+        cerr<<endl;
     }
-//    dbg("-----------------------------------");
+   dbg("-----------------------------------");
     for(auto ot:other){
         if(viscfg[ot])continue;
         dbg(ot);
