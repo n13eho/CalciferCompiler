@@ -300,7 +300,7 @@ public:
     virtual int getType(){return div;}
     virtual ostream& output(ostream&out)const
     {
-        out << "\tdiv " << *rd << ", " << *r0 << ", " << *r1;
+        out << "\tsdiv " << *rd << ", " << *r0 << ", " << *r1;
         return out;
     }
     virtual vector<Decl*> getGen()
