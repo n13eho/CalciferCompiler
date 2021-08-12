@@ -986,8 +986,10 @@ void show_SymbleTable(idTable_struct *SymbolTable)
              << "\tGN Name: " << iter.first->str << "\t\tlineNumber:" << iter.first->lineno << endl;
     }
     cout << endl;
+#if DEBUG_ON
+    dbg("SymbolTable(partly):");               
+#endif
 
-    dbg("SymbolTable(partly):");
     for (auto & iter : SymbolTable->table)
     {
         if(iter.first == NULL)continue;

@@ -9,11 +9,11 @@
 
 struct RIGnode
 {
-    int dc;
-    bool typeIsREG;
+    int dc = 0;
+    bool typeIsREG = 0;
     vector<RIGnode*> connectTo;
 
-    RIGnode(int x, bool isreg){dc = x; typeIsREG = isreg;}
+    RIGnode(int x, bool isreg){dc = x; typeIsREG = isreg; connectTo.clear();}
 };
 
 

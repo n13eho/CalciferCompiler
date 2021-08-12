@@ -13,10 +13,10 @@ output: IR1 with phi
 struct DomTreenode
 {
     //支配树节点
-    FunctionValue* func;
+    FunctionValue* func = nullptr;
     vector<DomTreenode*> son;//son
-    BasicBlock* block;//这个节点对应的block
-    DomTreenode *idom;// 这个节点的直接支配节点
+    BasicBlock* block = nullptr;//这个节点对应的block
+    DomTreenode *idom = nullptr;// 这个节点的直接支配节点
 };
 extern map<BasicBlock*,DomTreenode*> block2dom;
 extern vector<DomTreenode*> DomRoot;//所有支配树的根

@@ -100,7 +100,10 @@ void VisitAST(GrammaNode* DRoot,LinearIR *IR)
 {
     //全局基本块
     IR->AddBlock(globalBlock);
-   dbg("start VisitAST建立四元式和cfg");
+#if DEBUG_ON
+    dbg("start VisitAST建立四元式和cfg");
+#endif
+   
     
     for(int i=0;i<DRoot->son.size();i++)
     {
@@ -284,7 +287,6 @@ void VarDefNode(GrammaNode* node,LinearIR *IR)
             {
                 
                 VR = InitValNode(p_node->son[2],IR);
-                dbg(VL->getName());
         
                 for(auto vv:array_init)
                 {
@@ -323,7 +325,10 @@ void VarDefNode(GrammaNode* node,LinearIR *IR)
                             IntegerValue* index = new IntegerValue("index",node->lineno,node->var_scope,j,1);
                             index->isTemp = 1;
                             std::vector<Value*> op = {VL,index,array_init[j]};
+#if DEBUG_ON
                             cout<<"store "<<array_init[j]->getName()<<" to index "<<j<<endl;
+               
+#endif
                             CreateIns(node,IR,Instruction::Store,3,op,nullptr);
                         }
 
@@ -371,7 +376,10 @@ void VarDefNode(GrammaNode* node,LinearIR *IR)
             }
             else
             {
-                std::cout<<"VarDef_single's children num is "<<p_node->son.size()<<std::endl;
+#if DEBUG_ON
+               std::cout<<"VarDef_single's children num is "<<p_node->son.size()<<std::endl;
+#endif
+                
                 //1. int a={}  不符合语义约束
                 //2. 其他
                 //error
@@ -2229,7 +2237,6 @@ Value* UnaryExpNode(GrammaNode* node,LinearIR *IR)
         {
             //UnaryPos等
             Value* arg1 = UnaryExpNode(node->son[1],IR);
-            dbg(arg1->getName());
             Value* ret = nullptr;
             Instruction* ins_new = nullptr;
             if(ADD_ == node->son[0]->type)
@@ -2267,7 +2274,6 @@ Value* UnaryExpNode(GrammaNode* node,LinearIR *IR)
             else if(NOT_ == node->son[0]->type)
             {
                 ret = SymbolTable->askItem(node);//new Value("t3",node->lineno,node->var_scope);
-                dbg(ret->getName());
                 if(nullptr == FuncN && 0 == global)
                 {
                     throw BuildIRError(node->lineno, ret->VName, "错误18");
@@ -2505,13 +2511,17 @@ bool linkNext(BasicBlock* node,LinearIR *IR)
 void DeleteBlockWithNoPio(BasicBlock* node,LinearIR *IR)
 {
     //Func中dom删除next
+#if DEBUG_ON
     dbg(node->BlockName,node,node->pioneerBlock.size(),node->succBlock.size());
+#endif
     std::vector<BasicBlock*>::iterator it;
     for (it = FuncN->domBlock.begin(); it != FuncN->domBlock.end();)
 	{
 		if (*it == node)
 		{
-            // dbg("funcN delete dom block");
+#if DEBUG_ON
+            dbg("funcN delete dom block");    
+#endif
 			it = FuncN->domBlock.erase(it++);
 		}
 		else
@@ -2523,14 +2533,18 @@ void DeleteBlockWithNoPio(BasicBlock* node,LinearIR *IR)
     for (it = node->succBlock.begin(); it != node->succBlock.end();)
 	{//遍历node的后继*it，在*it对应块的前驱中删去node，然后将*it从node的后继中删除
         BasicBlock* tmp = *it;
-        dbg(tmp->BlockName,tmp);
+#if DEBUG_ON
+         dbg(tmp->BlockName,tmp);       
+#endif
         std::vector<BasicBlock*>::iterator it2;
         for (it2 = tmp->pioneerBlock.begin(); it2 != tmp->pioneerBlock.end();)
         {
             // dbg(*it2);
             if(*it2 == node)
             {
-                // dbg("删除当前后继块的前驱连接");
+#if DEBUG_ON
+                dbg("删除当前后继块的前驱连接");      
+#endif
                 it2 = tmp->pioneerBlock.erase(it2++);
                 break;
             }
@@ -2538,11 +2552,14 @@ void DeleteBlockWithNoPio(BasicBlock* node,LinearIR *IR)
         }
         if(tmp->pioneerBlock.size() == 0)
         {
-            // dbg("递归");
+#if DEBUG_ON
+            dbg("递归");    
+#endif
             DeleteBlockWithNoPio(tmp,IR);
         }
-        
-        // dbg("删除当前后继块的连接",*it);
+#if DEBUG_ON
+        dbg("删除当前后继块的连接",*it);   
+#endif  
         it = node->succBlock.erase(it++);
 	}
    

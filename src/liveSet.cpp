@@ -1238,14 +1238,18 @@ void liveSets()
             setUsed(blk,gb);
         }
     }
-    dbg("syy -- add used win!");
+#if DEBUG_ON
+     dbg("syy -- add used win!");          
+#endif
+
+#if DEBUG_ON
     //4. 输出用
     cout << "**** Arm Instruction with Unlimited Registers ****\n";
     for(auto rt:DomRoot){
         showDecl(rt);
     }
-//    dbg("syy -- show super arm win!");
-
+//    dbg("syy -- show super arm win!");               
+#endif
     for(auto gb:IR1->Blocks){
         if(gb->domBlock.size()==0)continue;
         FunctionValue* func = gb->FuncV;

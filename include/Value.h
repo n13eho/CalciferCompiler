@@ -4,6 +4,7 @@
 
 #include <string>
 #include <vector>
+#define DEBUG_ON 1
 
 enum VType{
     VInteger=0,
@@ -37,13 +38,13 @@ class Value
     std::string getScope(){return var_scope;}
     
     //为减少冲突，标识名称改为VName
-    std::string VName;
+    std::string VName = "initial";
     //对应行号
-    int lineno;
+    int lineno = -2;
     // 变量作用域标识符
-    std::string var_scope;
+    std::string var_scope = "";
     // Value类型
-    int valueType;
+    int valueType = 0;
     int isPara=0; // 代表他是第几个参数
     int isTemp = 0 ;//是不是临时变量
 };
@@ -98,7 +99,7 @@ class ArrayValue:public Value
     
     //变量数组的初始值
     std::vector<Value*> ArrayInitList;
-    int isConst;
+    int isConst = 0;
 
 };
 
@@ -127,9 +128,9 @@ class FunctionValue:public Value
 
     // private:
     //函数返回值类型，1为int，0为void
-    int Result;
+    int Result = 0;
     //参数个数
-    int ParamsNum;
+    int ParamsNum = 0;
     //函数参数列表
     std::vector<Value *> FuncParams;
 };
@@ -139,7 +140,6 @@ class ImmValue:public Value
     public:
     DEFINE_CLASSOF(Value, p->valueType == VType::VImm);
     virtual int getType(){return 4;}
-    //立即数必须给值,行号和scope没必要？---要的吧。。
     ImmValue(std::string name_,int intValue):Value(name_)
     {
         RealValue=intValue;
@@ -150,5 +150,5 @@ class ImmValue:public Value
 
     // private:
     //立即数的值
-    int RealValue;
+    int RealValue=-1;
 };
