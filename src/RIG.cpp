@@ -5,8 +5,12 @@
 
 // output
 map<BasicBlock*, vector<RIGnode*>> RIG; // THE graph
+
 map<armInstr*, set<pair<int, bool> >> ins; // 每条arm指令对应的in集合，要记得清空
 map<armInstr*, set<pair<int, bool> >> outs; // 公用复用的out集合
+
+map<armInstr*, set<pair<int, bool> >> old_ins;
+
 
 // visited block 每个顶层模块内的block
 map<BasicBlock*, bool> blockVisited;
@@ -511,6 +515,7 @@ void deleteDC(DomTreenode* dn, BasicBlock* gb)
                 }
                 else{
                     newBlock[b].erase(it--);
+                    gbarmCnt[gb]--;
                 }
             }
         }
@@ -520,7 +525,7 @@ void deleteDC(DomTreenode* dn, BasicBlock* gb)
         deleteDC(nx, gb);
 }
 
-void specialInsDelete(DomTreenode* sd)
+void specialInsDelete(DomTreenode* sd, BasicBlock* gb)
 {
     BasicBlock* s=sd->block;
     for(auto it = newBlock[s].begin(); it != newBlock[s].end(); it++){
@@ -535,6 +540,7 @@ void specialInsDelete(DomTreenode* sd)
                 }
                 else{ // 如果rs不是地址类型的，那么任意mov的rd 和 rs number相同的话就都能删，管你是不是regdecl
                     newBlock[s].erase(it--);
+                    gbarmCnt[gb]--;
                 }
             }
         }
@@ -543,7 +549,7 @@ void specialInsDelete(DomTreenode* sd)
 
     //递归
     for(auto nx:sd->son){
-        specialInsDelete(nx);
+        specialInsDelete(nx,gb);
     }
 }
 
@@ -610,6 +616,7 @@ void all2mem(BasicBlock* gb)
                     ldr_ins->rd = dc;
                     ldr_ins->rs = forc_memShift(ForCnode(make_pair(VregNumofDecl(dc),dc->gettype() == Decl::reg_decl),gb), gb);
                     it=newBlock[b].insert(it,ldr_ins)+1;
+                    gbarmCnt[gb]++;
                     ldr_ins->comm = "ttt";
                 }
             }
@@ -627,6 +634,7 @@ void all2mem(BasicBlock* gb)
                 str_ins->rd = arm_ins->rd;
                 str_ins->rs = forc_memShift(ForCnode(make_pair(VregNumofDecl(arm_ins->rd),arm_ins->rd->gettype() == Decl::reg_decl),gb), gb);
                 it=newBlock[b].insert(it+1,str_ins);
+                gbarmCnt[gb]++;
                 str_ins->comm = "ttt";
             }
 
@@ -673,7 +681,7 @@ void addMemoryOperation(BasicBlock* gb)
                     ldr_ins->rs = memShift;
                     ldr_ins->comm = "spill load";
                     it=newBlock[b].insert(it,ldr_ins)+1;
-
+                    gbarmCnt[gb]++;
                     // 建立映射
                     // spill_dc2memdc[dc] = memShift;
                 }
@@ -689,7 +697,7 @@ void addMemoryOperation(BasicBlock* gb)
                 str_ins->rs = memShift;
                 str_ins->comm = "spill store";
                 it=newBlock[b].insert(it+1,str_ins);
-
+                gbarmCnt[gb]++;
                 // 建立映射
                 // spill_dc2memdc[arm_ins->rd] = memShift;
             }
@@ -742,14 +750,32 @@ void updateV2Ds()
     Vreg2Decls.insert(temp_Vreg2Decls.begin(), temp_Vreg2Decls.end());
 }
 
+// 比较old_in和in；判断In/Out集合是否改变
+/*
+map<armInstr*, set<pair<int, bool> >> ins;
+map<armInstr*, set<pair<int, bool> >> old_ins;*/
+bool InOutChanged()
+{
+    for(auto p: ins){
+        if(p.second.size() != old_ins[p.first].size()){
+            // 如果大小不相等，返回真
+            return true;
+        }
+    }
+    return false; // 没有改变过
+}
 
+// 创建冲突图、并判断是否能染色染出来
 bool buildRIG(BasicBlock* gb)
 {
     // srand(time(0));
 
-    int times_deadCode = 10;
-    while(times_deadCode--)
+    int old_gb_ins_count = -1; // 记录上一次这个gb全局块的指令数量
+    while(true)
     {
+        // 0 首先记录这个gb当前的指令个数
+        old_gb_ins_count = gbarmCnt[gb]; // FIXME:这里是一个map，gb对应的键值
+
         // 1 init clear out
         for(auto node:RIG[gb]){free(node);}
         RIG[gb].clear();
@@ -757,27 +783,39 @@ bool buildRIG(BasicBlock* gb)
         rigNodeCreated.clear();
         ins.clear();
         outs.clear();
-        //        dbg("neho -- init: clear sets and graph");
 
         // 2 开始从第一个domblock递归，填满in 和 out 集合
-        int times_RIG = TIMES_RIG;
-        while(times_RIG--){
+        while(true){
+            // 清空
             blockVisited.clear();
+
+            // 把old存起来
+            old_ins.clear();
+            old_ins.insert(ins.begin(), ins.end());
+
+            // 计算新的
             fillInOut(gb->domBlock[0]);
+
+            // 对比，看是否没变了
+            if(!InOutChanged())
+                break;
         }
 
-        //         2.5 for debug 先linshi临时打印一下这些个in 和 out
-                cout << "\n\n**** IN&OUT set ****\n";
-                for(auto dr: DomRoot)
-                    showSets(dr);
+        // 2.5 for debug 先linshi临时打印一下这些个in 和 out
+        cout << "\n\n**** IN&OUT set ****\n";
+        for(auto dr: DomRoot)
+            showSets(dr);
 
         // 3 利用填好的in、out集合，建立冲突图，也是一个递归的过程
         connectDecl(block2dom[gb->domBlock[0]], gb);
 
         // 4 deleting dead code
         deleteDC(block2dom[gb->domBlock[0]], gb);
+
+        // 5 判断，指令数量书否相同，相同就跳出去，否则就继续
+        if(old_gb_ins_count == gbarmCnt[gb]) // FIXME:改为map中，gb对应的键值
+            break;
     }
-    //    dbg("neho -- fill in/out sets");
     // 根本没有分配寄存器，直接返回真
     if(RIG[gb].size() == 0)return true;
 
@@ -818,7 +856,7 @@ bool buildRIG(BasicBlock* gb)
     updateV2Ds();
 
     // 此条不专门针对 mov r0, r0; TODO：之后可以在里面加上针对其他ir指令的优化
-    specialInsDelete(block2dom[gb->domBlock[0]]);
+    specialInsDelete(block2dom[gb->domBlock[0]],gb);
 
 
 #if 0
