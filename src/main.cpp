@@ -61,9 +61,9 @@ int main(int argc, char *argv[])
     int ret = yyparse();
     if (ret == 0)
     {
-//        show_node(Droot, 0); //打印AST
+        show_node(Droot, 0); //打印AST
         semanticAnalyzer(Droot); // 从ast语义检查 + 构建符号表
-//        show_SymbleTable(SymbolTable); // 打印符号表
+        // show_SymbleTable(SymbolTable); // 打印符号表
         VisitAST(Droot, IR1); // 从ast：建立四元式 + 得出block的信息
 //       show_IR_ins(IR1); // 打印指令
         // cout << "\n\n"; show_block(globalBlock, 0);
