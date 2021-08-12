@@ -501,13 +501,16 @@ void assignNot(Instruction* instr, BasicBlock* node)
 
     armMoveq* inseq =new armMoveq();
     inseq->rd = resd;
+    inseq->bol = 1;
     armMovne* insne =new armMovne();
     insne->rd = resd;
+    inseq->bol = 0;
 
     newBlock[node].push_back(inseq);
     trance[inseq]=instr;
     newBlock[node].push_back(insne);
     trance[insne]=instr;
+    addAssign(res,node, resd);
 }
 
 void assignIns(Instruction* ins,BasicBlock* node)
@@ -584,16 +587,131 @@ void assignIns(Instruction* ins,BasicBlock* node)
         }
     }
 }
+
+void assignLA(Instruction *instr, BasicBlock* node)
+{
+    IntegerValue* res = (IntegerValue*)instr->getResult();
+    varDecl* resd = new varDecl(res, node, Rcnt++);
+    //op1 copy from assignLogic
+    IntegerValue* op1 = (IntegerValue*)(instr->getOp()[0]);
+    if(op1->isConst == 1){
+        armMov* movins1 = new armMov();
+        movins1->rd = new varDecl(op1, node, Rcnt++);
+        newBlock[node].push_back(movins1);
+        trance[movins1] = instr;
+    }
+    //op2 copy from assignLogic
+    IntegerValue* op2 = (IntegerValue*)(instr->getOp()[1]);
+    if(op2->isConst == 1 && !isValid8bit(op2->RealValue)){
+        armMov* movins2 = new armMov();
+        movins2->rd = new varDecl(op2, node, Rcnt++);
+        newBlock[node].push_back(movins2);
+        trance[movins2] = instr;
+    }
+
+
+    // 一个cmp指令
+    armCmp* ins = new armCmp();
+    newBlock[node].push_back(ins);
+    trance[ins]=instr;
+
+    //条件mov, 不需要used阶段
+    if(instr->getOpType()==Instruction::ArithNeq)
+    {
+        armMovne * insm = new armMovne();
+        newBlock[node].push_back(insm);
+        insm->rd = resd;
+        insm->bol = 1;
+
+        armMoveq * insm2 = new armMoveq();
+        newBlock[node].push_back(insm2);
+        insm2->rd = resd;
+        insm2->bol = 0;
+    }
+    else if(instr->getOpType()==Instruction::ArithEq)
+    {
+        armMoveq * insm = new armMoveq();
+        newBlock[node].push_back(insm);
+        insm->rd = resd;
+        insm->bol = 1;
+
+        armMovne * insm2 = new armMovne();
+        newBlock[node].push_back(insm2);
+        insm2->rd = resd;
+        insm2->bol = 0;
+    }
+    else if(instr->getOpType()==Instruction::ArithLQ)
+    {
+        armMovle * insm = new armMovle();
+        newBlock[node].push_back(insm);
+        insm->rd = resd;
+        insm->bol = 1;
+
+        armMovgt * insm2 = new armMovgt();
+        newBlock[node].push_back(insm2);
+        insm2->rd = resd;
+        insm2->bol = 0;
+    }
+    else if(instr->getOpType()==Instruction::ArithLT)
+    {
+        armMovlt * insm = new armMovlt();
+        newBlock[node].push_back(insm);
+        insm->rd = resd;
+        insm->bol = 1;
+
+        armMovge * insm2 = new armMovge();
+        newBlock[node].push_back(insm2);
+        insm2->rd = resd;
+        insm2->bol = 0;
+    }
+    else if(instr->getOpType()==Instruction::ArithBG)
+    {
+        armMovgt * insm = new armMovgt();
+        newBlock[node].push_back(insm);
+        insm->rd = resd;
+        insm->bol = 1;
+
+        armMovle * insm2 = new armMovle();
+        newBlock[node].push_back(insm2);
+        insm2->rd = resd;
+        insm2->bol = 0;
+    }
+    else if(instr->getOpType()==Instruction::ArithGQ)
+    {
+        armMovge * insm = new armMovge();
+        newBlock[node].push_back(insm);
+        insm->rd = resd;
+        insm->bol = 1;
+
+        armMovlt* insm2 = new armMovlt();
+        newBlock[node].push_back(insm2);
+        insm2->rd = resd;
+        insm2->bol = 0;
+    }
+    addAssign(res,node,resd);
+}
+
 void setDecl(BasicBlock *s)
 {
     for(auto id=s->InstrList.begin();id!=s->InstrList.end();++id){
+        auto tem = id;//FIXME:保存原来的迭代器(不会stl的后果)
+        
         int i = *id;
-        auto ins =IR1->InstList[i];
+        auto ins = IR1->InstList[i];//当前指令
+
+        id++;
+        int ipp = *id;
+        auto inspp = IR1->InstList[i];//下一条指令
+        
         if(ins->getOpType() >= Instruction::ArithEq && ins->getOpType()<=Instruction::ArithGQ){
-            auto insbT=IR1->InstList[i+1];
-            assignLogic(ins,s,insbT->jmpDestBlock);
+            if(inspp->getOpType()==Instruction::ConBr)
+                assignLogic(ins,s,inspp->jmpDestBlock);
+            else{
+                assignLA(ins, s);
+            }
         }
         else assignIns(IR1->InstList[i],s);
+        id = tem;//FIXME:恢复原来的迭代器(不会stl的后果)
     }
     DomTreenode* node=block2dom[s];
     for(auto son:node->son){
@@ -948,14 +1066,6 @@ void usedRet(armRet* ins, BasicBlock* node)
     IntegerValue* r0=(IntegerValue*)raw->getOp()[0];
     ins->rs = getDecl(r0,node);
 }
-void usedMoveq(armMoveq* ins, BasicBlock* node)
-{
-    addAssign(ins->rd->rawValue,node,ins->rd);
-}
-void usedMovne(armMovne* ins, BasicBlock* node)
-{
-    addAssign(ins->rd->rawValue,node,ins->rd);
-}
 
 void usedLsl(armLsl* ins, BasicBlock* node)
 {
@@ -1009,12 +1119,6 @@ int usedIns(armInstr* ins,BasicBlock* node)
     }
     else if(ins->getType() == armInstr::ret){
         usedRet((armRet*)ins,node);
-    }
-    else if(ins->getType() == armInstr::moveq){
-        usedMoveq((armMoveq*)ins,node);
-    }
-    else if(ins->getType() == armInstr::movne){
-        usedMovne((armMovne*)ins,node);
     }
     else if(ins->getType() == armInstr::lsl){
         usedLsl((armLsl*)ins,node);

@@ -35,7 +35,8 @@ stack<BasicBlock*> IfNextBlocks;
 
 map<BasicBlock*,int> visited;
 int funCNext = 0;
-
+//记录条件比较轨迹,当上一个是数值比较时,当前的比较不需要跳转
+stack<int> cmp_no_jmp;
 int func_param_address = 0;
 
 
@@ -1114,8 +1115,9 @@ void LOrExpNode(GrammaNode* node,LinearIR *IR)
 //    cout<<"LOrExpNode cond cnt:"<<node->son.size()<<endl;
     if(node->son.size() == 1)
     {
-
+        cmp_no_jmp.push(0);
         Value* Condi = LAndExpNode(node->son[0],IR);   
+        cmp_no_jmp.pop();
     }
     else
     {
@@ -1134,13 +1136,14 @@ void LOrExpNode(GrammaNode* node,LinearIR *IR)
             //当有'与'条件在'或'条件前，短路需要创建新基本块，如 a&&b&&c || d
             if(i!=node->son.size()-1)
             {
-                // dbg("@@@@@@@@@@@@@@@@");
                 BasicBlock* nextOrCond = new BasicBlock(BasicBlock::If);
                 nextOrCond->BlockName = "condOr";
                 FuncN->AddDom(nextOrCond);
                 nextOrCond->setParnt(FuncN);
                 CaseFBlocks.push(nextOrCond);
+                cmp_no_jmp.push(0);
                 Value* Condi = LAndExpNode(node->son[i],IR);
+                cmp_no_jmp.pop();
                 if(!CaseTBlocks.empty())
                     bbNow->Link(CaseTBlocks.top());
                 bbNow->Link(nextOrCond);
@@ -1193,7 +1196,9 @@ Value* LAndExpNode(GrammaNode* node,LinearIR *IR)
 //    cout<<"LAndExpNode cond cnt:"<<node->son.size()<<endl;
     if(node->son.size() == 1)
     {
+        cmp_no_jmp.push(0);
         ret = EqExpNode(node->son[0],IR);
+        cmp_no_jmp.pop();
         // dbg(node->son[0]->type);
         if(EqExp_EQ_ != node->son[0]->type && EqExp_NEQ_ != node->son[0]->type &&
             RelExp_LT_ != node->son[0]->type && RelExp_BG_ != node->son[0]->type &&
@@ -1372,8 +1377,14 @@ Value* EqExpNode(GrammaNode* node,LinearIR *IR)
 {
     if(EqExp_EQ_ == node->type)
     {
+        int pre_cond = 0;
+        if(!cmp_no_jmp.empty()){
+            pre_cond = cmp_no_jmp.top();
+        }
+        cmp_no_jmp.push(1);
         Value* VL = EqExpNode(node->son[0],IR);
         Value* RL = RelExpNode(node->son[1],IR);
+        cmp_no_jmp.pop();
         Value* ret = SymbolTable->askItem(node);//new Value("t1",node->lineno,node->var_scope);
         if(nullptr == FuncN&& 0 == global)
         {
@@ -1420,25 +1431,33 @@ Value* EqExpNode(GrammaNode* node,LinearIR *IR)
             IR->InsertInstr(ins_eq);
             bbNow->Addins(ins_eq->getId());
             ins_eq->setParent(bbNow);
-
-            Instruction* TJ = new Instruction(IR->getInstCnt(),Instruction::ConBr,0);
-            if(CaseTBlocks.empty())
-            {
-                dbg("CaseTBlocks is empty");
+            if(!pre_cond){
+                Instruction* TJ = new Instruction(IR->getInstCnt(),Instruction::ConBr,0);
+                if(CaseTBlocks.empty())
+                {
+                    dbg("CaseTBlocks is empty");
+                }
+                // TJ->jmpDestBlock = CaseTBlocks.top();
+                IR->InsertInstr(TJ);
+                bbNow->Addins(TJ->getId());
+                TJ->setParent(bbNow);
+                TJ->setJmpDestBlock(CaseTBlocks.top());
+                // bbNow->Link(TJ->jmpDestBlock);
             }
-            // TJ->jmpDestBlock = CaseTBlocks.top();
-            IR->InsertInstr(TJ);
-            bbNow->Addins(TJ->getId());
-            TJ->setParent(bbNow);
-            TJ->setJmpDestBlock(CaseTBlocks.top());
-            // bbNow->Link(TJ->jmpDestBlock);
+            
         }
         return ret;
     }
     else if(EqExp_NEQ_ == node->type)
     {
+        int pre_cond = 0;
+        if(!cmp_no_jmp.empty()){
+            pre_cond = cmp_no_jmp.top();
+        }
+        cmp_no_jmp.push(1);
         Value* VL = EqExpNode(node->son[0],IR);
         Value* RL = RelExpNode(node->son[1],IR);
+        cmp_no_jmp.pop();
         Value* ret = SymbolTable->askItem(node);//new Value("t1",node->lineno,node->var_scope);
         if(nullptr == FuncN && 0 == global)
         {
@@ -1475,7 +1494,7 @@ Value* EqExpNode(GrammaNode* node,LinearIR *IR)
         {
             vector<Value*> ops = {VL,RL};
             CreateIns(node,IR,Instruction::ArithNeq,2,ops,ret);
-
+            if(!pre_cond){
             Instruction* TJ = new Instruction(IR->getInstCnt(),Instruction::ConBr,0);
             if(CaseTBlocks.empty())
             {
@@ -1487,6 +1506,7 @@ Value* EqExpNode(GrammaNode* node,LinearIR *IR)
             TJ->setParent(bbNow);
             TJ->setJmpDestBlock(CaseTBlocks.top());
             // bbNow->Link(TJ->jmpDestBlock);
+            }
         }
         return ret;
     }
@@ -1500,8 +1520,14 @@ Value* RelExpNode(GrammaNode* node,LinearIR *IR)
 {
     if(RelExp_LT_ == node->type)
     {
+        int pre_cond = 0;
+        if(!cmp_no_jmp.empty()){
+            pre_cond = cmp_no_jmp.top();
+        }
+        cmp_no_jmp.push(1);
         Value* VL = RelExpNode(node->son[0],IR);
         Value* RL = AddExpNode(node->son[1],IR);
+        cmp_no_jmp.pop();
         Value* ret = SymbolTable->askItem(node);//new Value("t1",node->lineno,node->var_scope);
         if(nullptr == FuncN && 0 == global)
         {
@@ -1538,7 +1564,7 @@ Value* RelExpNode(GrammaNode* node,LinearIR *IR)
         {
             vector<Value*> ops = {VL,RL};
             CreateIns(node,IR,Instruction::ArithLT,2,ops,ret);
-
+            if(!pre_cond){
             Instruction* TJ = new Instruction(IR->getInstCnt(),Instruction::ConBr,0);
             if(CaseTBlocks.empty())
             {
@@ -1549,13 +1575,20 @@ Value* RelExpNode(GrammaNode* node,LinearIR *IR)
             bbNow->Addins(TJ->getId());
             TJ->setParent(bbNow);
             TJ->setJmpDestBlock(CaseTBlocks.top());
+            }
         }
         return ret;
     }
     else if(RelExp_BG_ == node->type)
     {
+        int pre_cond = 0;
+        if(!cmp_no_jmp.empty()){
+            pre_cond = cmp_no_jmp.top();
+        }
+        cmp_no_jmp.push(1);
         Value* VL = RelExpNode(node->son[0],IR);
         Value* RL = AddExpNode(node->son[1],IR);
+        cmp_no_jmp.pop();
         Value* ret = SymbolTable->askItem(node);// new Value("t1",node->lineno,node->var_scope);
 
         if(nullptr == FuncN && 0 == global)
@@ -1593,7 +1626,7 @@ Value* RelExpNode(GrammaNode* node,LinearIR *IR)
         {
             vector<Value*> ops = {VL,RL};
             CreateIns(node,IR,Instruction::ArithBG,2,ops,ret);
-
+            if(!pre_cond){
             Instruction* TJ = new Instruction(IR->getInstCnt(),Instruction::ConBr,0);
             if(CaseTBlocks.empty())
             {
@@ -1604,13 +1637,20 @@ Value* RelExpNode(GrammaNode* node,LinearIR *IR)
             bbNow->Addins(TJ->getId());
             TJ->setParent(bbNow);
             TJ->setJmpDestBlock(CaseTBlocks.top());
+            }
         }
         return ret;
     }
     else if(RelExp_LQ_ == node->type)
     {
+        int pre_cond = 0;
+        if(!cmp_no_jmp.empty()){
+            pre_cond = cmp_no_jmp.top();
+        }
+        cmp_no_jmp.push(0);
         Value* VL = RelExpNode(node->son[0],IR);
         Value* RL = AddExpNode(node->son[1],IR);
+        cmp_no_jmp.pop();
         Value* ret = SymbolTable->askItem(node);//new Value("t1",node->lineno,node->var_scope);
         if(nullptr == FuncN && 0 == global)
         {
@@ -1647,7 +1687,7 @@ Value* RelExpNode(GrammaNode* node,LinearIR *IR)
         {
             vector<Value*> ops = {VL,RL};
             CreateIns(node,IR,Instruction::ArithLQ,2,ops,ret);
-
+            if(!pre_cond){
             Instruction* TJ = new Instruction(IR->getInstCnt(),Instruction::ConBr,0);
             if(CaseTBlocks.empty())
             {
@@ -1658,13 +1698,20 @@ Value* RelExpNode(GrammaNode* node,LinearIR *IR)
             bbNow->Addins(TJ->getId());
             TJ->setParent(bbNow);
             TJ->setJmpDestBlock(CaseTBlocks.top());
+            }
         }
         return ret;
     }
     else if(RelExp_BQ_ == node->type)
     {
+        int pre_cond = 0;
+        if(!cmp_no_jmp.empty()){
+            pre_cond = cmp_no_jmp.top();
+        }
+        cmp_no_jmp.push(1);
         Value* VL = RelExpNode(node->son[0],IR);
         Value* RL = AddExpNode(node->son[1],IR);
+        cmp_no_jmp.pop();
         Value* ret = SymbolTable->askItem(node);//new Value("t1",node->lineno,node->var_scope);
         if(nullptr == FuncN && 0 == global)
         {
@@ -1701,7 +1748,7 @@ Value* RelExpNode(GrammaNode* node,LinearIR *IR)
         {
             vector<Value*> ops = {VL,RL};
             CreateIns(node,IR,Instruction::ArithGQ,2,ops,ret);
-
+            if(!pre_cond){
             Instruction* TJ = new Instruction(IR->getInstCnt(),Instruction::ConBr,0);
             if(CaseTBlocks.empty())
             {
@@ -1712,6 +1759,7 @@ Value* RelExpNode(GrammaNode* node,LinearIR *IR)
             bbNow->Addins(TJ->getId());
             TJ->setParent(bbNow);
             TJ->setJmpDestBlock(CaseTBlocks.top());
+            }
         }
         return ret;
     }
@@ -2232,7 +2280,7 @@ Value* UnaryExpNode(GrammaNode* node,LinearIR *IR)
                 }
                 IntegerValue* const0 = new IntegerValue("const0",node->lineno,node->var_scope,0,1);
                 const0->isTemp  =1;
-                ins_new = new Instruction(IR->getInstCnt(),Instruction::UnaryNot,1);
+                ins_new = new Instruction(IR->getInstCnt(),Instruction::UnaryNot,2);
                 ins_new->addOperand(arg1);
                 ins_new->addOperand(const0);
                 ins_new->setResult(ret);

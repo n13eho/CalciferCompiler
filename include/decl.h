@@ -148,10 +148,11 @@ class armMoveq: public armInstr//ok
 {
     public:
     Decl* rs;
+    int bol; //移入寄存器的数字
     virtual int getType(){return moveq;}
     virtual ostream& output(ostream&out)const
     {
-        out<<"\tmoveq "<<*rd<<", #1";
+        out<<"\tmoveq "<<*rd<<", #"<<bol;
         return out;
     }
 };
@@ -159,10 +160,60 @@ class armMovne: public armInstr//ok
 {
     public:
     Decl* rs;
+    int bol; //移入寄存器的数字
     virtual int getType(){return movne;}
     virtual ostream& output(ostream&out)const
     {
-        out<<"\tmovne "<<*rd<<", #0";
+        out<<"\tmovne "<<*rd<<", #"<<bol;
+        return out;
+    }
+};
+
+class armMovlt: public armInstr//ok
+{
+    public:
+    Decl* rs;
+    int bol; //移入寄存器的数字
+    virtual int getType(){return movne;}
+    virtual ostream& output(ostream&out)const
+    {
+        out<<"\tmovlt "<<*rd<<", #"<<bol;
+        return out;
+    }
+};
+class armMovle: public armInstr//ok
+{
+    public:
+    Decl* rs;
+    int bol; //移入寄存器的数字
+    virtual int getType(){return movne;}
+    virtual ostream& output(ostream&out)const
+    {
+        out<<"\tmovle "<<*rd<<", #"<<bol;
+        return out;
+    }
+};
+class armMovgt: public armInstr//ok
+{
+    public:
+    Decl* rs;
+    int bol; //移入寄存器的数字
+    virtual int getType(){return movne;}
+    virtual ostream& output(ostream&out)const
+    {
+        out<<"\tmovgt "<<*rd<<", #"<<bol;
+        return out;
+    }
+};
+class armMovge: public armInstr//ok
+{
+    public:
+    Decl* rs;
+    int bol; //移入寄存器的数字
+    virtual int getType(){return movne;}
+    virtual ostream& output(ostream&out)const
+    {
+        out<<"\tmovge "<<*rd<<", #"<<bol;
         return out;
     }
 };
