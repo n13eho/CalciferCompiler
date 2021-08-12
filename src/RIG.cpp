@@ -87,6 +87,34 @@ void ArmI2InOut(armInstr* ai)
         // 只需要erase
         ins[ai].erase(make_pair(VregNumofDecl(movne_ai->rd), movne_ai->rd->gettype() == Decl::reg_decl));
     }
+    else if(ai->getType() == armInstr::armInsType::movle)
+    {
+        armMovle* movne_ai = (armMovle*)ai;
+
+        // 只需要erase
+        ins[ai].erase(make_pair(VregNumofDecl(movne_ai->rd), movne_ai->rd->gettype() == Decl::reg_decl));
+    }
+    else if(ai->getType() == armInstr::armInsType::movlt)
+    {
+        armMovlt* movne_ai = (armMovlt*)ai;
+
+        // 只需要erase
+        ins[ai].erase(make_pair(VregNumofDecl(movne_ai->rd), movne_ai->rd->gettype() == Decl::reg_decl));
+    }
+    else if(ai->getType() == armInstr::armInsType::movge)
+    {
+        armMovge* movne_ai = (armMovge*)ai;
+
+        // 只需要erase
+        ins[ai].erase(make_pair(VregNumofDecl(movne_ai->rd), movne_ai->rd->gettype() == Decl::reg_decl));
+    }
+    else if(ai->getType() == armInstr::armInsType::movgt)
+    {
+        armMovgt* movne_ai = (armMovgt*)ai;
+
+        // 只需要erase
+        ins[ai].erase(make_pair(VregNumofDecl(movne_ai->rd), movne_ai->rd->gettype() == Decl::reg_decl));
+    }
     // TODO: new comers
     else if(ai->getType() == armInstr::armInsType::sub)
     {
