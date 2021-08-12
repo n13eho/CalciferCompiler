@@ -86,18 +86,18 @@ public:
     //前驱基本块
     std::vector<BasicBlock*> pioneerBlock;
     //属于的函数体
-    BasicBlock* parent_=nullptr;
+    BasicBlock* parent_ = nullptr;
     //函数所控制的基本块
     std::vector<BasicBlock*> domBlock;
     //基本块类型
-    BlockType bType;
+    BlockType bType = BlockType::Basic;
     //条件嵌套时，上一层的if的next
-    BasicBlock* LastIfNext;
+    BasicBlock* LastIfNext = nullptr;
     //表示函数顶层基本块，被调用情况
     int called = 0;
 
     //对应符号表中的函数
-    FunctionValue* FuncV;
+    FunctionValue* FuncV = nullptr;
     //用于可视化基本块关系
     std::string BlockName = "basic";
 };

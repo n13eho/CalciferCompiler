@@ -86,10 +86,7 @@ public:
         }
         else
         {
-#if DEBUG_ON
             std::cout<<"link error"<<std::endl;
-#endif
-            
         }
     }
     
@@ -104,80 +101,16 @@ public:
 
 private:
     //instruction id
-    int InstrId;
+    int InstrId = -2;
     //（OP，arg1，arg2，result）
     //操作符 ins_type
-    InsType OpType;
+    InsType OpType = InsType::Break;
     //结果
-    Value* Result;
+    Value* Result = nullptr;
     //操作数个数
-    unsigned OpNums;
+    unsigned OpNums = 0;
     //本条指令属于的基本块
-    BasicBlock* ParentBasicblock;
+    BasicBlock* ParentBasicblock = nullptr;
     //用于判断加法指令中操作数是否是数组首地址
     int AddressHead = 0;
 };
-
-
-
-//指令是否需要细化成子类，还需确认
-class AddIns:public Instruction{};
-
-class SubIns:public Instruction{};
-
-class MulIns:public Instruction{};
-
-class DivIns:public Instruction{};
-
-class ModIns:public Instruction{};
-
-class UnaryIns:public Instruction
-{
-        // //单目运算符+
-        // UnaryPos,
-        // //单目运算符-
-        // UnaryNeg,
-        // //单目运算符！
-        // UnaryNot,
-};
-
-class AssginIns:public Instruction{};
-
-class LogicAndIns:public Instruction{};
-
-class LogicAOrIns:public Instruction{};
-
-class ArithEqIns:public Instruction{};
-
-class ArithNeqIns:public Instruction{};
-
-class ArithLTIns:public Instruction{};
-
-class ArithBGIns:public Instruction{};
-
-class ArithLQIns:public Instruction{};
-
-class ArithGQIns:public Instruction{};
-
-class JmpIns:public Instruction{};
-
-class BranchIns:public Instruction{};
-
-class CallIns:public Instruction{};
-
-class RetIns:public Instruction{};
-
-/*
-add : +,-
-mul : *,/,%
-unary : +,-,!
-call : Ident();
-load : Ident,Ident[?]
-store : const int x= 1;
-arith_cmp:<,>,<=,>=,==,!=
-logic_cmp:&&,||
-jmp
-其他跳转语句
-ret
-*/
-

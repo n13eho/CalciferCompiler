@@ -87,6 +87,7 @@ void ArmI2InOut(armInstr* ai)
         // 只需要erase
         ins[ai].erase(make_pair(VregNumofDecl(movne_ai->rd), movne_ai->rd->gettype() == Decl::reg_decl));
     }
+    // TODO: new comers
     else if(ai->getType() == armInstr::armInsType::sub)
     {
         armSub* sub_ai = (armSub*)ai;
