@@ -7,7 +7,7 @@
 #define DEBUG_ON 1
 
 enum VType{
-    VInteger=0,
+    VInteger=1,
     VArray,
     VFunction,
     //立即数
@@ -44,7 +44,7 @@ class Value
     // 变量作用域标识符
     std::string var_scope = "";
     // Value类型
-    int valueType = 0;
+    int valueType = VType::VInteger;
     int isPara=0; // 代表他是第几个参数
     int isTemp = 0 ;//是不是临时变量
 };
