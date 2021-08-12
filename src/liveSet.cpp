@@ -18,6 +18,9 @@ map<int, vector<Decl*>> Vreg2Decls;
 // because of array
 map<ArrayValue*, Decl> arrayAddr;
 
+//每个gblock拥有的指令个数
+map<BasicBlock*, int> gbarmCnt;
+
 ///////////////
 ostream& operator<<(ostream&out,const armInstr& a){
     return a.output(out);
@@ -1003,7 +1006,7 @@ int usedIns(armInstr* ins,BasicBlock* node)
     return 0;
 }
 
-void setUsed(BasicBlock* s)
+void setUsed(BasicBlock* s,BasicBlock* gb)
 {
     //init:把reachin里的定义建立好
     for(auto dc : reachin[s]){
@@ -1016,7 +1019,10 @@ void setUsed(BasicBlock* s)
             ins=newBlock[s].erase(ins);
             if(ins==newBlock[s].end())break;
         }
-        else ins++;
+        else {
+            ins++;
+            gbarmCnt[gb]++;//记录每个gb有多少条指令
+        }
     }
 
 }
@@ -1109,7 +1115,7 @@ void liveSets()
     //3. 填每条语句的used和计算<value,block>到decl的映射...(也不知道有什么用,先算出来吧...)
     for(auto gb:IR1->Blocks){
         for(auto blk : gb->domBlock){
-            setUsed(blk);
+            setUsed(blk,gb);
         }
     }
     dbg("syy -- add used win!");

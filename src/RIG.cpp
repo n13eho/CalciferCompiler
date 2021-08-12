@@ -515,6 +515,7 @@ void deleteDC(DomTreenode* dn, BasicBlock* gb)
                 }
                 else{
                     newBlock[b].erase(it--);
+                    gbarmCnt[gb]--;
                 }
             }
         }
@@ -524,7 +525,7 @@ void deleteDC(DomTreenode* dn, BasicBlock* gb)
         deleteDC(nx, gb);
 }
 
-void specialInsDelete(DomTreenode* sd)
+void specialInsDelete(DomTreenode* sd, BasicBlock* gb)
 {
     BasicBlock* s=sd->block;
     for(auto it = newBlock[s].begin(); it != newBlock[s].end(); it++){
@@ -539,6 +540,7 @@ void specialInsDelete(DomTreenode* sd)
                 }
                 else{ // 如果rs不是地址类型的，那么任意mov的rd 和 rs number相同的话就都能删，管你是不是regdecl
                     newBlock[s].erase(it--);
+                    gbarmCnt[gb]--;
                 }
             }
         }
@@ -547,7 +549,7 @@ void specialInsDelete(DomTreenode* sd)
 
     //递归
     for(auto nx:sd->son){
-        specialInsDelete(nx);
+        specialInsDelete(nx,gb);
     }
 }
 
@@ -614,6 +616,7 @@ void all2mem(BasicBlock* gb)
                     ldr_ins->rd = dc;
                     ldr_ins->rs = forc_memShift(ForCnode(make_pair(VregNumofDecl(dc),dc->gettype() == Decl::reg_decl),gb), gb);
                     it=newBlock[b].insert(it,ldr_ins)+1;
+                    gbarmCnt[gb]++;
                     ldr_ins->comm = "ttt";
                 }
             }
@@ -631,6 +634,7 @@ void all2mem(BasicBlock* gb)
                 str_ins->rd = arm_ins->rd;
                 str_ins->rs = forc_memShift(ForCnode(make_pair(VregNumofDecl(arm_ins->rd),arm_ins->rd->gettype() == Decl::reg_decl),gb), gb);
                 it=newBlock[b].insert(it+1,str_ins);
+                gbarmCnt[gb]++;
                 str_ins->comm = "ttt";
             }
 
@@ -677,7 +681,7 @@ void addMemoryOperation(BasicBlock* gb)
                     ldr_ins->rs = memShift;
                     ldr_ins->comm = "spill load";
                     it=newBlock[b].insert(it,ldr_ins)+1;
-
+                    gbarmCnt[gb]++;
                     // 建立映射
                     // spill_dc2memdc[dc] = memShift;
                 }
@@ -693,7 +697,7 @@ void addMemoryOperation(BasicBlock* gb)
                 str_ins->rs = memShift;
                 str_ins->comm = "spill store";
                 it=newBlock[b].insert(it+1,str_ins);
-
+                gbarmCnt[gb]++;
                 // 建立映射
                 // spill_dc2memdc[arm_ins->rd] = memShift;
             }
@@ -846,7 +850,7 @@ bool buildRIG(BasicBlock* gb)
     updateV2Ds();
 
     // 此条不专门针对 mov r0, r0; TODO：之后可以在里面加上针对其他ir指令的优化
-    specialInsDelete(block2dom[gb->domBlock[0]]);
+    specialInsDelete(block2dom[gb->domBlock[0]],gb);
 
 
 #if 0
