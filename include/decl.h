@@ -18,6 +18,7 @@ Decl的type:
 3. global
 4. memory
 5. addr
+6. register
 */
 class Decl {
     public:

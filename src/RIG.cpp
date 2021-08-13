@@ -25,6 +25,8 @@ map<RIGnode*, int> colors; // 着色color 一个rignode（其实是vreg）对应
 // 记录每一个寄存器编号（颜色）对应的spilling cost
 map<int, double> spilling_cost;
 
+ofstream debugout;
+
 bool notConst(Decl* d)
 {
     return d->gettype() != Decl::declType::const_decl;
@@ -735,16 +737,34 @@ void addMemoryOperation(BasicBlock* gb)
     }
 }
 
+
 void changeVreg(BasicBlock *gb)
 {
+//    for(auto d: Vreg2Decls[2])
+//    {
+//        debugout << VregNumofDecl(d) << "," << d->gettype() << "  ";
+//    }
+//    debugout << "\n";
+
     for(auto rigN: colors)
     {
         if(rigN.first->dc==13)continue;
+        if(rigN.first->typeIsREG == true)
+        { // TODO: is this right?
+            continue;
+        }
+
         int dc_vreg = rigN.first->dc;
-        for(auto dc: Vreg2Decls[dc_vreg])
+
+        for(auto dc: Vreg2Decls[dc_vreg]) // 当前每一个使用这个寄存器编号的dc
         {// 就将每一个decl的vreg批量改了
             if(dc->rawBlock->parent_ == gb)
             {//（0802改：只改对应gb里面的decl，其他的不要变）
+//                if(dc_vreg == 2 && rigN.second == 3)
+//                    debugout << "2->2   " << rigN.second - 1 << "\n";
+//                if(dc_vreg == 2 && rigN.second == 4)
+//                    debugout << "2->3   " << rigN.second - 1 << "\n";
+
                 if(dc->gettype() == Decl::declType::var_decl)
                 { // 变量 是存在register里面的
                     varDecl* var_dc = (varDecl*)dc;
@@ -755,15 +775,32 @@ void changeVreg(BasicBlock *gb)
                     addrDecl* mem_dc = (addrDecl*)dc;
                     mem_dc->Vreg = rigN.second - 1;
                 }
+
+//                for(auto d: Vreg2Decls[2])
+//                {
+//                    debugout << VregNumofDecl(d) << "  ";
+//                }
+//                debugout << "\n";
             }
         }
     }
+
+
 }
 
 void updateV2Ds()
 {
     // init
     temp_Vreg2Decls.clear();
+
+//    for(int i=0; i<10; i++)
+//    {
+//        for(auto d: Vreg2Decls[i])
+//        {
+//            debugout << VregNumofDecl(d) << " ";
+//        }
+//        debugout << "\n\n";
+//    }
 
     // 存入temp_Vreg2Decls
     for(auto p: Vreg2Decls)
@@ -915,6 +952,8 @@ bool buildRIG(BasicBlock* gb)
 
 void RigsterAlloc()
 {
+    debugout.open("debug.txt", std::ifstream::out);
+
     // 对于每个顶层块（除了第一个全局模块），都应该对应一个RIG图
     for(auto gb: IR1->Blocks)
     {
