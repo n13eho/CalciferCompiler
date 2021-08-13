@@ -1821,25 +1821,28 @@ Value* InitValNode(GrammaNode* node,LinearIR *IR)
             return nullptr;
         }
     }
-    
+
     int cur_dimen = array_dimen[dimen_dpeth];
     int d_len = 1;
+    
     for(int i=dimen_dpeth+1;i<array_dimen.size();i++)
     {
         d_len*=array_dimen[i];
     }
     std::vector<Value *> init_list;
-
+    
     if(InitVal_NULL == node->type)
     {//空{}
         //用于 int a[5][2] = {}; 
         //填充多少个，后面再改，todo
+#ifdef DEBUG_ON
+        cout<<"InitVal_NULL "<<d_len<<" "<<d_len*cur_dimen<<endl;
+#endif
         for(int j=0; j < d_len*cur_dimen;j++)
         {
             IntegerValue* const0 = new IntegerValue("const0",node->lineno,node->var_scope,0,1);
             const0->isTemp = 1;
             array_init.push_back((Value*)const0);
-//            dbg("push a zero in array_init");
         }
 
         IntegerValue* ret = new IntegerValue("sub matrix size",node->lineno,node->var_scope,init_list.size(),1);
@@ -1856,10 +1859,15 @@ Value* InitValNode(GrammaNode* node,LinearIR *IR)
             IntegerValue* ret= new IntegerValue("t1",p_node->lineno,p_node->var_scope,d_len*cur_dimen,1);
             ret->isTemp = 1;
             int cnt = 0;
+#ifdef DEBUG_ON
+            dbg("初值son个数:",p_node->son.size());
+#endif
             // cout<<"初值son个数:"<<p_node->son.size()<<endl;
             for(int i=0;i<p_node->son.size();i++)
             {
-                // dbg(p_node->son[i]->type);
+#ifdef DEBUG_ON
+                dbg(i,p_node->son[i]->type);
+#endif
                 if(InitVal_EXP == p_node->son[i]->type)
                 {
                     Value* ExpV = InitValNode(p_node->son[i],IR);
@@ -1885,6 +1893,9 @@ Value* InitValNode(GrammaNode* node,LinearIR *IR)
 
                    //InitVal_
                     int pos = cnt;//init_list.size();
+#ifdef DEBUG_ON
+                    dbg("array current dimen zero before:",(d_len - (pos % d_len)) % d_len);
+#endif
                     for(int j=0;j < (d_len - (pos % d_len)) % d_len ;j++)
                     {
                         IntegerValue* const0 = new IntegerValue("const0",p_node->lineno,p_node->var_scope,0,1);
@@ -1905,10 +1916,26 @@ Value* InitValNode(GrammaNode* node,LinearIR *IR)
                         cnt+=(ExpV->getValue());
 
                     }
+                    else if(InitVal_NULL == p_node->son[i]->type)
+                    {
+#ifdef DEBUG_ON
+                        dbg("array current dimen zero remain:",d_len);
+#endif
+                        for(int j = 0;j<d_len;j++)
+                        {
+                            IntegerValue* const0 = new IntegerValue("const0",p_node->lineno,p_node->var_scope,0,1);
+                            const0->isTemp = 1;
+                            array_init.push_back((Value*)const0);
+                            // dbg("push a zero in array_init");
+                        }
+                    }
                     
                 }
             }
             // int pos = init_list.size();
+#ifdef DEBUG_ON
+            dbg("array current dimen zero remain:",d_len*cur_dimen-cnt);
+#endif
             for(int j = cnt;j<d_len*cur_dimen;j++)
             {
                 IntegerValue* const0 = new IntegerValue("const0",p_node->lineno,p_node->var_scope,0,1);

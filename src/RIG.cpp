@@ -983,11 +983,15 @@ void RigsterAlloc()
         }
 #endif
         if(!buildRIG(gb)){
+#ifdef DEBUG_ON           
             dbg("全放内存");
-            all2mem(gb);
             std::cout << "****add mem ****\n";
+#endif
+            all2mem(gb);
+#ifdef DEBUG_ON           
             for(auto dr: DomRoot)
                 showDecl(dr);  
+#endif
             spill_failed = buildRIG(gb);
         }
     }

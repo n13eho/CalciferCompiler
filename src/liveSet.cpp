@@ -585,7 +585,6 @@ void assignIns(Instruction* ins,BasicBlock* node)
 void assignLA(Instruction *instr, BasicBlock* node)
 {
     IntegerValue* res = (IntegerValue*)instr->getResult();
-    if(res==nullptr)dbg(instr->getOp().size(),instr->getOpType());
     varDecl* resd = new varDecl(res, node, Rcnt++);
     //op1 copy from assignLogic
     IntegerValue* op1 = (IntegerValue*)(instr->getOp()[0]);
@@ -769,6 +768,9 @@ void calReach(BasicBlock* s)
             IntegerValue* intval = (IntegerValue*)dc->rawValue;
             if(intval->isConst ==1)continue;
         }
+
+        //str 的rd是假的，没有赋值，要去掉
+        if(ins->getType() == armInstr::str)continue;
 
         Value* val=dc->rawValue;//要修改的val
         for(auto dead=reachout[s].begin();dead!=reachout[s].end(); ){
@@ -989,7 +991,6 @@ int usedMov(armMov* ins, BasicBlock* node)
     }
     else if(raw->getResult()->getScope()=="1"){
         //全局变量要保证上一次使用一定是地址，从地址中取出来的值就不算全局变量了。
-        
         Value* rs= (Value*)raw->getOp()[0];
         ins->rs = getDecl(rs,node);
         addAssign(ins->rd->rawValue,node,ins->rd);
