@@ -923,7 +923,7 @@ void RigsterAlloc()
         int whenToadd = 0;
         int temp_debug = 0;
         bool spill_failed = false;
-#ifdef DEBUG_ON
+#ifdef hhh
         while(!buildRIG(gb)){
             dbg("染色失败！");
             if(temp_debug++ > 4){
@@ -942,16 +942,13 @@ void RigsterAlloc()
             for(auto dr: DomRoot)
                 showDecl(dr);
         }
-
 #endif
         if(!buildRIG(gb)){
-#ifdef DEBUG_ON
-             dbg("全放内存");
+            dbg("全放内存");
             all2mem(gb);
             std::cout << "****add mem ****\n";
             for(auto dr: DomRoot)
                 showDecl(dr);  
-#endif
             spill_failed = buildRIG(gb);
         }
     }
