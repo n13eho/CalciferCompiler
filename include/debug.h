@@ -1,5 +1,4 @@
 #pragma once
-#include<bits/stdc++.h>
 #include"BasicBlock.h"
 #include"BuildIR.h"
 #include"Instruction.h"

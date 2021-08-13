@@ -1,4 +1,3 @@
-#include<bits/stdc++.h>
 #include"../include/debug.h"
 using namespace std;
 
@@ -23,51 +22,52 @@ void printIns(int id)
 {
     
     Instruction* presenIns = IR1->InstList[id];
-    cerr << presenIns->getId() << "\t" << DEBUG_insOP[presenIns->getOpType()] << "\t";
-
-    if(presenIns->getOpType() == Instruction::Jmp|| presenIns->getOpType() == Instruction::ConBr)
-    {
-        if(nullptr != presenIns->jmpDestBlock)
-        {
-            cerr<<presenIns->jmpDestBlock->BlockName << presenIns->jmpDestBlock->getFirstIns()<<endl;
-        }
-        // if(nullptr!=presenIns->getResult())
-            // cerr<<((IntegerValue*)presenIns->getResult())->RealValue<<endl;
-        else
-            cerr<<endl;
-        return ;
-    }
-    if(presenIns->getOpType() == Instruction::Alloc)
-    {
-        std::cerr <<presenIns->getOp()[0]->VName<<" space size:"<<((IntegerValue*)(presenIns->getOp()[1]))->getValue()<<endl;
-        return;
-    }
-    if(presenIns->getOpType() == Instruction::Phi)
-    {
-        std::cerr <<presenIns->getOp()[0]->VName<<endl;
-        return;
-    }
-    if(presenIns->getOpType() == Instruction::Store)
-    {
-        std::cerr<<presenIns->getOp()[0]->VName<<" ["<<((IntegerValue*)presenIns->getOp()[1])->getValue()<<"]: "<<(presenIns->getOp()[2])->getName()<<endl;
-        return;
-    }
-    for(int i = 0; i < presenIns->getOp().size(); i++)std::cerr << presenIns->getOp()[i]->VName << ":"<<((IntegerValue*)presenIns->getOp()[i])->RealValue<< "\t";
-    if(presenIns->getOp().size() == 1) cerr << "\t";
-
-    // ready to try template of casting
-
-    if(presenIns->getOpType() == Instruction::InsType::Ret)
-    { // Retrun 语句没有reslut，访问空0 segmentation fault
-        cerr << endl;
-    }
-    else
-    {
-        if(presenIns->getResult()!=nullptr)
-            cerr << presenIns->getResult()->VName << endl;
-        else
-            cerr<<endl;
-    }
+    std::cout << presenIns;
+//    cerr << presenIns->getId() << "\t" << DEBUG_insOP[presenIns->getOpType()] << "\t";
+//
+//    if(presenIns->getOpType() == Instruction::Jmp|| presenIns->getOpType() == Instruction::ConBr)
+//    {
+//        if(nullptr != presenIns->jmpDestBlock)
+//        {
+//            cerr<<presenIns->jmpDestBlock->BlockName << presenIns->jmpDestBlock->getFirstIns()<<endl;
+//        }
+//        // if(nullptr!=presenIns->getResult())
+//            // cerr<<((IntegerValue*)presenIns->getResult())->RealValue<<endl;
+//        else
+//            cerr<<endl;
+//        return ;
+//    }
+//    if(presenIns->getOpType() == Instruction::Alloc)
+//    {
+//        std::cerr <<presenIns->getOp()[0]->VName<<" space size:"<<((IntegerValue*)(presenIns->getOp()[1]))->getValue()<<endl;
+//        return;
+//    }
+//    if(presenIns->getOpType() == Instruction::Phi)
+//    {
+//        std::cerr <<presenIns->getOp()[0]->VName<<endl;
+//        return;
+//    }
+//    if(presenIns->getOpType() == Instruction::Store)
+//    {
+//        std::cerr<<presenIns->getOp()[0]->VName<<" ["<<((IntegerValue*)presenIns->getOp()[1])->getValue()<<"]: "<<(presenIns->getOp()[2])->getName()<<endl;
+//        return;
+//    }
+//    for(int i = 0; i < presenIns->getOp().size(); i++)std::cerr << presenIns->getOp()[i]->VName << ":"<<((IntegerValue*)presenIns->getOp()[i])->RealValue<< "\t";
+//    if(presenIns->getOp().size() == 1) cerr << "\t";
+//
+//    // ready to try template of casting
+//
+//    if(presenIns->getOpType() == Instruction::InsType::Ret)
+//    { // Retrun 语句没有reslut，访问空0 segmentation fault
+//        cerr << endl;
+//    }
+//    else
+//    {
+//        if(presenIns->getResult()!=nullptr)
+//            cerr << presenIns->getResult()->VName << endl;
+//        else
+//            cerr<<endl;
+//    }
 }
 
 void show_block(BasicBlock* node,int dep,BasicBlock* father,int way)
@@ -86,7 +86,7 @@ void show_block(BasicBlock* node,int dep,BasicBlock* father,int way)
      for(auto i : node->succBlock)
      {
          if(!vis[i]){
-#if DEBUG_ON
+#ifdef DEBUG_ON
             show_block(i,dep,node,1);  
 #endif
             
@@ -95,7 +95,7 @@ void show_block(BasicBlock* node,int dep,BasicBlock* father,int way)
     for(auto i : node->domBlock)
     {
         if(!vis[i]){
-#if DEBUG_ON
+#ifdef DEBUG_ON
             show_block(i,dep+1,node,2);   
 #endif
             

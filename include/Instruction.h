@@ -2,7 +2,10 @@
 #include "BasicBlock.h"
 #include "Value.h"
 #include <iostream>
+#include <string>
+#include <map>
 
+extern std::map<int, std::string> DEBUG_insOP;
 
 //四元式的具体指令
 /*
@@ -98,6 +101,60 @@ public:
     void setAddressHead(int v){this->AddressHead = 1;}
 
     int getAddressHead(){return this->AddressHead;}
+
+    friend void operator <<(std::ostream& os, Instruction * presenIns)
+    {
+        // 当前指令
+        os << presenIns->getId() << "\t";
+        os << DEBUG_insOP[presenIns->getOpType()] << "\t";
+
+        if(presenIns->getOpType() == Instruction::Jmp|| presenIns->getOpType() == Instruction::ConBr)
+        {
+            if(nullptr != presenIns->jmpDestBlock)
+            {
+                os << presenIns->jmpDestBlock->BlockName<< presenIns->jmpDestBlock->getFirstIns();
+            }
+        } else if(presenIns->getOpType() == Instruction::Alloc)
+        {
+            os << presenIns->getOp()[0]->VName<<" space size:"<<((IntegerValue*)(presenIns->getOp()[1]))->getValue();
+        } else if(presenIns->getOpType() == Instruction::Store)
+        {
+            os << presenIns->getOp()[0]->VName<<" ["<<((IntegerValue*)presenIns->getOp()[1])->getValue()<<"]: "<<(presenIns->getOp()[2])->getName();
+        } else {
+
+            for(Value * opValue : presenIns->getOp())
+            {
+                int type = opValue->getType();
+
+                if(type == VType::VImm) {
+                    ImmValue * imm = (ImmValue *)opValue;
+                    os << imm->getValue() <<  "\t";
+                } if(type == VType::VInteger) {
+                    IntegerValue * intValue = (IntegerValue *)opValue;
+                    if(intValue->isConst) {
+                        os << intValue->getValue() <<  "\t";
+                    } else {
+                        os << opValue->VName << "\t";
+                    }
+                }
+                else {
+                    os << opValue->VName << "\t";
+                }
+
+            }
+
+            if(presenIns->getOp().size() == 1) os << "\t";
+
+            if(presenIns->getOpType() != Instruction::InsType::Ret) {
+                if(presenIns->getResult()!=nullptr) {
+                    os << presenIns->getResult()->VName;
+                }
+            }
+        }
+
+        os << std::endl;
+    }
+
 
 private:
     //instruction id

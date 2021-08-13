@@ -17,9 +17,7 @@ make
 
 ## debug
 
-DEBUG_ON 1 means printing debug information
-DEBUG_ON is defined in "Value.h" and "sysy_node.hpp"
-
+if you want to see debug output, enable `line 16` in CMakelist.txt, disable it if you don't.
 
 
 ## run
