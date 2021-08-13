@@ -140,7 +140,7 @@ void semantic_stmt_(GrammaNode *root)
     {
         IntegerValue *zuo = semantic_LVal_(root->son[0]);
         IntegerValue *you = semantic_Exp_(root->son[1], 0, 0);
-        zuo->RealValue = you->RealValue;
+        if(zuo->getScope()!="1") zuo->RealValue = you->RealValue;
         IntegerValue *tem = new IntegerValue(name + to_string(cnt++), root->lineno, root->var_scope, you->RealValue, 0);
         tem->isTemp = 1;
         SymbolTable->addItem(root->son[0], zuo);
