@@ -2337,11 +2337,22 @@ Value* PrimaryExpNode(GrammaNode* node,LinearIR *IR)
     if(Ident_ == node->type)
     {
         //当Ident是函数的实参且是全局单变量（非数组）时，增加一条assign指令
-        if(!funcCall_param.empty() && nn->getScope() == "1"  && nn->getType() == 1)
+        if(nn->getScope() == "1"  && nn->getType() == 1)
         {
+            // dbg("aaaaaaaaaaaaaaa");
             IntegerValue* ret = new IntegerValue("syy",node->lineno,"",0);
             ret->isTemp = 1;
             vector<Value*> ops = {nn};
+            if(nullptr == FuncN && 0 == global)
+            {
+                throw BuildIRError(node->lineno, ret->VName, "错误18");
+                // return ;
+            }
+            //属于某个函数且该指令为首指令，新建一个基本块，并建立联系
+            if(nullptr == bbNow)
+            {
+                bbNow = GetPresentBlock(FuncN,BasicBlock::Basic);
+            }
             CreateIns(node,IR,Instruction::Assign,1,ops,ret);
             return ret;
         }

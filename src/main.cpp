@@ -77,6 +77,8 @@ int main(int argc, char *argv[])
         // cout << "\n\n"; show_block(globalBlock, 0);
         // Visitblock(IR1); // 删除空结点
         // SSA
+        // show_cfg();
+        // return 0;
         getssa();//建立支配树以及支配边界 -->
 #if DEBUG_ON
         show_cfg();
@@ -87,6 +89,7 @@ int main(int argc, char *argv[])
 
         // cout << "\n\n"; show_block(globalBlock, 0,nullptr,0); // 打印基本块，查看phi结点
         liveSets();//重命名
+// return 0;
         // 寄存器分配：虚拟寄存器->real寄存器。变量活性分析，建立冲突图；
         RigsterAlloc();
 
