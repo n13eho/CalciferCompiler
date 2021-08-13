@@ -1,7 +1,7 @@
 #pragma once
 #include "Instruction.h"
 #include "../include/sysy_node.hpp"
-#include<bits/stdc++.h>
+
 using namespace std;
 
 //线性IR，存储所有四元式
@@ -31,6 +31,18 @@ class LinearIR
     std::vector<BasicBlock*> Blocks;
     //将函数的value与对应的basicblock对应
     map<Value*,BasicBlock*> FuncMap;
+
+    friend void operator <<(ostream& os, LinearIR * lIR)
+    {
+        os << "Instruction List:" << std::endl;
+        os << "ID\tOP\targ1\targ2\tresult" << std::endl;
+
+        for(Instruction * presenIns : lIR->InstList)
+        {
+            // 当前指令
+            os << presenIns;
+        }
+    }
 };
 
 void VisitAST(GrammaNode* DRoot,LinearIR *IR);

@@ -1,3 +1,5 @@
+#include <math.h>
+
 #include"RIG.h"
 #include"op_cfgFrequency.h"
 const double eps = 1e-9;

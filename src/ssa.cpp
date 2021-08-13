@@ -4,7 +4,7 @@
 #include "Instruction.h"
 #include"BuildIR.h"
 #include "dbg.h"
-#include<bits/stdc++.h>
+
 using namespace std;
 
 ssa* ssaIR=new ssa();
@@ -233,7 +233,7 @@ void placePhi()
                     Instruction* ins=new Instruction(-1,Instruction::Phi,1);
                     if(val==nullptr)
                     {
-#if DEBUG_ON
+#ifdef DEBUG_ON
                         dbg(cnttem);
 #endif
                         
@@ -342,9 +342,9 @@ void getssa()
 //    dbg("get all value win!");
     //抄它!  002_SSA比较清楚的说明_Lecture23.4up.pdf
     placePhi();
-#if DEBUG_ON
-    dbg("place phi win!");
-               
+
+#ifdef DEBUG_ON
+    std::cout << "place phi win!";
 #endif
 
 }

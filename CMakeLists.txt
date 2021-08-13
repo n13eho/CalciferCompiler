@@ -4,13 +4,16 @@ project(${project_name})
 
 set(CMAKE_CXX_STANDARD 17)
 
-# AddressSanitizer, currently removed to pass basic tests
-set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fsanitize=address")
+IF (CMAKE_SYSTEM_NAME MATCHES "Linux")
+    # AddressSanitizer, currently removed to pass basic tests
+    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fsanitize=address")
+endif(CMAKE_SYSTEM_NAME MATCHES "Linux")
 
 # make target
 file(GLOB_RECURSE source_files ${PROJECT_SOURCE_DIR}/src/*.cpp ${PROJECT_SOURCE_DIR}/src/front/*.cpp)
 include_directories(${PROJECT_SOURCE_DIR}/include)
 add_executable(${project_name} ${source_files})
+#target_compile_definitions(${project_name} PRIVATE DEBUG_ON)
 
 # option for test
 option(CUSTOM_TEST "Run custom test cases" ON)

@@ -120,7 +120,7 @@ void Visitblock(LinearIR *IR)
 
             else if (IR->Blocks[i]->domBlock[j]->succBlock.size() == 0 && IR->Blocks[i]->domBlock[j]->pioneerBlock.size() == 0) //前驱后继都为0
             {
-#if DEBUG_ON
+#ifdef DEBUG_ON
                 dbg(IR->Blocks[i]->BlockName);
 #endif
                 DeleteBlock(IR->Blocks[i]->domBlock, j);
@@ -151,7 +151,7 @@ void Visitblock(LinearIR *IR)
                     if (IR->InstList[*it]->getOpType() == Instruction::Ret && *it != IR->Blocks[i]->domBlock[j]->InstrList.back())
                     {
                         it++;
-#if DEBUG_ON
+#ifdef DEBUG_ON
                         cout << *it << endl;
                
 #endif

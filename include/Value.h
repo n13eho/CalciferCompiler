@@ -4,7 +4,13 @@
 
 #include <string>
 #include <vector>
-#define DEBUG_ON 1
+#include <map>
+#include <queue>
+#include <list>
+#include <set>
+
+#include <fstream>
+#include <iostream>
 
 enum VType{
     VInteger=1,

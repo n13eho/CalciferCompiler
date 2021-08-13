@@ -100,10 +100,10 @@ void VisitAST(GrammaNode* DRoot,LinearIR *IR)
 {
     //全局基本块
     IR->AddBlock(globalBlock);
-#if DEBUG_ON
-    dbg("start VisitAST建立四元式和cfg");
+
+#ifdef DEBUG_ON
+    std::cout << "start VisitAST and CFG" << std::endl;
 #endif
-   
     
     for(int i=0;i<DRoot->son.size();i++)
     {
@@ -325,7 +325,7 @@ void VarDefNode(GrammaNode* node,LinearIR *IR)
                             IntegerValue* index = new IntegerValue("index",node->lineno,node->var_scope,j,1);
                             index->isTemp = 1;
                             std::vector<Value*> op = {VL,index,array_init[j]};
-#if DEBUG_ON
+#ifdef DEBUG_ON
                             cout<<"store "<<array_init[j]->getName()<<" to index "<<j<<endl;
                
 #endif
@@ -376,7 +376,7 @@ void VarDefNode(GrammaNode* node,LinearIR *IR)
             }
             else
             {
-#if DEBUG_ON
+#ifdef DEBUG_ON
                std::cout<<"VarDef_single's children num is "<<p_node->son.size()<<std::endl;
 #endif
                 
@@ -2516,7 +2516,7 @@ bool linkNext(BasicBlock* node,LinearIR *IR)
 void DeleteBlockWithNoPio(BasicBlock* node,LinearIR *IR)
 {
     //Func中dom删除next
-#if DEBUG_ON
+#ifdef DEBUG_ON
     dbg(node->BlockName,node,node->pioneerBlock.size(),node->succBlock.size());
 #endif
     std::vector<BasicBlock*>::iterator it;
@@ -2524,7 +2524,7 @@ void DeleteBlockWithNoPio(BasicBlock* node,LinearIR *IR)
 	{
 		if (*it == node)
 		{
-#if DEBUG_ON
+#ifdef DEBUG_ON
             dbg("funcN delete dom block");    
 #endif
 			it = FuncN->domBlock.erase(it++);
@@ -2538,7 +2538,7 @@ void DeleteBlockWithNoPio(BasicBlock* node,LinearIR *IR)
     for (it = node->succBlock.begin(); it != node->succBlock.end();)
 	{//遍历node的后继*it，在*it对应块的前驱中删去node，然后将*it从node的后继中删除
         BasicBlock* tmp = *it;
-#if DEBUG_ON
+#ifdef DEBUG_ON
          dbg(tmp->BlockName,tmp);       
 #endif
         std::vector<BasicBlock*>::iterator it2;
@@ -2547,7 +2547,7 @@ void DeleteBlockWithNoPio(BasicBlock* node,LinearIR *IR)
             // dbg(*it2);
             if(*it2 == node)
             {
-#if DEBUG_ON
+#ifdef DEBUG_ON
                 dbg("删除当前后继块的前驱连接");      
 #endif
                 it2 = tmp->pioneerBlock.erase(it2++);
@@ -2557,12 +2557,12 @@ void DeleteBlockWithNoPio(BasicBlock* node,LinearIR *IR)
         }
         if(tmp->pioneerBlock.size() == 0)
         {
-#if DEBUG_ON
+#ifdef DEBUG_ON
             dbg("递归");    
 #endif
             DeleteBlockWithNoPio(tmp,IR);
         }
-#if DEBUG_ON
+#ifdef DEBUG_ON
         dbg("删除当前后继块的连接",*it);   
 #endif  
         it = node->succBlock.erase(it++);
@@ -2573,69 +2573,9 @@ void DeleteBlockWithNoPio(BasicBlock* node,LinearIR *IR)
 // 打印当前IR中的所有指令
 void show_IR_ins(LinearIR *IR)
 {
-    cerr<<"\n\n";
-    dbg("Instruction List:");
-    cerr<<"InsID\tOP\targ1\targ2\tresult\n";
-    Instruction* presenIns;
-    
-    for(int i=0; i<IR->InstList.size(); i++)
-    {
-        // 当前指令
-        presenIns = IR->InstList[i];
-        cerr << presenIns->getId() << "\t";
-//        dbg(presenIns->getId());
-        cerr<< DEBUG_insOP[presenIns->getOpType()] << "\t";
-//        dbg(DEBUG_insOP[presenIns->getOpType()]);
-        cerr<<presenIns->getParent()<<"\t";
-//        dbg(presenIns->getParent());
-        if(presenIns->getOpType() == Instruction::Jmp|| presenIns->getOpType() == Instruction::ConBr)
-        {
-            if(nullptr != presenIns->jmpDestBlock)
-            {
-                cerr<<presenIns->jmpDestBlock->BlockName<< presenIns->jmpDestBlock->getFirstIns()<<endl;
-            }
-            // if(nullptr!=presenIns->getResult())
-                // cout<<((IntegerValue*)presenIns->getResult())->RealValue<<endl;
-            else
-                cerr<<endl;
-            continue;
-        }
-        if(presenIns->getOpType() == Instruction::Alloc)
-        {
-            std::cerr <<presenIns->getOp()[0]->VName<<" space size:"<<((IntegerValue*)(presenIns->getOp()[1]))->getValue()<<endl;
-            continue;
-        }
-        if(presenIns->getOpType() == Instruction::Store)
-        {
-            std::cerr<<presenIns->getOp()[0]->VName<<" ["<<((IntegerValue*)presenIns->getOp()[1])->getValue()<<"]: "<<(presenIns->getOp()[2])->getName()<<endl;
-            continue;
-        }
-        for(int i = 0; i < presenIns->getOp().size(); i++)
-        {
-            // std::cout << presenIns->getOp()[i]<< " \t";
-            std::cerr << presenIns->getOp()[i]->VName << "\t";
-//            dbg(presenIns->getOp()[i]->VName);
-        }
-        if(presenIns->getOp().size() == 1) cerr << "\t";
-        if(presenIns->getOpType() == Instruction::InsType::Ret)
-        { // Retrun 语句没有reslut，访问空0 segmentation fault
-            cerr << endl;
-        }
-        else
-        {
-//            dbg(presenIns->getId());
-//            dbg(presenIns->getResult());
-            if(presenIns->getResult()!=nullptr)
-                cerr << presenIns->getResult()->VName << endl;
-            else
-                cerr<<endl;
-        }
-    }
-    cerr<<"\n\n";
+    std::cout << IR;
 
-    for(auto i: IR->Blocks)
-        cerr<<i<<" ";
-    cerr<<"\n\n\n";
+    std::cout << std::endl;
 }
 
 void fixIfNext(LinearIR *IR,BasicBlock* node,int dep)

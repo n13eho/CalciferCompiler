@@ -1,3 +1,5 @@
+#include <getopt.h>
+
 #include "../include/sysy_node.hpp"
 #include "../include/semanticAnalyze.h" //语义检查
 #include "../include/BuildIR.h"
@@ -25,7 +27,7 @@ int main(int argc, char *argv[])
 {
     // 初始参数文件
     char *input_file = nullptr, *output_file = nullptr;
-    for(int ch; (ch = getopt(argc, argv, "So:")) != -1;)
+    for(int ch; (ch = getopt(argc, argv, "O:So:")) != -1;)
     {
         switch(ch)
         {
@@ -33,10 +35,8 @@ int main(int argc, char *argv[])
                 break; // 啥也不干，为了测评机
             case 'o':
                 output_file = strdup(optarg);
-#if DEBUG_ON
-               dbg(output_file);
-#endif
-                
+                break;
+            case 'O':
                 break;
             default:
                 break;
@@ -48,9 +48,8 @@ int main(int argc, char *argv[])
     // 处理output_file: 这里处理成传参
 
     // show in/out put info
-#if DEBUG_ON
-    dbg(input_file, output_file);
-               
+#ifdef DEBUG_ON
+    std::cout << input_file << ":" << output_file << std::endl;
 #endif
 
     // 输入提醒
@@ -67,18 +66,22 @@ int main(int argc, char *argv[])
     int ret = yyparse();
     if (ret == 0)
     {
-#if DEBUG_ON
+#ifdef DEBUG_ON
         show_node(Droot, 0); //打印AST
 #endif
         semanticAnalyzer(Droot); // 从ast语义检查 + 构建符号表
         // show_SymbleTable(SymbolTable); // 打印符号表
         VisitAST(Droot, IR1); // 从ast：建立四元式 + 得出block的信息
-//       show_IR_ins(IR1); // 打印指令
+#ifdef DEBUG_ON
+        show_IR_ins(IR1); // 打印指令
+#endif
         // cout << "\n\n"; show_block(globalBlock, 0);
         // Visitblock(IR1); // 删除空结点
         // SSA
         getssa();//建立支配树以及支配边界 -->
+#ifdef DEBUG_ON
         show_cfg();
+#endif
         // return 0;
 
         // 计算每个block的frequency， 可以和上面一步的SSA并行

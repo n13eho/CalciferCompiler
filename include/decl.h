@@ -650,7 +650,7 @@ class armMov:public armInstr{//ok
             if(rs->gettype() == Decl::addr_decl && !isaddress){ // ldr 进来值
                 out << "@@mov trans to ldr to get it's value\n";
 //                out<<"\tldr "<<*rd<<", "<<*rs;
-                out<<"\tldr "<<*rd<<", "<<*rs << "\t@ rs 是个地址";
+                out<<"\tldr "<<*rd<<", "<<*rs << "\t@ rs is address";
             }
             else if(rs->gettype() == Decl::addr_decl && isaddress){ // address is exactly what i want
                 out << "@@address is exactly what i want\n";

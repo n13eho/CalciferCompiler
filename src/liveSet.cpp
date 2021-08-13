@@ -1264,11 +1264,12 @@ void liveSets()
             setUsed(blk,gb);
         }
     }
-#if DEBUG_ON
-     dbg("syy -- add used win!");          
+
+#ifdef DEBUG_ON
+     std::cout << "syy -- add used win!";
 #endif
 
-#if DEBUG_ON
+#ifdef DEBUG_ON
     //4. 输出用
     cout << "**** Arm Instruction with Unlimited Registers ****\n";
     for(auto rt:DomRoot){

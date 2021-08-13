@@ -3,7 +3,7 @@
 #include <vector>
 #include <string>
 //
-#define DEBUG_ON 0
+
 // #ifndef _SYS_NODE_HPP_
 // #define _SYS_NODE_HPP_
 
