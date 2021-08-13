@@ -47,7 +47,7 @@ void printArm(DomTreenode* dn,BasicBlock* gb)
                 if(!isValid8bit(((gblock2spbias[gb]+1)*4))){
                     int lucky = 7;
                     if(VregNumofDecl((((armRet*)inst)->rs))==7)lucky++;
-                    calout << "\tmovw r" << lucky << ", #" << (gblock2spbias[gb])*4 << endl;
+                    calout << "\tldr r" << lucky << ", =" << (gblock2spbias[gb])*4 << endl;
                     calout << "\tadd sp, sp, r" << lucky << endl;
                 }
                 else{
@@ -102,7 +102,7 @@ void transFunc(BasicBlock* node)
     if(gblock2spbias[node]){
         // 这里的sub常量也需要像mov那样考虑,如果不是合法的话,就是用movw; 但是还有一种它大得过分的情况,这里先不考虑 // FIXME
         if(!isValid8bit((gblock2spbias[node])*4)){
-            calout << "\tmovw r7, #" << (gblock2spbias[node])*4 << endl;
+            calout << "\tldr r7, =" << (gblock2spbias[node])*4 << endl;
             calout << "\tsub sp, sp, r7" << endl;
         }
         else{

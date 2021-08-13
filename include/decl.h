@@ -620,8 +620,7 @@ class armMov:public armInstr{//ok
         if(rd->gettype() == Decl::addr_decl)
         { // rd是addr_decl
             if(rs->gettype() == Decl::addr_decl){
-                out<<"@ This is possible??????I have no idea. ----hsyy04\n";
-                out<<"@ 我先临时乱写一下. ----neho\n";
+                out<<"@ Temporarily luan xie ----neho\n";
                 out << "\tmov r" << ((addrDecl*)rd)->Vreg << ", r" << ((addrDecl*)rs)->Vreg;
             }
             else if(rs->gettype()==Decl::memory_decl)
@@ -650,7 +649,7 @@ class armMov:public armInstr{//ok
             if(rs->gettype() == Decl::addr_decl && !isaddress){ // ldr 进来值
                 out << "@@mov trans to ldr to get it's value\n";
 //                out<<"\tldr "<<*rd<<", "<<*rs;
-                out<<"\tldr "<<*rd<<", "<<*rs << "\t@ rs 是个地址";
+                out<<"\tldr "<<*rd<<", "<<*rs << "\t@ rs is an address";
             }
             else if(rs->gettype() == Decl::addr_decl && isaddress){ // address is exactly what i want
                 out << "@@address is exactly what i want\n";
@@ -674,20 +673,8 @@ class armMov:public armInstr{//ok
                     out<<"\tmovw "<<*rd<<", "<<*rs;
                 }
                 else{
-                    // 这里得用个什么字面池了，可能就有4096偏移的限制，并不知道怎么处理，先用 FIXME: limitation of 4096
-#if 0
-                    IntegerValue* imm_value = findimmValue(const_rs->value);
-
-                    // 2 这里的mov要变成ldr，然后再ldr一遍获得它的值
-                    out << "@@@ the mov turn to ldr cause the illegal immediate integer\n";
-                    out << "\tldr " << *rd << ", " << "=" << imm_value->VName << "\t@@@\n";
-                    out << "\tldr " << *rd << ", [" << *rd << "]" << "\t@@@";
-#endif
                     // 听曾sir的直接ldr伪指令 ldr r9, =#1923
-                    out << "@@@ the mov turn to ldr cause the illegal immediate integer\n";
-                    out << "\tldr " << *rd << ", =" << const_rs->value << "\t@@@";
-
-
+                    out << "\tldr " << *rd << ", =" << const_rs->value << "\t@@@ the mov turn to ldr cause the illegal immediate integer";
                 }
 
             }
