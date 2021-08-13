@@ -702,7 +702,7 @@ void setDecl(BasicBlock *s)
 
         id++;
         int ipp = *id;
-        auto inspp = IR1->InstList[i];//下一条指令
+        auto inspp = IR1->InstList[ipp];//下一条指令
         
         if(ins->getOpType() >= Instruction::ArithEq && ins->getOpType()<=Instruction::ArithGQ){
             if(inspp->getOpType()==Instruction::ConBr)
