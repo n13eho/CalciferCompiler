@@ -1179,8 +1179,6 @@ void showDecl(DomTreenode* sd)
     }
 }
 
-
-
 void liveSets()
 {
     //0. 添加label, gblock2spbias归零

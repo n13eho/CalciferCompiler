@@ -257,7 +257,7 @@ void placePhi()
 
 int hasUsedGlobal(Instruction* ins,Value* stval)
 {
-    if(ins->getResult()==stval)return 1;
+    // if(ins->getResult()==stval)return 1;
     for(auto val:ins->getOp()){
         if(val==stval)return 1;
     }
@@ -277,12 +277,21 @@ void getssa()
         }
         if(gbval->var_scope=="1"&&gbval->getType()<=2){
             for(auto b:IR1->Blocks){
-                int iffind=0;
+                // int iffind=0;
                 for(auto eb:b->domBlock){
                     for(auto it = eb->InstrList.begin();it!=eb->InstrList.end();it++){
                         Instruction *ins = IR1->InstList[(*it)];
                         int fl=hasUsedGlobal(ins,gbval);
                         if(fl){
+                            //一条加载全局变量的语句
+                            Instruction *insld = new Instruction(-1,Instruction::Load,1);
+                            insld->setResult(gbval);
+                            insld->addOperand(gbval);
+                            //加入这条语句
+                            IR1->InsertInstr(insld);
+                            // b->domBlock[0]->InstrList.push_front(IR1->InstList.size()-1);
+                            it = eb->InstrList.insert(it,IR1->InstList.size()-1);//TODO:这里先调整为每句使用全局变量的四元式之前都去取值
+                            it++;
                             if(gbval->getType() != 2)
                             { // 如果不是全局数组，是全局变量，就需要ldr进来其值，相反如果是全局数组，则只需要一个首地址即可
                                 //由于加载过来的全局变量是个地址，在mov一遍，就是说再加一个assign
@@ -291,21 +300,16 @@ void getssa()
                                 ins_addr2content->addOperand(gbval);
                                 //加入这条语句
                                 IR1->InsertInstr(ins_addr2content);
-                                b->domBlock[0]->InstrList.push_front(IR1->InstList.size()-1);
+                                // b->domBlock[0]->InstrList.push_front(IR1->InstList.size()-1);
+                                it = eb->InstrList.insert(it,IR1->InstList.size()-1);
+                                it++;
+                                //TODO:这里先调整为每句使用全局变量的四元式之前都去取值
                             }
-                            //一条加载全局变量的语句
-                            Instruction *insld = new Instruction(-1,Instruction::Load,1);
-                            insld->setResult(gbval);
-                            insld->addOperand(gbval);
-                            //加入这条语句
-                            IR1->InsertInstr(insld);
-                            b->domBlock[0]->InstrList.push_front(IR1->InstList.size()-1);
-
-                            iffind=1;
-                            break;
+                            // iffind=1;
+                            // break;
                         }
                     }
-                    if(iffind)break;
+                    // if(iffind)break;
                 }
             }
         }
