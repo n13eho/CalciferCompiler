@@ -37,6 +37,8 @@ map<BasicBlock*,int> visited;
 int funCNext = 0;
 //记录条件比较轨迹,当上一个是数值比较时,当前的比较不需要跳转
 stack<int> cmp_no_jmp;
+//记录表达式是否作为函数实参
+stack<int> funcCall_param;
 int func_param_address = 0;
 
 
@@ -2165,11 +2167,13 @@ Value* UnaryExpNode(GrammaNode* node,LinearIR *IR)
             ins_new->addOperand(called);
             if(called->Result == 1)
                 ins_new->setResult(ret);
+            funcCall_param.push(1);
             for(int i=0;i<para_num;i++)
             {
                 //这里需要确认，实参进入的顺序
                 ins_new->addOperand(AddExpNode(node->son[1]->son[i],IR));
             }
+            funcCall_param.pop();
             IR->InsertInstr(ins_new);
             bbNow->Addins(ins_new->getId());
             ins_new->setParent(bbNow);
@@ -2332,8 +2336,20 @@ Value* PrimaryExpNode(GrammaNode* node,LinearIR *IR)
 
     if(Ident_ == node->type)
     {
-        //左值
-        return SymbolTable->askItem(node);
+        //当Ident是函数的实参且是全局单变量（非数组）时，增加一条assign指令
+        if(!funcCall_param.empty() && nn->getScope() == "1"  && nn->getType() == 1)
+        {
+            IntegerValue* ret = new IntegerValue("syy",node->lineno,"",0);
+            ret->isTemp = 1;
+            vector<Value*> ops = {nn};
+            CreateIns(node,IR,Instruction::Assign,1,ops,ret);
+            return ret;
+        }
+        else
+        {
+            return nn;
+        }
+        
     }
     else if(LVal_Array_ == node->type)
     {
@@ -2379,6 +2395,7 @@ Value* PrimaryExpNode(GrammaNode* node,LinearIR *IR)
     {
         return AddExpNode(node,IR);
     }
+    
 }
 
 //计算数组访问下标

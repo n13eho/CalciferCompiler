@@ -283,7 +283,7 @@ void getssa()
                         Instruction *ins = IR1->InstList[(*it)];
                         int fl=hasUsedGlobal(ins,gbval);
                         if(fl){
-                            //一条加载全局变量的语句
+                            // 一条加载全局变量的语句
                             if(iffind==0){
                                 //只有第一次加载的是地址
                                 Instruction *insld = new Instruction(-1,Instruction::Load,1);
@@ -295,46 +295,46 @@ void getssa()
                                 
                                 iffind=1;
                             }
-                            if(gbval->getType() != 2)
-                            { // 如果不是全局数组，是全局变量，就需要ldr进来其值，相反如果是全局数组，则只需要一个首地址即可
-                                //由于加载过来的全局变量是个地址，在mov一遍，就是说再加一个assign
-                                Instruction *ins_addr2content= new Instruction(-1,Instruction::Assign,1);
-                                ins_addr2content->addOperand(gbval);
-                                //结果应该是一个新建的value
-                                IntegerValue* none  = new IntegerValue("forglobal",-1,"",0);
-                                none->isTemp = 1;
-                                ins_addr2content->setResult(none);
-                                //原语句中的gbval应该被替换
-                                // for(auto itt = ins->getOp().begin();itt!=ins->getOp().end();itt++){
-                                //     auto val = (*itt);
-                                //     if(val == nullptr){
-                                //         dbg(ins->getOpType());
-                                //         dbg(ins->getOp()[0]);
-                                //         dbg(ins->getOp()[1]);
-                                //     }
-                                //     // dbg(gbval->VName);
-                                //     if(val == gbval){
-                                //         dbg("mei you ma ?");
-                                //         *itt = none;
-                                //     }
-                                // }
-                                for(auto idx = 0;idx<ins->getOp().size();idx++){
-                                    auto val = ins->getOp()[idx];
-                                    if(val == nullptr){
-                                        dbg("..................");
-                                    }
-                                    if(val == gbval){
-                                        ins->Operands[idx]=none;
-                                    }
-                                }
-
-                                //加入这条语句
-                                IR1->InsertInstr(ins_addr2content);
-                                // b->domBlock[0]->InstrList.push_front(IR1->InstList.size()-1);
-                                it = eb->InstrList.insert(it,IR1->InstList.size()-1);
-                                it++;
-                                //TODO:这里先调整为每句使用全局变量的四元式之前都去取值
-                            }
+                            // if(gbval->getType() != 2)
+                            // { // 如果不是全局数组，是全局变量，就需要ldr进来其值，相反如果是全局数组，则只需要一个首地址即可
+                            //     //由于加载过来的全局变量是个地址，在mov一遍，就是说再加一个assign
+                            //     Instruction *ins_addr2content= new Instruction(-1,Instruction::Assign,1);
+                            //     ins_addr2content->addOperand(gbval);
+                            //     //结果应该是一个新建的value
+                            //     IntegerValue* none  = new IntegerValue("forglobal",-1,"",0);
+                            //     none->isTemp = 1;
+                            //     ins_addr2content->setResult(none);
+                            //     //原语句中的gbval应该被替换
+                            //     // for(auto itt = ins->getOp().begin();itt!=ins->getOp().end();itt++){
+                            //     //     auto val = (*itt);
+                            //     //     if(val == nullptr){
+                            //     //         dbg(ins->getOpType());
+                            //     //         dbg(ins->getOp()[0]);
+                            //     //         dbg(ins->getOp()[1]);
+                            //     //     }
+                            //     //     // dbg(gbval->VName);
+                            //     //     if(val == gbval){
+                            //     //         dbg("mei you ma ?");
+                            //     //         *itt = none;
+                            //     //     }
+                            //     // }
+                            //     for(auto idx = 0;idx<ins->getOp().size();idx++){
+                            //         auto val = ins->getOp()[idx];
+                            //         if(val == nullptr){
+                            //             dbg("..................");
+                            //         }
+                            //         if(val == gbval){
+                            //             ins->Operands[idx]=none;
+                            //         }
+                            //     }
+                            // 
+                            //     //加入这条语句
+                            //     IR1->InsertInstr(ins_addr2content);
+                            //     // b->domBlock[0]->InstrList.push_front(IR1->InstList.size()-1);
+                            //     it = eb->InstrList.insert(it,IR1->InstList.size()-1);
+                            //     it++;
+                            //     //TODO:这里先调整为每句使用全局变量的四元式之前都去取值
+                            // }
                             // break;
                         }
                     }
