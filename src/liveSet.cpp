@@ -56,14 +56,6 @@ void strGlobal(Instruction* instr, BasicBlock* node, Decl* src)
     newBlock[node].push_back(str_arm);
     trance[str_arm]=instr;
     
-    //还需要更新寄存器中的全局变量, 再加一条load到本身的
-    armLdr* ldr_arm = new armLdr();
-    varDecl* gbnew = new varDecl(gval->rawValue,src->rawBlock,rdd->Vreg);
-    ldr_arm->rd = gbnew;
-    ldr_arm->rs = rdd;
-    newBlock[node].push_back(ldr_arm);
-    trance[ldr_arm]=instr;
-    
 }
 
 void assignMov(Instruction* instr, BasicBlock* node)
@@ -249,7 +241,8 @@ void assignLdr(Instruction* instr, BasicBlock* node)
             if(id_val->isConst==0){
                 //这个id是计算出来的变量,需要加一条add指令来计算地址
                 //这里需要一个野value来算地址
-                Value* idval = new Value("calAddrldr", -1, "");
+                IntegerValue* idval = new IntegerValue("calAddrldr", -1, "",0);
+                idval->isTemp =1;
                 addrDecl* addr_id = new addrDecl(idval, node, Rcnt++);
                 addAssign(idval, node, addr_id);//一次性使用, 所以加上就行.
 
@@ -298,7 +291,8 @@ void assignStr(Instruction* instr, BasicBlock* node)
         //应该增加一条 add index, 数组首地址, index 
         IntegerValue* index_val = (IntegerValue*)instr->getOp()[1];
         if(index_val->isConst==0){
-            Value* idval = new Value("calAddrstr", -1, "");
+            IntegerValue* idval = new IntegerValue("calAddrstr", -1, "",0);
+            idval->isTemp = 1;
             addrDecl* index = new addrDecl(idval, node, Rcnt++);
             addAssign(idval, node, index);
 
@@ -699,16 +693,17 @@ void setDecl(BasicBlock *s)
         
         int i = *id;
         auto ins = IR1->InstList[i];//当前指令
-
         id++;
-        int ipp = *id;
-        auto inspp = IR1->InstList[ipp];//下一条指令
-        
-        if(ins->getOpType() >= Instruction::ArithEq && ins->getOpType()<=Instruction::ArithGQ){
-            if(inspp->getOpType()==Instruction::ConBr)
-                assignLogic(ins,s,inspp->jmpDestBlock);
-            else{
-                assignLA(ins, s);
+        if(id!=s->InstrList.end()){
+            int ipp = *id;
+            auto inspp = IR1->InstList[ipp];//下一条指令
+            
+            if(ins->getOpType() >= Instruction::ArithEq && ins->getOpType()<=Instruction::ArithGQ){
+                if(inspp->getOpType()==Instruction::ConBr)
+                    assignLogic(ins,s,inspp->jmpDestBlock);
+                else{
+                    assignLA(ins, s);
+                }
             }
         }
         else assignIns(IR1->InstList[i],s);
@@ -988,6 +983,14 @@ int usedMov(armMov* ins, BasicBlock* node)
         }
         ins->rs = getDecl(rs,node);
         if(ins->rs==ins->rd) return -1;
+        addAssign(ins->rd->rawValue,node,ins->rd);
+        return 0;
+    }
+    else if(raw->getResult()->getScope()=="1"){
+        //全局变量要保证上一次使用一定是地址，从地址中取出来的值就不算全局变量了。
+        
+        Value* rs= (Value*)raw->getOp()[0];
+        ins->rs = getDecl(rs,node);
         addAssign(ins->rd->rawValue,node,ins->rd);
         return 0;
     }
