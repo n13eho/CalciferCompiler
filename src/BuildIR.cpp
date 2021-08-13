@@ -704,6 +704,7 @@ void IfNode(GrammaNode* node,LinearIR *IR)
         else
         {
             bbNow->Link(next);
+            bbNow->LastIfNext = next;
         }
         // cout<<"case T :bbNow "<<bbNow<<bbNow->BlockName<<endl;
         
@@ -810,6 +811,7 @@ void IfElseNode(GrammaNode* node,LinearIR *IR)
         {
             //块空或者
             bbNow->Link(next);
+            bbNow->LastIfNext = next;
         }
         
         
@@ -837,6 +839,7 @@ void IfElseNode(GrammaNode* node,LinearIR *IR)
         {
             //块空
             bbNow->Link(next);
+            bbNow->LastIfNext = next;
         }
         bbNow = next;
         bbNow->bType = BasicBlock::IfNext;
@@ -2679,7 +2682,7 @@ void fixIfNext(LinearIR *IR,BasicBlock* node,int dep)
     // cout<<node->BlockName<<" "<<node->InstrList.size()<<" "<<node->getLastIns()<<endl;
     int insId = node->getLastIns();
 //    dbg(node->BlockName,node->bType,node->parent_,insId);
-    if(node->bType == BasicBlock::IfNext&&node->parent_!=nullptr &&(insId == -1 || (IR->getIns(insId)->getOpType() != 17 && IR->getIns(insId)->getOpType() != 20)))
+    if((node->bType == BasicBlock::IfNext || node->BlockName == "ifTrue" || node->BlockName == "ifFalse")&&node->parent_!=nullptr &&(insId == -1 || (IR->getIns(insId)->getOpType() != 17 && IR->getIns(insId)->getOpType() != 20)))
     {
         // dbg("kong",node->BlockName,node);
         //空基本块

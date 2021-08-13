@@ -109,9 +109,10 @@ void outputsuc(BasicBlock* s)
 {
     viscfg[s]=1;
     for(auto eb:s->succBlock){
-        cerr<<"succ:";
-        dbg(eb);
-        dbg(eb->BlockName);
+        cout<<"succ:";
+        // dbg(eb);
+        // dbg(eb->BlockName);
+        cout<<eb->BlockName<<endl;
         for(auto i : eb->InstrList)
             printIns(i);
         other.insert(eb);
@@ -121,14 +122,16 @@ void outputsuc(BasicBlock* s)
 void show_cfg()
 {
     for(auto gb:IR1->Blocks){
-        dbg(gb);
-        dbg(gb->BlockName);
+        // dbg(gb);
+        // dbg(gb->BlockName);
+        cout<<gb->BlockName<<endl;
         for(auto i : gb->InstrList)
             printIns(i);
         for(auto b:gb->domBlock){
-            cerr<<"dom:";
-            dbg(b);
-            dbg(b->BlockName);
+            cout<<"dom:";
+            // dbg(b);
+            // dbg(b->BlockName);
+            cout<<b->BlockName<<endl;
             for(auto i : b->InstrList)
                 printIns(i);
             if(!viscfg[b])outputsuc(b);
