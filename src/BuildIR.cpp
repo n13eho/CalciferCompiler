@@ -1198,14 +1198,15 @@ void LOrExpNode(GrammaNode* node,LinearIR *IR)
 Value* LAndExpNode(GrammaNode* node,LinearIR *IR)
 {
     CondLogi.push_back(Instruction::LogicAnd);
-    Value* ret = new Value("tr",node->lineno,node->var_scope);
+    IntegerValue* ret = new IntegerValue("and_res",node->lineno,node->var_scope,0);
+    // Value* ret = new Value("tr",node->lineno,node->var_scope);
     ret->isTemp = 1;
     CondCnt.push_back(node->son.size());
 //    cout<<"LAndExpNode cond cnt:"<<node->son.size()<<endl;
     if(node->son.size() == 1)
     {
         cmp_no_jmp.push(0);
-        ret = EqExpNode(node->son[0],IR);
+        ret = (IntegerValue*)EqExpNode(node->son[0],IR);
         cmp_no_jmp.pop();
         // dbg(node->son[0]->type);
         if(EqExp_EQ_ != node->son[0]->type && EqExp_NEQ_ != node->son[0]->type &&
@@ -1235,11 +1236,12 @@ Value* LAndExpNode(GrammaNode* node,LinearIR *IR)
             {
                 bbNow = GetPresentBlock(FuncN,BasicBlock::Basic);
             }
-            Value* Result = new Value("res",node->lineno,node->var_scope);
+            IntegerValue* Result = new IntegerValue("res",node->lineno,node->var_scope,0);
+            // Value* Result = new Value("res",node->lineno,node->var_scope);
             Result->isTemp = 1;
             Instruction* ins_neq = new Instruction(IR->getInstCnt(),Instruction::ArithNeq,2);
             ins_neq->addOperand(VL);
-            ins_neq->addOperand((Value*)RL);
+            ins_neq->addOperand(RL);
             ins_neq->setResult(Result);
             IR->InsertInstr(ins_neq);
             bbNow->Addins(ins_neq->getId());
@@ -1312,7 +1314,8 @@ Value* LAndExpNode(GrammaNode* node,LinearIR *IR)
                 IntegerValue* const0 = new IntegerValue("const0",node->son[i]->lineno,node->son[i]->var_scope,0,1);
                 const0->isTemp = 1;
                 vector<Value*> ops={Condi,const0};
-                Value* Result = new Value("res",node->lineno,node->var_scope);
+                IntegerValue* Result = new IntegerValue("res",node->lineno,node->var_scope,0);
+                // Value* Result = new Value("res",node->lineno,node->var_scope);
                 Result->isTemp = 1;
                 if(CondCnt.back()>1)
                     CreateIns(node,IR,Instruction::ArithEq,2,ops,Result);

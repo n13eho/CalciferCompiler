@@ -705,6 +705,7 @@ void setDecl(BasicBlock *s)
                     assignLA(ins, s);
                 }
             }
+            else assignIns(IR1->InstList[i],s);
         }
         else assignIns(IR1->InstList[i],s);
         id = tem;//FIXME:恢复原来的迭代器(不会stl的后果)
