@@ -740,11 +740,6 @@ void addMemoryOperation(BasicBlock* gb)
 
 void changeVreg(BasicBlock *gb)
 {
-//    for(auto d: Vreg2Decls[2])
-//    {
-//        debugout << VregNumofDecl(d) << "," << d->gettype() << "  ";
-//    }
-//    debugout << "\n";
 
     for(auto rigN: colors)
     {
@@ -760,11 +755,6 @@ void changeVreg(BasicBlock *gb)
         {// 就将每一个decl的vreg批量改了
             if(dc->rawBlock->parent_ == gb)
             {//（0802改：只改对应gb里面的decl，其他的不要变）
-//                if(dc_vreg == 2 && rigN.second == 3)
-//                    debugout << "2->2   " << rigN.second - 1 << "\n";
-//                if(dc_vreg == 2 && rigN.second == 4)
-//                    debugout << "2->3   " << rigN.second - 1 << "\n";
-
                 if(dc->gettype() == Decl::declType::var_decl)
                 { // 变量 是存在register里面的
                     varDecl* var_dc = (varDecl*)dc;
@@ -775,12 +765,6 @@ void changeVreg(BasicBlock *gb)
                     addrDecl* mem_dc = (addrDecl*)dc;
                     mem_dc->Vreg = rigN.second - 1;
                 }
-
-//                for(auto d: Vreg2Decls[2])
-//                {
-//                    debugout << VregNumofDecl(d) << "  ";
-//                }
-//                debugout << "\n";
             }
         }
     }
@@ -792,15 +776,6 @@ void updateV2Ds()
 {
     // init
     temp_Vreg2Decls.clear();
-
-//    for(int i=0; i<10; i++)
-//    {
-//        for(auto d: Vreg2Decls[i])
-//        {
-//            debugout << VregNumofDecl(d) << " ";
-//        }
-//        debugout << "\n\n";
-//    }
 
     // 存入temp_Vreg2Decls
     for(auto p: Vreg2Decls)
