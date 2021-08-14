@@ -3,6 +3,27 @@
 ofstream calout;
 map<Value*, BasicBlock*> func2block;
 
+void constpool(DomTreenode* dn){
+    BasicBlock* node = dn->block;
+    for(auto it = newBlock[node].begin();it!=newBlock[node].end();it++){
+        auto ins = *it;
+        //只有 mov, ldr, str 会发生常量池溢出问题
+        if(ins->getType() == armInstr::str){
+            armStr* ins_str = (armStr*)ins;
+            if(ins_str->rs->gettype() == Decl::memory_decl){
+                memoryDecl* mem = (memoryDecl*)ins_str->rs;
+                if(abs(mem->bias)>=4096){
+                    //这里的处理: 先是把sp改变到对应的位置, 然后偏移置零
+                    
+                }
+            }
+            else if(ins_str->rd->gettype() == Decl::addr_decl){
+                
+            }
+        }
+    }
+}
+
 void printArm(DomTreenode* dn,BasicBlock* gb)
 {
     BasicBlock* b = dn->block;
@@ -115,7 +136,6 @@ void transFunc(BasicBlock* node)
     calout<<"\t.fnend"<<endl;
   
 }
-
 
 void CalciferCodeGen(char *output_file_path)
 {
