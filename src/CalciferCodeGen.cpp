@@ -43,15 +43,18 @@ void printArm(DomTreenode* dn,BasicBlock* gb)
             //pop lr //FIXME: 现在加到了ret的输出中
 //            calout<<"\tpop {r4-r12, lr}"<<endl;
 
-            if(gblock2spbias[gb]){
-                if(!isValid8bit(((gblock2spbias[gb]+1)*4))){
+            int offset = gblock2spbias[gb] * 4;
+
+            if(offset){
+
+                if(!isValid8bit(offset)){
                     int lucky = 7;
                     if(VregNumofDecl((((armRet*)inst)->rs))==7)lucky++;
-                    calout << "\tldr r" << lucky << ", =" << (gblock2spbias[gb])*4 << endl;
+                    calout << "\tldr r" << lucky << ", =" << offset << endl;
                     calout << "\tadd sp, sp, r" << lucky << endl;
                 }
                 else{
-                    calout<<"\tadd sp, sp, #"<<(gblock2spbias[gb])*4<<endl;
+                    calout<<"\tadd sp, sp, #"<< offset <<endl;
                 }
                 
             }
@@ -64,8 +67,13 @@ void printArm(DomTreenode* dn,BasicBlock* gb)
             if(VregNumofDecl(inst_mov->rd) == VregNumofDecl(inst_mov->rs)){
                 //这里其实是专门为加载全局变量值而产生的ldr指令
                 //tqy:如果能活到这里的mov，一定是mov r0, [r0]这样的指令
-                if(inst_mov->rs->gettype() == Decl::addr_decl)
+                if(inst_mov->rs->gettype() == Decl::addr_decl && inst_mov->rd->gettype() == Decl::addr_decl) {
+                    // 这是不可能的
+                    // 忽略
+                } else {
                     calout<<"\tldr "<<*inst_mov->rd<<", "<<*inst_mov->rs<<endl;
+                }
+
 //                dbg(inst_mov->rd->gettype(), inst_mov->rs->gettype());
             }
             else calout<<*inst<<endl;
@@ -98,29 +106,31 @@ void transFunc(BasicBlock* node)
     //push lr
     calout<<"\tpush {r4-r12, lr}"<<endl;
     //修改sp
+
+    int offset = gblock2spbias[node] * 4;
     
-    if(gblock2spbias[node]){
+    if(offset){
         // 这里的sub常量也需要像mov那样考虑,如果不是合法的话,就是用movw; 但是还有一种它大得过分的情况,这里先不考虑 // FIXME
-        if(!isValid8bit((gblock2spbias[node])*4)){
-            calout << "\tldr r7, =" << (gblock2spbias[node])*4 << endl;
+        if(!isValid8bit(offset)){
+            calout << "\tldr r7, =" << offset << endl;
             calout << "\tsub sp, sp, r7" << endl;
         }
         else{
-            calout<<"\tsub sp, sp, #"<<(gblock2spbias[node])*4<<endl;
+            calout<<"\tsub sp, sp, #"<< offset <<endl;
         }
     }
 
     //输出这个函数的指令
     printArm(block2dom[node->domBlock[0]],node);
     calout<<"@function without return!"<<endl;
-    if(gblock2spbias[node]){
-        if(!isValid8bit(((gblock2spbias[node]+1)*4))){
+    if(offset){
+        if(!isValid8bit(offset)){
             int lucky = 7;
-            calout << "\tldr r" << lucky << ", =" << (gblock2spbias[node])*4 << endl;
+            calout << "\tldr r" << lucky << ", =" << offset << endl;
             calout << "\tadd sp, sp, r" << lucky << endl;
         }
         else{
-            calout<<"\tadd sp, sp, #"<<(gblock2spbias[node])*4<<endl;
+            calout<<"\tadd sp, sp, #"<< offset <<endl;
         }
     }
     calout<<"\tpop {r4-r12, lr}"<<endl;
