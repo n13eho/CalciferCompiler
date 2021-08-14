@@ -460,7 +460,7 @@ class armLdr:public armInstr{//ok??????????? //TODO: now array is different!
     {
         if(rd->gettype() == Decl::addr_decl){
             if(rs->gettype() == Decl::global_decl) {
-                out<<"\tmov32 r"<<((addrDecl*)rd)->Vreg<<", "<<*rs;
+                out<<"\tmov32 , r"<<((addrDecl*)rd)->Vreg<<", "<<*rs;
             } else {
                 out<<"\tldr r"<<((addrDecl*)rd)->Vreg<<", "<<*rs;
             }
