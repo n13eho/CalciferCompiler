@@ -2479,12 +2479,32 @@ Value* LValArrayNode(GrammaNode* node,LinearIR *IR)
                     bbNow = GetPresentBlock(FuncN,BasicBlock::If);
                 }
                 Value* lasti = AddExpNode(p_node->son[i],IR);
-                vector<Value*> ops = {lasti};
-                CreateIns(node,IR,Instruction::Assign,1,ops,index);
-                // dbg("index is const?",((IntegerValue*)index)->isConst);
-                int dimen = NumOfDimension_[i];
-                accum = new IntegerValue("dimen",node->lineno,node->var_scope,dimen,1);
-                accum->isTemp = 1;
+
+                if(func_param_address)
+                {//当数组地址作为参数传入函数时，需要计算后面的累计维度
+                    int last_dimen = p_node->son.size();
+                    int offsets = 1;
+                    for(int j = last_dimen;j<size_dimen;j++)
+                    {
+                        offsets*=NumOfDimension_[j];
+                    }
+                    accum = new IntegerValue("offset",node->lineno,node->var_scope,offsets,1);
+                    accum->isTemp = 1;
+                    vector<Value*> ops = {lasti,accum};
+                    CreateIns(node,IR,Instruction::Mul,1,ops,index);
+                    // dbg("index is const?",((IntegerValue*)index)->isConst);
+                    // int dimen = NumOfDimension_[i];
+                    
+                }
+                else
+                {
+                    vector<Value*> ops = {lasti};
+                    CreateIns(node,IR,Instruction::Assign,1,ops,index);
+                    // dbg("index is const?",((IntegerValue*)index)->isConst);
+                    int dimen = NumOfDimension_[i];
+                    accum = new IntegerValue("dimen",node->lineno,node->var_scope,dimen,1);
+                    accum->isTemp = 1;
+                }
 //                accum = new ImmValue("dimen",dimen);
             }
             else
@@ -2545,6 +2565,12 @@ Value* LValArrayNode(GrammaNode* node,LinearIR *IR)
         // ins_load->setResult(ret);
         // IR->InsertInstr(ins_load);
         // dbg("index is const?",((IntegerValue*)index)->isConst);
+
+        if(func_param_address)
+        {
+
+        }
+
         return index;
     }
     else
