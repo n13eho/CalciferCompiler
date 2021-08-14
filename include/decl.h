@@ -83,7 +83,7 @@ class globalDecl: public Decl{
     string dataPos;
     globalDecl(Value *_rawValue, BasicBlock *_rawBlock, string _dataPos):Decl(_rawValue,_rawBlock),dataPos(_dataPos){};
     virtual ostream& output(ostream&out)const{
-        out<<"="<<dataPos;
+        out<<dataPos;
         return out;
     }
     virtual int gettype()const{return 3;}
@@ -459,7 +459,11 @@ class armLdr:public armInstr{//ok??????????? //TODO: now array is different!
     virtual ostream& output(ostream&out)const
     {
         if(rd->gettype() == Decl::addr_decl){
-            out<<"\tldr r"<<((addrDecl*)rd)->Vreg<<", "<<*rs;
+            if(rs->gettype() == Decl::global_decl) {
+                out<<"\tmov32 , r"<<((addrDecl*)rd)->Vreg<<", "<<*rs;
+            } else {
+                out<<"\tldr r"<<((addrDecl*)rd)->Vreg<<", "<<*rs;
+            }
         }
         else{
             out<<"\tldr "<<*rd;
