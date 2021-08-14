@@ -134,6 +134,7 @@ void buildDomTree(BasicBlock *s)
 
     //step2\3: 主要是计算semi
 //    ancestor[root]==0;
+    ancestor[root]=0;
     for(auto i: vertex)label[i]=i;
     step23();
 

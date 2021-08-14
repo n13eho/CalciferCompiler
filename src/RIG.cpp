@@ -655,7 +655,7 @@ void all2mem(BasicBlock* gb)
                 && dc->gettype() != Decl::memory_decl
                 && dc->gettype() != Decl::global_decl){
                     
-                    if(VregNumofDecl(dc)<K-2)continue;//留三个吧,(凭直觉)
+                    if(VregNumofDecl(dc)<K-4)continue;//留三个吧,(凭直觉)
                     if(VregNumofDecl(dc)==K)continue;//跳过r13的spill
                     armLdr* ldr_ins= new armLdr();
                     ldr_ins->rd = dc;
@@ -671,7 +671,7 @@ void all2mem(BasicBlock* gb)
             && arm_ins->getType() != armInstr::str
             && arm_ins->rd->gettype() != Decl::reg_decl){
                 
-                if(VregNumofDecl(arm_ins->rd)<K-2)continue;//留两个吧,(凭直觉)
+                if(VregNumofDecl(arm_ins->rd)<K-4)continue;//留两个吧,(凭直觉)
                 if(VregNumofDecl(arm_ins->rd) == K)continue;
                 if(VregNumofDecl(arm_ins->rd)==789){
                     dbg("789error");
@@ -973,7 +973,7 @@ void RigsterAlloc()
                 showDecl(dr);
         }
 #endif
-        while(!buildRIG(gb)){
+        if(!buildRIG(gb)){
 #ifdef DEBUG_ON           
             dbg("全放内存");
             std::cout << "****add mem ****\n";
@@ -983,7 +983,7 @@ void RigsterAlloc()
             for(auto dr: DomRoot)
                 showDecl(dr);  
 #endif
-//            spill_failed = buildRIG(gb);
+            spill_failed = buildRIG(gb);
         }
     }
 #ifdef DEBUG_ON
