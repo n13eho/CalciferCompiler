@@ -539,7 +539,7 @@ void assignNot(Instruction* instr, BasicBlock* node)
     inseq->bol = 1;
     armMovne* insne =new armMovne();
     insne->rd = resd;
-    inseq->bol = 0;
+    insne->bol = 0;
 
     newBlock[node].push_back(inseq);
     trance[inseq]=instr;
