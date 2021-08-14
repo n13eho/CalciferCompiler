@@ -103,13 +103,15 @@ class addrDecl: public Decl{
     public:
     int Vreg;
     int bias=0;
+    varDecl* biasR = nullptr;
     addrDecl(Value *_rawValue, BasicBlock *_rawBlock):Decl(_rawValue,_rawBlock){};
     addrDecl(Value *_rawValue, BasicBlock *_rawBlock,int _Vreg):Decl(_rawValue,_rawBlock),Vreg(_Vreg){
         Vreg2Decls[Vreg].push_back(this);
     };
     virtual ostream& output(ostream&out)const{
-        if(bias==0)out<<"[r"<<Vreg<<']';
-        else out<<"[r"<<Vreg<<", #"<<bias<<"]";
+        if(bias==0&&biasR==nullptr)out<<"[r"<<Vreg<<']';
+        else if(biasR == nullptr)out<<"[r"<<Vreg<<", #"<<bias<<"]";
+        else {out<<"[r"<<Vreg<<", "<<*biasR<<"]";}
         return out;
     }
 
