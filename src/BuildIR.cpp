@@ -2414,6 +2414,10 @@ Value* PrimaryExpNode(GrammaNode* node,LinearIR *IR)
         Instruction* ins_load = nullptr;
         if(func_param_address == 1)
         {
+            IntegerValue* four = new IntegerValue("offset_4",node->lineno,node->var_scope,4,1);
+            four->isTemp = 1;
+            vector<Value*> mulOps = {index,four};
+            CreateIns(node,IR,Instruction::Mul,2,mulOps,index);
             ins_load = new Instruction(IR->getInstCnt(),Instruction::Add,2);
             ins_load->setAddressHead(1);
         }
