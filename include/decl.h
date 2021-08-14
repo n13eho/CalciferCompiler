@@ -84,7 +84,7 @@ class globalDecl: public Decl{
     globalDecl(Value *_rawValue, BasicBlock *_rawBlock, string _dataPos):Decl(_rawValue,_rawBlock),dataPos(_dataPos){};
     virtual ostream& output(ostream&out)const{
         out<<"="<<dataPos << std::endl;
-        out << "\tLTORG";
+        out << "\t.ltorg";
         return out;
     }
     virtual int gettype()const{return 3;}
