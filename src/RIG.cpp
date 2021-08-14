@@ -213,6 +213,12 @@ void ArmI2InOut(armInstr* ai)
         //ldr 的rs是[r0]这种情况，r0是他的gen。PS：rs处只有可能是 global_decl, memory_decl, addr_decl
         if(ldr_ai->rs->gettype() == Decl::addr_decl)
         {
+            addrDecl* addr = (addrDecl*)ldr_ai->rs;
+            if(addr->biasR!=nullptr){
+                //如果偏移是一个decl也需要变
+                ins[ai].insert(make_pair(VregNumofDecl(addr->biasR),addr->biasR->gettype() == Decl::reg_decl));
+                addr->biasR->gen_used.push_back(ai);
+            }
             ins[ai].insert(make_pair(VregNumofDecl(ldr_ai->rs), ldr_ai->rs->gettype() == Decl::reg_decl));
             ldr_ai->rs->gen_used.push_back(ai);
         }

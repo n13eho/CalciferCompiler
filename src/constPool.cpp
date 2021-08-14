@@ -141,4 +141,8 @@ void constpool(DomTreenode* dn){
             }
         }
     }
+
+    for(auto son : dn->son){
+        constpool(son);
+    }
 }
