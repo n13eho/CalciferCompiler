@@ -1,9 +1,9 @@
-#include "ssa.h"
-#include "decl.h"
-#include "semanticAnalyze.h"
-#include "Instruction.h"
-#include"BuildIR.h"
-#include "dbg.h"
+#include "../include/ssa.h"
+#include "../include/decl.h"
+#include "../include/semanticAnalyze.h"
+#include "../include/Instruction.h"
+#include"../include/BuildIR.h"
+#include "../include/dbg.h"
 using namespace std;
 
 ssa* ssaIR=new ssa();
@@ -212,6 +212,7 @@ void placePhi()
 {
     int cnttem = 0 ;
     for(auto val : allValue){
+        // if(val->getScope()=="1")continue;
         if(val->isTemp == 1) continue;
         cnttem++;
         phiIns.clear();

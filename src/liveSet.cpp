@@ -1,5 +1,5 @@
 #include"../include/liveSet.h"
-#include"dbg.h"
+#include"../include/dbg.h"
 
 /*
 input: IR1 with phi
@@ -234,8 +234,15 @@ void assignSub(Instruction* instr,BasicBlock *node)
 }
 void assignPhi(Instruction* instr, BasicBlock* node)
 {
-    Value* val=instr->getOp()[0];    
-    varDecl* rd = new varDecl(val, node, Rcnt++);
+    Value* val=instr->getOp()[0];
+    Decl* rd;
+    if(val->getScope() == "1" ){
+        rd = new addrDecl(val, node, Rcnt++);
+    } 
+    else{
+        rd = new varDecl(val, node, Rcnt++);
+    }
+    
     for(auto pred : node->pioneerBlock){
         //phi语句块(node)的前驱是pred
         armMov* ins = new armMov();//在node中,所有val都用rd,所以前驱要加mov
