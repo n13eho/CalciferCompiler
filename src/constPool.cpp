@@ -2,7 +2,6 @@
 #include "../include/liveSet.h"
 void constpool(DomTreenode* dn){
     BasicBlock* node = dn->block;
-    dbg(node->BlockName);
     for(auto it = newBlock[node].begin();it!=newBlock[node].end();it++){
         auto ins = *it;
         //只有ldr, str 会发生常量池溢出问题
