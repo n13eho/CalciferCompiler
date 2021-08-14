@@ -86,6 +86,23 @@ void assignMov(Instruction* instr, BasicBlock* node)
 }
 void assignAdd(Instruction* instr,BasicBlock *node)
 {
+    IntegerValue* op1 = (IntegerValue*)(instr->getOp()[0]);
+    IntegerValue* op2 = (IntegerValue*)(instr->getOp()[1]);
+
+    if(op1->isConst && !isValid8bit(op1->RealValue)){
+        armMov* add_mov = new armMov();
+        add_mov->rd = new varDecl(op1, node, Rcnt++);
+        newBlock[node].push_back(add_mov);
+        trance[add_mov] = instr;
+    }
+    //if there is still a constValue, then it must be op2, so judge if op2 is valid 8-bit num
+    if(op2->isConst && !isValid8bit(op2->RealValue)){ // if op2 is const and it is illegal, add a mov ins
+        armMov* add_mov = new armMov();
+        add_mov->rd = new varDecl(op2, node, Rcnt++);
+        newBlock[node].push_back(add_mov);
+        trance[add_mov] = instr;
+    }
+
     armAdd *ins=new armAdd();
     IntegerValue* res=(IntegerValue*)instr->getResult();
     //这里只关心赋值.
@@ -174,6 +191,24 @@ void assignMod(Instruction* instr,BasicBlock *node)
 }
 void assignSub(Instruction* instr,BasicBlock *node)
 {
+    // 这里和add一样，我(neho)直接赋值过来了
+    IntegerValue* op1 = (IntegerValue*)(instr->getOp()[0]);
+    IntegerValue* op2 = (IntegerValue*)(instr->getOp()[1]);
+
+    if(op1->isConst && !isValid8bit(op1->RealValue)){ // if op2 is const and it is illegal, add a mov ins
+        armMov* sub_mov = new armMov();
+        sub_mov->rd = new varDecl(op1, node, Rcnt++);
+        newBlock[node].push_back(sub_mov);
+        trance[sub_mov] = instr;
+    }
+    //if there is still a constValue, then it must be op2, so judge if op2 is valid 8-bit num
+    if(op2->isConst && !isValid8bit(op2->RealValue)){ // if op2 is const and it is illegal, add a mov ins
+        armMov* sub_mov = new armMov();
+        sub_mov->rd = new varDecl(op2, node, Rcnt++);
+        newBlock[node].push_back(sub_mov);
+        trance[sub_mov] = instr;
+    }
+
     IntegerValue* res=(IntegerValue*)instr->getResult();
     IntegerValue* r0=(IntegerValue*)instr->getOp()[0];
     varDecl *resd = new varDecl(res,node,Rcnt++);
@@ -218,7 +253,6 @@ void assignPhi(Instruction* instr, BasicBlock* node)
 }
 void assignLdr(Instruction* instr, BasicBlock* node)
 {
-    //TODO: 形参的数组,,, 先不写了.(可能碰巧能运行,也不知道为什么鲁棒性这么强~)
     Value *rdval = instr->getResult();
     armLdr* ins = new armLdr();
     if(rdval->getScope()=="1"&&rdval->getType()<=2){
@@ -566,13 +600,33 @@ void assignIns(Instruction* ins,BasicBlock* node)
             //只有alloc是数组的时候才需要处理
             ArrayValue* array =(ArrayValue*) ins->getOp()[0];//被声明的定义
 
+            // new a add arm
             armAdd* calAddr = new armAdd();//用一个加指令计算数组首地址
             addrDecl* rd = new addrDecl(array, node, Rcnt++);
             calAddr->rd = rd;
             varDecl* r0 = new varDecl(nullptr, node, 13);//这是sp寄存器
             calAddr->r0=r0;
-            constDecl* r1 = new constDecl(nullptr, node, (gblock2spbias[node->parent_])*4);//这是数组首地址偏移，从低地址向高地址存
-            calAddr->r1=r1;
+
+                // new a wild rd
+            IntegerValue* allco_add_value = new IntegerValue("neho", -1, "", gblock2spbias[node->parent_]*4, 1);
+
+            constDecl* r1 = new constDecl(allco_add_value, node, (gblock2spbias[node->parent_])*4);//这是数组首地址偏移，从低地址向高地址存
+            calAddr->r1 = r1;
+
+            if(!isValid8bit( (gblock2spbias[node->parent_])*4 ))
+            {
+                // 非法常数作为rs
+                armMov* allco_add_mov = new armMov();
+                allco_add_mov->rs = r1;
+                allco_add_mov->rd = new varDecl(allco_add_value, node, Rcnt++);
+
+                //之前calAddr的操作数就需要换为rd
+                calAddr->r1 = allco_add_mov->rd;
+
+                newBlock[node].push_back(allco_add_mov);
+                trance[allco_add_mov]=ins;
+            }
+
             int size = ((IntegerValue*)ins->getOp()[1])->RealValue;
             gblock2spbias[node->parent_]+=size;
             
@@ -942,11 +996,17 @@ int usedMov(armMov* ins, BasicBlock* node)
         addAssign(ins->rd->rawValue,node,ins->rd); // 原来的value，node，新增的dc(rd)
         return 0;
     }
+    else if(raw->getOpType() == Instruction::Alloc){
+        //他是非常规add加进来的，计算数组首地址使用了非法立即数
+        addAssign(ins->rd->rawValue,node, ins->rd);
+        return 0;
+    }
     else if(raw->getOpType() == Instruction::Mul||
             raw->getOpType() == Instruction::Div||
-            raw->getOpType() == Instruction::Mod){
-        // 为了处理mul的第二个操作数立即数特别加上的一条mov指令
-        // 直接复制下面的cmp家的
+            raw->getOpType() == Instruction::Mod||
+            raw->getOpType() == Instruction::Add||
+            raw->getOpType() == Instruction::Sub){
+        // 为了处理mul, div, mod, add, sub的第二个操作数立即数特别加上的一条mov指令
 
         ins->rs = getDecl(ins->rd->rawValue, node);
         addAssign(ins->rd->rawValue, node, ins->rd);
@@ -958,9 +1018,7 @@ int usedMov(armMov* ins, BasicBlock* node)
         addAssign(ins->rd->rawValue, node, ins->rd);
         return 0;
     }
-    else if(raw->getOpType() == Instruction::Mod ||
-            raw->getOpType() == Instruction::Div ||
-            raw->getOpType() == Instruction::Call ){
+    else if(raw->getOpType() == Instruction::Call){
         //为了使得实参是r0-r3.
         ins->rs = getDecl(ins->rd->rawValue,node);
         //rd是死寄存器,所以不用更新assign_rec
