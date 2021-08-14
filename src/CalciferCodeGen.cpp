@@ -44,7 +44,7 @@ void printArm(DomTreenode* dn,BasicBlock* gb)
 //            calout<<"\tpop {r4-r12, lr}"<<endl;
 
             if(gblock2spbias[gb]){
-                if(!isValid8bit(((gblock2spbias[gb]+1)*4))){
+                if(!isValid8bit(((gblock2spbias[gb])*4))){
                     int lucky = 7;
                     if(VregNumofDecl((((armRet*)inst)->rs))==7)lucky++;
                     calout << "\tldr r" << lucky << ", =" << (gblock2spbias[gb])*4 << endl;
@@ -114,7 +114,7 @@ void transFunc(BasicBlock* node)
     printArm(block2dom[node->domBlock[0]],node);
     calout<<"@function without return!"<<endl;
     if(gblock2spbias[node]){
-        if(!isValid8bit(((gblock2spbias[node]+1)*4))){
+        if(!isValid8bit(((gblock2spbias[node])*4))){
             int lucky = 7;
             calout << "\tldr r" << lucky << ", =" << (gblock2spbias[node])*4 << endl;
             calout << "\tadd sp, sp, r" << lucky << endl;
