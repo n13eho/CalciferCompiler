@@ -109,8 +109,22 @@ void transFunc(BasicBlock* node)
             calout<<"\tsub sp, sp, #"<<(gblock2spbias[node])*4<<endl;
         }
     }
+
     //输出这个函数的指令
     printArm(block2dom[node->domBlock[0]],node);
+    calout<<"@function without return!"<<endl;
+    if(gblock2spbias[node]){
+        if(!isValid8bit(((gblock2spbias[node]+1)*4))){
+            int lucky = 7;
+            calout << "\tldr r" << lucky << ", =" << (gblock2spbias[node])*4 << endl;
+            calout << "\tadd sp, sp, r" << lucky << endl;
+        }
+        else{
+            calout<<"\tadd sp, sp, #"<<(gblock2spbias[node])*4<<endl;
+        }
+    }
+    calout<<"\tpop {r4-r12, lr}"<<endl;
+    calout<<"\tbx lr"<<endl;
 
     calout<<"\t.fnend"<<endl;
   
