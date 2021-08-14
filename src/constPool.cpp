@@ -15,7 +15,7 @@ void constpool(DomTreenode* dn){
                     //需要把偏移放入寄存器,然后[sp,rs]来寻址
                     armMov* add_mov = new armMov();
                     add_mov->rd = new varDecl(nullptr,node,Rcnt++);
-                    add_mov->rs = new constDecl(nullptr, node, mem->bias);
+                    add_mov->rs = new constDecl(nullptr, node, mem->bias*4);
                     //添加这条指令
                     it = newBlock[node].insert(it,add_mov);
                     it++;
@@ -37,7 +37,7 @@ void constpool(DomTreenode* dn){
                         //需要把偏移放入寄存器,然后[sp,rs]来寻址
                         armMov* add_mov = new armMov();
                         add_mov->rd = new varDecl(nullptr,node,Rcnt++);
-                        add_mov->rs = new constDecl(nullptr, node, ins_str->bias);
+                        add_mov->rs = new constDecl(nullptr, node, ins_str->bias*4);
                         //添加这条指令
                         it = newBlock[node].insert(it,add_mov);
                         it++;
@@ -58,7 +58,7 @@ void constpool(DomTreenode* dn){
                         //需要把偏移放入寄存器,然后[sp,rs]来寻址
                         armMov* add_mov = new armMov();
                         add_mov->rd = new varDecl(nullptr,node,Rcnt++);
-                        add_mov->rs = new constDecl(nullptr, node, addr->bias);
+                        add_mov->rs = new constDecl(nullptr, node, addr->bias*4);
                         //添加这条指令
                         it = newBlock[node].insert(it,add_mov);
                         it++;
@@ -82,7 +82,7 @@ void constpool(DomTreenode* dn){
                     //需要把偏移放入寄存器,然后[sp,rs]来寻址
                     armMov* add_mov = new armMov();
                     add_mov->rd = new varDecl(nullptr,node,Rcnt++);
-                    add_mov->rs = new constDecl(nullptr, node, mem->bias);
+                    add_mov->rs = new constDecl(nullptr, node, mem->bias*4);
                     //添加这条指令
                     it = newBlock[node].insert(it,add_mov);
                     it++;
@@ -104,7 +104,7 @@ void constpool(DomTreenode* dn){
                         //需要把偏移放入寄存器,然后[sp,rs]来寻址
                         armMov* add_mov = new armMov();
                         add_mov->rd = new varDecl(nullptr,node,Rcnt++);
-                        add_mov->rs = new constDecl(nullptr, node, ins_ldr->bias);
+                        add_mov->rs = new constDecl(nullptr, node, ins_ldr->bias*4);
                         //添加这条指令
                         it = newBlock[node].insert(it,add_mov);
                         it++;
@@ -125,7 +125,7 @@ void constpool(DomTreenode* dn){
                         //需要把偏移放入寄存器,然后[sp,rs]来寻址
                         armMov* add_mov = new armMov();
                         add_mov->rd = new varDecl(nullptr,node,Rcnt++);
-                        add_mov->rs = new constDecl(nullptr, node, addr->bias);
+                        add_mov->rs = new constDecl(nullptr, node, addr->bias*4);
                         //添加这条指令
                         it = newBlock[node].insert(it,add_mov);
                         it++;
@@ -150,7 +150,7 @@ void constpool(DomTreenode* dn){
                     //需要把偏移放入寄存器,然后[sp,rs]来寻址
                     armMov* add_mov = new armMov();
                     add_mov->rd = new varDecl(nullptr,node,Rcnt++);
-                    add_mov->rs = new constDecl(nullptr, node, mem->bias);
+                    add_mov->rs = new constDecl(nullptr, node, mem->bias*4);
                     //添加这条指令
                     it = newBlock[node].insert(it,add_mov);
                     it++;
@@ -170,7 +170,7 @@ void constpool(DomTreenode* dn){
                     //需要把偏移放入寄存器,然后[sp,rs]来寻址
                     armMov* add_mov = new armMov();
                     add_mov->rd = new varDecl(nullptr,node,Rcnt++);
-                    add_mov->rs = new constDecl(nullptr, node, addr->bias);
+                    add_mov->rs = new constDecl(nullptr, node, addr->bias*4);
                     //添加这条指令
                     it = newBlock[node].insert(it,add_mov);
                     it++;
@@ -191,7 +191,7 @@ void constpool(DomTreenode* dn){
                     //需要把偏移放入寄存器,然后[sp,rs]来寻址
                     armMov* add_mov = new armMov();
                     add_mov->rd = new varDecl(nullptr,node,Rcnt++);
-                    add_mov->rs = new constDecl(nullptr, node, mem->bias);
+                    add_mov->rs = new constDecl(nullptr, node, mem->bias*4);
                     //添加这条指令
                     it = newBlock[node].insert(it,add_mov);
                     it++;
@@ -211,7 +211,7 @@ void constpool(DomTreenode* dn){
                     //需要把偏移放入寄存器,然后[sp,rs]来寻址
                     armMov* add_mov = new armMov();
                     add_mov->rd = new varDecl(nullptr,node,Rcnt++);
-                    add_mov->rd = new constDecl(nullptr, node, addr->bias);
+                    add_mov->rd = new constDecl(nullptr, node, addr->bias*4);
                     //添加这条指令
                     it = newBlock[node].insert(it,add_mov);
                     it++;
