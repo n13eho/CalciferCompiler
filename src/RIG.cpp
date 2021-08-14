@@ -973,7 +973,7 @@ void RigsterAlloc()
                 showDecl(dr);
         }
 #endif
-        if(!buildRIG(gb)){
+        while(!buildRIG(gb)){
 #ifdef DEBUG_ON           
             dbg("全放内存");
             std::cout << "****add mem ****\n";
@@ -983,7 +983,7 @@ void RigsterAlloc()
             for(auto dr: DomRoot)
                 showDecl(dr);  
 #endif
-            spill_failed = buildRIG(gb);
+//            spill_failed = buildRIG(gb);
         }
     }
 #ifdef DEBUG_ON
