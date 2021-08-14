@@ -86,22 +86,29 @@ void assignMov(Instruction* instr, BasicBlock* node)
 }
 void assignAdd(Instruction* instr,BasicBlock *node)
 {
-    IntegerValue* op1 = (IntegerValue*)(instr->getOp()[0]);
-    IntegerValue* op2 = (IntegerValue*)(instr->getOp()[1]);
 
-    if(op1->isConst && !isValid8bit(op1->RealValue)){
-        armMov* add_mov = new armMov();
-        add_mov->rd = new varDecl(op1, node, Rcnt++);
-        newBlock[node].push_back(add_mov);
-        trance[add_mov] = instr;
+    if(instr->getOp()[0]->getType() == 1)
+    {
+        IntegerValue* op1 = (IntegerValue*)(instr->getOp()[0]);
+        if(op1->isConst && !isValid8bit(op1->RealValue)){
+            armMov* add_mov = new armMov();
+            add_mov->rd = new varDecl(op1, node, Rcnt++);
+            newBlock[node].push_back(add_mov);
+            trance[add_mov] = instr;
+        }
     }
-    //if there is still a constValue, then it must be op2, so judge if op2 is valid 8-bit num
-    if(op2->isConst && !isValid8bit(op2->RealValue)){ // if op2 is const and it is illegal, add a mov ins
-        armMov* add_mov = new armMov();
-        add_mov->rd = new varDecl(op2, node, Rcnt++);
-        newBlock[node].push_back(add_mov);
-        trance[add_mov] = instr;
+    if(instr->getOp()[1]->getType() == 1)
+    {
+        IntegerValue* op2 = (IntegerValue*)(instr->getOp()[1]);
+        //if there is still a constValue, then it must be op2, so judge if op2 is valid 8-bit num
+        if(op2->isConst && !isValid8bit(op2->RealValue)){ // if op2 is const and it is illegal, add a mov ins
+            armMov* add_mov = new armMov();
+            add_mov->rd = new varDecl(op2, node, Rcnt++);
+            newBlock[node].push_back(add_mov);
+            trance[add_mov] = instr;
+        }
     }
+
 
     armAdd *ins=new armAdd();
     IntegerValue* res=(IntegerValue*)instr->getResult();
