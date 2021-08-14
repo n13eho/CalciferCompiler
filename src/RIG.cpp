@@ -25,7 +25,7 @@ map<RIGnode*, int> colors; // 着色color 一个rignode（其实是vreg）对应
 // 记录每一个寄存器编号（颜色）对应的spilling cost
 map<int, double> spilling_cost;
 
-ofstream debugout;
+//ofstream debugout;
 
 bool notConst(Decl* d)
 {
@@ -655,13 +655,14 @@ void all2mem(BasicBlock* gb)
                 && dc->gettype() != Decl::memory_decl
                 && dc->gettype() != Decl::global_decl){
                     
-                    if(VregNumofDecl(dc)<K-3)continue;//留两个吧,(凭直觉)
+                    if(VregNumofDecl(dc)<K-2)continue;//留三个吧,(凭直觉)
+                    if(VregNumofDecl(dc)==K)continue;//跳过r13的spill
                     armLdr* ldr_ins= new armLdr();
                     ldr_ins->rd = dc;
                     ldr_ins->rs = forc_memShift(ForCnode(make_pair(VregNumofDecl(dc),dc->gettype() == Decl::reg_decl),gb), gb);
                     it=newBlock[b].insert(it,ldr_ins)+1;
                     gbarmCnt[gb]++;
-                    ldr_ins->comm = "ttt";
+                    ldr_ins->comm = "spill all to mem";
                 }
             }
 
@@ -670,7 +671,8 @@ void all2mem(BasicBlock* gb)
             && arm_ins->getType() != armInstr::str
             && arm_ins->rd->gettype() != Decl::reg_decl){
                 
-                if(VregNumofDecl(arm_ins->rd)<K-3)continue;//留两个吧,(凭直觉)
+                if(VregNumofDecl(arm_ins->rd)<K-2)continue;//留两个吧,(凭直觉)
+                if(VregNumofDecl(arm_ins->rd) == K)continue;
                 if(VregNumofDecl(arm_ins->rd)==789){
                     dbg("789error");
                 }
@@ -941,7 +943,7 @@ bool buildRIG(BasicBlock* gb)
 
 void RigsterAlloc()
 {
-    debugout.open("debug.txt", std::ifstream::out);
+//    debugout.open("debug.txt", std::ifstream::out);
 
     // 对于每个顶层块（除了第一个全局模块），都应该对应一个RIG图
     for(auto gb: IR1->Blocks)
