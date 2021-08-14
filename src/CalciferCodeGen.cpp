@@ -146,6 +146,15 @@ void CalciferCodeGen(char *output_file_path)
 
     calout.open(outputfile, std::ifstream::out);
     calout<<"\t.arch armv7ve\n";
+    calout << "\t.arm" << std::endl;
+
+    calout << R"(
+.macro mov32, cond, reg, val
+    movw\cond \reg, #:lower16:\val
+    movt\cond \reg, #:upper16:\val
+.endm
+    )" << std::endl;
+
     calout<<"\t.data\n";
     for(auto fuhao : allValue)
     {
