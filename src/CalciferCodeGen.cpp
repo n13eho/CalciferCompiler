@@ -26,13 +26,23 @@ void printArm(DomTreenode* dn,BasicBlock* gb)
             }
 
             //处理返回值
-            if(call_ins->rd != NULL)
+            Decl * decl_rd = call_ins->rd;
+            if(decl_rd != NULL)
             {
+                stringstream rd_stream;
+                string ret_reg_str;
+
+                rd_stream << *decl_rd;
+
                 if(call_ins->funcname == "__aeabi_idivmod"){
-                    calout<<"\tmov "<<*(call_ins->rd)<<", "<<"r1"<<endl;
+                    ret_reg_str = "r1";
                 }
                 else{
-                    calout<<"\tmov "<<*(call_ins->rd)<<", "<<"r0"<<endl;
+                    ret_reg_str = "r0";
+                }
+
+                if(rd_stream.str() != ret_reg_str) {
+                    calout<<"\tmov " << rd_stream.str() <<", "<< ret_reg_str <<endl;
                 }
             }
         }

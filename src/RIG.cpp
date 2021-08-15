@@ -537,14 +537,20 @@ void deleteDC(DomTreenode* dn, BasicBlock* gb)
 {
     BasicBlock* b = dn->block;
     for(auto it = newBlock[b].begin(); it != newBlock[b].end(); it++)
-    {// 遍历指令
+    {
+        // 遍历指令
         auto arm_ins = *it;
+
+        // 忽略到存内存的指令
         if(arm_ins->getType() == armInstr::str)continue;
+
         if(arm_ins->rd != NULL)
         {
             auto pair = make_pair(VregNumofDecl(arm_ins->rd), arm_ins->rd->gettype() == Decl::reg_decl);
+
             if(outs[arm_ins].count(pair) == 0)
-            {// 如果这条指令的rd不在对应的out集合中，就删去这条指令
+            {
+                // 如果这条指令的rd不在对应的out集合中，就删去这条指令
                 // 如果是改变全局变量，这里就不能删去这个call
                 if((*it)->getType()==armInstr::call){ // 害怕这个call函数修改了全局变量
                     armCall* call_ins = (armCall*)(*it); // 先suxing
@@ -557,6 +563,7 @@ void deleteDC(DomTreenode* dn, BasicBlock* gb)
             }
         }
     }
+
     // 递归删除剩下后继块的死代码
     for(auto nx: dn->son)
         deleteDC(nx, gb);
@@ -788,6 +795,7 @@ bool buildRIG(BasicBlock* gb)
             if(!InOutChanged())
                 break;
         }
+
 #ifdef DEBUG_ON
         // 2.5 for debug 先linshi临时打印一下这些个in 和 out
         cout << "\n\n**** IN&OUT set ****\n";
@@ -830,7 +838,7 @@ bool buildRIG(BasicBlock* gb)
         init_color(gb);
         if(paintColor(gb)){
 #ifdef DEBUG_ON
-            std::cout << "**** 该全局块染色情况 ****" << endl;
+            std::cout << "**** Coloring information ****" << endl;
             for(auto node: RIG[gb]){
             std::cout << ((node->typeIsREG) ? "r" : "")  << node->dc << " " << colors[node]-1 << endl;  }
 #endif
@@ -859,13 +867,12 @@ bool buildRIG(BasicBlock* gb)
 
     if(usedK>K){ // 染色失败
 #ifdef DEBUG_ON
-         std::cout<<"failed\n";      
+         std::cout<<"Coloring failed\n";
 #endif
         return false;
     }
 #ifdef DEBUG_ON
-    dbg("染色成功！");
-               
+    std::cout << "Coloring OK";
 #endif
     return true;
 }
@@ -884,18 +891,25 @@ void RigsterAlloc()
         int temp_debug = 0;
         bool spill_failed = false;
 
-        int try_times=0;
-        while(!buildRIG(gb)){
-            if(try_times++ > 1)break;
-            all2mem(gb);
-            spill_times++;
-#ifdef DEBUG_ON           
-            dbg("全放内存");
+        int try_times = 1;
+        while(try_times <= 2){
+
+            spill_failed = buildRIG(gb);
+            if(!spill_failed) {
+                all2mem(gb);
+            }
+
+#ifdef DEBUG_ON
             std::cout << "****add mem ****\n";
             for(auto dr: DomRoot)
                 showDecl(dr);
 #endif
-//            spill_failed = buildRIG(gb);
+
+            if(spill_failed) {
+                break;
+            }
+
+            try_times ++;
         }
     }
 

@@ -1,5 +1,5 @@
 #pragma once
-
+#include <sstream>
 #include "Value.h"
 #include "BuildIR.h" // for LinearIR
 #include "dbg.h"
@@ -389,7 +389,16 @@ class armRet:public armInstr//ok
     virtual int getType(){return ret;}
     virtual ostream& output(ostream&out)const
     {
-        if(rs!=nullptr)out<<"\tmov r0, "<<*rs<<endl;
+        if(rs!=nullptr) {
+
+            stringstream rs_stream;
+            rs_stream << *rs;
+
+            if(rs_stream.str() != "r0") {
+                out<<"\tmov r0, "<< rs_stream.str() <<endl;
+            }
+
+        }
         //TODO: 这里要求每个函数都需要有个一return指令..
         //TODO：或许还有一些堆栈操作..
         //恢复现场
@@ -686,10 +695,15 @@ class armMov:public armInstr{//ok
                 }
 
             }
-
             // 4 rs是var和reg
             else{
-                out<<"\tmov "<<*rd<<", "<<*rs;
+                stringstream rd_stream, rs_stream;
+                rd_stream << *rd;
+                rs_stream << *rs;
+
+                if(rd_stream.str() != rs_stream.str()) {
+                    out<<"\tmov "<<*rd<<", "<<*rs;
+                }
             }
         }
         return out;

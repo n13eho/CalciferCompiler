@@ -1,3 +1,5 @@
+#include <getopt.h>
+
 #include "../include/sysy_node.hpp"
 #include "../include/semanticAnalyze.h" //语义检查
 #include "../include/BuildIR.h"
