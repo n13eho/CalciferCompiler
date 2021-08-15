@@ -621,9 +621,9 @@ void spillCost(BasicBlock* gb){
     }
 }
 
-map<RIGnode*, memoryDecl*> spill_dc2memdc; // spilling失败之后，记录每个node对应放在哪里的memdecl
+map<Decl*, memoryDecl*> spill_dc2memdc; // spilling失败之后，记录每个node对应放在哪里的memdecl
 
-memoryDecl* forc_memShift(RIGnode* d, BasicBlock* gb){
+memoryDecl* forc_memShift(Decl* d, BasicBlock* gb){
     // 找得到就返回已经有了的, 没找到就new一个回去
 
     memoryDecl* ret_m = spill_dc2memdc[d];
@@ -652,7 +652,7 @@ void all2mem(BasicBlock* gb)
                     if(VregNumofDecl(dc)==K)continue;//跳过r13的spill
                     armLdr* ldr_ins= new armLdr();
                     ldr_ins->rd = dc;
-                    ldr_ins->rs = forc_memShift(ForCnode(make_pair(VregNumofDecl(dc),dc->gettype() == Decl::reg_decl),gb), gb);
+                    ldr_ins->rs = forc_memShift(dc, gb);
                     it=newBlock[b].insert(it,ldr_ins)+1;
                     gbarmCnt[gb]++;
                     ldr_ins->comm = "ldr-all2mem " + to_string(spill_times);
@@ -671,7 +671,7 @@ void all2mem(BasicBlock* gb)
                 }
                 armStr* str_ins= new armStr();
                 str_ins->rd = arm_ins->rd;
-                str_ins->rs = forc_memShift(ForCnode(make_pair(VregNumofDecl(arm_ins->rd),arm_ins->rd->gettype() == Decl::reg_decl),gb), gb);
+                str_ins->rs = forc_memShift(arm_ins->rd, gb);
                 it=newBlock[b].insert(it+1,str_ins);
                 gbarmCnt[gb]++;
                 str_ins->comm = "str-all2mem " + to_string(spill_times);
@@ -680,69 +680,6 @@ void all2mem(BasicBlock* gb)
         }
     }
 
-}
-
-void addMemoryOperation(BasicBlock* gb)
-{
-    // 计算cost
-    spillCost(gb);
-
-    // 选出cost最小的dc
-    RIGnode* chosenNode = nullptr;
-    double mincost = 1e18;
-    for(auto node : RIG[gb]){
-        if(node->dc==13)continue;
-        int dc_vreg= node->dc;
-        if(spilling_cost[dc_vreg]<mincost){
-            mincost = spilling_cost[dc_vreg];
-            chosenOne = dc_vreg;
-            chosenNode = node;
-        }
-    }
-#ifdef DEBUG_ON
-    dbg(chosenOne);           
-#endif
-
-    memoryDecl* memShift = new memoryDecl(nullptr,gb,gblock2spbias[gb]++);
-    spill_dc2memdc[chosenNode]=memShift;
-    for(auto b : gb->domBlock){
-        for(auto it = newBlock[b].begin();it!=newBlock[b].end();it++){
-            auto arm_ins = *it;
-
-            //是否要加ldr
-            vector<Decl*> rs = arm_ins->getGen();
-            for(auto dc : rs){
-
-                if(dc->gettype() == Decl::reg_decl)continue;//需要跳过死寄存器
-
-                if(VregNumofDecl(dc)==chosenOne){
-                    armLdr* ldr_ins= new armLdr();
-                    ldr_ins->rd = dc;
-                    ldr_ins->rs = memShift;
-                    ldr_ins->comm = "spill load";
-                    it=newBlock[b].insert(it,ldr_ins)+1;
-                    gbarmCnt[gb]++;
-                    // 建立映射
-                    // spill_dc2memdc[dc] = memShift;
-                }
-            }
-
-            //是否要加str: rd非空&&编号相等&&不能在一条str前加一个str指令
-            if(arm_ins->rd != nullptr && VregNumofDecl(arm_ins->rd)==chosenOne && arm_ins->getType()!=armInstr::str){
-
-                if(arm_ins->rd->gettype() == Decl::reg_decl)continue;//需要跳过死寄存器
-
-                armStr* str_ins= new armStr();
-                str_ins->rd = arm_ins->rd;
-                str_ins->rs = memShift;
-                str_ins->comm = "spill store";
-                it=newBlock[b].insert(it+1,str_ins);
-                gbarmCnt[gb]++;
-                // 建立映射
-                // spill_dc2memdc[arm_ins->rd] = memShift;
-            }
-        }
-    }
 }
 
 
@@ -949,6 +886,7 @@ void RigsterAlloc()
 
         int try_times=0;
         while(!buildRIG(gb)){
+            if(try_times++ > 1)break;
             all2mem(gb);
             spill_times++;
 #ifdef DEBUG_ON           
@@ -958,7 +896,6 @@ void RigsterAlloc()
                 showDecl(dr);
 #endif
 //            spill_failed = buildRIG(gb);
-            if(try_times++ > 0)break;
         }
     }
 
