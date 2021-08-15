@@ -26,6 +26,7 @@ class Decl {
     BasicBlock* rawBlock;//which block
     vector<armInstr*> gen_used; // 记录该decl出现在那些指令的gen集合中
     double spill_cost = 0.0; // 记录该decl的spill cost，是将其移出寄存器的依据
+    int decl_spill = 0; // 该变量是否溢出，放进mem了
 
     Decl(){}
     ~Decl(){}

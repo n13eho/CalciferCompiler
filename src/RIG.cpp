@@ -16,7 +16,9 @@ map<armInstr*, set<pair<int, bool> >> old_ins;
 map<BasicBlock*, bool> blockVisited;
 // created RIGnode 该decl(现在是这个寄存器编号int)是否已经创建了对应的RIGnode
 map<pair<int, bool>, RIGnode*> rigNodeCreated;
-// vregNumber 到 使用这个编号的decl 的集合，用于找到这些decl，来自LiveSet.cpp
+// 用于记录这个pair对应的node（此时还没有node，是不是spill的
+map<pair<int, bool>, int> nodeSpillMap;
+
 // 这是个临时用于转存的map
 map<int, vector<Decl*>> temp_Vreg2Decls;
 
@@ -73,7 +75,6 @@ void ArmI2InOut(armInstr* ai)
         {
             ins[ai].insert(make_pair(VregNumofDecl(add_ai->r1), add_ai->r1->gettype() == Decl::reg_decl));
             add_ai->r1->gen_used.push_back(ai);
-
         }
     }
     else if(ai->getType() == armInstr::armInsType::moveq)
@@ -402,8 +403,11 @@ void connectDecl(DomTreenode* dn, BasicBlock* gb)
             // 1 新建/找到存在的node
             // 如果该decl已经建立了RIGnode，则不再建立，否则建立
             RIGnode* n = ForCnode(in_decl, gb);
+            // 及时更新这个pair对应的是否spill的信息，将其传递到node这一层
+            n->node_spilled = nodeSpillMap[in_decl];
 
-            // 2 建立映射
+
+            // 2 和其他都在ins集合里面的，建立connectTo的连边
             for(auto other_decl: ins[arm_ins])
             {
                 if(in_decl == other_decl)// 是自己，不用加边
@@ -417,6 +421,9 @@ void connectDecl(DomTreenode* dn, BasicBlock* gb)
                     n->connectTo.push_back(other_node);
                 }
             }
+
+            // 计算这个node的度
+            n->du = n->connectTo.size(); // unsigned --> int
         }
     }
 
@@ -425,7 +432,19 @@ void connectDecl(DomTreenode* dn, BasicBlock* gb)
         connectDecl(nx, gb);
 }
 //filling colors data structure.
-int trytimes=5;//某迭代次数
+
+struct spill_cmp
+{
+    bool operator () (RIGnode* a, RIGnode* b) const
+    {
+        if(a->node_spilled == b->node_spilled){
+            return a->du < b->du;
+        }
+        else return a->node_spilled < b->node_spilled;
+    }
+};
+
+
 queue<RIGnode*> que;//queue of filling color with BFS
 
 
@@ -441,6 +460,11 @@ void init_color(BasicBlock* gb)
 }
 
 vector<RIGnode*> s_point; // 起点
+
+bool cmp_spill(RIGnode* a, RIGnode* b){
+    if(a->node_spilled == b->node_spilled)return a->du > b->du;
+    else return a->node_spilled > b->node_spilled;
+}
 
 bool check_ok(RIGnode* n, int c)
 {
@@ -466,25 +490,36 @@ bool check_ok(RIGnode* n, int c)
     return true;
 }
 
-bool paintColor(BasicBlock* gb){
-    //1. 找到所有起点;
+void paintColor(BasicBlock* gb){
+    //1. 找到所有起点
     int maxdu=-1;
+    int maxnode_spilled = 0;
     s_point.clear();
     for(auto node: RIG[gb]){
         if(colors[node])continue;
         if(node->dc==13)continue; // 开后门: 不给13染
-        if((int)node->connectTo.size()>maxdu){
+        if(node->node_spilled == maxnode_spilled){
+            if((int)node->du>maxdu){
+                s_point.clear();
+                s_point.push_back(node);
+                maxdu=node->du;
+            }
+            else if(node->du==maxdu)s_point.push_back(node);
+        }
+        else if(node->node_spilled > maxnode_spilled){
             s_point.clear();
             s_point.push_back(node);
-            maxdu=node->connectTo.size();
+            maxdu = node->du;
+            maxnode_spilled = node->node_spilled;
         }
-        else if(node->connectTo.size()==maxdu)s_point.push_back(node);
-    }
-    //1.1random
-    // random_shuffle(s_point.begin(),s_point.end());
-    //1.2 add s_point，非联通的图可以重新使用参数个数/4
 
-    if(s_point.size() == 0)return true;// 表示这个函数只用了参数分到的寄存器，没用其他的寄存器，因此直接返回true
+    }
+    if(s_point.size() == 0)return;// 表示这个函数只用了参数分到的寄存器，没用其他的寄存器，因此直接返回
+#ifdef DEBUG_ON
+    cout<<"是否先选了spill的点"<<s_point[0]->node_spilled<<endl;
+    cout<<"我选的是"<<s_point[0]->dc<<endl;
+    cout<<"它的度是"<<s_point[0]->du<<endl;
+#endif
 
     //给起点染色
     for(int i=1;i<=usedK;i++){
@@ -506,11 +541,14 @@ bool paintColor(BasicBlock* gb){
     while(!que.empty()){
         RIGnode* now = que.front();
         que.pop();
-        // 随机的访问now所连的点
-        // random_shuffle(now->connectTo.begin(),now->connectTo.end());
+        //选择spill的、度大的先染
+        sort(now->connectTo.begin(),now->connectTo.end());
         for(auto nx:now->connectTo){
             //对nx尝试每一种颜色
             if(colors[nx] || nx->dc==13)continue;
+
+            //update 下一个点的度
+            nx->du--;
 
             for(int i=1;i<=usedK;i++){ // 还是从1开始
                 if(i == 14)continue; // 不能染上13，13要跳过
@@ -523,14 +561,22 @@ bool paintColor(BasicBlock* gb){
             if(colors[nx]==0){
                 if(usedK == 13)usedK++; // 同上，不能染上13
                 colors[nx]=++usedK;
+
+#ifdef DEBUG_ON
+                if(usedK == 15){
+                    cout<<"14号寄存器怎么还在啊(node_spilled)"<<nx->node_spilled<<endl;
+                    cout<<"14号寄存器怎么还在啊(dc)"<<nx->dc<<endl;
+                    cout<<"14号寄存器怎么还在啊(du)"<<nx->du<<endl;
+                }
+#endif
             }
         }
     }
     for(auto node: RIG[gb]){
         if(node->dc==13)continue;
-        if(colors[node]==0)return paintColor(gb);
+        if(colors[node]==0) paintColor(gb);
     }
-    return true;
+    return;
 }
 
 void deleteDC(DomTreenode* dn, BasicBlock* gb)
@@ -557,7 +603,9 @@ void deleteDC(DomTreenode* dn, BasicBlock* gb)
                     call_ins->rd = nullptr; // 再解决这条call_ins的rd的指针
                 }
                 else{
+#ifdef DEBUG_ON
                     cout << "insdeleted: " << **it <<endl;
+#endif
                     newBlock[b].erase(it--);
                     gbarmCnt[gb]--;
                 }
@@ -657,7 +705,7 @@ void all2mem(BasicBlock* gb)
                 && dc->gettype() != Decl::memory_decl
                 && dc->gettype() != Decl::global_decl){
                     
-                    if(VregNumofDecl(dc)<K-2)continue;//留三个吧,(凭直觉)
+                    if(VregNumofDecl(dc)<K-3)continue;//留三个吧,(凭直觉)
                     if(VregNumofDecl(dc)==K)continue;//跳过r13的spill
                     armLdr* ldr_ins= new armLdr();
                     ldr_ins->rd = dc;
@@ -665,6 +713,13 @@ void all2mem(BasicBlock* gb)
                     it=newBlock[b].insert(it,ldr_ins)+1;
                     gbarmCnt[gb]++;
                     ldr_ins->comm = "ldr-all2mem " + to_string(spill_times);
+
+                    // 新加出来的ldr的rd, rs都是内存变量，都需要做上标记
+                    dc->decl_spill = 1; // 原来选出来的变量 TODO：是否考虑成dc->decl_spill++
+
+                    // update nodeSpillMap
+                    auto p = make_pair(VregNumofDecl(dc), dc->gettype() == Decl::reg_decl);
+                    nodeSpillMap[p] = dc->decl_spill;
                 }
             }
 
@@ -673,7 +728,7 @@ void all2mem(BasicBlock* gb)
             && arm_ins->getType() != armInstr::str
             && arm_ins->rd->gettype() != Decl::reg_decl){
                 
-                if(VregNumofDecl(arm_ins->rd)<K-2)continue;//留两个吧,(凭直觉)
+                if(VregNumofDecl(arm_ins->rd)<K-3)continue;//留三个吧,(凭直觉)
                 if(VregNumofDecl(arm_ins->rd) == K)continue;
                 if(VregNumofDecl(arm_ins->rd)==789){
                     dbg("789error");
@@ -684,6 +739,12 @@ void all2mem(BasicBlock* gb)
                 it=newBlock[b].insert(it+1,str_ins);
                 gbarmCnt[gb]++;
                 str_ins->comm = "str-all2mem " + to_string(spill_times);
+
+                // 新加出来的str的rd rs，加上spill标记
+                arm_ins->rd->decl_spill = 1; // 原来语句的rd
+
+                auto p = make_pair(VregNumofDecl(arm_ins->rd), arm_ins->rd->gettype() == Decl::reg_decl);
+                nodeSpillMap[p] = arm_ins->rd->decl_spill;
             }
 
         }
@@ -813,7 +874,16 @@ bool buildRIG(BasicBlock* gb)
             break;
     }
 
+    //            cout << "查看int-->decls->decl_spill" << endl;
+    //            cout << in_decl.first <<": ";
+    //            for(auto d: Vreg2Decls[in_decl.first])
+    //            {
+    //                cout << d->decl_spill <<" ";
+    //            }
+    //            cout << endl;
+
     // 3 利用填好的in、out集合，建立冲突图，也是一个递归的过程
+    // 在这里算出了每个node的度，以及更新这个node是否是spill的node
     connectDecl(block2dom[gb->domBlock[0]], gb);
 
     // 根本没有分配寄存器，直接返回真
@@ -835,19 +905,15 @@ bool buildRIG(BasicBlock* gb)
     
 
     // 5. filling colors!
-    trytimes = 1;
-    while(trytimes--){
-        init_color(gb);
-        if(paintColor(gb)){
+    init_color(gb);
+    paintColor(gb);
+
 #ifdef DEBUG_ON
-            std::cout << "**** Coloring information of " << gb->BlockName << " ****" << endl;
-            for(auto node: RIG[gb]){
-            std::cout << ((node->typeIsREG) ? "r" : "")  << node->dc << " " << colors[node]-1 << endl;  }
-#endif
-            //如果成功了就break; 否则使用颜色过多就再试一次（最多5次）
-            if(usedK <= K)break;
+        std::cout << "**** Coloring information of " << gb->BlockName << " ****" << endl;
+        for(auto node: RIG[gb]){
+        std::cout << ((node->typeIsREG) ? "r" : "")  << node->dc << " " << colors[node]-1 << endl;
         }
-    }
+#endif
 
     // 遍历color map，修改Vreg
     changeVreg(gb);
@@ -879,10 +945,10 @@ bool buildRIG(BasicBlock* gb)
     return true;
 }
 
-
+fstream debugout;
 void RigsterAlloc()
 {
-//    debugout.open("debug.txt", std::ifstream::out);
+    debugout.open("debug.txt", std::ifstream::out);
 
     // 对于每个顶层块（除了第一个全局模块），都应该对应一个RIG图
     for(auto gb: IR1->Blocks)
