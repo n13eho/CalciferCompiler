@@ -1,5 +1,5 @@
-#include"RIG.h"
-#include"op_cfgFrequency.h"
+#include"../include/RIG.h"
+#include"../include/op_cfgFrequency.h"
 // input at liveSet.h
 /*map<BasicBlock*, vector<armInstr*>> newBlock;*/
 
