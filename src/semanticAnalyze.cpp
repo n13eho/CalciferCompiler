@@ -267,11 +267,11 @@ IntegerValue *semantic_LVal_Array_(GrammaNode *root, int needConst, int needCond
         //----------------语义检查【2.3】----------------
 //        throw SemanticError(root->lineno, val->VName, "数组访问越界：维度不够");
 //    }
-
+    int isC = 1;
     for (int i = 0; i < root->son[1]->son.size(); i++)
     {
         IntegerValue* indexValue = semantic_Exp_(root->son[1]->son[i], 0, 0);
-        if(indexValue->isConst == 0)continue; // 不是常数就不判
+        if(indexValue->isConst == 0){isC=0;continue;} // 不是常数就不判
 
         // 获取访问的维度 eachIndex
         eachIndex = indexValue->RealValue;
@@ -287,25 +287,34 @@ IntegerValue *semantic_LVal_Array_(GrammaNode *root, int needConst, int needCond
         indexVector.push_back(eachIndex);
         dimensionSize *= val->NumOfDimension[i];
     }
-    for (int i = 0; i < indexVector.size(); i++)
-    {
-        dimensionSize /= val->NumOfDimension[i];
-        index += indexVector[i] * dimensionSize;
+    if(isC == 1){
+        for (int i = 0; i < indexVector.size(); i++)
+        {
+            dimensionSize /= val->NumOfDimension[i];
+            index += indexVector[i] * dimensionSize;
+        }
+        //根据索引求值
+        //probbbbbbbbbbbbbbbbblemhere
+        //zyh 给 neho 的问题
+        //暂时的解决方案, 能算出来就算, 算不出来就不算了 ---hsyy04
+        int indexVal;
+        if(index>=val->ArrayElement.size())indexVal = 0;
+        else indexVal = val->ArrayElement[index];
+
+        IntegerValue *ret = new IntegerValue(name + to_string(cnt++), root->lineno, root->var_scope, indexVal, val->isConst);
+        ret->isTemp = 1;
+        // 建立映射
+        SymbolTable->addItem(root, ret);
+        return ret;
     }
-    //根据索引求值
-    //probbbbbbbbbbbbbbbbblemhere
-    //zyh 给 neho 的问题
-    //暂时的解决方案, 能算出来就算, 算不出来就不算了 ---hsyy04
-    int indexVal;
-    if(index>=val->ArrayElement.size())indexVal = 0;
-    else indexVal = val->ArrayElement[index];
+    else{
+        IntegerValue *ret = new IntegerValue(name + to_string(cnt++), root->lineno, root->var_scope,987, 0);
+        ret->isTemp = 1;
+        // 建立映射
+        SymbolTable->addItem(root, ret);
+        return ret;
+    }
 
-    IntegerValue *ret = new IntegerValue(name + to_string(cnt++), root->lineno, root->var_scope, indexVal, val->isConst);
-    ret->isTemp = 1;
-    // 建立映射
-    SymbolTable->addItem(root, ret);
-
-    return ret;
 }
 
 IntegerValue *semantic_PrimaryExp_(GrammaNode *root, int needConst, int needCond)
