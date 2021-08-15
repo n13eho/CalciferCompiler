@@ -534,24 +534,16 @@ bool paintColor(BasicBlock* gb){
 
 void deleteDC(DomTreenode* dn, BasicBlock* gb)
 {
-    bool findDc;
     BasicBlock* b = dn->block;
     for(auto it = newBlock[b].begin(); it != newBlock[b].end(); it++)
     {// 遍历指令
-        if((*it)->rd != NULL)
+        auto arm_ins = *it;
+        if(arm_ins->getType() == armInstr::str)continue;
+        if(arm_ins->rd != NULL)
         {
-            //            if(VregNumofDecl((*it)->rd)>=0&&VregNumofDecl((*it)->rd)<=3)continue; // 0-3开后门
-            findDc = false;
-            for(auto rn: RIG[gb])
-            {// 找该指令的左值是否出现在RIG[gb]中，如果该左值没有出现在RIG[gb]中，就删除这条指令
-                if(rn->dc == VregNumofDecl((*it)->rd))
-                {
-                    findDc = true;
-                    break;
-                }
-            }
-            if(!findDc)
-            {// 没找到这个dc就删除这条指令
+            auto pair = make_pair(VregNumofDecl(arm_ins->rd), arm_ins->rd->gettype() == Decl::reg_decl);
+            if(outs[arm_ins].count(pair) == 0)
+            {// 如果这条指令的rd不在对应的out集合中，就删去这条指令
                 // 如果是改变全局变量，这里就不能删去这个call
                 if((*it)->getType()==armInstr::call){ // 害怕这个call函数修改了全局变量
                     armCall* call_ins = (armCall*)(*it); // 先suxing
@@ -655,7 +647,7 @@ void all2mem(BasicBlock* gb)
                 && dc->gettype() != Decl::memory_decl
                 && dc->gettype() != Decl::global_decl){
                     
-                    if(VregNumofDecl(dc)<K-4)continue;//留三个吧,(凭直觉)
+                    if(VregNumofDecl(dc)<K-2)continue;//留三个吧,(凭直觉)
                     if(VregNumofDecl(dc)==K)continue;//跳过r13的spill
                     armLdr* ldr_ins= new armLdr();
                     ldr_ins->rd = dc;
@@ -671,7 +663,7 @@ void all2mem(BasicBlock* gb)
             && arm_ins->getType() != armInstr::str
             && arm_ins->rd->gettype() != Decl::reg_decl){
                 
-                if(VregNumofDecl(arm_ins->rd)<K-4)continue;//留两个吧,(凭直觉)
+                if(VregNumofDecl(arm_ins->rd)<K-2)continue;//留两个吧,(凭直觉)
                 if(VregNumofDecl(arm_ins->rd) == K)continue;
                 if(VregNumofDecl(arm_ins->rd)==789){
                     dbg("789error");
@@ -864,9 +856,6 @@ bool buildRIG(BasicBlock* gb)
         for(auto dr: DomRoot)
             showSets(dr);     
 #endif
-        
-        // 3 利用填好的in、out集合，建立冲突图，也是一个递归的过程
-        connectDecl(block2dom[gb->domBlock[0]], gb);
 
         // 4 deleting dead code
         deleteDC(block2dom[gb->domBlock[0]], gb);
@@ -875,6 +864,10 @@ bool buildRIG(BasicBlock* gb)
         if(old_gb_ins_count == gbarmCnt[gb]) // FIXME:改为map中，gb对应的键值
             break;
     }
+
+    // 3 利用填好的in、out集合，建立冲突图，也是一个递归的过程
+    connectDecl(block2dom[gb->domBlock[0]], gb);
+
     // 根本没有分配寄存器，直接返回真
     if(RIG[gb].size() == 0)return true;
 
@@ -930,7 +923,6 @@ bool buildRIG(BasicBlock* gb)
 #ifdef DEBUG_ON
          std::cout<<"failed\n";      
 #endif
-        
         return false;
     }
 #ifdef DEBUG_ON
@@ -953,42 +945,22 @@ void RigsterAlloc()
         int whenToadd = 0;
         int temp_debug = 0;
         bool spill_failed = false;
-#ifdef hhh
-        while(!buildRIG(gb)){
-            dbg("染色失败！");
-            if(temp_debug++ > 4){
-                spill_failed = true;
-                break;
-            }
-            // 如果图着色失败了，add memory operation.
-            if(whenToadd++ > WHENTOMO)
-                addMemoryOperation(gb);
-            // 打印cost
-            for(auto p: spilling_cost)
-            {
-                std::cout << p.first <<"\t" << p.second <<endl;
-            }
 
-            for(auto dr: DomRoot)
-                showDecl(dr);
-        }
-#endif
-        if(!buildRIG(gb)){
+        while(!buildRIG(gb)){
+            all2mem(gb);
 #ifdef DEBUG_ON           
             dbg("全放内存");
             std::cout << "****add mem ****\n";
-#endif
-            all2mem(gb);
-#ifdef DEBUG_ON           
             for(auto dr: DomRoot)
-                showDecl(dr);  
+                showDecl(dr);
 #endif
-            spill_failed = buildRIG(gb);
+//            spill_failed = buildRIG(gb);
         }
     }
+
 #ifdef DEBUG_ON
     // final show instruction agian, this time with limited k registers
-    std::cout << "****Arm Instruction with limited Registers ****\n";
+    std::cout << "****Arm Instruction with limited Registers --- final ****\n";
     for(auto dr: DomRoot)
         showDecl(dr);           
 #endif
