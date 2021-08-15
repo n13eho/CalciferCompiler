@@ -526,7 +526,6 @@ void paintColor(BasicBlock* gb){
         if(i==14)continue;
         if(check_ok(s_point[0],i)){
             colors[s_point[0]]=i;
-            //            if(s_point[0]->dc == 21)
             break;
         }
     }
@@ -705,8 +704,8 @@ void all2mem(BasicBlock* gb)
                 && dc->gettype() != Decl::memory_decl
                 && dc->gettype() != Decl::global_decl){
                     
-                    if(VregNumofDecl(dc)<K-3)continue;//留三个吧,(凭直觉)
-                    if(VregNumofDecl(dc)==K)continue;//跳过r13的spill
+                    if(VregNumofDecl(dc) < K-3)continue;//留三个吧,(凭直觉)
+                    if(VregNumofDecl(dc) == 13)continue;//跳过r13的spill
                     armLdr* ldr_ins= new armLdr();
                     ldr_ins->rd = dc;
                     ldr_ins->rs = forc_memShift(ForCnode(make_pair(VregNumofDecl(dc),dc->gettype() == Decl::reg_decl),gb), gb);
@@ -728,9 +727,9 @@ void all2mem(BasicBlock* gb)
             && arm_ins->getType() != armInstr::str
             && arm_ins->rd->gettype() != Decl::reg_decl){
                 
-                if(VregNumofDecl(arm_ins->rd)<K-3)continue;//留三个吧,(凭直觉)
-                if(VregNumofDecl(arm_ins->rd) == K)continue;
-                if(VregNumofDecl(arm_ins->rd)==789){
+                if(VregNumofDecl(arm_ins->rd) < K-3)continue;//留三个吧,(凭直觉)
+                if(VregNumofDecl(arm_ins->rd) == 13)continue;
+                if(VregNumofDecl(arm_ins->rd) == 789){
                     dbg("789error");
                 }
                 armStr* str_ins= new armStr();
