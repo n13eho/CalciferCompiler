@@ -946,6 +946,7 @@ void RigsterAlloc()
         int temp_debug = 0;
         bool spill_failed = false;
 
+        int try_times=0;
         while(!buildRIG(gb)){
             all2mem(gb);
 #ifdef DEBUG_ON           
@@ -955,6 +956,7 @@ void RigsterAlloc()
                 showDecl(dr);
 #endif
 //            spill_failed = buildRIG(gb);
+            if(try_times++ > 1)break;
         }
     }
 
