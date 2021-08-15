@@ -542,7 +542,7 @@ void deleteDC(DomTreenode* dn, BasicBlock* gb)
         auto arm_ins = *it;
 
         // 忽略到存内存的指令
-        if(arm_ins->getType() == armInstr::str)continue;
+        if(arm_ins->getType() == armInstr::str || (arm_ins->getType() >= armInstr::movlt && arm_ins->getType() <= armInstr::movne))continue;
 
         if(arm_ins->rd != NULL)
         {
@@ -557,6 +557,7 @@ void deleteDC(DomTreenode* dn, BasicBlock* gb)
                     call_ins->rd = nullptr; // 再解决这条call_ins的rd的指针
                 }
                 else{
+                    cout << "insdeleted: " << **it <<endl;
                     newBlock[b].erase(it--);
                     gbarmCnt[gb]--;
                 }
@@ -628,16 +629,17 @@ void spillCost(BasicBlock* gb){
     }
 }
 
-map<Decl*, memoryDecl*> spill_dc2memdc; // spilling失败之后，记录每个node对应放在哪里的memdecl
+map<RIGnode*, memoryDecl*> spill_node2memdc; // spilling失败之后，记录每个node对应放在哪里的memdecl
 
-memoryDecl* forc_memShift(Decl* d, BasicBlock* gb){
+memoryDecl* forc_memShift(RIGnode* d, BasicBlock* gb){
     // 找得到就返回已经有了的, 没找到就new一个回去
 
-    memoryDecl* ret_m = spill_dc2memdc[d];
+    memoryDecl* ret_m = spill_node2memdc[d];
     if(ret_m == nullptr){
         ret_m = new memoryDecl(nullptr,gb,gblock2spbias[gb]++);
-        spill_dc2memdc[d] = ret_m; // 更新映射
+        spill_node2memdc[d] = ret_m; // 更新node到memdecl的映射
     }
+
     return ret_m;
 }
 
@@ -659,7 +661,7 @@ void all2mem(BasicBlock* gb)
                     if(VregNumofDecl(dc)==K)continue;//跳过r13的spill
                     armLdr* ldr_ins= new armLdr();
                     ldr_ins->rd = dc;
-                    ldr_ins->rs = forc_memShift(dc, gb);
+                    ldr_ins->rs = forc_memShift(ForCnode(make_pair(VregNumofDecl(dc),dc->gettype() == Decl::reg_decl),gb), gb);
                     it=newBlock[b].insert(it,ldr_ins)+1;
                     gbarmCnt[gb]++;
                     ldr_ins->comm = "ldr-all2mem " + to_string(spill_times);
@@ -678,7 +680,7 @@ void all2mem(BasicBlock* gb)
                 }
                 armStr* str_ins= new armStr();
                 str_ins->rd = arm_ins->rd;
-                str_ins->rs = forc_memShift(arm_ins->rd, gb);
+                str_ins->rs = forc_memShift(ForCnode(make_pair(VregNumofDecl(arm_ins->rd),arm_ins->rd->gettype() == Decl::reg_decl),gb), gb);
                 it=newBlock[b].insert(it+1,str_ins);
                 gbarmCnt[gb]++;
                 str_ins->comm = "str-all2mem " + to_string(spill_times);
@@ -798,7 +800,7 @@ bool buildRIG(BasicBlock* gb)
 
 #ifdef DEBUG_ON
         // 2.5 for debug 先linshi临时打印一下这些个in 和 out
-        cout << "\n\n**** IN&OUT set ****\n";
+        cout << "\n\n**** IN&OUT set of " << gb->BlockName << " ****\n";
         for(auto dr: DomRoot)
             showSets(dr);     
 #endif
@@ -838,7 +840,7 @@ bool buildRIG(BasicBlock* gb)
         init_color(gb);
         if(paintColor(gb)){
 #ifdef DEBUG_ON
-            std::cout << "**** Coloring information ****" << endl;
+            std::cout << "**** Coloring information of " << gb->BlockName << " ****" << endl;
             for(auto node: RIG[gb]){
             std::cout << ((node->typeIsREG) ? "r" : "")  << node->dc << " " << colors[node]-1 << endl;  }
 #endif
@@ -857,7 +859,7 @@ bool buildRIG(BasicBlock* gb)
     specialInsDelete(block2dom[gb->domBlock[0]],gb);
 
 
-#ifdef DEBUG_ON
+#ifdef DEBUG_ON_
     // final show instruction agian, this time with limited k registers
     std::cout << "****Arm Instruction with limited Registers ****\n";
     for(auto dr: DomRoot)
@@ -867,12 +869,12 @@ bool buildRIG(BasicBlock* gb)
 
     if(usedK>K){ // 染色失败
 #ifdef DEBUG_ON
-         std::cout<<"Coloring failed\n";
+        std::cout << gb->BlockName <<  ": Coloring failed\n";
 #endif
         return false;
     }
 #ifdef DEBUG_ON
-    std::cout << "Coloring OK";
+        std::cout << gb->BlockName << ": Coloring OK\n";
 #endif
     return true;
 }
@@ -887,33 +889,35 @@ void RigsterAlloc()
     {
         // 跳过第一个全局变量，core dump，可能有隐患
         if(gb->domBlock.size() == 0)continue;
-        int whenToadd = 0;
-        int temp_debug = 0;
         bool spill_failed = false;
 
         int try_times = 1;
         while(try_times <= 2){
 
             spill_failed = buildRIG(gb);
-            if(!spill_failed) {
+            if(!spill_failed) { // 染色失败
                 all2mem(gb);
-            }
-
+                spill_times++;
 #ifdef DEBUG_ON
-            std::cout << "****add mem ****\n";
+            std::cout << "**** add mem ****\n";
             for(auto dr: DomRoot)
                 showDecl(dr);
 #endif
-
-            if(spill_failed) {
+            }
+            else{ // 染色成功
                 break;
             }
-
             try_times ++;
         }
+#ifdef DEBUG_ON
+        if(try_times > 2)
+            cout << gb->BlockName <<" 两次强制跳出\n";
+        else
+            cout << gb->BlockName <<" 染色成功跳出来的\n";
+#endif
     }
 
-#ifdef DEBUG_ON
+#ifdef DEBUG_ON_
     // final show instruction agian, this time with limited k registers
     std::cout << "****Arm Instruction with limited Registers --- final ****\n";
     for(auto dr: DomRoot)

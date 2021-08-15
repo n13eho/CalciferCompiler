@@ -68,19 +68,19 @@ int main(int argc, char *argv[])
     int ret = yyparse();
     if (ret == 0)
     {
-#ifdef DEBUG_ON
+#ifdef DEBUG_ON_
         show_node(Droot, 0); //打印AST
 #endif
         semanticAnalyzer(Droot); // 从ast语义检查 + 构建符号表
         // show_SymbleTable(SymbolTable); // 打印符号表
         VisitAST(Droot, IR1); // 从ast：建立四元式 + 得出block的信息
 
-#ifdef DEBUG_ON
+#ifdef DEBUG_ON_
        show_IR_ins(IR1); // 打印指令
 #endif
 
         getssa();//建立支配树以及支配边界 -->
-#ifdef DEBUG_ON
+#ifdef DEBUG_ON_
         show_cfg();
 #endif
 
