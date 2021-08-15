@@ -25,7 +25,8 @@ map<RIGnode*, int> colors; // 着色color 一个rignode（其实是vreg）对应
 // 记录每一个寄存器编号（颜色）对应的spilling cost
 map<int, double> spilling_cost;
 
-//ofstream debugout;
+
+int spill_times = 1;
 
 bool notConst(Decl* d)
 {
@@ -654,7 +655,7 @@ void all2mem(BasicBlock* gb)
                     ldr_ins->rs = forc_memShift(ForCnode(make_pair(VregNumofDecl(dc),dc->gettype() == Decl::reg_decl),gb), gb);
                     it=newBlock[b].insert(it,ldr_ins)+1;
                     gbarmCnt[gb]++;
-                    ldr_ins->comm = "spill all to mem";
+                    ldr_ins->comm = "ldr-all2mem " + to_string(spill_times);
                 }
             }
 
@@ -673,7 +674,7 @@ void all2mem(BasicBlock* gb)
                 str_ins->rs = forc_memShift(ForCnode(make_pair(VregNumofDecl(arm_ins->rd),arm_ins->rd->gettype() == Decl::reg_decl),gb), gb);
                 it=newBlock[b].insert(it+1,str_ins);
                 gbarmCnt[gb]++;
-                str_ins->comm = "ttt";
+                str_ins->comm = "str-all2mem " + to_string(spill_times);
             }
 
         }
@@ -949,6 +950,7 @@ void RigsterAlloc()
         int try_times=0;
         while(!buildRIG(gb)){
             all2mem(gb);
+            spill_times++;
 #ifdef DEBUG_ON           
             dbg("全放内存");
             std::cout << "****add mem ****\n";
@@ -956,7 +958,7 @@ void RigsterAlloc()
                 showDecl(dr);
 #endif
 //            spill_failed = buildRIG(gb);
-            if(try_times++ > 1)break;
+            if(try_times++ > 0)break;
         }
     }
 
