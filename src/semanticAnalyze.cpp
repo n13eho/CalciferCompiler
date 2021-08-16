@@ -267,7 +267,7 @@ IntegerValue *semantic_LVal_Array_(GrammaNode *root, int needConst, int needCond
         //----------------语义检查【2.3】----------------
 //        throw SemanticError(root->lineno, val->VName, "数组访问越界：维度不够");
 //    }
-    int isC = 1;
+    int isC = val->isConst;
     for (int i = 0; i < root->son[1]->son.size(); i++)
     {
         IntegerValue* indexValue = semantic_Exp_(root->son[1]->son[i], 0, 0);
