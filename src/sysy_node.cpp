@@ -36,7 +36,5 @@ void releaseAST(GrammaNode* root)
         delete(n);
     }
     // 最后看下这个set怎么释放掉
-    std::cout << treeNodesSet.size() << std::endl;
     treeNodesSet.clear();
-    std::cout << treeNodesSet.size() << std::endl;
 }

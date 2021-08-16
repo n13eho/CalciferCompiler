@@ -75,12 +75,17 @@ Decl:
 
 //---------常量声明---------
 ConstDecl:
-	CONST INT ConstDefs SEMI {$$=$3;}
+    CONST INT ConstDefs SEMI {
+        $$=$3;
+        if($1){ delete ($1); $1 = nullptr;}
+        if($2){ delete ($2); $2 = nullptr;}
+        if($4){ delete ($4); $4 = nullptr;}
+    }
 ;
 
 ConstDefs:
 	ConstDef 					{$$=new GrammaNode(lineno, ConstDefs_,"ConstDefs_");$$->son.push_back($1);}
-	|ConstDefs COMM ConstDef	{$1->son.push_back($3);}		
+	|ConstDefs COMM ConstDef	{$1->son.push_back($3); if($2){delete($2); $2 = nullptr;}}
 ;
 
 
@@ -90,22 +95,29 @@ ConstDef:
 		$$ = new GrammaNode(lineno, ConstDef_array_,"ConstDef_array_");
 		$$->son.push_back($1);$$->son.push_back($3);$$->son.push_back($6);
 		IdentDeclareCheck($1);
+		if($2){delete($2); $2 = nullptr;}
+		if($4){delete($4); $4 = nullptr;}
+		if($5){delete($5); $5 = nullptr;}
 	}
 	|Ident ASSIGN InitVal {
 		$$ = new GrammaNode(lineno, ConstDef_single_,"ConstDef_single_");
 		$$->son.push_back($1);$$->son.push_back($3);
 		IdentDeclareCheck($1);
+		if($2){delete($2); $2 = nullptr;}
 	}
 ;
 
 //-----------变量声明---------
 VarDecl:
-	INT VarDefs SEMI				{$$=$2;}
+    INT VarDefs SEMI {$$=$2;
+        if($1){delete($1); $1 = nullptr;}
+        if($3){delete($3); $3 = nullptr;}
+    }
 ;
 
 VarDefs:
 	VarDef							{$$ = new GrammaNode(lineno, VarDefs_,"VarDefs"); $$->son.push_back($1);}
-	|VarDefs COMM VarDef			{$1->son.push_back($3);}
+	|VarDefs COMM VarDef			{$1->son.push_back($3); if($2){delete($2); $2 = nullptr;}}
 ;	
 
 //---------变量定义---------
@@ -114,11 +126,16 @@ VarDef:
 		$$ = new GrammaNode(lineno, VarDef_array_init_,"VarDef_array_init_");
 		$$->son.push_back($1);$$->son.push_back($3);$$->son.push_back($6);
 		IdentDeclareCheck($1);
+		if($2){delete($2); $2 = nullptr;}
+		if($4){delete($4); $4 = nullptr;}
+		if($5){delete($5); $5 = nullptr;}
 	}
 	|Ident SQBRAL ConstExps	SQBRAR {
 		$$ = new GrammaNode(lineno, VarDef_array_,"VarDef_array_");
 		$$->son.push_back($1);$$->son.push_back($3);
 		IdentDeclareCheck($1);
+		if($2){delete($2); $2 = nullptr;}
+		if($4){delete($4); $4 = nullptr;}
 	}
 	|Ident {
 		$$ = new GrammaNode(lineno, VarDef_single_,"VarDef_single_");
@@ -134,13 +151,13 @@ VarDef:
 
 InitVal:
 	Exp								{$$ = new GrammaNode(lineno, InitVal_EXP,"InitVal_EXP"); $$->son.push_back($1);}
-	|BRAL BRAR						{$$ = new GrammaNode(lineno, InitVal_NULL,"InitVal_NULL");}
-	|BRAL InitVals BRAR				{$$ = new GrammaNode(lineno, InitVal_,"InitVal"); $$->son.push_back($2);}
+	|BRAL BRAR						{$$ = new GrammaNode(lineno, InitVal_NULL,"InitVal_NULL"); if($1){delete($1); $1 = nullptr;} if($2){delete($2); $2 = nullptr;}}
+	|BRAL InitVals BRAR				{$$ = new GrammaNode(lineno, InitVal_,"InitVal"); $$->son.push_back($2); if($1){delete($1); $1 = nullptr;} if($3){delete($3); $3 = nullptr;}}
 ;
 
 InitVals:
 	InitVal							{$$ = new GrammaNode(lineno, InitVals_,"InitVals"); $$->son.push_back($1);}
-	|InitVals COMM InitVal			{$1->son.push_back($3);}
+	|InitVals COMM InitVal			{$1->son.push_back($3); if($2){delete($2); $2 = nullptr;}}
 ;
 
 //--------函数定义---------int无参数、void无参数、int有参数、void无参数
@@ -149,21 +166,33 @@ FuncDef:
 		$$ = new GrammaNode(lineno, FuncDef_int_,"FuncDef_int_");
 		$$->son.push_back($2);$$->son.push_back($5);
 		scopePop();
+		if($1){delete($1); $1 = nullptr;}
+		if($3){delete($3); $3 = nullptr;}
+		if($4){delete($4); $4 = nullptr;}
 	}
 	|VOID Ident_TEMP RDBRAL_TEMP RDBRAR Block_in_FuncDef	{
 		$$ = new GrammaNode(lineno, FuncDef_void_,"FuncDef_void_");
 		$$->son.push_back($2);$$->son.push_back($5);
 		scopePop();
+		if($1){delete($1); $1 = nullptr;}
+		if($3){delete($3); $3 = nullptr;}
+		if($4){delete($4); $4 = nullptr;}
 	}
 	|INT Ident_TEMP RDBRAL_TEMP FuncFParams RDBRAR Block_in_FuncDef {
 		$$ = new GrammaNode(lineno, FuncDef_int_para_,"FuncDef_int_para_");
 		$$->son.push_back($2);$$->son.push_back($4);$$->son.push_back($6);
 		scopePop();
+		if($1){delete($1); $1 = nullptr;}
+		if($3){delete($3); $3 = nullptr;}
+		if($5){delete($5); $5 = nullptr;}
 	}
 	|VOID Ident_TEMP RDBRAL_TEMP FuncFParams RDBRAR Block_in_FuncDef {
 		$$ = new GrammaNode(lineno, FuncDef_void_para_,"FuncDef_void_para_");
 		$$->son.push_back($2);$$->son.push_back($4);$$->son.push_back($6);
 		scopePop();
+		if($1){delete($1); $1 = nullptr;}
+		if($3){delete($3); $3 = nullptr;}
+		if($5){delete($5); $5 = nullptr;}
 	}
 ;
 Ident_TEMP:
@@ -187,6 +216,7 @@ FuncFParams:
 	}
 	|FuncFParams COMM FuncFParam {
 		$1->son.push_back($3);
+		if($2){delete($2); $2 = nullptr;}
 	}
 ;
 
@@ -196,11 +226,13 @@ FuncFParam:
 		$$ = new GrammaNode(lineno, FuncFParam_single_,"FuncFParam_single_");
 		$$->son.push_back($2);
 		IdentDeclareCheck($2);
+		if($1){delete($1); $1 = nullptr;}
 	}
 	|INT Ident SQBRAL SQBRAR Exps {
 		$$ = new GrammaNode(lineno, FuncFParam_array_,"FuncFParam_array_");
 		$$->son.push_back($2);$$->son.push_back($3);$$->son.push_back($4);$$->son.push_back($5);
 		IdentDeclareCheck($2);
+		if($1){delete($1); $1 = nullptr;}
 	}
 	|INT Ident SQBRAL SQBRAR {
 		$$ = new GrammaNode(lineno, FuncFParam_singleArray_,"FuncFParam_singleArray_");
@@ -223,8 +255,13 @@ BlockItems:
 Block_in_FuncDef:
 	BRAL BlockItems BRAR {
 		$$=$2;
+		if($1){delete($1); $1 = nullptr;}
+		if($3){delete($3); $3 = nullptr;}
 	}
-	|BRAL BRAR {}
+	|BRAL BRAR {
+	    if($1){delete($1); $1 = nullptr;}
+	    if($2){delete($2); $2 = nullptr;}
+	}
 ;
 
 // 在普通stmt的block是有作用域的
@@ -232,6 +269,8 @@ Block:
 	BARL_TEMP BlockItems BRAR {
 		$$=$2;
 		scopePop();
+		if($1){delete($1); $1 = nullptr;}
+		if($3){delete($3); $3 = nullptr;}
 	}
 	|BRAL BRAR {} // 空语句就不用对作用域进行push和pop了
 ;
@@ -251,15 +290,27 @@ BlockItem:
 
 
 Stmt:
-	LVal ASSIGN Exp SEMI				{$$ = new GrammaNode(lineno, Stmt_Assign_,"Stmt_Assign"); $$->son.push_back($1);$$->son.push_back($3);}
-	|SEMI								{}
-	|Exp SEMI							{$$ = new GrammaNode(lineno, Stmt_Exp_,"Stmt_Exp"); $$->son.push_back($1);}
-	|Block								{$$=$1;}
+	LVal ASSIGN Exp SEMI {
+	    $$ = new GrammaNode(lineno, Stmt_Assign_,"Stmt_Assign");
+	    $$->son.push_back($1);$$->son.push_back($3);
+	    if($2){delete($2); $2 = nullptr;}
+	    if($4){delete($4); $4 = nullptr;}
+	}
+	|SEMI {} // 这里的semi不要删去
+	|Exp SEMI {
+	    $$ = new GrammaNode(lineno, Stmt_Exp_,"Stmt_Exp");
+	    $$->son.push_back($1);
+	    if($2){delete($2); $2 = nullptr;}
+	}
+	|Block {$$=$1;}
 	|IF RDBRAL Cond RDBRAR Stmt {
 		// scopePush();
 		$$ = new GrammaNode(lineno, Stmt_If_,"Stmt_If");
 		$$->son.push_back($3);$$->son.push_back($5);
 		// scopePop();
+		if($1){delete($1); $1 = nullptr;}
+		if($2){delete($2); $2 = nullptr;}
+		if($4){delete($4); $4 = nullptr;}
 	}
 	|IF RDBRAL Cond RDBRAR Stmt ELSE Stmt {
 		// scopePush();
@@ -267,17 +318,24 @@ Stmt:
 		$$->son.push_back($3);$$->son.push_back($5);
 		$$->son.push_back($7);
 		// scopePop();
+		if($1){delete($1); $1 = nullptr;}
+		if($2){delete($2); $2 = nullptr;}
+		if($4){delete($4); $4 = nullptr;}
+		if($6){delete($6); $6 = nullptr;}
 	}
 	|WHILE RDBRAL Cond RDBRAR Stmt {
 		// scopePush();
 		$$ = new GrammaNode(lineno, Stmt_While_,"Stmt_While");
 		$$->son.push_back($3);$$->son.push_back($5);
 		// scopePop();
+		if($1){delete($1); $1 = nullptr;}
+		if($2){delete($2); $2 = nullptr;}
+		if($4){delete($4); $4 = nullptr;}
 	}
-	|BREAK SEMI							{$$=$1;}
-	|CONTINUE SEMI						{$$=$1;}
-	|RETURN SEMI						{$$=$1;}
-	|RETURN Exp SEMI					{$$ = new GrammaNode(lineno, Stmt_Return_,"Stmt_Return"); $$->son.push_back($2);}
+	|BREAK SEMI							{$$=$1; if($2){delete($2); $2 = nullptr;}}
+	|CONTINUE SEMI						{$$=$1; if($2){delete($2); $2 = nullptr;}}
+	|RETURN SEMI						{$$=$1; if($2){delete($2); $2 = nullptr;}}
+	|RETURN Exp SEMI					{$$ = new GrammaNode(lineno, Stmt_Return_,"Stmt_Return"); $$->son.push_back($2); if($1){delete($1); $1 = nullptr;} if($3){delete($3); $3 = nullptr;}}
 
 //可删
 Cond:
@@ -287,7 +345,7 @@ Cond:
 //常数定义中数组[]
 ConstExps:
 		Exp 							{$$ = new GrammaNode(lineno, ConstExps_,"ConstExps");$$->son.push_back($1); }
-	 	|ConstExps SQBRAR SQBRAL Exp 	{$1->son.push_back($4);}
+		|ConstExps SQBRAR SQBRAL Exp 	{$1->son.push_back($4); if($2){delete($2); $2 = nullptr;} if($3){delete($3); $3 = nullptr;}}
 ;
 
 //表达式
@@ -311,13 +369,13 @@ LVal:
 
 //数组表达式
 Exps:
-	SQBRAL Exp SQBRAR			{$$ = new GrammaNode(lineno, Exps_,"Exps_"); $$->son.push_back($2);}
-    |Exps SQBRAL Exp SQBRAR		{$1->son.push_back($3);}
+    SQBRAL Exp SQBRAR			{$$ = new GrammaNode(lineno, Exps_,"Exps_"); $$->son.push_back($2); if($1){delete($1); $1 = nullptr;} if($3){delete($3); $3 = nullptr;}}
+    |Exps SQBRAL Exp SQBRAR		{$1->son.push_back($3); if($2){delete($2); $2 = nullptr;} if($4){delete($4); $4 = nullptr;}}
 ;
 
 //基本表达式
 PrimaryExp:
-	RDBRAL Exp RDBRAR			{$$=$2;}
+    RDBRAL Exp RDBRAR			{$$=$2; if($1){delete($1); $1 = nullptr;} if($3){delete($3); $3 = nullptr;}}
 	  |LVal						{$$=$1;}
 	  |IntConst					{$$=$1;}
 ;
@@ -331,11 +389,15 @@ UnaryExp:
 		GrammaNode* n = IdentDefineCheck($1);
 		$$ = new GrammaNode(lineno, UnaryExp_func_,"UnaryExp_func_");
 		$$->son.push_back(n);
+		if($2){delete($2); $2 = nullptr;}
+		if($3){delete($3); $3 = nullptr;}
 	}
 	|Ident RDBRAL FuncRParams RDBRAR {
 		GrammaNode* n = IdentDefineCheck($1);
 		$$ = new GrammaNode(lineno, UnaryExp_func_,"UnaryExp_func_");
 		$$->son.push_back(n);$$->son.push_back($3);
+		if($2){delete($2); $2 = nullptr;}
+		if($4){delete($4); $4 = nullptr;}
 	}
 	|UnaryOp UnaryExp {$$ = new GrammaNode(lineno, UnaryExp_,"UnaryExp_"); $$->son.push_back($1);$$->son.push_back($2);}
 ;
@@ -351,46 +413,46 @@ UnaryOp:
 //实参
 FuncRParams:
 		Exp					{$$ = new GrammaNode(lineno, FuncRParams_,"FuncRParams_"); $$->son.push_back($1);}
-	   |FuncRParams COMM Exp{$1->son.push_back($3);}	   
+		|FuncRParams COMM Exp{$1->son.push_back($3); if($2){delete($2); $2 = nullptr;}}
 ;
 
 //乘除模表达式
 MulExp:
 		UnaryExp				{$$ = $1;}
-      |MulExp MUL UnaryExp	{$$ = new GrammaNode(lineno, MulExp_Mul_,"MulExp_Mul"); $$->son.push_back($1);$$->son.push_back($3);}
-      |MulExp DIV UnaryExp	{$$ = new GrammaNode(lineno, MulExp_Div_,"MulExp_Div"); $$->son.push_back($1);$$->son.push_back($3);}
-      |MulExp MOD UnaryExp	{$$ = new GrammaNode(lineno, MulExp_Mod_,"MulExp_Mod"); $$->son.push_back($1);$$->son.push_back($3);}
+		|MulExp MUL UnaryExp	{$$ = new GrammaNode(lineno, MulExp_Mul_,"MulExp_Mul"); $$->son.push_back($1);$$->son.push_back($3); if($2){delete($2); $2 = nullptr;}}
+		|MulExp DIV UnaryExp	{$$ = new GrammaNode(lineno, MulExp_Div_,"MulExp_Div"); $$->son.push_back($1);$$->son.push_back($3); if($2){delete($2); $2 = nullptr;}}
+		|MulExp MOD UnaryExp	{$$ = new GrammaNode(lineno, MulExp_Mod_,"MulExp_Mod"); $$->son.push_back($1);$$->son.push_back($3); if($2){delete($2); $2 = nullptr;}}
 ;
 
 //加减表达式
 AddExp:
 	MulExp				{$$=$1;}
-      |AddExp ADD MulExp	{$$ = new GrammaNode(lineno, AddExp_Add_,"AddExp_Add"); $$->son.push_back($1);$$->son.push_back($3);}
-      |AddExp SUB MulExp	{$$ = new GrammaNode(lineno, AddExp_Sub_,"AddExp_Sub"); $$->son.push_back($1);$$->son.push_back($3);}
+	|AddExp ADD MulExp	{$$ = new GrammaNode(lineno, AddExp_Add_,"AddExp_Add"); $$->son.push_back($1);$$->son.push_back($3); if($2){delete($2); $2 = nullptr;}}
+	|AddExp SUB MulExp	{$$ = new GrammaNode(lineno, AddExp_Sub_,"AddExp_Sub"); $$->son.push_back($1);$$->son.push_back($3); if($2){delete($2); $2 = nullptr;}}
 ;
 
 RelExp:
-	RelExp LT AddExp	{$$ = new GrammaNode(lineno, RelExp_LT_,"RelExp_LT"); $$->son.push_back($1);$$->son.push_back($3);}
-	|RelExp BG AddExp	{$$ = new GrammaNode(lineno, RelExp_BG_,"RelExp_BG"); $$->son.push_back($1);$$->son.push_back($3);}
-	|RelExp LQ AddExp	{$$ = new GrammaNode(lineno, RelExp_LQ_,"RelExp_LQ"); $$->son.push_back($1);$$->son.push_back($3);}
-	|RelExp BQ AddExp	{$$ = new GrammaNode(lineno, RelExp_BQ_,"RelExp_BQ"); $$->son.push_back($1);$$->son.push_back($3);}
+    RelExp LT AddExp	{$$ = new GrammaNode(lineno, RelExp_LT_,"RelExp_LT"); $$->son.push_back($1);$$->son.push_back($3); if($2){delete($2); $2 = nullptr;}}
+    |RelExp BG AddExp	{$$ = new GrammaNode(lineno, RelExp_BG_,"RelExp_BG"); $$->son.push_back($1);$$->son.push_back($3); if($2){delete($2); $2 = nullptr;}}
+    |RelExp LQ AddExp	{$$ = new GrammaNode(lineno, RelExp_LQ_,"RelExp_LQ"); $$->son.push_back($1);$$->son.push_back($3); if($2){delete($2); $2 = nullptr;}}
+    |RelExp BQ AddExp	{$$ = new GrammaNode(lineno, RelExp_BQ_,"RelExp_BQ"); $$->son.push_back($1);$$->son.push_back($3); if($2){delete($2); $2 = nullptr;}}
 	|AddExp				{$$ = $1;}
 ;
 
 EqExp:					
 	RelExp				{$$ = $1;}
-	|EqExp EQ RelExp	{$$ = new GrammaNode(lineno, EqExp_EQ_,"EqExp_EQ"); $$->son.push_back($1);$$->son.push_back($3);}
-	|EqExp NEQ RelExp	{$$ = new GrammaNode(lineno, EqExp_NEQ_,"EqExp_NEQ"); $$->son.push_back($1);$$->son.push_back($3);}
+	|EqExp EQ RelExp	{$$ = new GrammaNode(lineno, EqExp_EQ_,"EqExp_EQ"); $$->son.push_back($1);$$->son.push_back($3); if($2){delete($2); $2 = nullptr;}}
+	|EqExp NEQ RelExp	{$$ = new GrammaNode(lineno, EqExp_NEQ_,"EqExp_NEQ"); $$->son.push_back($1);$$->son.push_back($3); if($2){delete($2); $2 = nullptr;}}
 ;
 
 LAndExp:
 	EqExp				{$$ = new GrammaNode(lineno, LAndExp_,"LAndExp"); $$->son.push_back($1);}
-	|LAndExp AND EqExp	{$1->son.push_back($3);}
+	|LAndExp AND EqExp	{$1->son.push_back($3); if($2){delete($2); $2 = nullptr;}}
 ;
 
 LOrExp:
 	LAndExp				{$$ = new GrammaNode(lineno, LOrExp_,"LOrExp"); $$->son.push_back($1);}
-	|LOrExp OR LAndExp	{$1->son.push_back($3);}
+	|LOrExp OR LAndExp	{$1->son.push_back($3); if($2){delete($2); $2 = nullptr;}}
 ;
 
 
