@@ -633,7 +633,7 @@ class armMov:public armInstr{//ok
     virtual int getType(){return mov;}
     virtual ostream& output(ostream&out)const
     {
-        if(comm.length())out<<comm<<endl;
+        if(comm.length())out<<"@"<<comm<<endl;
         if(rd->gettype() == Decl::addr_decl)
         { // rd是addr_decl
             if(rs->gettype() == Decl::addr_decl){
