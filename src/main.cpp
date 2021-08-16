@@ -84,7 +84,7 @@ int main(int argc, char *argv[])
 
 
         getssa();//建立支配树以及支配边界 -->
-#ifdef DEBUG_ON_
+#ifdef DEBUG_ON
         show_cfg();
 #endif
 

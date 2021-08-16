@@ -80,8 +80,10 @@ void printArm(DomTreenode* dn,BasicBlock* gb)
                 if(inst_mov->rs->gettype() == Decl::addr_decl && inst_mov->rd->gettype() == Decl::addr_decl) {
                     // 这是不可能的
                     // 忽略
-                } else {
-                    calout<<"\tldr "<<*inst_mov->rd<<", "<<*inst_mov->rs<<endl;
+                } else if(inst_mov->rs->gettype() == Decl::addr_decl && 
+                        (inst_mov->rd->gettype() == Decl::var_decl || inst_mov->rd->gettype() == Decl::reg_decl)){
+                    calout<<"\tldr "<<*inst_mov->rd<<", "<<*inst_mov->rs<<" @ code gen"<<endl;
+
                 }
 
 //                dbg(inst_mov->rd->gettype(), inst_mov->rs->gettype());

@@ -232,6 +232,26 @@ void assignSub(Instruction* instr,BasicBlock *node)
         trance[ins]=instr;
     }
 }
+
+void addphimov(BasicBlock* pred, BasicBlock* node, armInstr* ins, Instruction* instr){
+    //再块pred中添加node的phi翻译出的mov/str, instr是原phi
+    auto pos = newBlock[pred].begin();
+    //找到跳转到node的指令
+    for(;pos!=newBlock[pred].end();pos++){
+        auto ins_now = *pos;
+        if(ins_now->getType() <= armInstr::b&&ins_now->getType() >= armInstr::beq){
+            string dest = ins_now->getDest();
+            if(dest == block2lb[node]){
+                break;
+            }
+        }
+    }
+    //如果没找到, 那一定是顺序的, 就在最后加//TODO: 或许可以优化掉吧
+    //加入指令
+    newBlock[pred].insert(pos,ins);
+    trance[ins]=instr;
+}
+
 void assignPhi(Instruction* instr, BasicBlock* node)
 {
     Value* val=instr->getOp()[0];
@@ -247,22 +267,7 @@ void assignPhi(Instruction* instr, BasicBlock* node)
         //phi语句块(node)的前驱是pred
         armMov* ins = new armMov();//在node中,所有val都用rd,所以前驱要加mov
         ins->rd=rd;
-        auto pos = newBlock[pred].begin();
-        //找到跳转到node的指令
-        for(;pos!=newBlock[pred].end();pos++){
-            auto ins_now = *pos;
-            if(ins_now->getType() <= armInstr::b&&ins_now->getType() >= armInstr::beq){
-                string dest = ins_now->getDest();
-                if(dest == block2lb[node]){
-                    break;
-                }
-            }
-        }
-        //如果没找到, 那一定是顺序的, 就在最后加//TODO: 或许可以优化掉吧
-
-        //加入指令
-        newBlock[pred].insert(pos,ins);
-        trance[ins]=instr;
+        addphimov(pred, node, ins, instr);
     }
 }
 void assignLdr(Instruction* instr, BasicBlock* node)
@@ -1050,7 +1055,7 @@ int usedMov(armMov* ins, BasicBlock* node)
     else if(raw->getOpType()==Instruction::Phi){
         //phi语句翻译的mov
         Value* rs = raw->getOp()[0];
-        ins->comm = "@ phi to mov";
+        ins->comm += "@ phi to mov";
         if(Assign_rec[make_pair(rs,node)].size()==0){
             //原则上不会执行到这里
             ins->comm = "@ phi to mov special";
@@ -1116,6 +1121,11 @@ void usedStr(armStr* ins,BasicBlock* node)
 
     if(raw->getOpType() == Instruction:: Call){
         //这里专门处理call的5+参数
+        ins->rd = getDecl(ins->rs->rawValue,node);
+        return ;
+    }
+    if(raw->getOpType() == Instruction:: Phi){
+        //这里专门处理对于参数的phi语句
         ins->rd = getDecl(ins->rs->rawValue,node);
         return ;
     }
@@ -1267,6 +1277,14 @@ void liveSets()
             newBlock[eb]={};
         }
     }
+    
+    for(auto gb:IR1->Blocks){
+        //我觉得应该先给形参分配内存?????????//FIXME
+        if(gb->domBlock.size()==0)continue;
+        FunctionValue* func = gb->FuncV;
+        if(func->getParamCnt()>4)gblock2spbias[gb]+=(func->getParamCnt()-4); //TODO：数组的话,  再说
+    }
+    
 //    dbg("syy -- add label win!");
     // 1. 转换Decl
     for(auto rt:DomRoot){
@@ -1317,6 +1335,47 @@ void liveSets()
             trance[xc_mov]=nullptr;
         }  
     }
+    //这里讨论dom[0]的形参
+    //dom[0]的前驱中如果这个块中存在对形参的赋值, 那么需要做
+    //1. 前4个形参移入 r0, r1, r2, r3;
+    //2. 第5+个形参移入对应的内存
+    for(auto gb : IR1->Blocks){
+        if(gb->domBlock.size()==0)continue;
+        auto bk0 = gb->domBlock[0];
+        for(auto pred : bk0->pioneerBlock){
+            //遍历dom[0]的每一个前驱
+            map<Value*,bool> visFP;//每一个pred对每一个形参只加一次
+            visFP.clear();
+            for(auto instr_id : pred->InstrList){
+                //遍历前驱的每一个语句
+                auto instr = IR1->InstList[instr_id];
+                auto res = instr->getResult();
+                if(res != nullptr && !visFP[res]){
+                    visFP[res]=1;
+                    if(res->isPara){
+                        //为了迎合后面的接口,创建一条phi(冗余但不影响正确性, 野的?)
+                        Instruction* phi = new Instruction(-1, Instruction::Phi, 1);
+                        phi->Operands.push_back(res);
+                        if(res->isPara<=4){
+                            //前四个形参
+                            armMov* mov_phi = new armMov();//需要加一条mov到死寄存器的arm指令
+                            mov_phi->rd = new regDecl(nullptr, pred, res->isPara-1);
+                            mov_phi->comm = "phi to mov(FParams)";
+                            addphimov(pred, bk0, mov_phi, phi);
+                        }
+                        else{
+                            //后四个形参(这里创建str)
+                            armStr* mov_phi = new armStr();//需要加一条mov到死寄存器的arm指令
+                            mov_phi->rs = new memoryDecl(nullptr, pred, res->isPara-5);
+                            mov_phi->comm = "@phi to mov(FParams)";
+                            addphimov(pred, bk0, mov_phi, phi);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     //计算reach in/out
     for(auto rt:DomRoot){
         while(1){
@@ -1353,9 +1412,5 @@ void liveSets()
     }
 //    dbg("syy -- show super arm win!");               
 #endif
-    for(auto gb:IR1->Blocks){
-        if(gb->domBlock.size()==0)continue;
-        FunctionValue* func = gb->FuncV;
-        if(func->getParamCnt()>4)gblock2spbias[gb]+=(func->getParamCnt()-4); //TODO：数组的话,  再说
-    }
+
 }
