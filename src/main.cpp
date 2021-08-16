@@ -72,7 +72,7 @@ int main(int argc, char *argv[])
         show_node(Droot, 0); //打印AST
 #endif
         semanticAnalyzer(Droot); // 从ast语义检查 + 构建符号表
-        show_SymbleTable(SymbolTable); // 打印符号表
+//        show_SymbleTable(SymbolTable); // 打印符号表
         VisitAST(Droot, IR1); // 从ast：建立四元式 + 得出block的信息
 
 #ifdef DEBUG_ON

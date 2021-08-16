@@ -13,7 +13,7 @@ endif(CMAKE_SYSTEM_NAME MATCHES "Linux")
 file(GLOB_RECURSE source_files ${PROJECT_SOURCE_DIR}/src/*.cpp ${PROJECT_SOURCE_DIR}/src/front/*.cpp)
 include_directories(${PROJECT_SOURCE_DIR}/include)
 add_executable(${project_name} ${source_files})
-target_compile_definitions(${project_name} PRIVATE DEBUG_ON)
+#target_compile_definitions(${project_name} PRIVATE DEBUG_ON)
 
 # option for test
 option(CUSTOM_TEST "Run custom test cases" ON)
