@@ -980,6 +980,9 @@ void RigsterAlloc()
         else
             cout << gb->BlockName <<" 染色成功跳出来的\n";
 #endif
+        if(try_times > 2){
+            spill_failed = buildRIG(gb);
+        }
     }
 
 #ifdef DEBUG_ON_
