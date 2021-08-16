@@ -27,7 +27,7 @@ class Decl {
     vector<armInstr*> gen_used; // 记录该decl出现在那些指令的gen集合中
     double spill_cost = 0.0; // 记录该decl的spill cost，是将其移出寄存器的依据
     int decl_spill = 0; // 该变量是否溢出，放进mem了
-
+    
     Decl(){}
     ~Decl(){}
 
@@ -137,7 +137,8 @@ class armInstr{
     public:
     Decl* rd;
     string comm;
-    enum armInsType{add=1,sub,rsb,mul,div,mod,mov,push,pop,cmp,beq,bne,blt,ble,bgt,bge,blr,b,movlt,movle,movge,movgt,moveq,movne,ldr,str,call,ret,lsl};
+    bool isIgnore  = 0;//在used的时候是否可以忽略
+    enum armInsType{add=1,sub,rsb,mul,div,mod,mov,push,pop,cmp,beq,bne,blt,ble,bgt,bge,blr,b,movlt,movle,movge,movgt,moveq,movne,ldr,str,call,ret,lsl,asr,and_};
     virtual ostream& output(ostream&out)const{
         out<<"@ NULL"<<endl;
         return out;
@@ -255,9 +256,6 @@ class armAdd:public armInstr//ok
         if(r1->gettype() == Decl::addr_decl)
             out << "r" << ((addrDecl*)r1)->Vreg;
         else out << *r1;
-
-//        out<<"add "<< ((rd->gettype() == Decl::addr_decl) ? (((addrDecl*)rd, false) : (*rd))) <<", "<<*r0<<", "<<*r1;
-
         return out;
     }
     virtual vector<Decl*> getGen()
@@ -280,6 +278,9 @@ class armLsl:public armInstr//ok
         if(isaddr == 1){
             out<<"\tlsl r"<<((addrDecl*)rd)->Vreg<<", r"<<((addrDecl*)rs)->Vreg<<", "<<*sh;
         }
+        else if(sh->gettype() == Decl::const_decl&&rs->gettype() == Decl::var_decl){
+            out<<"\tlsl "<<*rs<<", "<<*sh<<endl;
+        }
         else{
             // out<<"\tlsl "<<*rd<<", "<<*rs<<", "<<*sh;
             //TODO: 向add学习!
@@ -294,6 +295,35 @@ class armLsl:public armInstr//ok
         return tem;
     }
 };
+class armAsr:public armInstr
+{
+    public:
+    Decl *sh,*rs;
+    int isaddr = 0 ;
+    virtual int getType(){return asr;}
+    virtual ostream& output(ostream&out)const
+    {
+        if(isaddr == 1){
+            out<<"\tasr r"<<((addrDecl*)rd)->Vreg<<", r"<<((addrDecl*)rs)->Vreg<<", "<<*sh;
+        }
+        else if(sh->gettype() == Decl::const_decl&&rs->gettype() == Decl::var_decl){
+            out<<"\tasr "<<*rs<<", "<<*sh<<endl;
+        }
+        else{
+            // out<<"\tlsl "<<*rd<<", "<<*rs<<", "<<*sh;
+            //TODO: 向add学习!
+            out<<"zhe bu ke neng ";
+        }
+        return out;
+    }
+    virtual vector<Decl*> getGen()
+    {
+        vector<Decl*> tem;
+        tem.push_back(rs);
+        return tem;
+    }
+};
+
 class armSub:public armInstr//ok
 {
     public:
@@ -383,6 +413,25 @@ public:
         return tem;
     }
 };
+
+class armAnd:public armInstr{//ok   In this ir, leave it like this
+public:
+    Decl *r0, *r1;
+    virtual int getType(){return and_;}
+    virtual ostream& output(ostream&out)const
+    {
+        out << "\tand " << *rd << ", " << *r0 << ", " << *r1;
+        return out;
+    }
+    virtual vector<Decl*> getGen()
+    {
+        vector<Decl*> tem;
+        tem.push_back(r0);
+        tem.push_back(r1);
+        return tem;
+    }
+};
+
 class armRet:public armInstr//ok
 {
     public:

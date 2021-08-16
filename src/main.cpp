@@ -9,8 +9,8 @@
 #include"../include/ssa.h"
 #include"../include/liveSet.h"
 #include "../include/RIG.h"
-#include"op_cfgFrequency.h"
-#include"CalciferCodeGen.h"
+#include"../include/op_cfgFrequency.h"
+#include"../include/CalciferCodeGen.h"
 
 #include <string.h>
 
@@ -83,15 +83,10 @@ int main(int argc, char *argv[])
 #ifdef DEBUG_ON
         show_cfg();
 #endif
-
         // 计算每个block的frequency， 可以和上面一步的SSA并行
-        getFrequency(); // 是addMemoryOperation(RIG.cpp)的1.1
-
+        // getFrequency(); // 是addMemoryOperation(RIG.cpp)的1.1
         // cout << "\n\n"; show_block(globalBlock, 0,nullptr,0); // 打印基本块，查看phi结点
         liveSets();//重命名
-
-        // return 0;
-
         // 寄存器分配：虚拟寄存器->real寄存器。变量活性分析，建立冲突图；
         RigsterAlloc();
 
@@ -105,8 +100,8 @@ int main(int argc, char *argv[])
     free(IR1);
     free(globalBlock);
 
-    return 0;
+    // return 0;
 }
 
 // ASan config
-extern "C" [[maybe_unused]] const char *__asan_default_options() { return "alloc_dealloc_mismatch=0, detect_leaks=0"; }
+// extern "C" [[maybe_unused]] const char *__asan_default_options() { return "alloc_dealloc_mismatch=0, detect_leaks=0"; }

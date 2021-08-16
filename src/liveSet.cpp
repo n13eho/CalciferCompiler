@@ -120,11 +120,47 @@ void assignAdd(Instruction* instr,BasicBlock *node)
     newBlock[node].push_back(ins);
     trance[ins]=instr;
 }
+int is2(int x){
+    int ret =0;
+    while(x>1){
+        if(x&1)return -1;
+        x>>=1;
+        ret++;
+    }
+    return ret;
+}
 void assignMul(Instruction* instr,BasicBlock *node)
 {
 
     IntegerValue* op2 = (IntegerValue*)(instr->getOp()[1]);
     IntegerValue* op1 = (IntegerValue*)(instr->getOp()[0]);
+    //添加优化!!
+    //如果两个op都是常数，理论不会出现，应该四元式就保证了吧
+    if(op1->isConst&&op2->isConst){
+        armMov* mul_mov = new armMov();
+        mul_mov->rd = new varDecl((IntegerValue*)instr->getResult(), node, Rcnt++);
+        mul_mov->rs = new constDecl(nullptr, node, op1->RealValue*op2->RealValue);
+        mul_mov->isIgnore = 1;
+        newBlock[node].push_back(mul_mov);
+        trance[mul_mov]=instr;
+        return ;
+    }
+    //如果后一个op是2的幂，改为左移
+    if(op1->isConst||op2->isConst){
+        if(op1->isConst)swap(op1,op2);
+        int mi = is2(op2->RealValue);
+        if(mi != -1){
+            //还需要填rs
+            armLsl *ins=new armLsl();
+            IntegerValue* res=(IntegerValue*)instr->getResult();
+            varDecl *resd = new varDecl(res,node,Rcnt++);
+            ins->rd = resd;
+            ins->sh = new constDecl(op2, node, mi);
+            newBlock[node].push_back(ins);
+            trance[ins]=instr;
+            return ;
+        }
+    }
     /**
      * op1也不一定是varDecl，op2可能是varDecl或者imm：只有当imm是不合法的时候再new一个新的mov指令
      * */
@@ -152,6 +188,7 @@ void assignDiv(Instruction* instr,BasicBlock *node)
 {
     IntegerValue* op2 = (IntegerValue*)(instr->getOp()[1]);
     IntegerValue* op1 = (IntegerValue*)(instr->getOp()[0]);
+    IntegerValue* res=(IntegerValue*)instr->getResult();
 
     if(op1->isConst){
         armMov* div_mov = new armMov();
@@ -160,6 +197,15 @@ void assignDiv(Instruction* instr,BasicBlock *node)
         trance[div_mov] = instr;
     }
     if(op2->isConst){
+        int mi = is2(op2->RealValue);
+        if(mi!=-1){
+            armAsr *ins = new armAsr();
+            ins->rd = new varDecl(res,node,Rcnt++);
+            ins->sh = new constDecl(nullptr, node, mi);
+            newBlock[node].push_back(ins);
+            trance[ins] = instr;
+            return ;
+        }
         armMov* div_mov = new armMov();
         div_mov->rd = new varDecl(op2, node, Rcnt++);
         newBlock[node].push_back(div_mov);
@@ -167,7 +213,6 @@ void assignDiv(Instruction* instr,BasicBlock *node)
     }
 
     armDiv *ins=new armDiv();
-    IntegerValue* res=(IntegerValue*)instr->getResult();
     varDecl *resd = new varDecl(res,node,Rcnt++);
     ins->rd = resd;
     newBlock[node].push_back(ins);
@@ -180,11 +225,49 @@ void assignMod(Instruction* instr,BasicBlock *node)
     //mul rd, rd, r1
     //sub rd, r0, rd
     //在assign阶段,rd需要填, 其余分别在各自used阶段的分类讨论中改
-    assignDiv(instr, node);
-
     IntegerValue* res=(IntegerValue*)instr->getResult();
     IntegerValue* op2 = (IntegerValue*)(instr->getOp()[1]);
     IntegerValue* op1 = (IntegerValue*)(instr->getOp()[0]);
+    //添加优化！！！
+    //如果是2的幂转为与指令
+    if(op2->isConst){
+        if(op1->isConst){
+            //两个数都是常数还算啊
+            armMov* mod_mov = new armMov();
+            mod_mov->rd = new varDecl(op1, node, Rcnt++);
+            mod_mov->rs = new constDecl(nullptr, node, op1->RealValue%op2->RealValue);
+            mod_mov->isIgnore = 1;
+            newBlock[node].push_back(mod_mov);
+            trance[mod_mov] = instr;
+            return ;
+        }
+        int mi = is2(op2->RealValue);
+        if(mi!=-1){
+            // mod一个2的幂
+            int opand = (1LL<<mi)-1LL;
+            Value* wild = new IntegerValue("op",-1,"",opand,1);
+            if(!isValid8bit(opand)){
+                // 非法数处理
+                armMov* feifashu = new armMov();
+                feifashu->rd = new varDecl(wild, node, Rcnt++);
+                feifashu->rs = new constDecl(wild, node, opand);
+                feifashu->isIgnore = 1;
+                newBlock[node].push_back(feifashu);
+                trance[feifashu] = instr;
+            }
+            //添加一条与指令
+            armAnd * ins = new armAnd();
+            ins->rd = new varDecl(res, node, Rcnt++);
+            ins->r1 = new constDecl(wild, node, opand);
+            newBlock[node].push_back(ins);
+            trance[ins] = instr;
+            return ;
+        }
+    }
+    
+    assignDiv(instr, node);
+
+
 
     armMul* mod_mul = new armMul();//mul rd, rd, r1
     mod_mul->rd = new varDecl(res, node, Rcnt++);
@@ -1186,11 +1269,45 @@ void usedLsl(armLsl* ins, BasicBlock* node)
         ins->rs = getDecl(bs, node);
         return ;
     }
+    if(raw->getOpType() == Instruction::Mul){
+        //优化来的
+        IntegerValue* r0 = (IntegerValue*)raw->getOp()[0];
+        IntegerValue* r1 = (IntegerValue*)raw->getOp()[1];
+        if(r0->isConst)swap(r0,r1);
+        ins->rs = getDecl(r0, node);
+        addAssign(ins->rd->rawValue,node, ins->rd);
+        return ;
+    }
+}
+void usedAsr(armAsr* ins, BasicBlock* node)
+{
+    auto raw = trance[ins];
+    if(raw->getOpType() == Instruction::Div){
+        //优化来的
+        IntegerValue* r0 = (IntegerValue*)raw->getOp()[0];
+        ins->rs = getDecl(r0, node);
+        addAssign(ins->rd->rawValue,node, ins->rd);
+        return ;
+    }
+}
+void usedAnd(armAnd* ins, BasicBlock* node)
+{
+    auto raw = trance[ins];
+    if(raw->getOpType() == Instruction::Mod){
+        //优化来的
+        IntegerValue* r0 = (IntegerValue*)raw->getOp()[0];
+        ins->r0 = getDecl(r0, node);
+        addAssign(ins->rd->rawValue, node, ins->rd);
+        return ;
+    }
 }
 
 int usedIns(armInstr* ins,BasicBlock* node)
 {
-    if(ins->getType()==armInstr::mov){
+    if(ins->isIgnore){
+        addAssign(ins->rd->rawValue, node, ins->rd);
+    }
+    else if(ins->getType()==armInstr::mov){
         return usedMov((armMov*)ins,node);
     }
     else if(ins->getType() == armInstr::add){
@@ -1228,6 +1345,12 @@ int usedIns(armInstr* ins,BasicBlock* node)
     }
     else if(ins->getType() == armInstr::lsl){
         usedLsl((armLsl*)ins,node);
+    }
+    else if(ins->getType() == armInstr::asr){
+        usedAsr((armAsr*)ins,node);
+    }
+    else if(ins->getType() == armInstr::and_){
+        usedAnd((armAnd*)ins,node);
     }
     return 0;
 }
@@ -1410,7 +1533,7 @@ void liveSets()
     for(auto rt:DomRoot){
         showDecl(rt);
     }
-//    dbg("syy -- show super arm win!");               
+   dbg("syy -- show super arm win!");               
 #endif
 
 }
