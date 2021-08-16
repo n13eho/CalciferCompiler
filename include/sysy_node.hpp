@@ -2,6 +2,7 @@
 #include <iostream>
 #include <vector>
 #include <string>
+#include "dbg.h"
 // #ifndef _SYS_NODE_HPP_
 // #define _SYS_NODE_HPP_
 
@@ -50,6 +51,10 @@ struct GrammaNode
     GrammaNode(){son.clear();}
     GrammaNode(int l, int x){lineno = l; type=x; son.clear();}
     GrammaNode(int l, int x, std::string y){lineno = l; type=x; str = y; son.clear();/*std::cout<<type<<" "<<str<<std::endl;*/}
+
+    ~GrammaNode(){
+        son.clear();
+    }
 };
 
 // #endif
@@ -58,3 +63,6 @@ struct GrammaNode
 // GrammaNode* Exp_Sub_new(GrammaNode* a,GrammaNode* b);
 void show_node(GrammaNode* root, int layer);
 extern GrammaNode* Droot;
+
+//  detected memory leaks: AST
+void releaseAST(GrammaNode* root);

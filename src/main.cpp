@@ -79,6 +79,10 @@ int main(int argc, char *argv[])
        show_IR_ins(IR1); // 打印指令
 #endif
 
+        // detected memory leaks: AST
+        releaseAST(Droot);
+
+
         getssa();//建立支配树以及支配边界 -->
 #ifdef DEBUG_ON_
         show_cfg();
@@ -100,13 +104,13 @@ int main(int argc, char *argv[])
     }
 
     // post-precess
-    free(Droot);
-    free(SymbolTable);
-    free(IR1);
-    free(globalBlock);
+//    delete(Droot);
+    delete(SymbolTable);
+    delete(IR1);
+    delete(globalBlock);
 
     return 0;
 }
 
 // ASan config
-extern "C" [[maybe_unused]] const char *__asan_default_options() { return "alloc_dealloc_mismatch=0, detect_leaks=0"; }
+//extern "C" [[maybe_unused]] const char *__asan_default_options() { return "alloc_dealloc_mismatch=0, detect_leaks=0"; }
