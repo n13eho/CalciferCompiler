@@ -159,6 +159,17 @@ void ArmI2InOut(armInstr* ai)
         mod_ai->r0->gen_used.push_back(ai);
         mod_ai->r1->gen_used.push_back(ai);
     }
+    else if(ai->getType() == armInstr::armInsType::and_)
+    {
+        armAnd* and_ai = (armAnd*)ai;
+        ins[ai].erase(make_pair(VregNumofDecl(and_ai->rd), and_ai->rd->gettype() == Decl::reg_decl));
+        ins[ai].insert(make_pair(VregNumofDecl(and_ai->r0), and_ai->r0->gettype() == Decl::reg_decl));
+        and_ai->r0->gen_used.push_back(ai);
+        if(notConst(and_ai->r1)){
+            ins[ai].insert(make_pair(VregNumofDecl(and_ai->r1), and_ai->r1->gettype() == Decl::reg_decl)); // 由于ssa处已经将三个操作数都确保成了寄存器，因此这里就不判断是否为立即数了
+            and_ai->r1->gen_used.push_back(ai);
+        }
+    }
     else if(ai->getType() == armInstr::armInsType::mov)
     {
         armMov* mov_ai = (armMov*)ai;
@@ -244,26 +255,6 @@ void ArmI2InOut(armInstr* ai)
         ins[ai].insert(make_pair(2, true));
         ins[ai].insert(make_pair(3, true));
 
-        // rs内全是gen (这部分不变)
-        //        for(auto r: call_ai->rs)
-        //        {
-        //            if(notConst(r))
-        //            {
-        //                ins[ai].insert(make_pair(VregNumofDecl(r), r->gettype()));
-        //                r->gen_used.push_back(ai);
-        //            }
-        //        }
-
-        // Decl* r;
-        // for(int i=4; i<call_ai->rs.size(); i++){
-        //     r = call_ai->rs[i];
-        //     if(notConst(r))
-        //     {
-        //         ins[ai].insert(make_pair(VregNumofDecl(r), r->gettype()));
-        //         r->gen_used.push_back(ai);
-        //     }
-        // }
-
     }
     else if(ai->getType() == armInstr::armInsType::ret)
     {
@@ -299,6 +290,18 @@ void ArmI2InOut(armInstr* ai)
         {
             ins[ai].insert(make_pair(VregNumofDecl(lsl_ai->sh), lsl_ai->sh->gettype() == Decl::reg_decl));
             lsl_ai->sh->gen_used.push_back(ai);
+        }
+    }
+    else if(ai->getType() == armInstr::asr)
+    {// r1 maybe imm/const, but r0 is var_decl for sure
+        armAsr* asr_ai = (armAsr*)ai;
+        ins[ai].erase(make_pair(VregNumofDecl(asr_ai->rd), asr_ai->rd->gettype() == Decl::reg_decl));
+        ins[ai].insert(make_pair(VregNumofDecl(asr_ai->rs), asr_ai->rs->gettype() == Decl::reg_decl));
+        asr_ai->rs->gen_used.push_back(ai);
+        if(notConst(asr_ai->sh))
+        {
+            ins[ai].insert(make_pair(VregNumofDecl(asr_ai->sh), asr_ai->sh->gettype() == Decl::reg_decl));
+            asr_ai->sh->gen_used.push_back(ai);
         }
     }
 }
