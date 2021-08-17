@@ -2513,6 +2513,7 @@ Value* LValArrayNode(GrammaNode* node,LinearIR *IR)
             }
             else
             {
+                int acc_value = ((IntegerValue*)accum)->getValue();
                 int dimen = NumOfDimension_[i];
                 IntegerValue* present_dimen = new IntegerValue("dimen",node->lineno,node->var_scope,dimen,1);
                 present_dimen->isTemp = 1;
@@ -2531,8 +2532,12 @@ Value* LValArrayNode(GrammaNode* node,LinearIR *IR)
                     bbNow = GetPresentBlock(FuncN,BasicBlock::Basic);
                 }
                 //上一次累乘*本维度索引
+
+                IntegerValue* tmp_acc = new IntegerValue("tmp_acc",node->lineno,node->var_scope,acc_value,1);
+                tmp_acc->isTemp = 1;
+
                 Instruction* ins_mul = new Instruction(IR->getInstCnt(),Instruction::Mul,2);
-                ins_mul->addOperand(accum);
+                ins_mul->addOperand(tmp_acc);
                 ins_mul->addOperand(present_index);
                 ins_mul->setResult(arg3);
                 IR->InsertInstr(ins_mul);
@@ -2550,13 +2555,14 @@ Value* LValArrayNode(GrammaNode* node,LinearIR *IR)
                 if(i>0)
                 {
                     //计算维度累乘
-                    Instruction* ins_mul2 = new Instruction(IR->getInstCnt(),Instruction::Mul,2);//这里后期考虑muladd指令优化
-                    ins_mul2->addOperand(present_dimen);
-                    ins_mul2->addOperand(accum);
-                    ins_mul2->setResult(accum);
-                    IR->InsertInstr(ins_mul2);
-                    bbNow->Addins(ins_mul2->getId());
-                    ins_mul2->setParent(bbNow);
+                    ((IntegerValue*)accum)->setValue(acc_value*dimen);
+                    // Instruction* ins_mul2 = new Instruction(IR->getInstCnt(),Instruction::Mul,2);//这里后期考虑muladd指令优化
+                    // ins_mul2->addOperand(present_dimen);
+                    // ins_mul2->addOperand(accum);
+                    // ins_mul2->setResult(accum);
+                    // IR->InsertInstr(ins_mul2);
+                    // bbNow->Addins(ins_mul2->getId());
+                    // ins_mul2->setParent(bbNow);
                 }
             }
         }
