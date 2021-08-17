@@ -961,6 +961,7 @@ void RigsterAlloc()
     // 对于每个顶层块（除了第一个全局模块），都应该对应一个RIG图
     for(auto gb: IR1->Blocks)
     {
+        spill_times = 1;
         // 跳过第一个全局变量，core dump，可能有隐患
         if(gb->domBlock.size() == 0)continue;
         bool spill_failed = false;
@@ -970,6 +971,7 @@ void RigsterAlloc()
 
             spill_failed = buildRIG(gb);
             if(!spill_failed) { // 染色失败
+                spill_node2memdc.clear();
                 all2mem(gb);
                 spill_times++;
 #ifdef DEBUG_ON
