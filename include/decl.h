@@ -307,7 +307,7 @@ class armAsr:public armInstr
             out<<"\tasr r"<<((addrDecl*)rd)->Vreg<<", r"<<((addrDecl*)rs)->Vreg<<", "<<*sh;
         }
         else if(sh->gettype() == Decl::const_decl&&rs->gettype() == Decl::var_decl){
-            out<<"\tasr "<<*rs<<", "<<*sh<<endl;
+            out<<"\tasr "<<*rd<<", "<<*rs<<", "<<*sh<<endl;
         }
         else{
             // out<<"\tlsl "<<*rd<<", "<<*rs<<", "<<*sh;
