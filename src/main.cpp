@@ -104,4 +104,4 @@ int main(int argc, char *argv[])
 }
 
 // ASan config
-// extern "C" [[maybe_unused]] const char *__asan_default_options() { return "alloc_dealloc_mismatch=0, detect_leaks=0"; }
+extern "C" [[maybe_unused]] const char *__asan_default_options() { return "alloc_dealloc_mismatch=0, detect_leaks=0"; }
