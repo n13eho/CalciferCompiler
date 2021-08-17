@@ -648,37 +648,6 @@ void specialInsDelete(DomTreenode* sd, BasicBlock* gb)
     }
 }
 
-/*
- * 1 挑选哪个node出来
- * 计算每个node的spill cost，选出cost最小的
- * 计算spillCost算法：
- * 1.1 计算frequency of each block map_frequen<basicBlock* b, double frequency>
- * 1.2 在建立IN/OUT集合的时候就记录每个decl出现在gen集合中的次数，并记录，用dc->gen_used
- * 1.3 map_frequen[dc->rawBlock] * dc->gen_used.size() 得到最终的cost， 存入dc->spill_cost
- * 1.4 通过RIG图 遍历所有decl 找出cost最小的
- *
- * 2 挑出来之后...
- * 加指令：在定义之后加str；在要使用之前加ldr，使用之后也要加str
-    - var to memery
-    - global to 段
- */
-int chosenOne = -1;
-// cost最小的寄存器编号
-
-void spillCost(BasicBlock* gb){
-    for(auto node: RIG[gb]){
-        if(node->dc==13)continue;
-        auto dc_vreg= node->dc;
-        spilling_cost[dc_vreg] = 0; // 清零
-        for(auto dc: Vreg2Decls[dc_vreg])
-        {
-            spilling_cost[dc_vreg] += blockFrequency[dc->rawBlock] * (double)dc->gen_used.size();
-            spilling_cost[dc_vreg] += blockFrequency[dc->rawBlock] * 1.0;
-            dc->gen_used.clear();
-        }
-    }
-}
-
 map<RIGnode*, memoryDecl*> spill_node2memdc; // spilling失败之后，记录每个node对应放在哪里的memdecl
 
 memoryDecl* forc_memShift(RIGnode* d, BasicBlock* gb){
@@ -693,6 +662,8 @@ memoryDecl* forc_memShift(RIGnode* d, BasicBlock* gb){
     return ret_m;
 }
 
+map<Decl*, int> moreReg;
+
 void all2mem(BasicBlock* gb)
 {
     for(auto b : gb->domBlock){
@@ -701,16 +672,24 @@ void all2mem(BasicBlock* gb)
 
             //是否要加ldr
             vector<Decl*> rs = arm_ins->getGen();
-            for(auto dc : rs){
+            for(int i=0;i<rs.size();i++){
+                auto dc = rs[i];
                 if(arm_ins->getType() != armInstr:: call 
                 && dc->gettype() != Decl::const_decl
                 && dc->gettype() != Decl::memory_decl
                 && dc->gettype() != Decl::global_decl){
                     
-                    if(VregNumofDecl(dc) < K-3)continue;//留三个吧,(凭直觉)
+                    if(VregNumofDecl(dc) < K)continue;//留三个吧,(凭直觉)
                     if(VregNumofDecl(dc) == 13)continue;//跳过r13的spill
                     armLdr* ldr_ins= new armLdr();
                     ldr_ins->rd = dc;
+                    //后面直接改变这个寄存器的编号
+                    if(i==0)moreReg[dc]=12;
+                    else if(i==1) moreReg[dc]=14;
+                    else{
+                        cout<<"猜错了"<<endl;
+                    }
+
                     ldr_ins->rs = forc_memShift(ForCnode(make_pair(VregNumofDecl(dc),dc->gettype() == Decl::reg_decl),gb), gb);
                     it=newBlock[b].insert(it,ldr_ins)+1;
                     gbarmCnt[gb]++;
@@ -730,13 +709,16 @@ void all2mem(BasicBlock* gb)
             && arm_ins->getType() != armInstr::str
             && arm_ins->rd->gettype() != Decl::reg_decl){
                 
-                if(VregNumofDecl(arm_ins->rd) < K-3)continue;//留三个吧,(凭直觉)
+                if(VregNumofDecl(arm_ins->rd) < K)continue;//留三个吧,(凭直觉)
                 if(VregNumofDecl(arm_ins->rd) == 13)continue;
                 if(VregNumofDecl(arm_ins->rd) == 789){
                     dbg("789error");
                 }
                 armStr* str_ins= new armStr();
                 str_ins->rd = arm_ins->rd;
+
+                moreReg[arm_ins->rd] = 12;//后面直接改变这个寄存器的编号
+                
                 str_ins->rs = forc_memShift(ForCnode(make_pair(VregNumofDecl(arm_ins->rd),arm_ins->rd->gettype() == Decl::reg_decl),gb), gb);
                 it=newBlock[b].insert(it+1,str_ins);
                 gbarmCnt[gb]++;
@@ -752,6 +734,29 @@ void all2mem(BasicBlock* gb)
         }
     }
 
+}
+
+void changeR12(BasicBlock* gb)
+{
+    for(auto b : gb->domBlock){
+        for(auto it = newBlock[b].begin(); it!=newBlock[b].end(); it++){
+            auto ins = *it;
+            if( ins->rd != nullptr ){
+                if(moreReg[ins->rd]!=0){
+                    ins->rd->changeMyVreg(moreReg[ins->rd]);
+                }
+            }
+            auto rss = ins->getGen();
+            for(auto rs : rss){
+                if(rs!=nullptr){
+                    if(moreReg[rs]!=0){
+                        rs->changeMyVreg(moreReg[rs]);
+                    }
+                }
+            }
+        }
+    }
+    moreReg.clear();
 }
 
 
@@ -967,7 +972,7 @@ void RigsterAlloc()
         bool spill_failed = false;
 
         int try_times = 1;
-        while(try_times <= 2){
+        while(try_times <= 1){
 
             spill_failed = buildRIG(gb);
             if(!spill_failed) { // 染色失败
@@ -991,8 +996,9 @@ void RigsterAlloc()
         else
             cout << gb->BlockName <<" 染色成功跳出来的\n";
 #endif
-        if(try_times > 2){
-            spill_failed = buildRIG(gb);
+        if(try_times > 1){
+            changeR12(gb);
+            constpool(block2dom[gb->domBlock[0]]);
         }
     }
 

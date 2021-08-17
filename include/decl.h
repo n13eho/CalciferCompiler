@@ -39,7 +39,7 @@ class Decl {
         return out;
     }
     virtual int gettype()const{return 0;}
-
+    virtual void changeMyVreg(int x){}
 
 //    virtual ostream & output(ostream &out,bool fl)const{
 //        return output(out);
@@ -63,6 +63,7 @@ class constDecl:public Decl{
         out<<"#"<<value;
         return out;
     }
+    virtual void changeMyVreg(int x){}
     virtual int gettype()const{return 1;}
 };
 
@@ -77,6 +78,7 @@ class varDecl:public Decl{
         return out;
     }
     virtual int gettype()const{return 2;}
+    virtual void changeMyVreg(int x){Vreg = x;}
 };
 
 class globalDecl: public Decl{
@@ -115,7 +117,7 @@ class addrDecl: public Decl{
         else {out<<"[r"<<Vreg<<", "<<*biasR<<"]";}
         return out;
     }
-
+    virtual void changeMyVreg(int x){Vreg = x;}
     virtual int gettype()const{return 5;}
 };
 
@@ -541,6 +543,10 @@ class armLdr:public armInstr{//ok??????????? //TODO: now array is different!
     {
         vector<Decl*> tem;
         tem.push_back(rs); // 因为rs可以能还是[=a]这种情况
+        if(rs->gettype() == Decl::addr_decl){
+            addrDecl* addr = (addrDecl*)rs;
+            if(addr->biasR!=nullptr)tem.push_back(addr->biasR);
+        }
         return tem;
     }
 };
@@ -575,6 +581,10 @@ class armStr:public armInstr{//ok
         vector<Decl*> tem;
         tem.push_back(rd);
         tem.push_back(rs);
+        if(rs->gettype() == Decl::addr_decl){
+            addrDecl* addr = (addrDecl*)rs;
+            if(addr->biasR!=nullptr)tem.push_back(addr->biasR);
+        }
         return tem;
     }
 };
