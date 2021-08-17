@@ -279,7 +279,7 @@ class armLsl:public armInstr//ok
             out<<"\tlsl r"<<((addrDecl*)rd)->Vreg<<", r"<<((addrDecl*)rs)->Vreg<<", "<<*sh;
         }
         else if(sh->gettype() == Decl::const_decl&&rs->gettype() == Decl::var_decl){
-            out<<"\tlsl "<<*rs<<", "<<*sh<<endl;
+            out<<"\tlsl "<<*rd<<", "<<*rs<<", "<<*sh<<endl;
         }
         else{
             // out<<"\tlsl "<<*rd<<", "<<*rs<<", "<<*sh;

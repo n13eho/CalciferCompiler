@@ -947,6 +947,12 @@ bool buildRIG(BasicBlock* gb)
     return true;
 }
 
+void op_ld_st(){
+    //传说中的窥孔优化?
+    //产出str / ldr 对
+    
+}
+
 fstream debugout;
 void RigsterAlloc()
 {
@@ -994,5 +1000,7 @@ void RigsterAlloc()
     for(auto dr: DomRoot)
         showDecl(dr);           
 #endif
+
+    
 
 }
