@@ -2466,7 +2466,8 @@ Value* LValArrayNode(GrammaNode* node,LinearIR *IR)
         //Exps_节点
         GrammaNode* p_node = node->son[1];
         //维度长度累乘
-        Value* accum = nullptr;
+        // Value* accum = nullptr;
+        int accum = 1;
         //数组访问结果
         // Value* ret = new IntegerValue("t"+std::to_string(p_node->son.size()),node->lineno,node->var_scope);
         for(int i=p_node->son.size()-1;i>=0;i--)
@@ -2492,10 +2493,25 @@ Value* LValArrayNode(GrammaNode* node,LinearIR *IR)
                     {
                         offsets*=NumOfDimension_[j];
                     }
-                    accum = new IntegerValue("offset",node->lineno,node->var_scope,offsets,1);
-                    accum->isTemp = 1;
-                    vector<Value*> ops = {lasti,accum};
-                    CreateIns(node,IR,Instruction::Mul,1,ops,index);
+                    accum = offsets;
+                    // accum = new IntegerValue("offset",node->lineno,node->var_scope,offsets,1);
+                    // accum->isTemp = 1;
+                    if(((IntegerValue*)lasti)->isConst)
+                    {
+                        int abababa = ((IntegerValue*)lasti)->getValue()*offsets;
+                        IntegerValue* index_init = new IntegerValue("index_init",node->lineno,node->var_scope,abababa,1);
+                        index_init->isTemp = 1;
+                        vector<Value*> ops = {index_init};
+                        CreateIns(node,IR,Instruction::Assign,1,ops,index);
+                    }
+                    else
+                    {
+                        IntegerValue* acc_tmp = new IntegerValue("acc_tmp0",node->lineno,node->var_scope,offsets,1);
+                        acc_tmp->isTemp = 1;
+                        vector<Value*> ops = {lasti,acc_tmp};
+                        CreateIns(node,IR,Instruction::Mul,1,ops,index);
+                    }
+                    
                     // dbg("index is const?",((IntegerValue*)index)->isConst);
                     // int dimen = NumOfDimension_[i];
                     
@@ -2506,17 +2522,19 @@ Value* LValArrayNode(GrammaNode* node,LinearIR *IR)
                     CreateIns(node,IR,Instruction::Assign,1,ops,index);
                     // dbg("index is const?",((IntegerValue*)index)->isConst);
                     int dimen = NumOfDimension_[i];
-                    accum = new IntegerValue("dimen",node->lineno,node->var_scope,dimen,1);
-                    accum->isTemp = 1;
+                    // accum = new IntegerValue("dimen",node->lineno,node->var_scope,dimen,1);
+                    // accum->isTemp = 1;
+                    accum = dimen;
                 }
 //                accum = new ImmValue("dimen",dimen);
             }
             else
             {
-                int acc_value = ((IntegerValue*)accum)->getValue();
+                // int acc_value = ((IntegerValue*)accum)->getValue();
+
                 int dimen = NumOfDimension_[i];
-                IntegerValue* present_dimen = new IntegerValue("dimen",node->lineno,node->var_scope,dimen,1);
-                present_dimen->isTemp = 1;
+                // IntegerValue* present_dimen = new IntegerValue("dimen",node->lineno,node->var_scope,dimen,1);
+                // present_dimen->isTemp = 1;
                 //当前维度的索引
                 Value* present_index = AddExpNode(p_node->son[i],IR);
                 Value* arg3 = new IntegerValue("t"+std::to_string(i),node->lineno,node->var_scope,0);
@@ -2533,7 +2551,7 @@ Value* LValArrayNode(GrammaNode* node,LinearIR *IR)
                 }
                 //上一次累乘*本维度索引
 
-                IntegerValue* tmp_acc = new IntegerValue("tmp_acc",node->lineno,node->var_scope,acc_value,1);
+                IntegerValue* tmp_acc = new IntegerValue("tmp_acc",node->lineno,node->var_scope,accum,1);
                 tmp_acc->isTemp = 1;
 
                 Instruction* ins_mul = new Instruction(IR->getInstCnt(),Instruction::Mul,2);
@@ -2555,7 +2573,8 @@ Value* LValArrayNode(GrammaNode* node,LinearIR *IR)
                 if(i>0)
                 {
                     //计算维度累乘
-                    ((IntegerValue*)accum)->setValue(acc_value*dimen);
+                    // ((IntegerValue*)accum)->setValue(acc_value*dimen);
+                    accum*=dimen;
                     // Instruction* ins_mul2 = new Instruction(IR->getInstCnt(),Instruction::Mul,2);//这里后期考虑muladd指令优化
                     // ins_mul2->addOperand(present_dimen);
                     // ins_mul2->addOperand(accum);
@@ -2575,11 +2594,6 @@ Value* LValArrayNode(GrammaNode* node,LinearIR *IR)
         // ins_load->setResult(ret);
         // IR->InsertInstr(ins_load);
         // dbg("index is const?",((IntegerValue*)index)->isConst);
-
-        if(func_param_address)
-        {
-
-        }
 
         return index;
     }
