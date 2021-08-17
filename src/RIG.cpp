@@ -707,7 +707,7 @@ void all2mem(BasicBlock* gb)
                 && dc->gettype() != Decl::memory_decl
                 && dc->gettype() != Decl::global_decl){
                     
-                    if(VregNumofDecl(dc) < K-3)continue;//留三个吧,(凭直觉)
+                    if(VregNumofDecl(dc) < K-2)continue;//留三个吧,(凭直觉)
                     if(VregNumofDecl(dc) == 13)continue;//跳过r13的spill
                     armLdr* ldr_ins= new armLdr();
                     ldr_ins->rd = dc;
@@ -730,7 +730,7 @@ void all2mem(BasicBlock* gb)
             && arm_ins->getType() != armInstr::str
             && arm_ins->rd->gettype() != Decl::reg_decl){
                 
-                if(VregNumofDecl(arm_ins->rd) < K-3)continue;//留三个吧,(凭直觉)
+                if(VregNumofDecl(arm_ins->rd) < K-2)continue;//留三个吧,(凭直觉)
                 if(VregNumofDecl(arm_ins->rd) == 13)continue;
                 if(VregNumofDecl(arm_ins->rd) == 789){
                     dbg("789error");
