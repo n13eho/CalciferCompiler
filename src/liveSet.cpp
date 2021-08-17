@@ -148,17 +148,19 @@ void assignMul(Instruction* instr,BasicBlock *node)
     //如果后一个op是2的幂，改为左移
     if(op1->isConst||op2->isConst){
         if(op1->isConst)swap(op1,op2);
-        int mi = is2(op2->RealValue);
-        if(mi != -1){
-            //还需要填rs
-            armLsl *ins=new armLsl();
-            IntegerValue* res=(IntegerValue*)instr->getResult();
-            varDecl *resd = new varDecl(res,node,Rcnt++);
-            ins->rd = resd;
-            ins->sh = new constDecl(op2, node, mi);
-            newBlock[node].push_back(ins);
-            trance[ins]=instr;
-            return ;
+        if(op2->RealValue>0){
+            int mi = is2(op2->RealValue);
+            if(mi != -1){
+                //还需要填rs
+                armLsl *ins=new armLsl();
+                IntegerValue* res=(IntegerValue*)instr->getResult();
+                varDecl *resd = new varDecl(res,node,Rcnt++);
+                ins->rd = resd;
+                ins->sh = new constDecl(op2, node, mi);
+                newBlock[node].push_back(ins);
+                trance[ins]=instr;
+                return ;
+            }
         }
     }
     /**
@@ -197,14 +199,16 @@ void assignDiv(Instruction* instr,BasicBlock *node)
         trance[div_mov] = instr;
     }
     if(op2->isConst){
-        int mi = is2(op2->RealValue);
-        if(mi!=-1){
-            armAsr *ins = new armAsr();
-            ins->rd = new varDecl(res,node,Rcnt++);
-            ins->sh = new constDecl(nullptr, node, mi);
-            newBlock[node].push_back(ins);
-            trance[ins] = instr;
-            return ;
+        if(op2->RealValue>0){
+            int mi = is2(op2->RealValue);
+            if(mi!=-1){
+                armAsr *ins = new armAsr();
+                ins->rd = new varDecl(res,node,Rcnt++);
+                ins->sh = new constDecl(nullptr, node, mi);
+                newBlock[node].push_back(ins);
+                trance[ins] = instr;
+                return ;
+            }
         }
         armMov* div_mov = new armMov();
         div_mov->rd = new varDecl(op2, node, Rcnt++);
@@ -241,27 +245,29 @@ void assignMod(Instruction* instr,BasicBlock *node)
             trance[mod_mov] = instr;
             return ;
         }
-        int mi = is2(op2->RealValue);
-        if(mi!=-1){
-            // mod一个2的幂
-            int opand = (1LL<<mi)-1LL;
-            Value* wild = new IntegerValue("op",-1,"",opand,1);
-            if(!isValid8bit(opand)){
-                // 非法数处理
-                armMov* feifashu = new armMov();
-                feifashu->rd = new varDecl(wild, node, Rcnt++);
-                feifashu->rs = new constDecl(wild, node, opand);
-                feifashu->isIgnore = 1;
-                newBlock[node].push_back(feifashu);
-                trance[feifashu] = instr;
+        if(op2->RealValue>0){
+            int mi = is2(op2->RealValue);
+            if(mi!=-1){
+                // mod一个2的幂
+                int opand = (1LL<<mi)-1LL;
+                Value* wild = new IntegerValue("op",-1,"",opand,1);
+                if(!isValid8bit(opand)){
+                    // 非法数处理
+                    armMov* feifashu = new armMov();
+                    feifashu->rd = new varDecl(wild, node, Rcnt++);
+                    feifashu->rs = new constDecl(wild, node, opand);
+                    feifashu->isIgnore = 1;
+                    newBlock[node].push_back(feifashu);
+                    trance[feifashu] = instr;
+                }
+                //添加一条与指令
+                armAnd * ins = new armAnd();
+                ins->rd = new varDecl(res, node, Rcnt++);
+                ins->r1 = new constDecl(wild, node, opand);
+                newBlock[node].push_back(ins);
+                trance[ins] = instr;
+                return ;
             }
-            //添加一条与指令
-            armAnd * ins = new armAnd();
-            ins->rd = new varDecl(res, node, Rcnt++);
-            ins->r1 = new constDecl(wild, node, opand);
-            newBlock[node].push_back(ins);
-            trance[ins] = instr;
-            return ;
         }
     }
     
