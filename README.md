@@ -1,11 +1,6 @@
 # CalciferCompiler
 
-don't forget to cmake again after adding of deleting any .cpp/.h file
-
-## where are we
-
-managing IR >> arm assembly.
-
+This is a simple compiler made by Team Calcifer in the competition 2021.
 
 ## build
 
