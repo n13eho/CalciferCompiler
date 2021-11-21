@@ -1,0 +1,107 @@
+	.text
+	.syntax unified
+	.eabi_attribute	67, "2.09"	@ Tag_conformance
+	.cpu	mpcore
+	.eabi_attribute	6, 6	@ Tag_CPU_arch
+	.eabi_attribute	8, 1	@ Tag_ARM_ISA_use
+	.eabi_attribute	9, 1	@ Tag_THUMB_ISA_use
+	.fpu	vfpv2
+	.eabi_attribute	34, 0	@ Tag_CPU_unaligned_access
+	.eabi_attribute	17, 1	@ Tag_ABI_PCS_GOT_use
+	.eabi_attribute	20, 1	@ Tag_ABI_FP_denormal
+	.eabi_attribute	21, 1	@ Tag_ABI_FP_exceptions
+	.eabi_attribute	23, 3	@ Tag_ABI_FP_number_model
+	.eabi_attribute	24, 1	@ Tag_ABI_align_needed
+	.eabi_attribute	25, 1	@ Tag_ABI_align_preserved
+	.eabi_attribute	28, 1	@ Tag_ABI_VFP_args
+	.eabi_attribute	38, 1	@ Tag_ABI_FP_16bit_format
+	.eabi_attribute	18, 4	@ Tag_ABI_PCS_wchar_t
+	.eabi_attribute	26, 2	@ Tag_ABI_enum_size
+	.eabi_attribute	14, 0	@ Tag_ABI_PCS_R9_use
+	.file	"add.cpp"
+	.globl	main                    @ -- Begin function main
+	.p2align	2
+	.type	main,%function
+	.code	32                      @ @main
+main:
+	.fnstart
+@ %bb.0:
+	.save	{r11, lr}
+	push	{r11, lr}
+	.setfp	r11, sp
+	mov	r11, sp
+	.pad	#64
+	sub	sp, sp, #64
+	ldr	r0, .LCPI0_0
+	ldr	r1, .LCPI0_1
+	ldr	r2, .LCPI0_2
+	ldr	r3, .LCPI0_3
+	ldr	r12, .LCPI0_4
+	ldr	lr, .LCPI0_5
+	str	r0, [r11, #-4]
+	str	lr, [r11, #-8]
+	str	r12, [r11, #-12]
+	add	r12, sp, #24
+	str	r0, [sp, #8]            @ 4-byte Spill
+	mov	r0, r12
+	str	r1, [sp, #4]            @ 4-byte Spill
+	mov	r1, r2
+	mov	r2, r3
+	bl	memcpy
+	ldr	r0, [r11, #-8]
+	str	r0, [sp, #24]
+	ldr	r0, [sp, #4]            @ 4-byte Reload
+	ldr	r1, [r0]
+	str	r1, [sp, #12]
+	ldr	r1, [r0, #4]
+	str	r1, [sp, #16]
+	ldr	r1, [r0, #8]
+	str	r1, [sp, #20]
+	ldr	r0, [sp, #8]            @ 4-byte Reload
+	mov	sp, r11
+	pop	{r11, pc}
+	.p2align	2
+@ %bb.1:
+.LCPI0_0:
+	.long	0                       @ 0x0
+.LCPI0_1:
+	.long	.L_ZZ4mainE1w
+.LCPI0_2:
+	.long	.L_ZZ4mainE1p
+.LCPI0_3:
+	.long	24                      @ 0x18
+.LCPI0_4:
+	.long	2                       @ 0x2
+.LCPI0_5:
+	.long	1                       @ 0x1
+.Lfunc_end0:
+	.size	main, .Lfunc_end0-main
+	.cantunwind
+	.fnend
+                                        @ -- End function
+	.type	.L_ZZ4mainE1p,%object   @ @_ZZ4mainE1p
+	.section	.rodata,"a",%progbits
+	.p2align	2
+.L_ZZ4mainE1p:
+	.long	5                       @ 0x5
+	.long	6                       @ 0x6
+	.long	7                       @ 0x7
+	.long	8                       @ 0x8
+	.long	9                       @ 0x9
+	.long	10                      @ 0xa
+	.size	.L_ZZ4mainE1p, 24
+
+	.type	.L_ZZ4mainE1w,%object   @ @_ZZ4mainE1w
+	.p2align	2
+.L_ZZ4mainE1w:
+	.long	9                       @ 0x9
+	.long	9                       @ 0x9
+	.long	9                       @ 0x9
+	.size	.L_ZZ4mainE1w, 12
+
+
+	.ident	"clang version 7.0.1-8+rpi3+deb10u2 (tags/RELEASE_701/final)"
+	.section	".note.GNU-stack","",%progbits
+	.addrsig
+	.addrsig_sym main
+	.eabi_attribute	30, 6	@ Tag_ABI_optimization_goals

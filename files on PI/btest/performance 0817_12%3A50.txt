@@ -1,0 +1,184 @@
+
+Processing:00_bitset1.sy                      full path :./_performance_test2021/00_bitset1.sy
+compile tm:0.199718s
+run time  :2.486511s
+exec time :0H-0M-2S-476176us
+status    :OK!
+
+Processing:00_bitset2.sy                      full path :./_performance_test2021/00_bitset2.sy
+compile tm:0.198968s
+run time  :4.966095s
+exec time :0H-0M-4S-957093us
+status    :OK!
+
+Processing:00_bitset3.sy                      full path :./_performance_test2021/00_bitset3.sy
+compile tm:0.189788s
+run time  :7.434036s
+exec time :0H-0M-7S-425173us
+status    :OK!
+
+Processing:01_mm1.sy                          full path :./_performance_test2021/01_mm1.sy
+compile tm:0.799974s
+run time  :9.719863s
+exec time :0H-0M-9S-538652us
+status    :OK!
+
+Processing:01_mm2.sy                          full path :./_performance_test2021/01_mm2.sy
+compile tm:0.788893s
+run time  :8.768455s
+exec time :0H-0M-8S-589203us
+status    :OK!
+
+Processing:01_mm3.sy                          full path :./_performance_test2021/01_mm3.sy
+compile tm:0.793093s
+run time  :6.768796s
+exec time :0H-0M-6S-590052us
+status    :OK!
+
+Processing:02_mv1.sy                          full path :./_performance_test2021/02_mv1.sy
+compile tm:0.904474s
+run time  :8.560695s
+exec time :0H-0M-7S-269459us
+status    :OK!
+
+Processing:02_mv2.sy                          full path :./_performance_test2021/02_mv2.sy
+compile tm:0.903304s
+run time  :5.196414s
+exec time :0H-0M-3S-924170us
+status    :OK!
+
+Processing:02_mv3.sy                          full path :./_performance_test2021/02_mv3.sy
+compile tm:0.908358s
+run time  :6.986645s
+exec time :0H-0M-5S-339925us
+status    :OK!
+
+Processing:03_sort1.sy                        full path :./_performance_test2021/03_sort1.sy
+compile tm:6.091842s
+run time  :2.192105s
+exec time :0H-0M-1S-592885us
+status    :OK!
+
+Processing:03_sort2.sy                        full path :./_performance_test2021/03_sort2.sy
+compile tm:6.116903s
+run time  :34.527150s
+exec time :0H-0M-22S-559850us
+status    :OK!
+
+Processing:03_sort3.sy                        full path :./_performance_test2021/03_sort3.sy
+compile tm:6.126610s
+run time  :6.164072s
+exec time :0H-0M-4S-292344us
+status    :OK!
+
+Processing:04_spmv1.sy                        full path :./_performance_test2021/04_spmv1.sy
+compile tm:1.368925s
+run time  :5.405793s
+exec time :0H-0M-4S-695210us
+status    :OK!
+
+Processing:04_spmv2.sy                        full path :./_performance_test2021/04_spmv2.sy
+compile tm:1.365739s
+run time  :3.571780s
+exec time :0H-0M-3S-63643us
+status    :OK!
+
+Processing:04_spmv3.sy                        full path :./_performance_test2021/04_spmv3.sy
+compile tm:1.328269s
+run time  :4.221569s
+exec time :0H-0M-3S-567943us
+status    :OK!
+
+Processing:conv0.sy                           full path :./_performance_test2021/conv0.sy
+compile tm:4.334329s
+run time  :8.341027s
+exec time :0H-0M-8S-266772us
+status    :OK!
+
+Processing:conv1.sy                           full path :./_performance_test2021/conv1.sy
+compile tm:4.154207s
+run time  :17.134863s
+exec time :0H-0M-16S-252200us
+status    :OK!
+
+Processing:conv2.sy                           full path :./_performance_test2021/conv2.sy
+compile tm:4.024449s
+run time  :13.795640s
+exec time :0H-0M-12S-907922us
+status    :OK!
+
+Processing:fft0.sy                            full path :./_performance_test2021/fft0.sy
+compile tm:1.849284s
+run time  :7.238083s
+exec time :0H-0M-7S-121955us
+status    :OK!
+
+Processing:fft1.sy                            full path :./_performance_test2021/fft1.sy
+compile tm:1.833174s
+run time  :15.401227s
+exec time :0H-0M-15S-174784us
+status    :OK!
+
+Processing:fft2.sy                            full path :./_performance_test2021/fft2.sy
+compile tm:1.829683s
+run time  :14.799297s
+exec time :0H-0M-14S-681081us
+status    :OK!
+
+Processing:median0.sy                         full path :./_performance_test2021/median0.sy
+compile tm:2.039155s
+run time  :5.739662s
+exec time :0H-0M-5S-641939us
+status    :OK!
+
+Processing:median1.sy                         full path :./_performance_test2021/median1.sy
+compile tm:2.200717s
+run time  :4.354858s
+exec time :0H-0M-4S-283366us
+status    :OK!
+
+Processing:median2.sy                         full path :./_performance_test2021/median2.sy
+compile tm:2.036110s
+run time  :31.925595s
+exec time :0H-0M-31S-800591us
+status    :OK!
+
+Processing:shuffle0.sy                        full path :./_performance_test2021/shuffle0.sy
+compile tm:19.021018s
+run time  :7.881168s
+exec time :0H-0M-7S-740444us
+status    :OK!
+
+Processing:shuffle1.sy                        full path :./_performance_test2021/shuffle1.sy
+compile tm:19.016976s
+run time  :11.057115s
+exec time :0H-0M-10S-243346us
+status    :OK!
+
+Processing:shuffle2.sy                        full path :./_performance_test2021/shuffle2.sy
+compile tm:19.196550s
+run time  :12.833002s
+exec time :0H-0M-5S-319573us
+status    :OK!
+
+Processing:transpose0.sy                      full path :./_performance_test2021/transpose0.sy
+compile tm:3.840688s
+run time  :4.338458s
+exec time :0H-0M-4S-55356us
+status    :OK!
+
+Processing:transpose1.sy                      full path :./_performance_test2021/transpose1.sy
+compile tm:4.001307s
+run time  :4.565337s
+exec time :0H-0M-4S-545057us
+status    :OK!
+
+Processing:transpose2.sy                      full path :./_performance_test2021/transpose2.sy
+compile tm:4.333270s
+run time  :12.116380s
+exec time :0H-0M-12S-102624us
+status    :OK!
+
+bug num   : 61
+all time  :256s  18788us
+finish.

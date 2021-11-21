@@ -1,0 +1,10 @@
+gcc -g -o try try.S -L./sysyruntime -static -lsysy
+./try
+echo $?
+
+gcc -S -g -o try_sy.S try.c
+gcc -o new test.c
+
+gcc test.c ./sysyruntime/sylib.c -o test 
+gcc -g -o test test.S -L./sysyruntime -static -lsysy
+cat ../btest/_performance_test2021/conv0.in | ./test
